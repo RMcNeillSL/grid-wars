@@ -1,6 +1,7 @@
 # Grid Wars Specific
 gridwars/target/
 ~$*.ods
+.recommenders/
 
 # Compiled source
 *.com
