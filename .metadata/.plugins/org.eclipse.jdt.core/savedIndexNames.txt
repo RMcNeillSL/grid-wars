@@ -37,5 +37,4 @@ INDEX VERSION 1.127+C:\Users\jhill\Documents\Graduate Week\Grad Project\.metadat
 1954551462.index
 1826310000.index
 2499323391.index
-4211557299.index
 4116509426.index
