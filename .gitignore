@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-/target/
-
+/gridwars/target/
+/.metadata/
 ~$Todo Chart.ods
 ~$System Implementation Decisions.ods
-=======
-~$Todo Chart.ods
->>>>>>> 682b88b2ec803a9969e47a6fccdcb355285abe8b
