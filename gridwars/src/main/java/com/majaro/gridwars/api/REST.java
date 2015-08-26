@@ -19,7 +19,7 @@ import com.majaro.gridwars.entities.User;
 @Produces("application/json")
 @Path("/")
 public class REST {
-	private final RequestProcessor requestProcessor = new RequestProcessor();
+	private final static RequestProcessor requestProcessor = new RequestProcessor();
 	
 	@Context private HttpServletRequest request;
 	
@@ -37,18 +37,27 @@ public class REST {
 	}
 	
 	@GET
-	@Path("/session")
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response getSession() {
-		String sessionId = request.getSession(true).getId();
-		return Response.ok(sessionId).build();
-	}
-	
-	@GET
 	@Path("/helloworld")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response HelloWorld() {
 		String helloWorld = "Hello World!";
 		return Response.ok(helloWorld).build();
+	}
+	
+	@GET
+	@Path("/helloworldauth")
+	@Produces({ MediaType.TEXT_PLAIN })
+	public Response HelloWorldAuth() {
+		if(checkAuth()) {
+			String helloWorld = "Hello World!";
+			return Response.ok(helloWorld).build();
+		} else {
+			return Response.status(401).build();
+		}
+	}
+	
+	private boolean checkAuth() {
+		String sessionId = request.getSession(true).getId();
+		return requestProcessor.isSessionAuthenticated(sessionId);
 	}
 }
