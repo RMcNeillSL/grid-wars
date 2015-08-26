@@ -8,6 +8,7 @@ import java.util.Date;
 import org.joda.time.DateTime;
 
 import com.majaro.gridwars.dao.EntityManager;
+import com.majaro.gridwars.entities.User;
 
 public class RequestProcessor {
 
@@ -15,11 +16,14 @@ public class RequestProcessor {
 	private ArrayList<Session> activeSessions;
 	private static final String PERSISTENCE_UNIT = "gridwars";
 	private final EntityManager dao;
+	private Thread sessionCleanUpThread;
+	private Runnable sessionCleanUp;
 	
 	public RequestProcessor() {
 		this.activeGameLobbys = new ArrayList<GameLobby>();
 		this.activeSessions = new ArrayList<Session>();
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
+//		 initialiseSessionCleanUp();
 	}
 	
 	private String GenerateUniqueGameLobbyId() {
@@ -103,35 +107,62 @@ public class RequestProcessor {
 		return this.activeGameLobbys;
 	}
 	
+	private void initialiseSessionCleanUp() {
+		 this.sessionCleanUp = new Runnable() {
+			public void run() {
+				while(true) {
+					if(activeSessions.size() > 0) {
+						for(Session s : activeSessions) {
+							if(s.getSessionExpiry().isBefore(new DateTime())) {
+								int sessionIndex = activeSessions.indexOf(s);
+								activeSessions.remove(sessionIndex);
+							}
+						}
+					}
+					
+					try {
+						Thread.sleep(30000);
+					} catch (InterruptedException e) {
+						System.out.println(e.getMessage());
+					}
+				}
+			}
+		 };
+		 
+		 this.sessionCleanUpThread = new Thread(sessionCleanUp);
+		 this.sessionCleanUpThread.start();
+	}
+	
 	private void addNewSession(String sessionId, int userId) {
 		Session session = new Session(sessionId, userId);
 		this.activeSessions.add(session);
 	}
 	
-	public void extendSessionExpiry(String sessionId) {
-		int index = -1;
+	public User getUser(String sessionId) {
+		int userId = -1;
 		
-		for(Session s: activeSessions) {
-			if(s.sessionId == sessionId) {
-				index = activeSessions.indexOf(s);
+		for(Session s : activeSessions) {
+			if(s.getSessionId() == sessionId) {
+				userId = s.getUserId();
+				break;
 			}
 		}
 		
-		if(index != -1) {
-			activeSessions.get(index).extendSessionExpiry();
-		}
+		return dao.getUser(userId);
 	}
 	
 	public boolean isSessionAuthenticated(String sessionId) {
-		boolean exists = false;
+		boolean authenticated = false;
 		
-		for(Session s: activeSessions) {
-			if(s.sessionId == sessionId) {
-				exists = true;
+		for(Session s : activeSessions) {
+			if(s.getSessionId() == sessionId) {
+				s.extendSessionExpiry();
+				authenticated = true;
+				break;
 			}
 		}
 				
-		return exists;
+		return authenticated;
 	}
 	
 	public boolean authenticate(String sessionId, AuthRequest authRequest) {
@@ -142,36 +173,5 @@ public class RequestProcessor {
 		}
 		
 		return userId > -1; 
-	}
-	
-	protected class Session {
-		private String sessionId;
-		private DateTime sessionExpiry;
-		private int userId;
-		private static final int MINUTES_UNTIL_TIMEOUT = 15;
-		
-		public Session(String sessionId, int userId) {
-			this.sessionId = sessionId;
-			this.userId = userId;
-			this.sessionExpiry = new DateTime();
-			this.sessionExpiry.plusMinutes(MINUTES_UNTIL_TIMEOUT);
-		}
-		
-		public String getSessionId() {
-			return this.sessionId;
-		}
-		
-		public int getUserId() {
-			return this.userId;
-		}
-		
-		public DateTime getSessionExpiry() {
-			return this.sessionExpiry;
-		}
-		
-		public void extendSessionExpiry() {
-			
-			this.sessionExpiry.plusMinutes(MINUTES_UNTIL_TIMEOUT);
-		}
 	}
 }

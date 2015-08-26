@@ -27,6 +27,14 @@ public class User {
 		return username;
 	}
 	
+	public String bytesToHex(byte[] in) {
+	    final StringBuilder builder = new StringBuilder();
+	    for(byte b : in) {
+	        builder.append(String.format("%02x", b));
+	    }
+	    return builder.toString();
+	}
+	
 	public boolean validateCredentials(String passAttempt) {
 		passAttempt += salt;
 		String hashedPassAttempt = null;
@@ -35,12 +43,12 @@ public class User {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			md.update(passAttempt.getBytes("UTF-8"));
 			byte[] digest = md.digest();
-			hashedPassAttempt = new String(digest, "UTF-8");
+			hashedPassAttempt = bytesToHex(digest);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 
-		return hashedPassAttempt == password;
+		return hashedPassAttempt.equals(password);
 	}
 
 	public static class Views {
