@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('gridWarsApp.login', ['ngRoute'])
+angular.module('gridWarsApp.c_login', ['gridWarsApp.f_login'])
 
-.controller('loginCtrl', [function () {
-
-}]);
+.controller('loginCtrl', function (loginFcty) {
+	loginFcty.print();
+});

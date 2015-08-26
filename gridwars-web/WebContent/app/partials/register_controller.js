@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('gridWarsApp.register', ['ngRoute'])
+angular.module('gridWarsApp.c_register', ['ngRoute'])
 
 .controller('registerCtrl', [function() {
 

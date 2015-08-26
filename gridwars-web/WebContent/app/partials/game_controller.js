@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('gridWarsApp.game', ['ngRoute'])
+angular.module('gridWarsApp.c_game', ['ngRoute'])
 
 .controller('gameCtrl', [function() {
 
