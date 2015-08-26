@@ -23,13 +23,16 @@ public class EntityManager implements EntityManagerInterface {
 		try {
 			User user;
 			em.getTransaction().begin();
-			Query query = em.createQuery("SELECT username, password, salt WHERE username = :user");
+			Query query = em.createQuery("SELECT u.username, u.password, u.salt FROM users u WHERE u.username = :user");
 			query.setParameter("user", usernameAttempt);
 			user = (User)query.getSingleResult(); 
 			em.getTransaction().commit();
 			
 			userId = user != null && user.validateCredentials(passwordAttempt) ?
 					user.getId() : -1;
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());
 		}
 		finally {
 			em.close();
