@@ -15,21 +15,27 @@ public class EntityManager implements EntityManagerInterface {
 		this.persistenceUnit = persistenceUnit;
 	}
 	
-	public User getUser(String id) {
-		User user;
+	public int Authenticate(String usernameAttempt, String passwordAttempt) {
+		int userId = -1;
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
 		javax.persistence.EntityManager em = emf.createEntityManager();
 		
 		try {
+			User user;
 			em.getTransaction().begin();
-			user = em.find(User.class, id);
+			Query query = em.createQuery("SELECT username, password, salt WHERE username = :user");
+			query.setParameter("user", usernameAttempt);
+			user = (User)query.getSingleResult(); 
 			em.getTransaction().commit();
+			
+			userId = user != null && user.validateCredentials(passwordAttempt) ?
+					user.getId() : -1;
 		}
 		finally {
 			em.close();
 			emf.close();
 		}
 		
-		return user;
+		return userId;
 	}
 }
