@@ -2,14 +2,14 @@
 
 (function () {
 	
-	function registerController () {
+	function RegisterController () {
 	}
-	registerController.prototype = {
+	RegisterController.prototype = {
 			login: function () {
 				
 			}
 	}
 
 	
-	angular.module('gridWarsApp.register.module').controller('gridWarsApp.register.controller', registerController);
+	angular.module('gridWarsApp.register.module').controller('gridWarsApp.register.controller', RegisterController);
 }());

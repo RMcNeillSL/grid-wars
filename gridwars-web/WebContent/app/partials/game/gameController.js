@@ -2,13 +2,13 @@
 
 (function () {
 	
-	function gameController () {
+	function GameController () {
 	}
-	gameController.prototype = {
+	GameController.prototype = {
 			login: function () {
 				
 			}
 	}
 
-	angular.module('gridWarsApp.game.module').controller('gridWarsApp.game.controller', gameController);
+	angular.module('gridWarsApp.game.module').controller('gridWarsApp.game.controller', GameController);
 }());

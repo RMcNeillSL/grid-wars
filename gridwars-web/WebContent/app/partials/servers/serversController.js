@@ -2,14 +2,14 @@
 
 (function () {
 	
-	function serversController () {
+	function ServersController () {
 	}
-	serversController.prototype = {
+	ServersController.prototype = {
 			login: function () {
 				
 			}
 	}
 
 	
-	angular.module('gridWarsApp.servers.module').controller('gridWarsApp.servers.controller', serversController);
+	angular.module('gridWarsApp.servers.module').controller('gridWarsApp.servers.controller', ServersController);
 }());
