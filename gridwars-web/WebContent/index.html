@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>Grid Wars</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-route.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-resource.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -15,13 +15,34 @@
 <body>
 <div ng-view></div>
     <script src="app/app.js"></script>
-    <script src="app/partials/create_controller.js"></script>
-    <script src="app/partials/game_controller.js"></script>
-    <script src="app/partials/lobby_controller.js"></script>
-    <script src="app/partials/login_controller.js"></script>
-    <script src="app/partials/register_controller.js"></script>
-    <script src="app/partials/results_controller.js"></script>
-    <script src="app/partials/server_controller.js"></script>
-    <link href="app/app.css" rel="stylesheet" type="text/css">
+    
+    <script src="app/partials/create/createModule.js"></script>
+    <script src="app/partials/create/createController.js"></script>
+    <script src="app/partials/create/createDirective.js"></script>
+    
+    <script src="app/partials/game/gameModule.js"></script>
+    <script src="app/partials/game/gameController.js"></script>
+    <script src="app/partials/game/gameDirective.js"></script>
+    
+    <script src="app/partials/lobby/lobbyModule.js"></script>
+    <script src="app/partials/lobby/lobbyController.js"></script>
+    <script src="app/partials/lobby/lobbyDirective.js"></script>
+        
+    <script src="app/partials/login/loginModule.js"></script>
+    <script src="app/partials/login/loginController.js"></script>
+    <script src="app/partials/login/loginDirective.js"></script>
+    
+    <script src="app/partials/register/registerModule.js"></script>
+    <script src="app/partials/register/registerController.js"></script>
+    <script src="app/partials/register/registerDirective.js"></script>
+    
+    <script src="app/partials/results/resultsModule.js"></script>
+    <script src="app/partials/results/resultsController.js"></script>
+    <script src="app/partials/results/resultsDirective.js"></script>
+    
+    <script src="app/partials/servers/serversModule.js"></script>
+    <script src="app/partials/servers/serversController.js"></script>
+    <script src="app/partials/servers/serversDirective.js"></script>
+    
 </body>
 </html>

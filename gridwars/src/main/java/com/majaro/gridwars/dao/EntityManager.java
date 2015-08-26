@@ -6,6 +6,7 @@ import com.majaro.gridwars.entities.User;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 public class EntityManager implements EntityManagerInterface {
 	
@@ -23,9 +24,10 @@ public class EntityManager implements EntityManagerInterface {
 		try {
 			User user;
 			em.getTransaction().begin();
-			Query query = em.createQuery("SELECT u.username, u.password, u.salt FROM users u WHERE u.username = :user");
+			String sql = "SELECT u FROM User u WHERE u.username = :user";
+			TypedQuery<User> query = em.createQuery(sql, User.class);
 			query.setParameter("user", usernameAttempt);
-			user = (User)query.getSingleResult(); 
+			user = query.getSingleResult();
 			em.getTransaction().commit();
 			
 			userId = user != null && user.validateCredentials(passwordAttempt) ?
@@ -40,5 +42,26 @@ public class EntityManager implements EntityManagerInterface {
 		}
 		
 		return userId;
+	}
+	
+	public User getUser(int userId) {
+		User user = null;
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
+		javax.persistence.EntityManager em = emf.createEntityManager();
+		
+		try {
+			em.getTransaction().begin();
+			user = em.find(User.class, userId);
+			em.getTransaction().commit();
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+		finally {
+			em.close();
+			emf.close();
+		}
+		
+		return user;
 	}
 }
