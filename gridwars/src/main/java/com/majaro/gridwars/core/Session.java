@@ -6,7 +6,7 @@ public class Session {
 	private String sessionId;
 	private DateTime sessionExpiry;
 	private int userId;
-	private static final int MINUTES_UNTIL_TIMEOUT = 1;
+	private static final int MINUTES_UNTIL_TIMEOUT = 15;
 	
 	public Session(String sessionId, int userId) {
 		this.sessionId = sessionId;

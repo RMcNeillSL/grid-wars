@@ -2,6 +2,7 @@ package com.majaro.gridwars.core;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 import org.joda.time.DateTime;
 
@@ -27,10 +28,14 @@ public class RequestProcessor {
 			public void run() {
 				while(true) {
 					if(activeSessions.size() > 0) {
-						for(Session s : activeSessions) {
-							if(s.getSessionExpiry().isBefore(new DateTime())) {
-								int sessionIndex = activeSessions.indexOf(s);
-								activeSessions.remove(sessionIndex);
+						Iterator<Session> sessionIter = activeSessions.iterator();
+						
+						while (sessionIter.hasNext()) {
+							Session session = sessionIter.next();
+							
+							if(session.getSessionExpiry().isBeforeNow())
+							{
+								sessionIter.remove();
 							}
 						}
 					}
