@@ -78,7 +78,8 @@ public class REST {
 	@Path("/game/new")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response GameNew() {
-		int responseCode = requestProcessor.NewGame();
+		String sessionId = request.getSession(true).getId();
+		int responseCode = requestProcessor.newGame(sessionId);
 		if (responseCode == 200) {
 			return Response.ok().build();
 		} else {
@@ -90,7 +91,7 @@ public class REST {
 	@Path("/game/list")
 	@JsonView(GameLobby.Views.Summary.class)
 	public Response GameList() {
-		ArrayList<GameLobby> gameLobbys = requestProcessor.ListGames();
+		ArrayList<GameLobby> gameLobbys = requestProcessor.listGames();
 		return Response.ok(gameLobbys).build();
 	}
 	
@@ -98,7 +99,7 @@ public class REST {
 	@Path("/game/join{lobbyId}")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response GameJoin(@PathParam("lobbyId") int lobbyId) {
-		int responseCode = requestProcessor.JoinGame(lobbyId);
+		int responseCode = requestProcessor.joinGame(lobbyId);
 		if (responseCode == 200) {
 			return Response.ok().build();
 		} else {
@@ -110,7 +111,7 @@ public class REST {
 	@Path("/game/start")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response GameStart() {
-		int responseCode = requestProcessor.StartGame();
+		int responseCode = requestProcessor.startGame();
 		if (responseCode == 200) {
 			return Response.ok().build();
 		} else {
