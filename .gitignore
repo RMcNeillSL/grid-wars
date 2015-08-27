@@ -3,7 +3,7 @@ gridwars/target/
 gridwars-web/target/
 ~$*.ods
 .recommenders/
-
+.classpath
 
 # Compiled source
 *.com
