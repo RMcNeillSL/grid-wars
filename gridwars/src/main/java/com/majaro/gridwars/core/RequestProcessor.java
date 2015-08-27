@@ -24,7 +24,7 @@ public class RequestProcessor {
 		this.activeGameLobbys = new ArrayList<GameLobby>();
 		this.activeSessions = new ArrayList<Session>();
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
-//		 initialiseSessionCleanUp();
+		initialiseSessionCleanUp();
 	}
 	
 	private String GenerateUniqueGameLobbyId() {
@@ -76,6 +76,14 @@ public class RequestProcessor {
 		// Return determined response
 		return ResponseCode;
 		
+	}
+	
+	int t = 0;
+	public void test() throws InterruptedException {
+		t++;
+		Thread.sleep(10000);
+		t++;
+		System.out.println(t);
 	}
 
 	public int joinGame(int lobbyId) {
