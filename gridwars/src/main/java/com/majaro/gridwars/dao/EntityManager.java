@@ -24,7 +24,7 @@ public class EntityManager implements EntityManagerInterface {
 		try {
 			User user;
 			em.getTransaction().begin();
-			String sql = "SELECT u FROM User u WHERE u.username = :user";
+			String sql = "SELECT u FROM User u WHERE UPPER(u.username) = UPPER(:user)";
 			TypedQuery<User> query = em.createQuery(sql, User.class);
 			query.setParameter("user", usernameAttempt);
 			user = query.getSingleResult();
