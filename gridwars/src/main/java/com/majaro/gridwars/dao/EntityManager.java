@@ -44,7 +44,6 @@ public class EntityManager implements EntityManagerInterface {
 		return userId;
 	}
 	
-	// Response 1 = success, 0 = already exists, -1 = server error
 	public int register(String newUsername, String newPassword) {
 		int response = 500;
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
