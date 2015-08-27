@@ -38,14 +38,13 @@ public class User {
 	
 	public void setPassword(String newPass) {
 		salt = generateSalt();
-		newPass += salt;
 		password = SHA512Hash(newPass);
 	}
 	
 	private String generateSalt() {
 		SecureRandom random = new SecureRandom();
 		String newSalt = new BigInteger(130, random).toString(32);
-		return newSalt.substring(0, 15);
+		return newSalt.substring(0, 16);
     }
 	
 	private String bytesToHex(byte[] in) {
