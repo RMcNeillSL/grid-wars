@@ -179,4 +179,8 @@ public class RequestProcessor {
 		
 		return userId > -1; 
 	}
+	
+	public void register(String username, String password) {
+		dao.Register(username, password);
+	}
 }

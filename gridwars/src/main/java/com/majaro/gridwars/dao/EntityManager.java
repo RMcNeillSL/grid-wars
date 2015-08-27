@@ -44,6 +44,27 @@ public class EntityManager implements EntityManagerInterface {
 		return userId;
 	}
 	
+	public void Register(String username, String password) {
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
+		javax.persistence.EntityManager em = emf.createEntityManager();
+		
+		try {
+			User user = new User();
+			em.getTransaction().begin();
+			user.setUsername(username);
+			user.setPassword(password);
+			em.persist(user);
+			em.getTransaction().commit();
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+		finally {
+			em.close();
+			emf.close();
+		}
+	}
+	
 	public User getUser(int userId) {
 		User user = null;
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
