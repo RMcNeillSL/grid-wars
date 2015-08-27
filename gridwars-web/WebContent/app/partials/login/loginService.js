@@ -6,11 +6,8 @@
 		this.$http = $http;
 	}
 	LoginService.prototype = {
-			sendLogin: function (username, password) {
-				this.$http.post("/gridwars/rest/auth", {
-					"usernameAttempt": username,
-					"passwordAttempt": password
-				})
+			sendLogin: function (auth) {
+				this.$http.post("/gridwars/rest/auth", auth)
 			}
 	}
 	
