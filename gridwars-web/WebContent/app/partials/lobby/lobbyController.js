@@ -2,14 +2,14 @@
 
 (function () {
 	
-	function lobbyController () {
+	function LobbyController () {
 	}
-	lobbyController.prototype = {
+	LobbyController.prototype = {
 			login: function () {
 				
 			}
 	}
 
 	
-	angular.module('gridWarsApp.lobby.module').controller('gridWarsApp.lobby.controller', lobbyController);
+	angular.module('gridWarsApp.lobby.module').controller('gridWarsApp.lobby.controller', LobbyController);
 }());

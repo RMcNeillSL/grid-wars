@@ -2,14 +2,16 @@
 
 (function () {
 	
-	function loginController () {
+	function LoginController (loginService) {
+		this.loginService = loginService;
 	}
-	loginController.prototype = {
+	LoginController.prototype = {
 			login: function () {
-				
+				this.loginService.sendLogin();
 			}
 	}
-
 	
-	angular.module('gridWarsApp.login.module').controller('gridWarsApp.login.controller', loginController);
+	LoginController.$inject = ['gridWarsApp.login.service'];
+	
+	angular.module('gridWarsApp.login.module').controller('gridWarsApp.login.controller', LoginController);
 }());

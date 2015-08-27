@@ -43,28 +43,42 @@ public class RequestProcessor {
 		return lobbyId;
 	}
 
-	public int NewGame() {
+	public int newGame(String sessionId) {
 		
 		// Declare/initialise variables
 		int ResponseCode = 200;
 		
 		// Attempt - create new game 
-//		try {
+		try {
+			
+			// Check player isnt already in the lobby
+			boolean inGame = false;
+			User user = this.getUserFromSessionId(sessionId);
+			if (user != null) {
+				for (GameLobby gameLobby : this.activeGameLobbys) {
+					if (gameLobby.includesUser(user)) {
+						inGame = true;
+						break;
+					}
+				}
+			}
 			
 			// Create new game lobby
-			GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId());
-			this.activeGameLobbys.add(gameLobby);
+			if (user != null && !inGame) {
+				GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user);
+				this.activeGameLobbys.add(gameLobby);
+			}
 			
-//		} catch (Exception e) {
-//			ResponseCode = 500;
-//		}
-//		
+		} catch (Exception e) {
+			ResponseCode = 500;
+		}
+		
 		// Return determined response
 		return ResponseCode;
 		
 	}
 
-	public int JoinGame(int lobbyId) {
+	public int joinGame(int lobbyId) {
 		
 		// Declare/initialise variables
 		int ResponseCode = 200;
@@ -87,7 +101,7 @@ public class RequestProcessor {
 		
 	}
 
-	public int StartGame() {
+	public int startGame() {
 		
 		// Declare/initialise variables
 		int ResponseCode = 200;
@@ -104,7 +118,7 @@ public class RequestProcessor {
 		
 	}
 	
-	public ArrayList<GameLobby> ListGames() {
+	public ArrayList<GameLobby> listGames() {
 		return this.activeGameLobbys;
 	}
 	
@@ -143,7 +157,7 @@ public class RequestProcessor {
 		this.activeSessions.add(session);
 	}
 	
-	public User getUser(String sessionId) {
+	public User getUserFromSessionId(String sessionId) {
 		int userId = -1;
 		
 		for(Session s : activeSessions) {
