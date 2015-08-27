@@ -1,3 +1,16 @@
 <div class="gwa-testing">
 	<h1>TESTING PAGE</h1>
+
+	<section>
+		<form ng-submit="controller.login(username, password)" class="col-md-3">
+			<input style="margin-bottom: 5px" type="text" placeholder="Username" ng-model="username" id="username" class="form-control">
+			<input style="margin-bottom: 5px" type="text" placeholder="Password" ng-model="password" id="password" class="form-control">
+			<input style="margin-bottom: 5px" type="submit" value="Login">
+		</form>
+		<div ng-repeat="lobby in lobbyList">
+		Lobby #{{$index}} : [Id] {{lobby.lobbyId}}</b></div>
+		<button style="margin: 5px" ng-click="controller.newLobby()">New Lobby</button>
+		<input style="margin: 5px" type="text" ng-model="lobbyId">
+		<button style="margin: 5px" ng-click="controller.joinLobby(lobbyId)">Join Lobby</button>
+	</section>
 </div>
