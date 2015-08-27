@@ -185,7 +185,7 @@ public class RequestProcessor {
 	}
 	
 	public boolean authenticate(String sessionId, AuthRequest authRequest) {
-		int userId = dao.Authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
+		int userId = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
 		
 		if(userId > -1) {
 			addNewSession(sessionId, userId);
@@ -194,7 +194,7 @@ public class RequestProcessor {
 		return userId > -1; 
 	}
 	
-	public void register(String username, String password) {
-		dao.Register(username, password);
+	public int register(RegRequest regRequest) {
+		return dao.register(regRequest.getNewUsername(), regRequest.getNewPassword());
 	}
 }

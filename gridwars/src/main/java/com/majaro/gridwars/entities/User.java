@@ -44,7 +44,8 @@ public class User {
 	
 	private String generateSalt() {
 		SecureRandom random = new SecureRandom();
-		salt = new BigInteger(130, random).toString(16);
+		String newSalt = new BigInteger(130, random).toString(32);
+		return newSalt.substring(0, 15);
     }
 	
 	private String bytesToHex(byte[] in) {

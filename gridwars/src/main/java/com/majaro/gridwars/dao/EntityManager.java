@@ -16,7 +16,7 @@ public class EntityManager implements EntityManagerInterface {
 		this.persistenceUnit = persistenceUnit;
 	}
 	
-	public int Authenticate(String usernameAttempt, String passwordAttempt) {
+	public int authenticate(String usernameAttempt, String passwordAttempt) {
 		int userId = -1;
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
 		javax.persistence.EntityManager em = emf.createEntityManager();
@@ -44,17 +44,32 @@ public class EntityManager implements EntityManagerInterface {
 		return userId;
 	}
 	
-	public void Register(String username, String password) {
+	// Response 1 = success, 0 = already exists, -1 = server error
+	public int register(String newUsername, String newPassword) {
+		int response = 500;
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
 		javax.persistence.EntityManager em = emf.createEntityManager();
 		
 		try {
-			User user = new User();
+			User user;
 			em.getTransaction().begin();
-			user.setUsername(username);
-			user.setPassword(password);
-			em.persist(user);
+			String sql = "SELECT u FROM User u WHERE u.username = :user";
+			TypedQuery<User> query = em.createQuery(sql, User.class);
+			query.setParameter("user", newUsername);
+			int userCount = query.getResultList().size();
 			em.getTransaction().commit();
+			
+			if(userCount == 0) {
+				em.getTransaction().begin();
+				user = new User();
+				user.setUsername(newUsername);
+				user.setPassword(newPassword);
+				em.persist(user);
+				em.getTransaction().commit();
+				response = 200;
+			} else {
+				response = 400;
+			}
 		}
 		catch(Exception e) {
 			System.out.println(e.getMessage());
@@ -63,6 +78,8 @@ public class EntityManager implements EntityManagerInterface {
 			em.close();
 			emf.close();
 		}
+		
+		return response;
 	}
 	
 	public User getUser(int userId) {
