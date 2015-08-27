@@ -1,12 +1,17 @@
 package com.majaro.gridwars.entities;
 
+import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Random;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.codehaus.jackson.map.annotate.JsonView;
+
+import com.majaro.gridwars.core.GameLobby;
 
 @Entity
 @Table(name = "Users")
@@ -27,7 +32,23 @@ public class User {
 		return username;
 	}
 	
-	public String bytesToHex(byte[] in) {
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	
+	public void setPassword(String newPass) {
+		salt = generateSalt();
+		newPass += salt;
+		password = SHA512Hash(newPass);
+	}
+	
+	private String generateSalt() {
+		SecureRandom random = new SecureRandom();
+		String newSalt = new BigInteger(130, random).toString(32);
+		return newSalt.substring(0, 15);
+    }
+	
+	private String bytesToHex(byte[] in) {
 	    final StringBuilder builder = new StringBuilder();
 	    for(byte b : in) {
 	        builder.append(String.format("%02x", b));
@@ -35,20 +56,24 @@ public class User {
 	    return builder.toString();
 	}
 	
-	public boolean validateCredentials(String passAttempt) {
-		passAttempt += salt;
+	private String SHA512Hash(String input) {
+		input += salt;
 		String hashedPassAttempt = null;
 		
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			md.update(passAttempt.getBytes("UTF-8"));
+			md.update(input.getBytes("UTF-8"));
 			byte[] digest = md.digest();
 			hashedPassAttempt = bytesToHex(digest);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-
-		return hashedPassAttempt.equals(password);
+		
+		return hashedPassAttempt;
+	}
+	
+	public boolean validateCredentials(String passAttempt) {
+		return SHA512Hash(passAttempt).equals(password);
 	}
 
 	public static class Views {

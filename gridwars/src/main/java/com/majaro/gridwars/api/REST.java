@@ -17,6 +17,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 import com.majaro.gridwars.core.AuthRequest;
 import com.majaro.gridwars.core.GameLobby;
+import com.majaro.gridwars.core.RegRequest;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
@@ -41,32 +42,11 @@ public class REST {
 		}
 	}
 	
-	@GET
-	@Path("/session")
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response getSession() {
-		String sessionId = request.getSession(true).getId();
-		return Response.ok(sessionId).build();
-	}
-
-	@GET
-	@Path("/helloworld")
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response HelloWorld() {
-		String helloWorld = "Hello World!";
-		return Response.ok(helloWorld).build();
-	}
-
-	@GET
-	@Path("/helloworldauth")
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response HelloWorldAuth() {
-		if(checkAuth()) {
-			String helloWorld = "Hello World!";
-			return Response.ok(helloWorld).build();
-		} else {
-			return Response.status(401).build();
-		}
+	@POST
+	@Path("/register")
+	public Response Register(RegRequest regRequest) {
+		int response = requestProcessor.register(regRequest);
+		return Response.status(response).build();
 	}
 	
 	private boolean checkAuth() {
