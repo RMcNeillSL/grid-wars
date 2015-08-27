@@ -9,7 +9,7 @@ angular.module('gridWarsApp', [
   'gridWarsApp.lobby.module',
   'gridWarsApp.register.module',
   'gridWarsApp.results.module',
-  'gridWarsApp.servers.module'  
+  'gridWarsApp.servers.module'
 ]).
 config(['$routeProvider', function($routeProvider) {
 	$routeProvider.when('/create', {template: '<gwa-create></gwa-create>'});

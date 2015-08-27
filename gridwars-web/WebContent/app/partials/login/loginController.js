@@ -2,11 +2,12 @@
 
 (function () {
 	
-	function LoginController () {
+	function LoginController (loginService) {
+		this.loginService = loginService;
 	}
 	LoginController.prototype = {
 			login: function () {
-				
+				this.loginService.sendLogin();
 			}
 	}
 	
