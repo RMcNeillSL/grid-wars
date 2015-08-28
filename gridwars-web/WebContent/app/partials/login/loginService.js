@@ -20,6 +20,7 @@
 					} else {
 						console.log("ERROR: Unhandled status code: ", response.status);
 					}
+					callback(response.status);
 				});
 			}
 	}
