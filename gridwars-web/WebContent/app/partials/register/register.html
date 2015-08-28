@@ -11,6 +11,9 @@
                     <button ng-click="controller.goToLogin()" class="btn"><span class="glyphicon glyphicon-user"></span> Already Registered?</button>
                 </div>
 	        </form>
+	        <p ng-if="response === 400" style="color: red">Username already exists :(</p>
+	        <p ng-if="noUsername" style="color: red">Enter a username!</p>
+	        <p ng-if="noPassword" style="color: red">Enter a password!</p>
 	    </div>
 	</section>
 </div>
