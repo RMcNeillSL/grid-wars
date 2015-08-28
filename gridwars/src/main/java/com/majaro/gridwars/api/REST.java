@@ -12,6 +12,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -26,6 +27,7 @@ import com.majaro.gridwars.entities.User;
 @Path("/")
 public class REST {
 	private final static RequestProcessor requestProcessor = new RequestProcessor();
+	private final Response unauthResponse = Response.status(401).build();
 	
 	@Context private HttpServletRequest request;
 	
@@ -57,16 +59,6 @@ public class REST {
 		return Response.status(response).build();
 	}
 	
-	@GET
-	@Path("/testauth")
-	public Response TestAuth() {
-		if(checkAuth()) {
-			return Response.ok().build();
-		}
-		
-		return Response.status(401).build();
-	}
-	
 	@POST
 	@Path("/logout")
 	// Does not return anything, if the user is logged in
@@ -79,7 +71,7 @@ public class REST {
 			return Response.ok().build();
 		}
 		
-		return Response.status(401).build();
+		return unauthResponse;
 	}
 	
 	private boolean checkAuth() {
@@ -91,45 +83,61 @@ public class REST {
 	@Path("/game/new")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response GameNew() {
-		String sessionId = request.getSession(true).getId();
-		int responseCode = requestProcessor.newGame(sessionId);
-		if (responseCode == 200) {
-			return Response.ok().build();
-		} else {
-			return Response.status(500).build();
+		if(checkAuth()) {
+			String sessionId = request.getSession(true).getId();
+			int responseCode = requestProcessor.newGame(sessionId);
+			if (responseCode == 200) {
+				return Response.ok().build();
+			} else {
+				return Response.status(500).build();
+			}
 		}
+		
+		return unauthResponse;
 	}
 
 	@GET
 	@Path("/game/list")
 	@JsonView(GameLobby.Views.Summary.class)
 	public Response GameList() {
-		ArrayList<GameLobby> gameLobbys = requestProcessor.listGames();
-		return Response.ok(gameLobbys).build();
+		if(checkAuth()) {
+			ArrayList<GameLobby> gameLobbys = requestProcessor.listGames();
+			return Response.ok(gameLobbys).build();
+		}
+		
+		return unauthResponse;
 	}
 	
 	@GET
 	@Path("/game/join{lobbyId}")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response GameJoin(@PathParam("lobbyId") int lobbyId) {
-		int responseCode = requestProcessor.joinGame(lobbyId);
-		if (responseCode == 200) {
-			return Response.ok().build();
-		} else {
-			return Response.status(500).build();
+		if(checkAuth()) {
+			int responseCode = requestProcessor.joinGame(lobbyId);
+			if (responseCode == 200) {
+				return Response.ok().build();
+			} else {
+				return Response.status(500).build();
+			}
 		}
+		
+		return unauthResponse;
 	}
 
 	@GET
 	@Path("/game/start")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response GameStart() {
-		int responseCode = requestProcessor.startGame();
-		if (responseCode == 200) {
-			return Response.ok().build();
-		} else {
-			return Response.status(500).build();
+		if(checkAuth()) {
+			int responseCode = requestProcessor.startGame();
+			if (responseCode == 200) {
+				return Response.ok().build();
+			} else {
+				return Response.status(500).build();
+			}
 		}
+		
+		return unauthResponse;
 	}
 	
 }

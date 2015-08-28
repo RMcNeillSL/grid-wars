@@ -6,8 +6,22 @@
 		this.$http = $http;
 	}
 	LoginService.prototype = {
-			sendLogin: function (auth) {
-				this.$http.post("/gridwars/rest/auth", auth)
+			sendLogin: function (auth, callback) {
+				this.$http.post("/gridwars/rest/auth", auth).then(function (response) {
+					console.log("Login successful!");
+					callback(response.status);
+				}, function (response) {
+					if (response.status === 401) {
+						alert("Username or password invalid");
+					} else if (response.status === 409) {
+						alert("Username already logged in");
+					} else if (response.status === 500) {
+						alert("Internal server error");
+					} else {
+						console.log("ERROR: Unhandled status code: ", response.status);
+					}
+					callback(response.status);
+				});
 			}
 	}
 	
