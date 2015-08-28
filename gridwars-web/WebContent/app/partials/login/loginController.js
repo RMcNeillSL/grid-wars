@@ -31,8 +31,6 @@
 	LoginController.prototype = {
 			login: function (username, password) {
 				var auth = this.createAuthRequest(username, password);
-				console.log("USERNAME: ", username);
-				console.log("PASSWORD: ", password);
 				this.loginService.sendLogin(auth);
 				//this.$scope.username = "";
 				//this.$scope.password = "";
