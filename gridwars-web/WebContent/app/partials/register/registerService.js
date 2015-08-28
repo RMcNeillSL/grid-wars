@@ -7,7 +7,15 @@
 	}
 	RegisterService.prototype = {
 			sendRegister: function (register) {
-				this.$http.post("/gridwars/rest/register", register) //TODO: ERROR CHECKING
+				this.$http.post("/gridwars/rest/register", register).then(function (response) {
+					console.log("New user created");
+				}, function (response) {
+					if (response.status === 400) {
+						alert("Username already exists");
+					} else if (response.status === 500) {
+						alert("Internal server error");
+					}
+				});
 			}
 	}
 	
