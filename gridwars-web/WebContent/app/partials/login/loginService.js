@@ -7,7 +7,17 @@
 	}
 	LoginService.prototype = {
 			sendLogin: function (auth) {
-				this.$http.post("/gridwars/rest/auth", auth) //TODO: ERROR CHECKING
+				this.$http.post("/gridwars/rest/auth", auth).then(function (response) {
+					console.log("log in successful!");
+				}, function (response) {
+					if (response.status === 401) {
+						alert("Username or password invalid");
+					} else if (response.status === 409) {
+						alert("Username already logged in");
+					} else if (response.status === 500) {
+						alert("Internal server error");
+					}
+				});
 			}
 	}
 	
