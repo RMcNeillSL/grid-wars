@@ -3,9 +3,10 @@
 	
 	<section>
 		<div>
-	        <form ng-submit="controller.register(username, password)" class="col-md-5 col-md-offset-1">
+	        <form ng-submit="controller.register(username, password1, password2)" class="col-md-5 col-md-offset-1">
                 <input type="text" placeholder="Username" ng-model="username" id="username" class="form-control">
-                <input type="password" placeholder="Password" ng-model="password" id="password" class="form-control">
+                <input type="password" placeholder="Password" ng-model="password1" id="password1" class="form-control">
+                <input type="password" placeholder="Password Confirmation" ng-model="password2" id="password2" class="form-control">
                 <div class="row">
                     <button class="btn"><span class="glyphicon glyphicon-user"></span> Register</button>
                     <button ng-click="controller.goToLogin()" class="btn"><span class="glyphicon glyphicon-user"></span> Already Registered?</button>
@@ -14,6 +15,7 @@
 	        <p ng-if="response === 400" style="color: red">Username already exists :(</p>
 	        <p ng-if="noUsername" style="color: red">Enter a username!</p>
 	        <p ng-if="noPassword" style="color: red">Enter a password!</p>
+	        <p ng-if="passwordMatch" style="color: red">Passwords do not match!</p>
 	    </div>
 	</section>
 </div>

@@ -27,27 +27,32 @@
 	};
 
 	RegisterController.prototype = {
-			register: function (username, password) {
+			register: function (username, password1, password2) {
 				var _this = this;
 				_this.$scope.noPassword = false;
 				_this.$scope.noUsername = false;
+				_this.$scope.passwordMatch = true;
 
-				if(username && password) {
-					password = CryptoJS.MD5(password).toString();
-					var register = this.createRegisterRequest(username, password);
-					this.registerService.sendRegister(register, function(response) {
-						_this.$scope.response = response;
-						if (response === 200) {
-							_this.changeView('/login');
-						}
-					});
-				} else if (username) {
-					_this.$scope.noPassword = true;
-				} else if (password) {
-					_this.$scope.noUsername = true;
+				if (password1 === password2) {
+					if(username && password) {
+						password = CryptoJS.MD5(password).toString();
+						var register = this.createRegisterRequest(username, password);
+						this.registerService.sendRegister(register, function(response) {
+							_this.$scope.response = response;
+							if (response === 200) {
+								_this.changeView('/login');
+							}
+						});
+					} else if (username) {
+						_this.$scope.noPassword = true;
+					} else if (password) {
+						_this.$scope.noUsername = true;
+					} else {
+						_this.$scope.noPassword = true;
+						_this.$scope.noUsername = true;
+					}
 				} else {
-					_this.$scope.noPassword = true;
-					_this.$scope.noUsername = true;
+					_this.$scope.noPasswordMatch = false;
 				}
 			},
 
