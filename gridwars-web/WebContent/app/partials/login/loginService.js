@@ -2,14 +2,16 @@
 
 (function () {
 	
-	function LoginService () {
-
+	function LoginService ($http) {
+		this.$http = $http;
 	}
 	LoginService.prototype = {
-			sendLogin: function () {
-
+			sendLogin: function (auth) {
+				this.$http.post("/gridwars/rest/auth", auth)
 			}
 	}
+	
+	LoginService.$inject = ['$http'];
 	
 	angular.module('gridWarsApp.login.module').service('gridWarsApp.login.service', LoginService);
 }());
