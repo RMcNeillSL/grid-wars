@@ -8,6 +8,9 @@ import java.util.Iterator;
 
 import org.joda.time.DateTime;
 
+import com.corundumstudio.socketio.Configuration;
+import com.corundumstudio.socketio.SocketIOServer;
+import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
 
@@ -19,22 +22,40 @@ public class RequestProcessor {
 	private final EntityManager dao;
 	private Thread sessionCleanUpThread;
 	private Runnable sessionCleanUp;
-	
+	private Configuration config;
+	private SocketIOServer server;
+
 	public RequestProcessor() {
 		this.activeGameLobbys = new ArrayList<GameLobby>();
 		this.activeSessions = new ArrayList<Session>();
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
 		initialiseSessionCleanUp();
+		initSocketConfig();
+	}
+
+	private void initSocketConfig() {
+		try {
+			config = new Configuration();
+			config.setHostname("localhost");
+			config.setPort(81);
+
+			server = new SocketIOServer(config);
+			SocketService socketService = new SocketService();
+			server.addListeners(socketService);
+			server.start();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 	}
 
 	public int newGame(String sessionId) {
-		
+
 		// Declare/initialise variables
 		int ResponseCode = 200;
-		
-		// Attempt - create new game 
+
+		// Attempt - create new game
 		try {
-			
+
 			// Check player isnt already in the lobby
 			boolean inGame = false;
 			User user = this.getUserFromSessionId(sessionId);
@@ -46,131 +67,131 @@ public class RequestProcessor {
 					}
 				}
 			}
-			
+
 			// Create new game lobby
 			if (user != null && !inGame) {
 				GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user);
 				this.activeGameLobbys.add(gameLobby);
 			}
-			
+
 		} catch (Exception e) {
 			ResponseCode = 500;
 		}
-		
+
 		// Return determined response
 		return ResponseCode;
-		
+
 	}
 
 	public int joinGame(int lobbyId) {
-		
+
 		// Declare/initialise variables
 		int ResponseCode = 200;
-		
+
 		// Attempt - join a lobby identified by a given Id
 		try {
-			
+
 			for (GameLobby gameLobby : this.activeGameLobbys) {
 				if (gameLobby.canJoin()) {
-					
+
 				}
 			}
-			
+
 		} catch (Exception e) {
 			ResponseCode = 500;
 		}
-		
+
 		// Return determined response
 		return ResponseCode;
-		
+
 	}
 
 	public int startGame() {
-		
+
 		// Declare/initialise variables
 		int ResponseCode = 200;
-		
+
 		// Attempt - start a game using the currently connected lobby
 		try {
-			
+
 		} catch (Exception e) {
 			ResponseCode = 500;
 		}
-		
+
 		// Return determined response
 		return ResponseCode;
-		
+
 	}
-	
+
 	public ArrayList<GameLobby> listGames() {
 		return this.activeGameLobbys;
 	}
-	
+
 	public User getUserFromSessionId(String sessionId) {
 		int userId = -1;
-		
-		for(Session s : activeSessions) {
-			if(s.getSessionId() == sessionId) {
+
+		for (Session s : activeSessions) {
+			if (s.getSessionId() == sessionId) {
 				userId = s.getUserId();
 				break;
 			}
 		}
-		
+
 		return dao.getUser(userId);
 	}
-	
+
 	public boolean isSessionAuthenticated(String sessionId) {
 		boolean authenticated = false;
-		
-		for(Session s : activeSessions) {
-			if(s.getSessionId() == sessionId) {
+
+		for (Session s : activeSessions) {
+			if (s.getSessionId() == sessionId) {
 				s.extendSessionExpiry();
 				authenticated = true;
 				break;
 			}
 		}
-				
+
 		return authenticated;
 	}
-	
+
 	public int authenticate(String sessionId, AuthRequest authRequest) {
 		int response = 401;
 		int userId = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
-		
-		if(userId > -1) {
+
+		if (userId > -1) {
 			boolean userLoggedIn = false;
-			
-			for(Session s : activeSessions) {
-				if(s.getUserId() == userId) {
+
+			for (Session s : activeSessions) {
+				if (s.getUserId() == userId) {
 					userLoggedIn = true;
 					break;
 				}
 			}
-			
-			if(!userLoggedIn) {
+
+			if (!userLoggedIn) {
 				addNewSession(sessionId, userId);
 				response = 200;
 			} else {
 				response = 409;
 			}
 		}
-		
-		return response; 
+
+		return response;
 	}
-	
+
 	public int register(RegRequest regRequest) {
 		return dao.register(regRequest.getNewUsername(), regRequest.getNewPassword());
 	}
-	
+
 	public void LogOut(String sessionId) {
-		for(Session s : activeSessions) {
-			if(s.getSessionId() == sessionId) {
+		for (Session s : activeSessions) {
+			if (s.getSessionId() == sessionId) {
 				activeSessions.remove(activeSessions.indexOf(s));
 				break;
 			}
 		}
 	}
-	
+
 	private String GenerateUniqueGameLobbyId() {
 		SecureRandom random = new SecureRandom();
 		boolean lobbyIdReserved = true;
@@ -186,24 +207,23 @@ public class RequestProcessor {
 		}
 		return lobbyId;
 	}
-	
+
 	private void initialiseSessionCleanUp() {
-		 this.sessionCleanUp = new Runnable() {
+		this.sessionCleanUp = new Runnable() {
 			public void run() {
-				while(true) {
-					if(activeSessions.size() > 0) {
+				while (true) {
+					if (activeSessions.size() > 0) {
 						Iterator<Session> sessionIter = activeSessions.iterator();
-						
+
 						while (sessionIter.hasNext()) {
 							Session session = sessionIter.next();
-							
-							if(session.getSessionExpiry().isBeforeNow())
-							{
+
+							if (session.getSessionExpiry().isBeforeNow()) {
 								sessionIter.remove();
 							}
 						}
 					}
-					
+
 					try {
 						Thread.sleep(30000);
 					} catch (InterruptedException e) {
@@ -211,12 +231,12 @@ public class RequestProcessor {
 					}
 				}
 			}
-		 };
-		 
-		 this.sessionCleanUpThread = new Thread(sessionCleanUp);
-		 this.sessionCleanUpThread.start();
+		};
+
+		this.sessionCleanUpThread = new Thread(sessionCleanUp);
+		this.sessionCleanUpThread.start();
 	}
-	
+
 	private void addNewSession(String sessionId, int userId) {
 		Session session = new Session(sessionId, userId);
 		this.activeSessions.add(session);
