@@ -7,7 +7,7 @@
 	}
 	LoginService.prototype = {
 			sendLogin: function (auth) {
-				this.$http.post("/gridwars/rest/auth", auth)
+				this.$http.post("/gridwars/rest/auth", auth) //TODO: ERROR CHECKING
 			}
 	}
 	
