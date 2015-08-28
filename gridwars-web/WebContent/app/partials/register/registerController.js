@@ -27,6 +27,8 @@
 	
 	RegisterController.prototype = {
 			register: function (username, password) {
+				password = CryptoJS.MD5(password).toString();
+				console.log(password);
 				var register = this.createRegisterRequest(username, password);
 				this.registerService.sendRegister(register);
 			}
