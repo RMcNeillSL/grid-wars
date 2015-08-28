@@ -35,6 +35,7 @@
 				var auth = this.createAuthRequest(username, password);
 				var _this = this;
 				this.loginService.sendLogin(auth, function(response) {
+					_this.$scope.response = response;
 					if (response === 200) {
 						_this.changeView('/servers');
 					}
