@@ -31,6 +31,7 @@
 
 	LoginController.prototype = {
 			login: function (username, password) {
+				password = CryptoJS.MD5(password).toString();
 				var auth = this.createAuthRequest(username, password);
 				var _this = this;
 				this.loginService.sendLogin(auth, function(response) {
