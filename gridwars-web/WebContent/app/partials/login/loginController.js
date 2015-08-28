@@ -2,7 +2,7 @@
 
 (function ($scope) {
 
-	function LoginController ($scope, $location, loginService) {
+	function LoginController ($scope, $location, $rootScope, loginService) {
 
 		// Save injected items
 		this.$scope = $scope;
@@ -10,7 +10,8 @@
 		this.loginService = loginService;
 
 		// Declare variables
-		$scope.username = "TestUser";		// REMOVE LATER
+		//$scope.username = "TestUser";		// REMOVE LATER
+		$scope.username = $rootScope.currentUser;
 		$scope.password = "password";		// REMOVE LATER
 
 		// Constructor functions
@@ -51,7 +52,7 @@
 			}
 	};
 
-	LoginController.$inject = ['$scope', '$location', 'gridWarsApp.login.service'];
+	LoginController.$inject = ['$scope', '$location', '$rootScope', 'gridWarsApp.login.service'];
 
 	angular.module('gridWarsApp.login.module').controller('gridWarsApp.login.controller', LoginController);
 }());

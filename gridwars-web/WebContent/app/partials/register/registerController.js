@@ -2,10 +2,11 @@
 
 (function () {
 	
-	function RegisterController ($scope, $location, registerService) {
+	function RegisterController ($scope, $location, $rootScope, registerService) {
 		// Save injected items
 		this.$scope = $scope;
 		this.$location = $location;
+		this.$rootScope = $rootScope;
 		this.registerService = registerService;
 
 		// Declare variables
@@ -32,6 +33,8 @@
 				_this.$scope.noPassword = false;
 				_this.$scope.noUsername = false;
 				_this.$scope.noPasswordMatch = false;
+
+				this.$rootScope.currentUser = username;
 
 				if (password1 === password2) {
 					if(username && password1) {
@@ -65,7 +68,7 @@
 			}
 	}
 
-	RegisterController.$inject = ['$scope', '$location', 'gridWarsApp.register.service'];
+	RegisterController.$inject = ['$scope', '$location', '$rootScope', 'gridWarsApp.register.service'];
 
 	angular.module('gridWarsApp.register.module').controller('gridWarsApp.register.controller', RegisterController);
 }());
