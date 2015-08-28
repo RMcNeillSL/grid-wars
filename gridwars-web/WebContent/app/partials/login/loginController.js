@@ -7,6 +7,7 @@
 		// Save injected items
 		this.$scope = $scope;
 		this.$location = $location;
+		this.$rootScope = $rootScope;
 		this.loginService = loginService;
 
 		// Declare variables
@@ -38,6 +39,7 @@
 				this.loginService.sendLogin(auth, function(response) {
 					_this.$scope.response = response;
 					if (response === 200) {
+						_this.$rootScope.currentUser = username;
 						_this.changeView('/servers');
 					}
 				});

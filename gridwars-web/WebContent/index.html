@@ -14,6 +14,14 @@
 </head>
 
 <body>
+<div ng-if="currentUser">
+currently logged in
+</div>
+<div ng-if="!currentUser">
+no current user
+</div>
+
+
 <div ng-view></div>
     <script src="app/app.js"></script>
 
