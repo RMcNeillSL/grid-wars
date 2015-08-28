@@ -1,43 +1,55 @@
 'use strict';
 
 (function ($scope) {
-	
-	function LoginController ($scope, loginService) {
-		
+
+	function LoginController ($scope, $location, loginService) {
+
 		// Save injected items
-		this.loginService = loginService;
 		this.$scope = $scope;
-		
+		this.$location = $location;
+		this.loginService = loginService;
+
 		// Declare variables
-		$scope.username = "TestUser";
-		$scope.password = "password";
-		
+		$scope.username = "TestUser";		// REMOVE LATER
+		$scope.password = "password";		// REMOVE LATER
+
 		// Constructor functions
 		this.createAuthRequest = function (username, password, param) {
-			
+
 			var newAuthRequest = {
 					"usernameAttempt": username,
 					"passwordAttempt": password
 			};
-			
+
 			if (param) {
-				
+
 			};
-			
+
 			return newAuthRequest;
 		};
 	};
-	
+
 	LoginController.prototype = {
 			login: function (username, password) {
 				var auth = this.createAuthRequest(username, password);
-				this.loginService.sendLogin(auth);
-				//this.$scope.username = "";
-				//this.$scope.password = "";
+				var _this = this;
+				this.loginService.sendLogin(auth, function(response) {
+					if (response === 200) {
+						_this.changeView('/servers');
+					}
+				});
+			},
+
+			goToRegister: function () {
+				this.changeView('/register');
+			},
+
+			changeView: function (path) {
+				this.$location.path(path);
 			}
 	};
-	
-	LoginController.$inject = ['$scope', 'gridWarsApp.login.service'];
-	
+
+	LoginController.$inject = ['$scope', '$location', 'gridWarsApp.login.service'];
+
 	angular.module('gridWarsApp.login.module').controller('gridWarsApp.login.controller', LoginController);
 }());
