@@ -31,12 +31,12 @@
 				var _this = this;
 				_this.$scope.noPassword = false;
 				_this.$scope.noUsername = false;
-				_this.$scope.passwordMatch = true;
+				_this.$scope.noPasswordMatch = false;
 
 				if (password1 === password2) {
-					if(username && password) {
-						password = CryptoJS.MD5(password).toString();
-						var register = this.createRegisterRequest(username, password);
+					if(username && password1) {
+						password1 = CryptoJS.MD5(password1).toString();
+						var register = this.createRegisterRequest(username, password1);
 						this.registerService.sendRegister(register, function(response) {
 							_this.$scope.response = response;
 							if (response === 200) {
@@ -45,14 +45,14 @@
 						});
 					} else if (username) {
 						_this.$scope.noPassword = true;
-					} else if (password) {
+					} else if (password1) {
 						_this.$scope.noUsername = true;
 					} else {
 						_this.$scope.noPassword = true;
 						_this.$scope.noUsername = true;
 					}
 				} else {
-					_this.$scope.noPasswordMatch = false;
+					_this.$scope.noPasswordMatch = true;
 				}
 			},
 
