@@ -26,22 +26,6 @@ public class RequestProcessor {
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
 		initialiseSessionCleanUp();
 	}
-	
-	private String GenerateUniqueGameLobbyId() {
-		SecureRandom random = new SecureRandom();
-		boolean lobbyIdReserved = true;
-		String lobbyId = new BigInteger(130, random).toString(32);
-		while (lobbyIdReserved) {
-			lobbyIdReserved = false;
-			lobbyId = new BigInteger(130, random).toString(32);
-			for (GameLobby gameLobby : this.activeGameLobbys) {
-				if (gameLobby.getLobbyId() == lobbyId) {
-					lobbyIdReserved = true;
-				}
-			}
-		}
-		return lobbyId;
-	}
 
 	public int newGame(String sessionId) {
 		
@@ -76,14 +60,6 @@ public class RequestProcessor {
 		// Return determined response
 		return ResponseCode;
 		
-	}
-	
-	int t = 0;
-	public void test() throws InterruptedException {
-		t++;
-		Thread.sleep(10000);
-		t++;
-		System.out.println(t);
 	}
 
 	public int joinGame(int lobbyId) {
@@ -130,6 +106,87 @@ public class RequestProcessor {
 		return this.activeGameLobbys;
 	}
 	
+	public User getUserFromSessionId(String sessionId) {
+		int userId = -1;
+		
+		for(Session s : activeSessions) {
+			if(s.getSessionId() == sessionId) {
+				userId = s.getUserId();
+				break;
+			}
+		}
+		
+		return dao.getUser(userId);
+	}
+	
+	public boolean isSessionAuthenticated(String sessionId) {
+		boolean authenticated = false;
+		
+		for(Session s : activeSessions) {
+			if(s.getSessionId() == sessionId) {
+				s.extendSessionExpiry();
+				authenticated = true;
+				break;
+			}
+		}
+				
+		return authenticated;
+	}
+	
+	public int authenticate(String sessionId, AuthRequest authRequest) {
+		int response = 401;
+		int userId = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
+		
+		if(userId > -1) {
+			boolean userLoggedIn = false;
+			
+			for(Session s : activeSessions) {
+				if(s.getUserId() == userId) {
+					userLoggedIn = true;
+					break;
+				}
+			}
+			
+			if(!userLoggedIn) {
+				addNewSession(sessionId, userId);
+				response = 200;
+			} else {
+				response = 409;
+			}
+		}
+		
+		return response; 
+	}
+	
+	public int register(RegRequest regRequest) {
+		return dao.register(regRequest.getNewUsername(), regRequest.getNewPassword());
+	}
+	
+	public void LogOut(String sessionId) {
+		for(Session s : activeSessions) {
+			if(s.getSessionId() == sessionId) {
+				activeSessions.remove(activeSessions.indexOf(s));
+				break;
+			}
+		}
+	}
+	
+	private String GenerateUniqueGameLobbyId() {
+		SecureRandom random = new SecureRandom();
+		boolean lobbyIdReserved = true;
+		String lobbyId = new BigInteger(130, random).toString(32);
+		while (lobbyIdReserved) {
+			lobbyIdReserved = false;
+			lobbyId = new BigInteger(130, random).toString(32);
+			for (GameLobby gameLobby : this.activeGameLobbys) {
+				if (gameLobby.getLobbyId() == lobbyId) {
+					lobbyIdReserved = true;
+				}
+			}
+		}
+		return lobbyId;
+	}
+	
 	private void initialiseSessionCleanUp() {
 		 this.sessionCleanUp = new Runnable() {
 			public void run() {
@@ -163,46 +220,5 @@ public class RequestProcessor {
 	private void addNewSession(String sessionId, int userId) {
 		Session session = new Session(sessionId, userId);
 		this.activeSessions.add(session);
-	}
-	
-	public User getUserFromSessionId(String sessionId) {
-		int userId = -1;
-		
-		for(Session s : activeSessions) {
-			if(s.getSessionId() == sessionId) {
-				userId = s.getUserId();
-				break;
-			}
-		}
-		
-		return dao.getUser(userId);
-	}
-	
-	public boolean isSessionAuthenticated(String sessionId) {
-		boolean authenticated = false;
-		
-		for(Session s : activeSessions) {
-			if(s.getSessionId() == sessionId) {
-				s.extendSessionExpiry();
-				authenticated = true;
-				break;
-			}
-		}
-				
-		return authenticated;
-	}
-	
-	public boolean authenticate(String sessionId, AuthRequest authRequest) {
-		int userId = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
-		
-		if(userId > -1) {
-			addNewSession(sessionId, userId);
-		}
-		
-		return userId > -1; 
-	}
-	
-	public int register(RegRequest regRequest) {
-		return dao.register(regRequest.getNewUsername(), regRequest.getNewPassword());
 	}
 }

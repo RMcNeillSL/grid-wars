@@ -31,12 +31,16 @@ public class REST {
 	
 	@POST
 	@Path("/auth")
+	// If session already authenticated, skips the authentication
+	// otherwise tries to authenticate the user with provided credentials
+	// if successful returns 200 (ok), 409 (conflict) if user already logged in
+	// and 401 if incorrect credentials were provided.
 	public Response Authenticate(AuthRequest authRequest) {
 		String sessionId = request.getSession(true).getId();
 		
 		if(!requestProcessor.isSessionAuthenticated(sessionId)) {
-			boolean authenticated = requestProcessor.authenticate(sessionId, authRequest);
-			return Response.status(authenticated ? 200 : 401).build();
+			int authResponse = requestProcessor.authenticate(sessionId, authRequest);
+			return Response.status(authResponse).build();
 		} else {
 			return Response.status(200).build();
 		}
@@ -44,9 +48,38 @@ public class REST {
 	
 	@POST
 	@Path("/register")
+	// attempts to create a user with the provided credentials
+	// if the user already exists then returns 400 (bad request)
+	// if successful returns 200 (ok)
+	// else returns 500 (server error)
 	public Response Register(RegRequest regRequest) {
 		int response = requestProcessor.register(regRequest);
 		return Response.status(response).build();
+	}
+	
+	@GET
+	@Path("/testauth")
+	public Response TestAuth() {
+		if(checkAuth()) {
+			return Response.ok().build();
+		}
+		
+		return Response.status(401).build();
+	}
+	
+	@POST
+	@Path("/logout")
+	// Does not return anything, if the user is logged in
+	// the user is logged out else nothing happens.
+	public Response LogOut() {
+		String sessionId = request.getSession(true).getId();
+		
+		if(checkAuth()) {
+			requestProcessor.LogOut(sessionId);
+			return Response.ok().build();
+		}
+		
+		return Response.status(401).build();
 	}
 	
 	private boolean checkAuth() {
