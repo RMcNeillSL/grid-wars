@@ -79,7 +79,7 @@ public class RequestProcessor {
 
 	
 	// Managing game lobbies including joining, creating and game info retrieval
-	
+
 	public GameJoinResponse newGame(String sessionId) {
 
 		// Declare/initialise variables
@@ -270,5 +270,5 @@ public class RequestProcessor {
 		this.sessionCleanUpThread = new Thread(sessionCleanUp);
 		this.sessionCleanUpThread.start();
 	}
-
+	
 }

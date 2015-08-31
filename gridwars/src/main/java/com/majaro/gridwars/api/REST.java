@@ -82,6 +82,7 @@ public class REST {
 		return requestProcessor.isSessionAuthenticated(sessionId);
 	}
 
+	
 	@POST
 	@Path("/game/new")
 	@JsonView(GameJoinResponse.Views.Summary.class)

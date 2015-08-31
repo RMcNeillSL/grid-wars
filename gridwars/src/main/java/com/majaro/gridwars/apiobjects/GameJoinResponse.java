@@ -16,11 +16,14 @@ public class GameJoinResponse {
 	private int maxPlayers = -1;
 	private int mapMaxPlayers = -1;
 	private E_GameType gameType = E_GameType.UNDEFINED;
+
 	
+	// Constructors
 	public GameJoinResponse(GameLobby sourceGameLobby) {
 		this.sourceGameLobby = sourceGameLobby;
 	}
 
+	
 	// Getters for summary view
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public String getLobbyId() { return this.sourceGameLobby.getLobbyId(); }
@@ -32,7 +35,8 @@ public class GameJoinResponse {
 	public int getMapMaxPlayers() { return this.sourceGameLobby.getGameConfig().getMapMaxPlayers(); }	
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public E_GameType getGameType() { return this.sourceGameLobby.getGameConfig().getGameType(); }
-	
+
+
 	// Setters for request passing
 	public void setLobbyId(String lobbyId) { this.lobbyId = lobbyId; }
 	public void setMapId(String mapId) { this.mapId = mapId; }
@@ -40,6 +44,7 @@ public class GameJoinResponse {
 	public void setMapMaxPlayers(int mapMaxPlayers) { this.mapMaxPlayers = mapMaxPlayers; }
 	public void setGameType(E_GameType gameType) { this.gameType = gameType; }
 
+	
 	// Class views
 	public static class Views {
 		public static class Detailed extends Summary {}
