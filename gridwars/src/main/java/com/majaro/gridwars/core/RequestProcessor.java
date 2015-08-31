@@ -13,22 +13,41 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.game.GameMap;
 
 public class RequestProcessor {
 
+	// Game array objects
 	private ArrayList<GameLobby> activeGameLobbys;
+	private ArrayList<GameMap> gameMaps;
+	
+	// Session management arrays
 	private ArrayList<Session> activeSessions;
-	private static final String PERSISTENCE_UNIT = "gridwars";
-	private final EntityManager dao;
 	private Thread sessionCleanUpThread;
 	private Runnable sessionCleanUp;
+	
+	// DB interaction objects
+	private static final String PERSISTENCE_UNIT = "gridwars";
+	private final EntityManager dao;
+	
+	// Socket objects
 	private Configuration config;
 	private SocketIOServer server;
 
 	public RequestProcessor() {
+		
+		// Set default array values
 		this.activeGameLobbys = new ArrayList<GameLobby>();
 		this.activeSessions = new ArrayList<Session>();
+		this.gameMaps = new ArrayList<GameMap>();
+		
+		// Create game maps
+		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));		
+		
+		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
+		
+		// Setup sessions and sockets
 		initialiseSessionCleanUp();
 		initSocketConfig();
 	}

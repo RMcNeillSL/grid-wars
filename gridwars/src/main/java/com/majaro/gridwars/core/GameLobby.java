@@ -9,32 +9,71 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.Engine;
+import com.majaro.gridwars.game.GameConfig;
 
 public class GameLobby {
 	
+	private static final String[] colours = {"blue", "red", "yellow", "orange", "green", "pink"};
+	
+	private class LobbyUser {
+		
+		private int factionId = 0;
+		private int playerNumber;
+		private String playerColour;
+		private int playerTeam;
+		private boolean ready = false;
+		private User linkedUser = null;
+		
+		public LobbyUser(User linkedUser, int playerNumber, String playerColour, int playerTeam) {
+			this.linkedUser = linkedUser;
+			this.playerNumber = playerNumber;
+			this.playerColour = playerColour;
+			this.playerTeam = playerTeam;
+		}
+		
+	}
+
 	private String lobbyId = "";
-	private ArrayList<User> connectedUsers;
+	private ArrayList<LobbyUser> connectedUsers;
+	private GameConfig gameConfig = new GameConfig();
 	private Engine engine = null;
 	
 	public GameLobby(String lobbyId, User user) {
 		this.lobbyId = lobbyId;
-		this.connectedUsers = new ArrayList<User>();
-		this.connectedUsers.add(user);
+		this.connectedUsers = new ArrayList<LobbyUser>();
+		this.connectedUsers.add(new LobbyUser(user, 0, "blue", 0));
 		System.out.println(this.connectedUsers.size());
 	}
 	
 	// Check if a passed user object is already in the lobby
 	public boolean addUser(User user) {
 		boolean userExists = false;
-		for (User compareUser : this.connectedUsers) {
-			if (compareUser.getId() == user.getId()) {
+		for (int index = 0; index < this.connectedUsers.size(); index ++) {
+			if (this.connectedUsers.get(index).linkedUser.getId() == user.getId()) {
 				userExists = true;
 			}
 		}
 		if (!userExists) {
-			this.connectedUsers.add(user);
+			this.connectedUsers.add(new LobbyUser(user, this.connectedUsers.size()-1, this.getUnusedColour(), 0));
 		}
 		return !userExists;
+	}
+	
+	// Select an unused colour for the player
+	private String getUnusedColour() {
+		String result = this.colours[0];
+		boolean colourInUse = false;
+		for (String colour : this.colours) {
+			result = colour;
+			colourInUse = false;
+			for (int index = 0; index < this.connectedUsers.size(); index ++) {
+				if (this.connectedUsers.get(index).playerColour == result) {
+					colourInUse = true;
+				}
+			}
+			if (!colourInUse) { break; }
+		}
+		return result;
 	}
 
 	// Check to see if the user 
@@ -42,8 +81,8 @@ public class GameLobby {
 		return true;
 	}
 	public boolean includesUser(User checkUser) {
-		for (User user : this.connectedUsers) {
-			if (user.getId() == checkUser.getId()) {
+		for (int index = 0; index < this.connectedUsers.size(); index ++) {
+			if (this.connectedUsers.get(index).linkedUser.getId() == checkUser.getId()) {
 				return true;
 			}
 		}
@@ -56,18 +95,19 @@ public class GameLobby {
 	@JsonView(GameLobby.Views.Summary.class)
 	public ArrayList<String> getConnectedUsersString() {
 		ArrayList<String> result = new ArrayList<String>();
-		for (User user : this.connectedUsers) {
-			result.add(Integer.toString(user.getId()));
+		for (int index = 0; index < this.connectedUsers.size(); index ++) {
+			result.add(Integer.toString(this.connectedUsers.get(index).linkedUser.getId()));
 		}
 		return result;
 	}
 
 	@JsonView(GameLobby.Views.Detailed.class)
 	public ArrayList<User> getConnectedUsers() {
-		for (User user : this.connectedUsers) {
-			System.out.println(user);
+		ArrayList<User> users = null;
+		for (int index = 0; index < this.connectedUsers.size(); index ++) {
+			users.add(this.connectedUsers.get(index).linkedUser);
 		}
-		return this.connectedUsers;
+		return users;
 	}
 
 	// Class views
