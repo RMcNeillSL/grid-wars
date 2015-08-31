@@ -26,6 +26,7 @@
 	TestingController.prototype = {
 			login: function () {
 				this.testingService.sendLogin(this.createAuthRequest(this.$scope.username, this.$scope.password));
+				this.testingService.getLobbies();
 			},
 			newLobby: function () {		
 				var self = this;
