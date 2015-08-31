@@ -11,8 +11,12 @@ import org.joda.time.DateTime;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
+import com.majaro.gridwars.apiobjects.AuthRequest;
+import com.majaro.gridwars.apiobjects.GameJoinResponse;
+import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.game.GameConfig;
 import com.majaro.gridwars.game.GameMap;
 
 public class RequestProcessor {
@@ -67,10 +71,10 @@ public class RequestProcessor {
 		}
 	}
 
-	public int newGame(String sessionId) {
+	public GameJoinResponse newGame(String sessionId) {
 
 		// Declare/initialise variables
-		int ResponseCode = 200;
+		GameJoinResponse responseConfig = null;
 
 		// Attempt - create new game
 		try {
@@ -89,16 +93,17 @@ public class RequestProcessor {
 
 			// Create new game lobby
 			if (user != null && !inGame) {
-				GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user);
+				GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(0));
+				responseConfig = new GameJoinResponse(gameLobby);
 				this.activeGameLobbys.add(gameLobby);
 			}
 
 		} catch (Exception e) {
-			ResponseCode = 500;
+			responseConfig = null;
 		}
 
 		// Return determined response
-		return ResponseCode;
+		return responseConfig;
 
 	}
 
@@ -144,6 +149,10 @@ public class RequestProcessor {
 
 	public ArrayList<GameLobby> listGames() {
 		return this.activeGameLobbys;
+	}
+
+	public ArrayList<GameMap> listGameMaps() {
+		return this.gameMaps;
 	}
 
 	public User getUserFromSessionId(String sessionId) {
@@ -260,4 +269,5 @@ public class RequestProcessor {
 		Session session = new Session(sessionId, userId);
 		this.activeSessions.add(session);
 	}
+
 }
