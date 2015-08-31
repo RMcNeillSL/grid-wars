@@ -11,8 +11,10 @@
 		// Declare variables
 		$scope.username = "jamUser01";
 		$scope.password = "password";
+		$scope.lobbyId = "";
 		$scope.lobbyList = [];
 		$scope.mapList = [];
+		$scope.currentGame = [];
 		
 		// Constructor functions
 		this.createAuthRequest = function(username, password, params) {
@@ -39,12 +41,12 @@
 					console.log(newLobbyList);
 				};
 				
-				var updateLists = function() {
+				var updateScope = function() {
 					self.testingService.getLobbies(updateLobbies);
 					self.testingService.getMaps(updateMaps);
 				}
 				
-				this.testingService.sendLogin(this.createAuthRequest(this.$scope.username, this.$scope.password), updateLists);
+				this.testingService.sendLogin(this.createAuthRequest(this.$scope.username, this.$scope.password), updateScope);
 			},
 			newLobby: function () {		
 				var self = this;
@@ -59,15 +61,25 @@
 					console.log(newLobbyList);
 				};
 				
-				var updateLists = function() {
+				var updateScope = function(gameJoinResponse) {
+					self.$scope.currentGame = [gameJoinResponse];
+					console.log(gameJoinResponse);
 					self.testingService.getLobbies(updateLobbies);
 					self.testingService.getMaps(updateMaps);
 				}
 				
-				this.testingService.newLobby(updateLists);
+				this.testingService.newLobby(updateScope);
 				
 			},
 			joinLobby: function () {
+				var self = this;
+				
+				var updateScope = function(gameJoinResponse) {
+					self.$scope.currentGame = [gameJoinResponse];
+					console.log(gameJoinResponse);
+				}
+				
+				this.testingService.joinLobby(this.$scope.lobbyId, updateScope);
 			}
 	}
 

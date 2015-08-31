@@ -124,14 +124,15 @@ public class REST {
 		return unauthResponse;
 	}
 	
-	@GET
-	@Path("/game/join{lobbyId}")
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response GameJoin(@PathParam("lobbyId") int lobbyId) {
+	@POST
+	@Path("/game/join")
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public Response GameJoin(String lobbyId) {
 		if(checkAuth()) {
-			int responseCode = requestProcessor.joinGame(lobbyId);
-			if (responseCode == 200) {
-				return Response.ok().build();
+			String sessionId = request.getSession(true).getId();
+			GameJoinResponse gameJoinResponse = requestProcessor.joinGame(lobbyId, sessionId);
+			if (gameJoinResponse != null) {
+				return Response.ok(gameJoinResponse).build();
 			} else {
 				return Response.status(500).build();
 			}
