@@ -1,4 +1,4 @@
-package com.majaro.gridwars.core;
+package com.majaro.gridwars.apiobjects;
 
 public class AuthRequest {
 	private String usernameAttempt;

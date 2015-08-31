@@ -9,12 +9,14 @@
 		this.testingService = testingService;
 		
 		// Declare variables
-		$scope.username = "TestUser";
+		$scope.username = "jamUser01";
 		$scope.password = "password";
 		$scope.lobbyList = [];
+		$scope.mapList = [];
 		
 		// Constructor functions
 		this.createAuthRequest = function(username, password, params) {
+			password = CryptoJS.MD5(password).toString();			
 			var newAuthRequest = {'usernameAttempt': username, 'passwordAttempt': password};
 			if (params) {
 				
@@ -25,22 +27,44 @@
 	}
 	TestingController.prototype = {
 			login: function () {
-				this.testingService.sendLogin(this.createAuthRequest(this.$scope.username, this.$scope.password));
-				this.testingService.getLobbies();
-			},
-			newLobby: function () {		
 				var self = this;
+				
+				var updateMaps = function(newMapList) {
+					self.$scope.mapList = newMapList;
+					console.log(newMapList);
+				}
 				
 				var updateLobbies = function(newLobbyList) {
 					self.$scope.lobbyList = newLobbyList;
 					console.log(newLobbyList);
 				};
 				
-				var retrieveLobbies = function() {
+				var updateLists = function() {
 					self.testingService.getLobbies(updateLobbies);
+					self.testingService.getMaps(updateMaps);
 				}
 				
-				this.testingService.newLobby(retrieveLobbies);
+				this.testingService.sendLogin(this.createAuthRequest(this.$scope.username, this.$scope.password), updateLists);
+			},
+			newLobby: function () {		
+				var self = this;
+
+				var updateMaps = function(newMapList) {
+					self.$scope.mapList = newMapList;
+					console.log(newMapList);
+				}
+				
+				var updateLobbies = function(newLobbyList) {
+					self.$scope.lobbyList = newLobbyList;
+					console.log(newLobbyList);
+				};
+				
+				var updateLists = function() {
+					self.testingService.getLobbies(updateLobbies);
+					self.testingService.getMaps(updateMaps);
+				}
+				
+				this.testingService.newLobby(updateLists);
 				
 			},
 			joinLobby: function () {

@@ -16,12 +16,15 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
-import com.majaro.gridwars.core.AuthRequest;
+import com.majaro.gridwars.apiobjects.AuthRequest;
+import com.majaro.gridwars.apiobjects.GameJoinResponse;
+import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.core.GameLobby;
-import com.majaro.gridwars.core.RegRequest;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.game.GameConfig;
+import com.majaro.gridwars.game.GameMap;
 
 @Produces("application/json")
 @Path("/")
@@ -79,15 +82,15 @@ public class REST {
 		return requestProcessor.isSessionAuthenticated(sessionId);
 	}
 	
-	@GET
+	@POST
 	@Path("/game/new")
-	@Produces({ MediaType.TEXT_PLAIN })
+	@JsonView(GameJoinResponse.Views.Summary.class)
 	public Response GameNew() {
 		if(checkAuth()) {
 			String sessionId = request.getSession(true).getId();
-			int responseCode = requestProcessor.newGame(sessionId);
-			if (responseCode == 200) {
-				return Response.ok().build();
+			GameJoinResponse gameJoinResponse = requestProcessor.newGame(sessionId);
+			if (gameJoinResponse != null) {
+				return Response.ok(gameJoinResponse).build();
 			} else {
 				return Response.status(500).build();
 			}
@@ -107,6 +110,18 @@ public class REST {
 		
 		return unauthResponse;
 	}
+
+	@GET
+	@Path("/game/maps")
+	@JsonView(GameMap.Views.Summary.class)
+	public Response MapList() {
+		if(checkAuth()) {
+			ArrayList<GameMap> gameMaps = requestProcessor.listGameMaps();
+			return Response.ok(gameMaps).build();
+		}
+		
+		return unauthResponse;
+	}
 	
 	@GET
 	@Path("/game/join{lobbyId}")
@@ -114,22 +129,6 @@ public class REST {
 	public Response GameJoin(@PathParam("lobbyId") int lobbyId) {
 		if(checkAuth()) {
 			int responseCode = requestProcessor.joinGame(lobbyId);
-			if (responseCode == 200) {
-				return Response.ok().build();
-			} else {
-				return Response.status(500).build();
-			}
-		}
-		
-		return unauthResponse;
-	}
-
-	@GET
-	@Path("/game/start")
-	@Produces({ MediaType.TEXT_PLAIN })
-	public Response GameStart() {
-		if(checkAuth()) {
-			int responseCode = requestProcessor.startGame();
 			if (responseCode == 200) {
 				return Response.ok().build();
 			} else {

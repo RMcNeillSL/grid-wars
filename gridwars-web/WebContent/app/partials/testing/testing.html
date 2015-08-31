@@ -7,9 +7,14 @@
 			<input style="margin-bottom: 5px" type="text" placeholder="Password" ng-model="password" id="password" class="form-control">
 			<input style="margin-bottom: 5px" type="submit" value="Login">
 		</form>
-		<div ng-repeat="lobby in lobbyList">
-		Lobby #{{$index}} : [Id] {{lobby.lobbyId}}</b></div>
-		<button style="margin: 5px" ng-click="controller.newLobby()">New Lobby</button>
+		
+		<br/><b>Game listing:</b>
+		<div ng-repeat="lobby in lobbyList"><i>Lobby #{{$index}} : [Id] {{lobby.lobbyId}}</i></div>
+		
+		<br/><b>Map listing:</b>
+		<div ng-repeat="map in mapList"><i>Map #{{$index}} : [Id] {{map.mapId}} [Name] {{map.mapName}}</i></div>
+		
+		<br/><button style="margin: 5px" ng-click="controller.newLobby()">New Lobby</button>
 		<input style="margin: 5px" type="text" ng-model="lobbyId">
 		<button style="margin: 5px" ng-click="controller.joinLobby(lobbyId)">Join Lobby</button>
 	</section>

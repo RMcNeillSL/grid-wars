@@ -17,7 +17,7 @@
 
 		// Constructor functions
 		this.createAuthRequest = function (username, password, param) {
-
+			password = CryptoJS.MD5(password).toString();
 			var newAuthRequest = {
 					"usernameAttempt": username,
 					"passwordAttempt": password
@@ -33,7 +33,6 @@
 
 	LoginController.prototype = {
 			login: function (username, password) {
-				password = CryptoJS.MD5(password).toString();
 				var auth = this.createAuthRequest(username, password);
 				var _this = this;
 				this.loginService.sendLogin(auth, function(response) {
