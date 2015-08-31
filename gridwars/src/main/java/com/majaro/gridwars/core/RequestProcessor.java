@@ -38,6 +38,9 @@ public class RequestProcessor {
 	private Configuration config;
 	private SocketIOServer server;
 
+	
+	// Constructors
+	
 	public RequestProcessor() {
 		
 		// Set default array values
@@ -56,6 +59,9 @@ public class RequestProcessor {
 		initSocketConfig();
 	}
 
+	
+	// Initialisation methods
+	
 	private void initSocketConfig() {
 		try {
 			config = new Configuration();
@@ -71,6 +77,9 @@ public class RequestProcessor {
 		}
 	}
 
+	
+	// Managing game lobbies including joining, creating and game info retrieval
+	
 	public GameJoinResponse newGame(String sessionId) {
 
 		// Declare/initialise variables
@@ -130,23 +139,6 @@ public class RequestProcessor {
 
 	}
 
-	public int startGame() {
-
-		// Declare/initialise variables
-		int ResponseCode = 200;
-
-		// Attempt - start a game using the currently connected lobby
-		try {
-
-		} catch (Exception e) {
-			ResponseCode = 500;
-		}
-
-		// Return determined response
-		return ResponseCode;
-
-	}
-
 	public ArrayList<GameLobby> listGames() {
 		return this.activeGameLobbys;
 	}
@@ -155,17 +147,12 @@ public class RequestProcessor {
 		return this.gameMaps;
 	}
 
-	public User getUserFromSessionId(String sessionId) {
-		int userId = -1;
+	
+	// Session authentication and management methods
 
-		for (Session s : activeSessions) {
-			if (s.getSessionId() == sessionId) {
-				userId = s.getUserId();
-				break;
-			}
-		}
-
-		return dao.getUser(userId);
+	private void addNewSession(String sessionId, int userId) {
+		Session session = new Session(sessionId, userId);
+		this.activeSessions.add(session);
 	}
 
 	public boolean isSessionAuthenticated(String sessionId) {
@@ -207,6 +194,9 @@ public class RequestProcessor {
 		return response;
 	}
 
+	
+	// User login and registration methods
+	
 	public int register(RegRequest regRequest) {
 		return dao.register(regRequest.getNewUsername(), regRequest.getNewPassword());
 	}
@@ -218,6 +208,22 @@ public class RequestProcessor {
 				break;
 			}
 		}
+	}
+
+	
+	// Utility methods
+	
+	public User getUserFromSessionId(String sessionId) {
+		int userId = -1;
+
+		for (Session s : activeSessions) {
+			if (s.getSessionId() == sessionId) {
+				userId = s.getUserId();
+				break;
+			}
+		}
+
+		return dao.getUser(userId);
 	}
 
 	private String GenerateUniqueGameLobbyId() {
@@ -263,11 +269,6 @@ public class RequestProcessor {
 
 		this.sessionCleanUpThread = new Thread(sessionCleanUp);
 		this.sessionCleanUpThread.start();
-	}
-
-	private void addNewSession(String sessionId, int userId) {
-		Session session = new Session(sessionId, userId);
-		this.activeSessions.add(session);
 	}
 
 }

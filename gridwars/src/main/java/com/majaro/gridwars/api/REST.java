@@ -81,7 +81,7 @@ public class REST {
 		String sessionId = request.getSession(true).getId();
 		return requestProcessor.isSessionAuthenticated(sessionId);
 	}
-	
+
 	@POST
 	@Path("/game/new")
 	@JsonView(GameJoinResponse.Views.Summary.class)
