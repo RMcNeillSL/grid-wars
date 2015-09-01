@@ -20,7 +20,6 @@
 			},
 			callSendMessage: function () {
 				this.createService.sendMessage();
-				console.log("calling send");
 			}
 	}
 

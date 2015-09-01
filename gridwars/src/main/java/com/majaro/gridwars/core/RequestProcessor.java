@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 import org.joda.time.DateTime;
 
+import com.corundumstudio.socketio.BroadcastOperations;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
@@ -67,10 +68,11 @@ public class RequestProcessor {
 		try {
 			config = new Configuration();
 			config.setHostname("localhost");
-			config.setPort(81);
+			config.setPort(8080);
 
 			server = new SocketIOServer(config);
-			SocketService socketService = new SocketService();
+			BroadcastOperations broadcast = server.getBroadcastOperations();
+			SocketService socketService = new SocketService(broadcast);
 			server.addListeners(socketService);
 			server.start();
 		} catch (Exception e) {

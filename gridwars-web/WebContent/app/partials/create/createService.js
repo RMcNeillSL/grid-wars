@@ -4,27 +4,27 @@
 
 	function CreateService ($rootScope, $http) {
 		this.$http = $http;
+		this.$rootScope = $rootScope;
 
-		this.socket = io.connect("http://localhost:81", {
+		this.socket = io.connect("http://localhost:8080", {
 			"reconnection delay": 2000,
-			"force new connection": false,
-			query: "user=" + $rootScope.currentUser
+			"force new connection": false
 		});
 
 		this.socket.on("connect", function () {
 			console.log("I am connected");
 		});
 
-		this.socket.on("message", function(message) {
-			console.log("gots a message");
-		})
+		this.socket.on("message", function(data) {
+			console.log(data.user, ":", data.message);
+		});
 	}
 	CreateService.prototype = {
 			sendMessage: function () {
-				var data = {hello: "helloworld"};
-				console.log(data);
-				this.socket.emit("message", data);
-				console.log("sending");
+				this.socket.emit("sendMessage", {
+					"user" : this.$rootScope.currentUser,
+					"message" : "world"
+				});
 			}
 	}
 
