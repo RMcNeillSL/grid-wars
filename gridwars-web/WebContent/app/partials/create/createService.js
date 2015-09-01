@@ -12,11 +12,13 @@
 		});
 
 		this.socket.on("connect", function () {
-			console.log("I am connected");
+
 		});
 
 		this.socket.on("message", function(data) {
-			console.log(data.user, ":", data.message);
+			$rootScope.lobbyMessages.push(data);
+			console.log($rootScope.lobbyMessages);
+			$rootScope.$apply();
 		});
 	}
 	CreateService.prototype = {
@@ -24,6 +26,19 @@
 				this.socket.emit("sendMessage", {
 					"user" : this.$rootScope.currentUser,
 					"message" : "world"
+				});
+				this.$http.post("/gridwars/rest/auth", auth).then(function (response) {
+					console.log("Login successful!");
+				}, function (response) {
+					if (response.status === 401) {
+						alert("Username or password invalid");
+					} else if (response.status === 409) {
+						alert("Username already logged in");
+					} else if (response.status === 500) {
+						alert("Internal server error");
+					} else {
+						console.log("ERROR: Unhandled status code: ", response.status);
+					}
 				});
 			}
 	}

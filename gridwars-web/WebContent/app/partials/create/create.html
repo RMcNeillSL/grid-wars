@@ -7,6 +7,11 @@
 	
 	<section class="col-md-6">
         <h2>Lobby Chat</h2>
+        <div class="container-fluid">
+            <div ng-repeat="message in $root.lobbyMessages">
+                {{message.user}}: {{message.message}}
+            </div>
+        </div>
     </section>
 
     <section class="col-md-12">

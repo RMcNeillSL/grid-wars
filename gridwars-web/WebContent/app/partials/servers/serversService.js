@@ -5,7 +5,7 @@
 		this.$http = $http;
 		var self = this;
 
-		this.socket = io.connect("http://localhost:81");
+		this.socket = io.connect("http://localhost:8080");
 
 		this.socket.on("connect", function() {
 			self.socket.emit("test", {

@@ -8,6 +8,7 @@
 		this.$location = $location;
 		this.$rootScope = $rootScope;
 		this.createService = createService;
+		this.$rootScope.lobbyMessages = [];
 
 		// Declare variables
 		$scope.userReady = false;

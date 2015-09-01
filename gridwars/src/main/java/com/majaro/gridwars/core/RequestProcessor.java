@@ -36,10 +36,6 @@ public class RequestProcessor {
 	private static final String PERSISTENCE_UNIT = "gridwars";
 	private final EntityManager dao;
 	
-	// Socket objects
-	private Configuration config;
-	private SocketIOServer server;
-
 	
 	// Constructors
 	
@@ -58,26 +54,7 @@ public class RequestProcessor {
 		
 		// Setup sessions and sockets
 		initialiseSessionCleanUp();
-		initSocketConfig();
-	}
-
-	
-	// Initialisation methods
-	
-	private void initSocketConfig() {
-		try {
-			config = new Configuration();
-			config.setHostname("localhost");
-			config.setPort(8080);
-
-			server = new SocketIOServer(config);
-			BroadcastOperations broadcast = server.getBroadcastOperations();
-			SocketService socketService = new SocketService(broadcast);
-			server.addListeners(socketService);
-			server.start();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
+		SocketService socketService = new SocketService(this);
 	}
 
 	
@@ -93,7 +70,7 @@ public class RequestProcessor {
 
 			// Setup variables to work with
 			boolean inGame = false;
-			User user = this.getUserFromSessionId(sessionId);
+			User user = this.getUserFromRESTSessionId(sessionId);
 			
 			// Proceed if prerequisits are present
 			if (user != null) {
@@ -133,7 +110,7 @@ public class RequestProcessor {
 		try {
 
 			GameLobby gameLobby = this.getGameLobbyFromLobbyId(lobbyId);
-			User user = this.getUserFromSessionId(sessionId);
+			User user = this.getUserFromRESTSessionId(sessionId);
 			if (gameLobby != null && user != null && !gameLobby.includesUser(user) && gameLobby.canJoin()) {
 				gameLobby.addUser(user);
 				responseConfig = new GameJoinResponse(gameLobby);
@@ -174,8 +151,8 @@ public class RequestProcessor {
 	
 	// Session authentication and management methods
 
-	private void addNewSession(String sessionId, int userId) {
-		Session session = new Session(sessionId, userId);
+	private void addNewSession(String sessionId, User user) {
+		Session session = new Session(sessionId, user);
 		this.activeSessions.add(session);
 	}
 
@@ -195,20 +172,20 @@ public class RequestProcessor {
 
 	public int authenticate(String sessionId, AuthRequest authRequest) {
 		int response = 401;
-		int userId = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
+		User user = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
 
-		if (userId > -1) {
+		if (user != null) {
 			boolean userLoggedIn = false;
 
 			for (Session s : activeSessions) {
-				if (s.getUserId() == userId) {
+				if (s.getUser() == user) {
 					userLoggedIn = true;
 					break;
 				}
 			}
 
 			if (!userLoggedIn) {
-				addNewSession(sessionId, userId);
+				addNewSession(sessionId, user);
 				response = 200;
 			} else {
 				response = 409;
@@ -237,19 +214,56 @@ public class RequestProcessor {
 	
 	// Utility methods
 	
-	public User getUserFromSessionId(String sessionId) {
-		int userId = -1;
-
-		for (Session s : activeSessions) {
-			if (s.getSessionId() == sessionId) {
-				userId = s.getUserId();
-				break;
+	public void bindSocketSessionId(String username, String socketSessionId) {
+		for (Session session : this.activeSessions) {
+			if (session.getUser().getUsername().equals(username)) {
+				session.bindSocketSessionId(socketSessionId);
 			}
 		}
-
-		return dao.getUser(userId);
 	}
 
+	public User getUserFromSocketSessionId(String sessionId) {
+		for (Session session : activeSessions) {
+			if (session.getSocketSessionId() == sessionId) {
+				return session.getUser();
+			}
+		}
+		return null;
+	}
+
+	public GameLobby getGameLobbyFromSocketSessionId(String sessionId) {
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (user != null) {
+			for (GameLobby gameLobby : this.activeGameLobbys) {
+				if (gameLobby.includesUser(user)) {
+					return gameLobby;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public User getUserFromRESTSessionId(String sessionId) {
+		for (Session session : activeSessions) {
+			if (session.getSessionId() == sessionId) {
+				return session.getUser();
+			}
+		}
+		return null;
+	}
+
+	public GameLobby getGameLobbyFromRESTSessionId(String sessionId) {
+		User user = this.getUserFromRESTSessionId(sessionId);
+		if (user != null) {
+			for (GameLobby gameLobby : this.activeGameLobbys) {
+				if (gameLobby.includesUser(user)) {
+					return gameLobby;
+				}
+			}
+		}
+		return null;
+	}
+	
 	private GameLobby getGameLobbyFromLobbyId(String lobbyId) {
 		System.out.println(lobbyId);
 		for (GameLobby gameLobby : this.activeGameLobbys) {
