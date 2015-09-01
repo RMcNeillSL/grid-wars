@@ -49,9 +49,6 @@ public class GameLobby {
 		// Link user who created lobby to lobby
 		this.connectedUsers = new ArrayList<LobbyUser>();
 		this.connectedUsers.add(new LobbyUser(user, 0, "blue", 0));
-		
-		// Log for debugging
-		System.out.println(this.connectedUsers.size());
 	}
 	
 	// Add a new user to the lobby, checking the user is not already present
@@ -102,9 +99,6 @@ public class GameLobby {
 
 	// Game configuration interaction functions
 	public GameConfig getGameConfig() { return this.gameConfig; };
-	public void updateGameConfig(GameConfig updateGameConfig) {
-		
-	}
 	
 	// Getters for summary view
 	@JsonView(GameLobby.Views.Summary.class)

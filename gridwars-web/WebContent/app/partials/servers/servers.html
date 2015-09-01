@@ -1,3 +1,14 @@
 <div class="gwa-servers">
-	<h1>SERVERS PAGE</h1>
+	<h1>SERVERS PAGE ({{ servers.length }} servers)</h1>
+	
+	<table class="table table-striped">
+		<tr>
+			<th>Lobby Id</th>
+		</tr>
+		<tr ng-repeat="server in servers">
+			<td>{{ server.lobbyId }}</td>
+		</tr>
+	</table>
+	
+	<button type="button" class="button">Create Game</button>
 </div>

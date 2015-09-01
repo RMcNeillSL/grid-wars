@@ -8,6 +8,9 @@
 			<input style="margin-bottom: 5px" type="submit" value="Login">
 		</form>
 		
+		<br/><b>Current Game:</b>
+		<div ng-repeat="game in currentGame"><i>[Id] {{game.lobbyId}} [MapId] {{game.mapId}} [MaxPlayers] {{game.maxPlayers}} [MapMaxPlayers] {{game.mapMaxPlayers}} [GameType] {{game.gameType}}</i></div>
+		
 		<br/><b>Game listing:</b>
 		<div ng-repeat="lobby in lobbyList"><i>Lobby #{{$index}} : [Id] {{lobby.lobbyId}}</i></div>
 		

@@ -20,10 +20,17 @@
 			newLobby: function (callback) {
 				this.$http.post("/gridwars/rest/game/new").then(function (response) {
 					console.log("SUCCESS - New lobby made.");
-					console.log(response.data);
-					if (callback) { callback(); }
+					if (callback) { callback(response.data); }
 				}, function(error) {
 					console.log("ERROR - New lobby not made.");
+				});
+			},
+			joinLobby: function (lobbyId, callback) {
+				this.$http.post("/gridwars/rest/game/join", lobbyId).then(function (response) {
+					console.log("SUCCESS - Game lobby joined.");
+					if (callback) { callback(response.data); }
+				}, function(error) {
+					console.log("ERROR - Failed to join game lobby.");
 				});
 			},
 			getLobbies: function(callback) {
