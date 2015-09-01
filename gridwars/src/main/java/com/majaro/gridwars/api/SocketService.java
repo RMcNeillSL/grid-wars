@@ -54,8 +54,6 @@ public class SocketService {
 
 	@OnEvent("joinedLobby")
 	public void onJoin(SocketIOClient client, JoinRoomRequest data) {
-		System.out.println(client.getSessionId().toString());
-		
 		String sessionId = client.getSessionId().toString();
 		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
@@ -69,7 +67,6 @@ public class SocketService {
 
 	@OnConnect
 	public void onConnectHandler(SocketIOClient client) {
-		System.out.println(client.getSessionId().toString());
 		System.out.println("A user has connected.");
 		String username = "";
 		String sessionId = client.getSessionId().toString();

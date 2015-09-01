@@ -265,9 +265,7 @@ public class RequestProcessor {
 	}
 	
 	private GameLobby getGameLobbyFromLobbyId(String lobbyId) {
-		System.out.println(lobbyId);
 		for (GameLobby gameLobby : this.activeGameLobbys) {
-			System.out.println(gameLobby.getLobbyId());
 			if (gameLobby.getLobbyId().equals(lobbyId)) {
 				return gameLobby;
 			}
