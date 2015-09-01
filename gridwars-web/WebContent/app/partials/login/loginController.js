@@ -1,6 +1,6 @@
 'use strict';
 
-(function ($scope) {
+(function () {
 
 	function LoginController ($scope, $location, $rootScope, loginService) {
 
@@ -11,8 +11,8 @@
 		this.loginService = loginService;
 
 		// Declare variables
-		//$scope.username = "TestUser";		// REMOVE LATER
-		$scope.username = $rootScope.currentUser;
+		$scope.username = "TestUser";		// REMOVE LATER
+		//$scope.username = $rootScope.currentUser;
 		$scope.password = "password";		// REMOVE LATER
 
 		// Constructor functions
@@ -39,7 +39,7 @@
 					_this.$scope.response = response;
 					if (response === 200) {
 						_this.$rootScope.currentUser = username;
-						_this.changeView('/servers');
+						_this.changeView('/create'); // SHOULD BE SERVER - Changed for testing
 					}
 				});
 			},

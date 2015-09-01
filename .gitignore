@@ -4,6 +4,8 @@ gridwars-web/target/
 ~$*.ods
 .recommenders/
 .classpath
+pom.xml*
+*.bak*
 
 # Compiled source
 *.com
