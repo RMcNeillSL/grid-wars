@@ -99,9 +99,6 @@ public class GameLobby {
 
 	// Game configuration interaction functions
 	public GameConfig getGameConfig() { return this.gameConfig; };
-	public void updateGameConfig(GameConfig updateGameConfig) {
-		
-	}
 	
 	// Getters for summary view
 	@JsonView(GameLobby.Views.Summary.class)
