@@ -15,12 +15,21 @@
 
 <body>
 <div ng-if="currentUser">
-<!--h1>Grid Wars</h1>
-<h3>Hello, {{currentUser}}</h3-->
+    <h3>Hello, {{currentUser}}</h3>
+
+    <a href="javascript:DoPost()">Logout</A> 
+
+    <script language="javascript">
+    function DoPost() {
+    	$.post("gridwars/rest/logout");
+    	console.log("logged out");
+        {{currentUser=null}}
+    }
+    </script>
 </div>
+
 <div ng-if="!currentUser">
-<!--h1>Grid Wars</h1>
-<h3>Please log in</h3-->
+	<h3>Please log in</h3>
 </div>
 
 
@@ -35,7 +44,6 @@
     <script src="app/partials/lobby/lobbyController.js"></script>
     <script src="app/partials/lobby/lobbyDirective.js"></script>
     <script src="app/partials/lobby/lobbyService.js"></script>
-
 
     <script src="app/partials/login/loginModule.js"></script>
     <script src="app/partials/login/loginController.js"></script>
