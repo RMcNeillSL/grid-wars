@@ -104,6 +104,10 @@ public class GameLobby {
 	@JsonView(GameLobby.Views.Summary.class)
 	public String getLobbyId() { return this.lobbyId; }
 	@JsonView(GameLobby.Views.Summary.class)
+	public String getMapId() { return this.gameConfig.getMapId(); }
+	@JsonView(GameLobby.Views.Summary.class)
+	public int getMaxPlayers() { return this.gameConfig.getMaxPlayers(); }
+	@JsonView(GameLobby.Views.Summary.class)
 	public ArrayList<String> getConnectedUsersString() {
 		ArrayList<String> result = new ArrayList<String>();
 		for (int index = 0; index < this.connectedUsers.size(); index ++) {

@@ -14,6 +14,7 @@ import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import com.majaro.gridwars.apiobjects.MessageRequest;
+import com.majaro.gridwars.apiobjects.NewServerLobbyRequest;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
@@ -48,6 +49,7 @@ public class SocketService {
 
 		// Start socket server
 		socketServer.start();
+		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
 
 	@OnEvent("sendMessage")
@@ -62,15 +64,9 @@ public class SocketService {
 			broadcastRoomState.sendEvent("gameLobbyMessage", data);
 		}
     }
-<<<<<<< HEAD
-	
-	@OnEvent("joinedLobby")
-	public void onJoin(SocketIOClient client, JoinRoomRequest data) {
-=======
 
 	@OnEvent("joinGameLobby")
 	public void onJoinGameLobby(SocketIOClient client) {
->>>>>>> 9a1f8939e2c155976a7e7c11c79f1b9c306f4f9b
 		String sessionId = client.getSessionId().toString();
 		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
@@ -102,6 +98,12 @@ public class SocketService {
 	public void onLeaveServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
 		client.leaveRoom(SERVER_LOBBY_CHANNEL);
 		System.out.println("User has left the server lobby.");
+	}
+	
+	@OnEvent("newServerLobby")
+	public void onNewServer(SocketIOClient client, NewServerLobbyRequest data, AckRequest ackRequest) {
+		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
+		broadcastRoomState.sendEvent("newServerLobby", data);
 	}
 	
 	@OnConnect

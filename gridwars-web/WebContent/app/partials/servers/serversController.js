@@ -27,7 +27,7 @@
 			var updateNewGameResponse = function(response) {
 				self.$rootScope.newGameResponse = response;
 				console.log(self.$rootScope.newGameResponse);
-				self.$location.path("/create");
+				self.$location.path("/lobby");
 			};
 
 			this.serversService.createGame(updateNewGameResponse);
@@ -38,7 +38,7 @@
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.joinGameResponse = response;
 				console.log(self.$rootScope.joinGameResponse);
-				self.$location.path("/create");
+				self.$location.path("/lobby");
 			};
 
 			this.serversService.joinGame(lobbyId, updateJoinGameResponse);
