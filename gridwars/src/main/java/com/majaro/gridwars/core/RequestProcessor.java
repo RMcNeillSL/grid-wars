@@ -224,7 +224,7 @@ public class RequestProcessor {
 
 	public User getUserFromSocketSessionId(String sessionId) {
 		for (Session session : activeSessions) {
-			if (session.getSocketSessionId() == sessionId) {
+			if (session.getSocketSessionId().equals(sessionId)) {
 				return session.getUser();
 			}
 		}

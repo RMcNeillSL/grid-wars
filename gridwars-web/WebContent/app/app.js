@@ -4,7 +4,6 @@ angular.module('gridWarsApp', [
   'ngRoute',
   'ngResource',
   'gridWarsApp.login.module',
-  'gridWarsApp.create.module',
   'gridWarsApp.game.module',
   'gridWarsApp.lobby.module',
   'gridWarsApp.register.module',
@@ -13,7 +12,6 @@ angular.module('gridWarsApp', [
   'gridWarsApp.testing.module'
 ]).
 config(['$routeProvider', function($routeProvider) {
-	$routeProvider.when('/create', {template: '<gwa-create></gwa-create>'});
 	$routeProvider.when('/game', {template: '<gwa-game></gwa-game>'});
 	$routeProvider.when('/lobby', {template: '<gwa-lobby></gwa-lobby>'});
 	$routeProvider.when('/login', {template: '<gwa-login></gwa-login>'});
