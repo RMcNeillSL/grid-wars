@@ -39,7 +39,7 @@
 					_this.$scope.response = response;
 					if (response === 200) {
 						_this.$rootScope.currentUser = username;
-						_this.changeView('/create'); // SHOULD BE SERVER - Changed for testing
+						_this.changeView('/servers'); // SHOULD BE SERVER - Changed for testing
 					}
 				});
 			},

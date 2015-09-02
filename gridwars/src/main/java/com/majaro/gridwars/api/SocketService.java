@@ -27,6 +27,7 @@ public class SocketService {
 	private Configuration socketServerConfig;
 	private SocketIOServer socketServer;
 	private BroadcastOperations broadcast;
+	private static final String SERVER_LOBBY_CHANNEL = "ServerLobby";
 
 	public SocketService (RequestProcessor requestProcessor) {
 
@@ -51,7 +52,7 @@ public class SocketService {
     public void onMessage(SocketIOClient client, MessageRequest data, AckRequest ackRequest) {
         this.broadcast.sendEvent("message", data);
     }
-
+	
 	@OnEvent("joinedLobby")
 	public void onJoin(SocketIOClient client, JoinRoomRequest data) {
 		String sessionId = client.getSessionId().toString();
@@ -64,7 +65,19 @@ public class SocketService {
 		}
 		
 	}
-
+	
+	@OnEvent("joinServerLobby")
+	public void onJoinServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
+		client.joinRoom(SERVER_LOBBY_CHANNEL);
+		System.out.println("User has entered the server lobby.");
+	}
+	
+	@OnEvent("leaveServerLobby")
+	public void onLeaveServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
+		client.leaveRoom(SERVER_LOBBY_CHANNEL);
+		System.out.println("User has left the server lobby.");
+	}
+	
 	@OnConnect
 	public void onConnectHandler(SocketIOClient client) {
 		System.out.println("A user has connected.");

@@ -4,11 +4,13 @@
 	<table class="table table-striped">
 		<tr>
 			<th>Lobby Id</th>
+			<th>Actions</th>
 		</tr>
 		<tr ng-repeat="server in servers">
 			<td>{{ server.lobbyId }}</td>
+			<td><button type="button" class="button" ng-click="controller.joinGame(server.lobbyId)">Join Game</button></td>
 		</tr>
 	</table>
 	
-	<button type="button" class="button">Create Game</button>
+	<button type="button" class="button" ng-click="controller.createGame()">Create Game</button>
 </div>

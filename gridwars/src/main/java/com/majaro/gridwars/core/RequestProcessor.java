@@ -178,7 +178,7 @@ public class RequestProcessor {
 			boolean userLoggedIn = false;
 
 			for (Session s : activeSessions) {
-				if (s.getUser() == user) {
+				if (s.getUser().getUsername().equals(user.getUsername())) {
 					userLoggedIn = true;
 					break;
 				}
