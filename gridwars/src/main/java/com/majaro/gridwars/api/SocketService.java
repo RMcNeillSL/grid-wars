@@ -66,8 +66,10 @@ public class SocketService {
     }
 
 	@OnEvent("joinGameLobby")
-	public void onJoinGameLobby(SocketIOClient client) {
+	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
+		String username = data.getUser();
 		String sessionId = client.getSessionId().toString();
+		this.requestProcessor.bindSocketSessionId(username, sessionId);
 		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 
@@ -78,34 +80,31 @@ public class SocketService {
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
 		}
-
 	}
 
-	@OnEvent("bindSocket")
-	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
-		String username = data.getUser();
-		String sessionId = client.getSessionId().toString();
-		this.requestProcessor.bindSocketSessionId(username, sessionId);
-	}
-	
 	@OnEvent("joinServerLobby")
 	public void onJoinServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
 		client.joinRoom(SERVER_LOBBY_CHANNEL);
 		System.out.println("User has entered the server lobby.");
 	}
-	
+
 	@OnEvent("leaveServerLobby")
 	public void onLeaveServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
 		client.leaveRoom(SERVER_LOBBY_CHANNEL);
 		System.out.println("User has left the server lobby.");
 	}
-	
+
 	@OnEvent("newServerLobby")
 	public void onNewServer(SocketIOClient client, NewServerLobbyRequest data, AckRequest ackRequest) {
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
 		broadcastRoomState.sendEvent("newServerLobby", data);
 	}
-	
+
+	@OnEvent("forceDisconnect")
+	public void onForceDisconnet(SocketIOClient client) {
+		client.disconnect();
+	}
+
 	@OnConnect
 	public void onConnectHandler(SocketIOClient client) {
 		System.out.println("A user has connected.");

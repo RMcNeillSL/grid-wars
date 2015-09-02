@@ -31,6 +31,7 @@
 			this.$http.post("/gridwars/rest/game/new").then(function(response) {
 				callback(response.data);
 				self.socket.emit("leaveServerLobby", "");
+				self.socket.emit("forceDisconnect");
 			}, function(response) {
 				if (response.status === 401) {
 					console.log("Unauthorised.");
@@ -44,6 +45,7 @@
 			.then(function(response) {
 				callback(response.data);
 				self.socket.emit("leaveServerLobby", "");
+				self.socket.emit("forceDisconnect");
 			}, function(response) {
 				if (response.status === 401) {
 					console.log("Unauthorised.");

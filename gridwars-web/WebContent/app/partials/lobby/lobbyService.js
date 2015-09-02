@@ -9,13 +9,14 @@
 
 		this.socket = io.connect("http://localhost:8080", {
 			"reconnection delay": 2000,
-			"force new connection": false
+			"force new connection": true
 		});
 
 		this.socket.on("connect", function () {
-			self.socket.emit("bindSocket", {
+			self.socket.emit("joinGameLobby", {
 				"user" : self.$rootScope.currentUser
 			});
+			//self.socket.emit("joinGameLobby");
 		});
 
 		this.socket.on("gameLobbyMessage", function(data) {
@@ -31,6 +32,7 @@
 			$rootScope.lobbyMessages.push(userJoinedMessage);
 			$rootScope.$apply();
 		});
+
 	}
 	LobbyService.prototype = {
 			sendMessage: function (newMessage) {
@@ -39,8 +41,7 @@
 					"message" : newMessage
 				});
 			},
-
-			joinGameLobby: function () {
+			joinGameLobby: function() {
 				this.socket.emit("joinGameLobby");
 			}
 	}
