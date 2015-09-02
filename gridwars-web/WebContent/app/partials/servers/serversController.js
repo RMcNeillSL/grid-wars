@@ -7,7 +7,7 @@
 		this.serversService = serversService;
 		this.$location = $location;
 		this.$rootScope = $rootScope;
-		this.$scope.servers = [];
+		this.$rootScope.servers = [];
 		this.loadServers();
 	}
 
@@ -16,7 +16,7 @@
 			var self = this;
 
 			var updateServers = function(response) {
-				self.$scope.servers = response;
+				self.$rootScope.servers = response;
 			};
 
 			this.serversService.getServers(updateServers);
