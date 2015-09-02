@@ -1,6 +1,7 @@
 package com.majaro.gridwars.api;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.websocket.OnMessage;
 
@@ -16,6 +17,7 @@ import com.majaro.gridwars.apiobjects.MessageRequest;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.apiobjects.BindSocketRequest;
 import com.majaro.gridwars.apiobjects.JoinRoomRequest;
 
 public class SocketService {
@@ -49,29 +51,43 @@ public class SocketService {
 
 	@OnEvent("sendMessage")
     public void onMessage(SocketIOClient client, MessageRequest data, AckRequest ackRequest) {
-        this.broadcast.sendEvent("message", data);
-    }
-
-	@OnEvent("joinedLobby")
-	public void onJoin(SocketIOClient client, JoinRoomRequest data) {
 		String sessionId = client.getSessionId().toString();
 		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-		
-		if (gameLobby != null) {
+
+		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
-			client.joinRoom(lobbyId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("gameLobbyMessage", data);
 		}
-		
+    }
+
+	@OnEvent("joinGameLobby")
+	public void onJoinGameLobby(SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+
+		if (user != null && gameLobby != null) {
+			String lobbyId = gameLobby.getLobbyId();
+			socketServer.addNamespace(lobbyId);
+			client.joinRoom(lobbyId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
+		}
+
+	}
+
+	@OnEvent("bindSocket")
+	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
+		String username = data.getUser();
+		String sessionId = client.getSessionId().toString();
+		this.requestProcessor.bindSocketSessionId(username, sessionId);
 	}
 
 	@OnConnect
 	public void onConnectHandler(SocketIOClient client) {
 		System.out.println("A user has connected.");
-		String username = "";
-		String sessionId = client.getSessionId().toString();
-		this.requestProcessor.bindSocketSessionId(username, sessionId);
-		
 	}
 
 	@OnDisconnect

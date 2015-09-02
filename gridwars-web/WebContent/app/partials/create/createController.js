@@ -19,8 +19,12 @@
 			toggleUserReady: function () {
 				console.log("Toggle ready");
 			},
-			callSendMessage: function () {
-				this.createService.sendMessage();
+			callSendMessage: function (newMessage) {
+				this.createService.sendMessage(newMessage);
+				this.$scope.newMessage = "";
+			},
+			callJoinGameLobby: function () {
+				this.createService.joinGameLobby();
 			}
 	}
 

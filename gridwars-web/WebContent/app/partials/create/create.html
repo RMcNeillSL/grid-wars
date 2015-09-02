@@ -12,6 +12,12 @@
                 {{message.user}}: {{message.message}}
             </div>
         </div>
+        <div class="row">
+	        <form ng-submit="controller.callSendMessage(newMessage)" class="col-md-10">
+		        <input type="text" placeholder="What would you like to say?" ng-model="newMessage" id="new-message" class="form-control">
+	        </form>
+	        <button ng-click="controller.callSendMessage(newMessage)" class="btn col-md-2"><span class="glyphicon glyphicon-user"></span> Send</button>
+        </div>
     </section>
 
     <section class="col-md-12">
@@ -34,7 +40,7 @@
                 </td>
             </tr>
         </table>
-        <button ng-click="controller.callSendMessage()" class="btn"><span class="glyphicon glyphicon-user"></span> TestSend</button>
+        <button ng-click="controller.callJoinGameLobby()" class="btn"><span class="glyphicon glyphicon-user"></span> Join</button>
     </section>
 
 </div>

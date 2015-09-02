@@ -8,7 +8,6 @@
 	LoginService.prototype = {
 			sendLogin: function (auth, callback) {
 				this.$http.post("/gridwars/rest/auth", auth).then(function (response) {
-					console.log("Login successful!");
 					callback(response.status);
 				}, function (response) {
 					if (response.status === 401) {
