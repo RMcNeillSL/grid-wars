@@ -2,7 +2,7 @@
 
 (function () {
 
-	function CreateService ($rootScope, $http) {
+	function LobbyService ($rootScope, $http) {
 		this.$http = $http;
 		this.$rootScope = $rootScope;
 		self = this;
@@ -32,7 +32,7 @@
 			$rootScope.$apply();
 		});
 	}
-	CreateService.prototype = {
+	LobbyService.prototype = {
 			sendMessage: function (newMessage) {
 				this.socket.emit("sendMessage", {
 					"user" : this.$rootScope.currentUser,
@@ -45,7 +45,7 @@
 			}
 	}
 
-	CreateService.$inject = ['$rootScope', '$http'];
+	LobbyService.$inject = ['$rootScope', '$http'];
 
-	angular.module('gridWarsApp.create.module').service('gridWarsApp.create.service', CreateService);
+	angular.module('gridWarsApp.lobby.module').service('gridWarsApp.lobby.service', LobbyService);
 }());
