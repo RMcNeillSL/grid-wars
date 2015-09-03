@@ -37,10 +37,17 @@
 			self.$rootScope.gameConfig.gameType = gameType;
 		});
 
+		this.socket.on("lobbyUserList", function(lobbyUserList) {
+			lobbyUserList.forEach(function(lobbyUser) {
+				$rootScope.lobbyUserList.push(lobbyUser);
+				console.log("USER LIST: ", $rootScope.lobbyUserList);
+				$rootScope.$apply();
+			});
+		});
+
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
 			response.data.forEach(function(map) {
 				$rootScope.mapList.push(map);
-				console.log(map);
 			});
 		}, function(response) {
 			if (response.status !== 200) {
@@ -62,6 +69,9 @@
 			},
 			updateConfig: function(config) {
 				this.socket.emit("updateGameConfig", config);
+			},
+			toggleReady: function() {
+				this.socket.emit("userToggleReady");
 			}
 	}
 

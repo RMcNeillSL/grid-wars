@@ -90,7 +90,8 @@ public class RequestProcessor {
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
 					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(0), lobbyName);
-					responseConfig = new GameJoinResponse(gameLobby);
+					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
+					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);
 				}
 			}
@@ -116,8 +117,8 @@ public class RequestProcessor {
 			GameLobby gameLobby = this.getGameLobbyFromLobbyId(lobbyId);
 			User user = this.getUserFromRESTSessionId(sessionId);
 			if (gameLobby != null && user != null && !gameLobby.includesUser(user) && gameLobby.canJoin()) {
-				gameLobby.addUser(user);
-				responseConfig = new GameJoinResponse(gameLobby);
+				LobbyUser lobbyUser = gameLobby.addUser(user);
+				responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 			}
 
 		} catch (Exception e) {

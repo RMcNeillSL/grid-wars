@@ -46,11 +46,11 @@
                 <th>Colour</th>
                 <th>Ready</th>
             </tr>
-            <tr>
-                <td>{{singleUser.name}}</td>
-                <td>Allied</td>
-                <td>-</td>
-                <td>{{singleUser.colour}}</td>
+            <tr ng-repeat="lobbyUser in $root.lobbyUserList">
+                <td>{{lobbyUser.linkedUser.username}}</td>
+                <td>{{lobbyUser.factionId}}</td>
+                <td>{{lobbyUser.playerTeam}}</td>
+                <td>{{singleUser.playerColour}}</td>
                 <td>
                     <input type="checkbox" ng-model="Ready" ng-change="controller.toggleUserReady()" id="toggle-ready">
                 </td>

@@ -10,6 +10,7 @@
 		this.lobbyService = lobbyService;
 		this.$rootScope.lobbyMessages = [];
 		this.$rootScope.mapList = [];
+		$rootScope.lobbyUserList = [];
 
 		// Declare variables
 		this.$scope.userReady = false;

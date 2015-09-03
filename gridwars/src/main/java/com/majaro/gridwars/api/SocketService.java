@@ -65,6 +65,7 @@ public class SocketService {
 			client.joinRoom(lobbyId);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
+			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
 		}
 	}
 	
@@ -91,6 +92,20 @@ public class SocketService {
 			this.requestProcessor.updateGameConfig(sessionId, data);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());
+		}
+	}
+
+	@OnEvent("userToggleReady")
+	public void onUserToggleReady(SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+
+		if (user != null && gameLobby != null) {
+			String lobbyId = gameLobby.getLobbyId();
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			//gameLobby.getLobbyUser(userId).setReady = !REady
+			broadcastRoomState.sendEvent("gameUpdated");		// SEND OUT CONFIGS TO ALL
 		}
 	}
 
