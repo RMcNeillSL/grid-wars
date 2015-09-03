@@ -42,6 +42,13 @@
 			};
 
 			this.serversService.joinGame(lobbyId, updateJoinGameResponse);
+		},
+		formatGameType : function(gameType) {
+			if (gameType === "FREE_FOR_ALL") {
+				return "Free for all";
+			} else if (gameType === "DM00") {
+				return "Death Match 00";
+			}
 		}
 	}
 

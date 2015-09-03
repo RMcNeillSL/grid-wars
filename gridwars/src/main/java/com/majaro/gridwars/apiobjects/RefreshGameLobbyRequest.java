@@ -3,22 +3,24 @@ package com.majaro.gridwars.apiobjects;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.GameMap;
 
-public class NewGameLobbyRequest {
+public class RefreshGameLobbyRequest {
 	private String lobbyId;
 	private String mapId;
 	private String mapName;
 	private int maxPlayers;
+	private int playerCount;
 	private String gameType;
 	private String lobbyName;
 	
-	public NewGameLobbyRequest() { }
+	public RefreshGameLobbyRequest() { }
 	
-	public NewGameLobbyRequest(String lobbyId, String lobbyName, String mapId, int maxPlayers, String gameType, String mapName) {
+	public RefreshGameLobbyRequest(String lobbyId, String lobbyName, String mapId, int maxPlayers, int playerCount, String gameType, String mapName) {
 		super();
 		this.setLobbyId(lobbyId);
 		this.setLobbyName(lobbyName);
 		this.setMapId(mapId);
 		this.setMaxPlayers(maxPlayers);
+		this.setPlayerCount(playerCount);
 		this.setGameType(gameType);
 		this.setMapName(mapName);
 	}
@@ -43,6 +45,10 @@ public class NewGameLobbyRequest {
 		return maxPlayers;
 	}
 	
+	public int getPlayerCount() {
+		return playerCount;
+	}
+	
 	public String getGameType() {
 		return gameType;
 	}
@@ -65,6 +71,10 @@ public class NewGameLobbyRequest {
 	
 	public void setMaxPlayers(int maxPlayers) {
 		this.maxPlayers = maxPlayers;
+	}
+	
+	public void setPlayerCount(int playerCount) {
+		this.playerCount = playerCount;
 	}
 	
 	public void setGameType(String gameType) {
