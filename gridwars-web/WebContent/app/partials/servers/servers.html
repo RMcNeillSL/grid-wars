@@ -4,14 +4,16 @@
 	<table class="table table-striped">
 		<tr>
 			<th>Lobby Id</th>
-			<th>Map Id</th>
+			<th>Map Name</th>
 			<th>Player Count</th>
+			<th>Game Type</th>
 			<th>Actions</th>
 		</tr>
 		<tr ng-repeat="server in servers">
-			<td>{{ server.lobbyId }}</td>
-			<td>{{ server.mapId }}</td>
+			<td>{{ server.lobbyName }}</td>
+			<td>{{ server.mapName }}</td>
 			<td>{{ server.connectedUsersString.length }} / {{ server.maxPlayers }}</td>
+			<td>{{ server.gameType }}</td>
 			<td><button type="button" class="button" ng-click="controller.joinGame(server.lobbyId)">Join Game</button></td>
 		</tr>
 	</table>

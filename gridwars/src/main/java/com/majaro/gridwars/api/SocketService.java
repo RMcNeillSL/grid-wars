@@ -14,7 +14,7 @@ import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import com.majaro.gridwars.apiobjects.MessageRequest;
-import com.majaro.gridwars.apiobjects.NewServerLobbyRequest;
+import com.majaro.gridwars.apiobjects.NewGameLobbyRequest;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
@@ -30,13 +30,12 @@ public class SocketService {
 	// Socket objects
 	private Configuration socketServerConfig;
 	private SocketIOServer socketServer;
-	private BroadcastOperations broadcast;
 	private static final String SERVER_LOBBY_CHANNEL = "ServerLobby";
 
-	public SocketService (RequestProcessor requestProcessor) {
+	public SocketService (RequestProcessor reqProcessor) {
 
 		// Save passed variables
-		this.requestProcessor = requestProcessor;
+		requestProcessor = reqProcessor;
 
 		// Generate config for socket server
 		socketServerConfig = new Configuration();
@@ -46,7 +45,6 @@ public class SocketService {
 		// Construct socket server
 		socketServer = new SocketIOServer(socketServerConfig);
 		socketServer.addListeners(this);
-		this.broadcast = socketServer.getBroadcastOperations();
 
 		// Start socket server
 		socketServer.start();
@@ -56,8 +54,8 @@ public class SocketService {
 	@OnEvent("sendMessage")
     public void onMessage(SocketIOClient client, MessageRequest data, AckRequest ackRequest) {
 		String sessionId = client.getSessionId().toString();
-		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
@@ -73,7 +71,6 @@ public class SocketService {
 		this.requestProcessor.bindSocketSessionId(username, sessionId);
 		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
 			socketServer.addNamespace(lobbyId);
@@ -108,11 +105,11 @@ public class SocketService {
 		client.leaveRoom(SERVER_LOBBY_CHANNEL);
 		System.out.println("User has left the server lobby.");
 	}
-
-	@OnEvent("newServerLobby")
-	public void onNewServer(SocketIOClient client, NewServerLobbyRequest data, AckRequest ackRequest) {
+	
+	@OnEvent("newGameLobby")
+	public void onNewGame(SocketIOClient client, NewGameLobbyRequest data, AckRequest ackRequest) {
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
-		broadcastRoomState.sendEvent("newServerLobby", data);
+		broadcastRoomState.sendEvent("newGameLobby", data);
 	}
 
 	@OnEvent("forceDisconnect")
