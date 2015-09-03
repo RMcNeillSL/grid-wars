@@ -8,11 +8,13 @@ import java.util.Iterator;
 
 import org.joda.time.DateTime;
 
+import com.corundumstudio.socketio.BroadcastOperations;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.apiobjects.AuthRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
+import com.majaro.gridwars.apiobjects.NewGameLobbyRequest;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
@@ -25,60 +27,39 @@ public class RequestProcessor {
 	// Game array objects
 	private ArrayList<GameLobby> activeGameLobbys;
 	private ArrayList<GameMap> gameMaps;
-	
+
 	// Session management arrays
 	private ArrayList<Session> activeSessions;
 	private Thread sessionCleanUpThread;
 	private Runnable sessionCleanUp;
-	
+
 	// DB interaction objects
 	private static final String PERSISTENCE_UNIT = "gridwars";
 	private final EntityManager dao;
 	
-	// Socket objects
-	private Configuration config;
-	private SocketIOServer server;
+	// constants
+	private static final String DEFAULT_LOBBY_NAME = "Europe Server #";
 
-	
 	// Constructors
-	
+
 	public RequestProcessor() {
-		
+
 		// Set default array values
 		this.activeGameLobbys = new ArrayList<GameLobby>();
 		this.activeSessions = new ArrayList<Session>();
 		this.gameMaps = new ArrayList<GameMap>();
-		
+
 		// Create game maps
-		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));		
-		
+		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));
+
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
-		
+
 		// Setup sessions and sockets
 		initialiseSessionCleanUp();
-		initSocketConfig();
+		SocketService socketService = new SocketService(this);
 	}
 
-	
-	// Initialisation methods
-	
-	private void initSocketConfig() {
-		try {
-			config = new Configuration();
-			config.setHostname("localhost");
-			config.setPort(81);
-
-			server = new SocketIOServer(config);
-			SocketService socketService = new SocketService();
-			server.addListeners(socketService);
-			server.start();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	
 	// Managing game lobbies including joining, creating and game info retrieval
 
 	public GameJoinResponse newGame(String sessionId) {
@@ -91,12 +72,12 @@ public class RequestProcessor {
 
 			// Setup variables to work with
 			boolean inGame = false;
-			User user = this.getUserFromSessionId(sessionId);
+			User user = this.getUserFromRESTSessionId(sessionId);
 			
-			// Proceed if prerequisits are present
+			// Proceed if prerequisites are present
 			if (user != null) {
 
-				// Check player isnt already in a lobby
+				// Check player isn't already in a lobby
 				for (GameLobby gameLobby : this.activeGameLobbys) {
 					if (gameLobby.includesUser(user)) {
 						inGame = true;
@@ -106,7 +87,8 @@ public class RequestProcessor {
 				
 				// Create new game lobby
 				if (!inGame) {
-					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(0));
+					String lobbyName = generateValidLobbyName();
+					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(0), lobbyName);
 					responseConfig = new GameJoinResponse(gameLobby);
 					this.activeGameLobbys.add(gameLobby);
 				}
@@ -131,7 +113,7 @@ public class RequestProcessor {
 		try {
 
 			GameLobby gameLobby = this.getGameLobbyFromLobbyId(lobbyId);
-			User user = this.getUserFromSessionId(sessionId);
+			User user = this.getUserFromRESTSessionId(sessionId);
 			if (gameLobby != null && user != null && !gameLobby.includesUser(user) && gameLobby.canJoin()) {
 				gameLobby.addUser(user);
 				responseConfig = new GameJoinResponse(gameLobby);
@@ -155,25 +137,23 @@ public class RequestProcessor {
 	}
 
 	public void updateGameConfig(GameJoinResponse gameJoinResponse) {
-		
+
 		// Proceed if gamelobby and gameconfig are found
 		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
 		if (gameLobby != null) {
 			GameConfig gameConfig = gameLobby.getGameConfig();
 			if (gameConfig != null) {
-				gameConfig.updateGameConfig(this.getGameMapFromId(gameJoinResponse.getMapId()), 
-						gameJoinResponse.getMaxPlayers(), 
-						gameJoinResponse.getGameType());
+				gameConfig.updateGameConfig(this.getGameMapFromId(gameJoinResponse.getMapId()),
+						gameJoinResponse.getMaxPlayers(), gameJoinResponse.getGameType());
 			}
 		}
-		
+
 	}
-	
-	
+
 	// Session authentication and management methods
 
-	private void addNewSession(String sessionId, int userId) {
-		Session session = new Session(sessionId, userId);
+	private void addNewSession(String sessionId, User user) {
+		Session session = new Session(sessionId, user);
 		this.activeSessions.add(session);
 	}
 
@@ -193,20 +173,20 @@ public class RequestProcessor {
 
 	public int authenticate(String sessionId, AuthRequest authRequest) {
 		int response = 401;
-		int userId = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
+		User user = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
 
-		if (userId > -1) {
+		if (user != null) {
 			boolean userLoggedIn = false;
 
 			for (Session s : activeSessions) {
-				if (s.getUserId() == userId) {
+				if (s.getUser().getUsername().equals(user.getUsername())) {
 					userLoggedIn = true;
 					break;
 				}
 			}
 
 			if (!userLoggedIn) {
-				addNewSession(sessionId, userId);
+				addNewSession(sessionId, user);
 				response = 200;
 			} else {
 				response = 409;
@@ -216,9 +196,8 @@ public class RequestProcessor {
 		return response;
 	}
 
-	
 	// User login and registration methods
-	
+
 	public int register(RegRequest regRequest) {
 		return dao.register(regRequest.getNewUsername(), regRequest.getNewPassword());
 	}
@@ -232,34 +211,68 @@ public class RequestProcessor {
 		}
 	}
 
-	
 	// Utility methods
-	
-	public User getUserFromSessionId(String sessionId) {
-		int userId = -1;
 
-		for (Session s : activeSessions) {
-			if (s.getSessionId() == sessionId) {
-				userId = s.getUserId();
-				break;
+	public void bindSocketSessionId(String username, String socketSessionId) {
+		for (Session session : this.activeSessions) {
+			if (session.getUser().getUsername().equals(username)) {
+				session.bindSocketSessionId(socketSessionId);
 			}
 		}
+	}
 
-		return dao.getUser(userId);
+	public User getUserFromSocketSessionId(String sessionId) {
+		for (Session session : activeSessions) {
+			if (session.getSocketSessionId().equals(sessionId)) {
+				return session.getUser();
+			}
+		}
+		return null;
+	}
+
+	public GameLobby getGameLobbyFromSocketSessionId(String sessionId) {
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (user != null) {
+			for (GameLobby gameLobby : this.activeGameLobbys) {
+				if (gameLobby.includesUser(user)) {
+					return gameLobby;
+				}
+			}
+		}
+		return null;
+	}
+
+	public User getUserFromRESTSessionId(String sessionId) {
+		for (Session session : activeSessions) {
+			if (session.getSessionId() == sessionId) {
+				return session.getUser();
+			}
+		}
+		return null;
+	}
+
+	public GameLobby getGameLobbyFromRESTSessionId(String sessionId) {
+		User user = this.getUserFromRESTSessionId(sessionId);
+		if (user != null) {
+			for (GameLobby gameLobby : this.activeGameLobbys) {
+				if (gameLobby.includesUser(user)) {
+					return gameLobby;
+				}
+			}
+		}
+		return null;
 	}
 
 	private GameLobby getGameLobbyFromLobbyId(String lobbyId) {
-		System.out.println(lobbyId);
 		for (GameLobby gameLobby : this.activeGameLobbys) {
-			System.out.println(gameLobby.getLobbyId());
 			if (gameLobby.getLobbyId().equals(lobbyId)) {
 				return gameLobby;
 			}
 		}
 		return null;
 	}
-	
-	private GameMap getGameMapFromId(String gameMapId) {
+
+	public GameMap getGameMapFromId(String gameMapId) {
 		for (GameMap gameMap : this.gameMaps) {
 			if (gameMap.getMapId() == gameMapId) {
 				return gameMap;
@@ -267,7 +280,7 @@ public class RequestProcessor {
 		}
 		return null;
 	}
-	
+
 	private String GenerateUniqueGameLobbyId() {
 		SecureRandom random = new SecureRandom();
 		boolean lobbyIdReserved = true;
@@ -282,6 +295,28 @@ public class RequestProcessor {
 			}
 		}
 		return lobbyId;
+	}
+
+	private String generateValidLobbyName() {
+		String lobbyName = "";
+		String currentCount = Integer.toString(activeGameLobbys.size() + 1);
+
+		while (lobbyName == "") {
+			boolean nameIsFree = true;
+			
+			for (GameLobby lobby : activeGameLobbys) {
+				if(lobby.getLobbyName().equals(DEFAULT_LOBBY_NAME + currentCount)) {
+					nameIsFree = false;
+					break;
+				}
+			}
+			
+			if(nameIsFree) {
+				lobbyName = DEFAULT_LOBBY_NAME + currentCount;
+			}
+		}
+		
+		return lobbyName;
 	}
 
 	private void initialiseSessionCleanUp() {
@@ -312,5 +347,5 @@ public class RequestProcessor {
 		this.sessionCleanUpThread = new Thread(sessionCleanUp);
 		this.sessionCleanUpThread.start();
 	}
-	
+
 }

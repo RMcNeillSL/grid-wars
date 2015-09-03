@@ -29,6 +29,7 @@ public class GameConfig {
 	public String getMapId() { return this.map.getMapId(); }
 	public int getMaxPlayers() { return this.maxPlayers; }
 	public int getMapMaxPlayers() { return this.map.getMaxPlayers(); }
+	public String getMapName() { return this.map.getMapName(); }
 	public E_GameType getGameType() { return this.gameType; }
 
 	

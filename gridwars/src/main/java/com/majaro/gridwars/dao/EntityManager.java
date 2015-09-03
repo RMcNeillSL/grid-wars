@@ -16,13 +16,12 @@ public class EntityManager implements EntityManagerInterface {
 		this.persistenceUnit = persistenceUnit;
 	}
 	
-	public int authenticate(String usernameAttempt, String passwordAttempt) {
-		int userId = -1;
+	public User authenticate(String usernameAttempt, String passwordAttempt) {
+		User user = null;
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
 		javax.persistence.EntityManager em = emf.createEntityManager();
 		
 		try {
-			User user;
 			em.getTransaction().begin();
 			String sql = "SELECT u FROM User u WHERE UPPER(u.username) = UPPER(:user)";
 			TypedQuery<User> query = em.createQuery(sql, User.class);
@@ -30,8 +29,7 @@ public class EntityManager implements EntityManagerInterface {
 			user = query.getSingleResult();
 			em.getTransaction().commit();
 			
-			userId = user != null && user.validateCredentials(passwordAttempt) ?
-					user.getId() : -1;
+			if (user != null && !user.validateCredentials(passwordAttempt)) { user = null; }
 		}
 		catch(Exception e) {
 			System.out.println(e.getMessage());
@@ -41,7 +39,7 @@ public class EntityManager implements EntityManagerInterface {
 			emf.close();
 		}
 		
-		return userId;
+		return user;
 	}
 	
 	public int register(String newUsername, String newPassword) {
@@ -81,24 +79,4 @@ public class EntityManager implements EntityManagerInterface {
 		return response;
 	}
 	
-	public User getUser(int userId) {
-		User user = null;
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory(persistenceUnit);
-		javax.persistence.EntityManager em = emf.createEntityManager();
-		
-		try {
-			em.getTransaction().begin();
-			user = em.find(User.class, userId);
-			em.getTransaction().commit();
-		}
-		catch(Exception e) {
-			System.out.println(e.getMessage());
-		}
-		finally {
-			em.close();
-			emf.close();
-		}
-		
-		return user;
-	}
 }

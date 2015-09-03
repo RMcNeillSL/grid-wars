@@ -12,6 +12,7 @@ public class GameJoinResponse {
 	
 	// Set setter variables
 	private String lobbyId = null;
+	private String lobbyName = null;
 	private String mapId = null;
 	private int maxPlayers = -1;
 	private int mapMaxPlayers = -1;
@@ -28,7 +29,11 @@ public class GameJoinResponse {
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public String getLobbyId() { return this.sourceGameLobby.getLobbyId(); }
 	@JsonView(GameJoinResponse.Views.Summary.class)
+	public String getLobbyName() { return this.sourceGameLobby.getLobbyName(); }
+	@JsonView(GameJoinResponse.Views.Summary.class)
 	public String getMapId() { return this.sourceGameLobby.getGameConfig().getMapId(); }
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public String getMapName() { return this.sourceGameLobby.getGameConfig().getMapName(); }
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public int getMaxPlayers() { return this.sourceGameLobby.getGameConfig().getMaxPlayers(); }
 	@JsonView(GameJoinResponse.Views.Summary.class)
@@ -39,6 +44,7 @@ public class GameJoinResponse {
 
 	// Setters for request passing
 	public void setLobbyId(String lobbyId) { this.lobbyId = lobbyId; }
+	public void setLobbyName(String lobbyName) { this.lobbyName = lobbyName; }
 	public void setMapId(String mapId) { this.mapId = mapId; }
 	public void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
 	public void setMapMaxPlayers(int mapMaxPlayers) { this.mapMaxPlayers = mapMaxPlayers; }

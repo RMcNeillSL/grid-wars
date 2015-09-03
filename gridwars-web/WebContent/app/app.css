@@ -1,0 +1,8 @@
+.boxed {
+	border: 1px solid black;
+}
+
+.container-fluid {
+    height: 40vh;
+    overflow: auto;
+}
