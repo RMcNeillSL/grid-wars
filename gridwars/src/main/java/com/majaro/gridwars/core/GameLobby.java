@@ -109,6 +109,8 @@ public class GameLobby {
 	@JsonView(GameLobby.Views.Summary.class)
 	public int getMaxPlayers() { return this.gameConfig.getMaxPlayers(); }
 	@JsonView(GameLobby.Views.Summary.class)
+	public int getPlayerCount() { return this.connectedUsers.size(); }
+	@JsonView(GameLobby.Views.Summary.class)
 	public String getMapName() { return this.gameConfig.getMapName(); }
 	@JsonView(GameLobby.Views.Summary.class)
 	public String getGameType() { return this.gameConfig.getGameType().toString(); }

@@ -37,6 +37,8 @@ public class GameJoinResponse {
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public int getMaxPlayers() { return this.sourceGameLobby.getGameConfig().getMaxPlayers(); }
 	@JsonView(GameJoinResponse.Views.Summary.class)
+	public int getPlayerCount() { return this.sourceGameLobby.getPlayerCount(); }
+	@JsonView(GameJoinResponse.Views.Summary.class)
 	public int getMapMaxPlayers() { return this.sourceGameLobby.getGameConfig().getMapMaxPlayers(); }	
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public E_GameType getGameType() { return this.sourceGameLobby.getGameConfig().getGameType(); }

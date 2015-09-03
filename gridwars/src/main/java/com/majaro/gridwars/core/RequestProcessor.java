@@ -14,7 +14,6 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.apiobjects.AuthRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
-import com.majaro.gridwars.apiobjects.NewGameLobbyRequest;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
