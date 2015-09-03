@@ -19,6 +19,7 @@ import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.apiobjects.BindSocketRequest;
+import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.apiobjects.JoinRoomRequest;
 
 public class SocketService {
@@ -80,6 +81,20 @@ public class SocketService {
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
 		}
+	}
+
+	@OnEvent("updateGameConfig")
+	public void onUpdateGameConfig(SocketIOClient client, GameJoinResponse data) {
+		String sessionId = client.getSessionId().toString();
+		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		String lobbyId = gameLobby.getLobbyId();
+		
+		System.out.println("Received new config");
+		System.out.println(data.getMapId());
+
+		//this.requestProcessor.updateGameConfig(sessionId, data);
+		//BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+		//broadcastRoomState.sendEvent("gameConfig", data);
 	}
 
 	@OnEvent("joinServerLobby")

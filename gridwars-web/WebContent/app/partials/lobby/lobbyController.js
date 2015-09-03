@@ -9,15 +9,20 @@
 		this.$rootScope = $rootScope;
 		this.lobbyService = lobbyService;
 		this.$rootScope.lobbyMessages = [];
+		this.$rootScope.mapList = [];
 
 		// Declare variables
-		$scope.userReady = false;
+		this.$scope.userReady = false;
 
 	}
 
 	LobbyController.prototype = {
 			toggleUserReady: function () {
 				console.log("Toggle ready");
+			},
+			changeMap: function (mapId) {
+				this.$rootScope.gameConfig.mapId = mapId;
+				this.lobbyService.updateConfig(this.$rootScope.gameConfig);
 			},
 			callSendMessage: function (newMessage) {
 				this.lobbyService.sendMessage(newMessage);

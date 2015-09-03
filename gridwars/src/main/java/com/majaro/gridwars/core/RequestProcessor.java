@@ -47,7 +47,8 @@ public class RequestProcessor {
 		this.gameMaps = new ArrayList<GameMap>();
 		
 		// Create game maps
-		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));		
+		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));
+		this.gameMaps.add(new GameMap("2", "Omaga Beach", 2));
 		
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
@@ -133,21 +134,26 @@ public class RequestProcessor {
 		return this.gameMaps;
 	}
 
-	public void updateGameConfig(GameJoinResponse gameJoinResponse) {
-		
+	public void updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
+
 		// Proceed if gamelobby and gameconfig are found
 		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
+		User user = this.getUserFromSocketSessionId(sessionId);
 		if (gameLobby != null) {
 			GameConfig gameConfig = gameLobby.getGameConfig();
 			if (gameConfig != null) {
-				gameConfig.updateGameConfig(this.getGameMapFromId(gameJoinResponse.getMapId()), 
-						gameJoinResponse.getMaxPlayers(), 
-						gameJoinResponse.getGameType());
+				ArrayList<User> connectedUsers = gameLobby.getConnectedUsers();
+				if(user.getId() == connectedUsers.get(0).getId())
+				{
+					gameConfig.updateGameConfig(this.getGameMapFromId(gameJoinResponse.getMapId()),
+							gameJoinResponse.getMaxPlayers(), 
+							gameJoinResponse.getGameType());
+				}
 			}
 		}
-		
+
 	}
-	
+
 	
 	// Session authentication and management methods
 

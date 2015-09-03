@@ -8,7 +8,6 @@
 		self = this;
 
 		this.socket = io.connect("http://localhost:8080", {
-			"reconnection delay": 2000,
 			"force new connection": true
 		});
 
@@ -16,7 +15,6 @@
 			self.socket.emit("joinGameLobby", {
 				"user" : self.$rootScope.currentUser
 			});
-			//self.socket.emit("joinGameLobby");
 		});
 
 		this.socket.on("gameLobbyMessage", function(data) {
@@ -32,17 +30,38 @@
 			$rootScope.lobbyMessages.push(userJoinedMessage);
 			$rootScope.$apply();
 		});
+		
+		this.socket.on("gameConfig", function(data) {
+			console.log(data);
+		});
+
+		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
+			response.data.forEach(function(map) {
+				$rootScope.mapList.push(map);
+			});
+		}, function(response) {
+			if (response.status !== 200) {
+				console.log("ERROR.");		//TODO: Add more error checking
+			}
+		});
 
 	}
 	LobbyService.prototype = {
 			sendMessage: function (newMessage) {
-				this.socket.emit("sendMessage", {
-					"user" : this.$rootScope.currentUser,
-					"message" : newMessage
-				});
+				var tempObject = {
+						"user" : this.$rootScope.currentUser,
+						"message" : newMessage
+					};
+				this.socket.emit("sendMessage", tempObject);
 			},
 			joinGameLobby: function() {
 				this.socket.emit("joinGameLobby");
+			},
+			updateConfig: function(config) {
+				this.socket.emit("updateGameConfig", {
+					"@class" : "com.majaro.gridwars.apiobject.GameJoinResponse".config
+				});
+				console.log("HIT CLIENT");
 			}
 	}
 

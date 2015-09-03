@@ -25,8 +25,8 @@
 			var self = this;
 
 			var updateNewGameResponse = function(response) {
-				self.$rootScope.newGameResponse = response;
-				console.log(self.$rootScope.newGameResponse);
+				self.$rootScope.gameConfig = response;
+				console.log(self.$rootScope.gameConfig);
 				self.$location.path("/lobby");
 			};
 
@@ -34,7 +34,7 @@
 		},
 		joinGame : function(lobbyId) {
 			var self = this;
-			
+
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.joinGameResponse = response;
 				console.log(self.$rootScope.joinGameResponse);
