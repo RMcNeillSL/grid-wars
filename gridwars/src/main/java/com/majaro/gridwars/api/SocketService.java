@@ -63,7 +63,6 @@ public class SocketService {
 			String lobbyId = gameLobby.getLobbyId();
 			socketServer.addNamespace(lobbyId);
 			client.joinRoom(lobbyId);
-			System.out.println("CLIENT JOINED " + lobbyId);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
 		}
@@ -89,7 +88,6 @@ public class SocketService {
 
 		if (gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
-			System.out.println("Received new configs " + lobbyId);
 			this.requestProcessor.updateGameConfig(sessionId, data);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());

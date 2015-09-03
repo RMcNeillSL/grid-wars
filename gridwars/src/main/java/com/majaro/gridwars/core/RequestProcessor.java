@@ -137,22 +137,12 @@ public class RequestProcessor {
 		return this.gameMaps;
 	}
 
-
 	public void updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
 		// Proceed if gamelobby and gameconfig are found
 		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
 		User user = this.getUserFromSocketSessionId(sessionId);
 		if (gameLobby != null) {
-			GameConfig gameConfig = gameLobby.getGameConfig();
-			if (gameConfig != null) {
-				ArrayList<User> connectedUsers = gameLobby.getConnectedUsers();
-				if(user.getId() == connectedUsers.get(0).getId())
-				{
-					gameConfig.updateGameConfig(this.getGameMapFromId(gameJoinResponse.getMapId()),
-							gameJoinResponse.getMaxPlayers(), 
-							gameJoinResponse.getGameType());
-				}
-			}
+			gameLobby.update(gameJoinResponse, user, this.getGameMapFromId(gameJoinResponse.getMapId()));
 		}
 
 	}

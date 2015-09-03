@@ -7,6 +7,7 @@ import javax.persistence.OneToMany;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
+import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.Constants.E_GameType;
 import com.majaro.gridwars.game.Engine;
@@ -100,6 +101,21 @@ public class GameLobby {
 
 	// Game configuration interaction functions
 	public GameConfig getGameConfig() { return this.gameConfig; };
+	public void update(GameJoinResponse gameJoinResponse, User user, GameMap map) {
+		if (this.gameConfig != null && this.connectedUsers.size() > 0 && this.includesUser(user)) {
+			
+			
+			
+			// Update game config
+			if(user.getId() == this.connectedUsers.get(0).linkedUser.getId())
+			{
+				this.gameConfig.updateGameConfig(map,
+						gameJoinResponse.getMaxPlayers(), 
+						gameJoinResponse.getGameType());
+			}
+			
+		}
+	}
 	
 	// Getters for summary view
 	@JsonView(GameLobby.Views.Summary.class)
@@ -120,6 +136,13 @@ public class GameLobby {
 		for (int index = 0; index < this.connectedUsers.size(); index ++) {
 			result.add(Integer.toString(this.connectedUsers.get(index).linkedUser.getId()));
 		}
+		return result;
+	}
+	@JsonView(GameLobby.Views.Summary.class)
+	public ArrayList<LobbyUser> getConnectedLobbyUsers() {
+		ArrayList<LobbyUser> result = new ArrayList<LobbyUser>();
+		for (int index = 0; index < this.connectedUsers.size(); index ++) {
+			result.add(this.connectedUsers.get(index));		}
 		return result;
 	}
 

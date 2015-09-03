@@ -40,6 +40,7 @@
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
 			response.data.forEach(function(map) {
 				$rootScope.mapList.push(map);
+				console.log(map);
 			});
 		}, function(response) {
 			if (response.status !== 200) {
