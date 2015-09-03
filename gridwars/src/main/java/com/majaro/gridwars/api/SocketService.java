@@ -100,12 +100,15 @@ public class SocketService {
 		String sessionId = client.getSessionId().toString();
 		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-
+		
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
+			int currentUserId = user.getId();
+			boolean userReady = gameLobby.getLobbyUser(currentUserId).isReady();
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			//gameLobby.getLobbyUser(userId).setReady = !REady
-			broadcastRoomState.sendEvent("gameUpdated");		// SEND OUT CONFIGS TO ALL
+
+			gameLobby.getLobbyUser(currentUserId).setReady(!userReady);
+			broadcastRoomState.sendEvent("toggleUserReady", currentUserId);
 		}
 	}
 

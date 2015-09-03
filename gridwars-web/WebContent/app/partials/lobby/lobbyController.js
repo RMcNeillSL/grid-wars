@@ -19,7 +19,7 @@
 
 	LobbyController.prototype = {
 			toggleUserReady: function () {
-				console.log("Toggle ready");
+				this.lobbyService.toggleReady();
 			},
 			changeMap: function (mapId) {
 				this.$rootScope.gameConfig.mapId = mapId;

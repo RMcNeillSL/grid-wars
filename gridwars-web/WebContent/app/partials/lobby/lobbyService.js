@@ -38,11 +38,16 @@
 		});
 
 		this.socket.on("lobbyUserList", function(lobbyUserList) {
-			lobbyUserList.forEach(function(lobbyUser) {
-				$rootScope.lobbyUserList.push(lobbyUser);
-				console.log("USER LIST: ", $rootScope.lobbyUserList);
-				$rootScope.$apply();
-			});
+			$rootScope.lobbyUserList = lobbyUserList;
+			$rootScope.$apply();
+		});
+
+		this.socket.on("toggleUserReady", function(userId) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].ready = !$rootScope.lobbyUserList[i].ready;
+				}
+			}
 		});
 
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
