@@ -30,9 +30,11 @@
 			$rootScope.lobbyMessages.push(userJoinedMessage);
 			$rootScope.$apply();
 		});
-		
-		this.socket.on("gameConfig", function(data) {
-			console.log(data);
+
+		this.socket.on("gameConfig", function(mapId, maxPlayers, gameType) {
+			self.$rootScope.gameConfig.mapId = mapId;
+			self.$rootScope.gameConfig.maxPlayers = maxPlayers;
+			self.$rootScope.gameConfig.gameType = gameType;
 		});
 
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
@@ -58,10 +60,7 @@
 				this.socket.emit("joinGameLobby");
 			},
 			updateConfig: function(config) {
-				this.socket.emit("updateGameConfig", {
-					"@class" : "com.majaro.gridwars.apiobject.GameJoinResponse".config
-				});
-				console.log("HIT CLIENT");
+				this.socket.emit("updateGameConfig", config);
 			}
 	}
 

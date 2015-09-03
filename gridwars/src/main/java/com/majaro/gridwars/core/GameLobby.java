@@ -126,7 +126,7 @@ public class GameLobby {
 	// Getters for detail view
 	@JsonView(GameLobby.Views.Detailed.class)
 	public ArrayList<User> getConnectedUsers() {
-		ArrayList<User> users = null;
+		ArrayList<User> users = new ArrayList<User>();
 		for (int index = 0; index < this.connectedUsers.size(); index ++) {
 			users.add(this.connectedUsers.get(index).linkedUser);
 		}

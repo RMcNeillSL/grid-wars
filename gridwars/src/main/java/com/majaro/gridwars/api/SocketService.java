@@ -50,7 +50,25 @@ public class SocketService {
 		socketServer.start();
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
+	
+	@OnEvent("joinGameLobby")
+	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
+		String username = data.getUser();
+		String sessionId = client.getSessionId().toString();
+		this.requestProcessor.bindSocketSessionId(username, sessionId);
+		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 
+		if (user != null && gameLobby != null) {
+			String lobbyId = gameLobby.getLobbyId();
+			socketServer.addNamespace(lobbyId);
+			client.joinRoom(lobbyId);
+			System.out.println("CLIENT JOINED " + lobbyId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
+		}
+	}
+	
 	@OnEvent("sendMessage")
     public void onMessage(SocketIOClient client, MessageRequest data, AckRequest ackRequest) {
 		String sessionId = client.getSessionId().toString();
@@ -64,34 +82,18 @@ public class SocketService {
 		}
     }
 
-	@OnEvent("joinGameLobby")
-	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
-		String username = data.getUser();
-		String sessionId = client.getSessionId().toString();
-		this.requestProcessor.bindSocketSessionId(username, sessionId);
-		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-		if (user != null && gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			socketServer.addNamespace(lobbyId);
-			client.joinRoom(lobbyId);
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
-		}
-	}
-
 	@OnEvent("updateGameConfig")
 	public void onUpdateGameConfig(SocketIOClient client, GameJoinResponse data) {
 		String sessionId = client.getSessionId().toString();
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-		String lobbyId = gameLobby.getLobbyId();
-		
-		System.out.println("Received new config");
-		System.out.println(data.getMapId());
 
-		//this.requestProcessor.updateGameConfig(sessionId, data);
-		//BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-		//broadcastRoomState.sendEvent("gameConfig", data);
+		if (gameLobby != null) {
+			String lobbyId = gameLobby.getLobbyId();
+			System.out.println("Received new configs " + lobbyId);
+			this.requestProcessor.updateGameConfig(sessionId, data);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());
+		}
 	}
 
 	@OnEvent("joinServerLobby")

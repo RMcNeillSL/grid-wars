@@ -29,19 +29,50 @@ public class GameJoinResponse {
 	
 	// Getters for summary view
 	@JsonView(GameJoinResponse.Views.Summary.class)
-	public String getLobbyId() { return this.sourceGameLobby.getLobbyId(); }
+	public String getLobbyId() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getLobbyId(); 
+		} else if (this.sourceGameLobby == null && this.lobbyId != null) {
+			return this.lobbyId;
+		}
+		return "";
+	}
+	
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public String getLobbyName() { return this.sourceGameLobby.getLobbyName(); }
+	
 	@JsonView(GameJoinResponse.Views.Summary.class)
-	public String getMapId() { return this.sourceGameLobby.getGameConfig().getMapId(); }
+	public String getMapId() { 
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getMapId();
+		} else if (this.sourceGameLobby == null && this.mapId != null) {
+			return this.mapId;
+		}
+		return "";
+	}
+	
 	@JsonView(GameJoinResponse.Views.Summary.class)
-	public String getMapName() { return this.sourceGameLobby.getGameConfig().getMapName(); }
-	@JsonView(GameJoinResponse.Views.Summary.class)
-	public int getMaxPlayers() { return this.sourceGameLobby.getGameConfig().getMaxPlayers(); }
+	public int getMaxPlayers() { 
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getMaxPlayers(); 
+		} else if (this.sourceGameLobby == null && this.maxPlayers != -1) {
+			return this.maxPlayers;
+		}
+		return -1;
+	}
+	
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public int getMapMaxPlayers() { return this.sourceGameLobby.getGameConfig().getMapMaxPlayers(); }	
+	
 	@JsonView(GameJoinResponse.Views.Summary.class)
-	public E_GameType getGameType() { return this.sourceGameLobby.getGameConfig().getGameType(); }
+	public E_GameType getGameType() { 
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getGameType(); 
+		} else if (this.sourceGameLobby == null && this.gameType != null) {
+			return this.gameType;
+		}
+		return E_GameType.UNDEFINED;
+	}
 
 
 	// Setters for request passing

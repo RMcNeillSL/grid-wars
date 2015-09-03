@@ -20,7 +20,6 @@
 			this.socket.on("newGameLobby", function(data) {
 				_this.$rootScope.servers.push(data);
 				_this.$rootScope.$apply();
-				console.log("woah!");
 			});
 		},
 		getServers : function(callback) {
