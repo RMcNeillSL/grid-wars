@@ -49,8 +49,47 @@
             <tr ng-repeat="lobbyUser in $root.lobbyUserList">
                 <td>{{lobbyUser.linkedUser.username}}</td>
                 <td>{{lobbyUser.factionId}}</td>
-                <td>{{lobbyUser.playerTeam}}</td>
-                <td>{{singleUser.playerColour}}</td>
+                <td>
+                    <!-- Split button -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
+                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam==0">-</button>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a ng-click="controller.callChangeTeam(0)">-</a></li>
+                            <li><a ng-click="controller.callChangeTeam(1)">1</a></li>
+                            <li><a ng-click="controller.callChangeTeam(2)">2</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td>
+                    <!-- Split button -->
+					<div class="btn-group">
+					    <button type="button" class="btn btn-blueTeam" ng-if="lobbyUser.playerColour=='blue'">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-blueTeam dropdown-toggle" ng-if="lobbyUser.playerColour=='blue'" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+                        <button type="button" class="btn btn-redTeam" ng-if="lobbyUser.playerColour=='red'">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-redTeam dropdown-toggle" ng-if="lobbyUser.playerColour=='red'" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+                        <button type="button" class="btn btn-yellowTeam" ng-if="lobbyUser.playerColour=='yellow'">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-yellowTeam dropdown-toggle" ng-if="lobbyUser.playerColour=='yellow'" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+                        <button type="button" class="btn btn-orangeTeam" ng-if="lobbyUser.playerColour=='orange'">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-orangeTeam dropdown-toggle" ng-if="lobbyUser.playerColour=='orange'" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+                        <button type="button" class="btn btn-greenTeam" ng-if="lobbyUser.playerColour=='green'">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-greenTeam dropdown-toggle" ng-if="lobbyUser.playerColour=='green'" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+                        <button type="button" class="btn btn-pinkTeam" ng-if="lobbyUser.playerColour=='pink'">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-pinkTeam dropdown-toggle" ng-if="lobbyUser.playerColour=='pink'" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+					    <ul class="dropdown-menu">
+							<li><a ng-click="controller.callChangeColour('blue')">Blue</a></li>
+							<li><a ng-click="controller.callChangeColour('red')">Red</a></li>
+							<li><a ng-click="controller.callChangeColour('yellow')">Yellow</a></li>
+							<li><a ng-click="controller.callChangeColour('orange')">Orange</a></li>
+							<li><a ng-click="controller.callChangeColour('green')">Green</a></li>
+							<li><a ng-click="controller.callChangeColour('pink')">Pink</a></li>
+						</ul>
+					</div>
+				</td>
                 <td>
                     <input type="checkbox" ng-model="Ready" ng-change="controller.toggleUserReady()" id="toggle-ready">
                 </td>

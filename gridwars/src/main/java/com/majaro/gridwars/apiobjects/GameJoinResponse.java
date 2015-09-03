@@ -105,9 +105,9 @@ public class GameJoinResponse {
 	public int getPlayerNumber() {
 		return playerNumber;
 	}
-	public void setPlayerNumber(int playerNumber) {
-		this.playerNumber = playerNumber;
-	}
+//	public void setPlayerNumber(int playerNumber) { 			//TODO: Remove?
+//		this.playerNumber = playerNumber;
+//	}
 	public String getPlayerColour() {
 		return playerColour;
 	}

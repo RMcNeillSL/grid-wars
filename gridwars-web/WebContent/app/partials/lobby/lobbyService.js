@@ -46,6 +46,25 @@
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
 					$rootScope.lobbyUserList[i].ready = !$rootScope.lobbyUserList[i].ready;
+					$rootScope.$apply();
+				}
+			}
+		});
+
+		this.socket.on("changeUserColour", function(userId, colour) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].playerColour = colour;
+					$rootScope.$apply();
+				}
+			}
+		});
+
+		this.socket.on("changeUserTeam", function(userId, team) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].playerTeam = team;
+					$rootScope.$apply();
 				}
 			}
 		});
@@ -77,6 +96,12 @@
 			},
 			toggleReady: function() {
 				this.socket.emit("userToggleReady");
+			},
+			changeColour: function(colour) {
+				this.socket.emit("userChangeColour", colour);
+			},
+			changeTeam: function(team) {
+				this.socket.emit("userChangeTeam", team);
 			}
 	}
 

@@ -31,6 +31,12 @@
 			},
 			callJoinGameLobby: function () {
 				this.lobbyService.joinGameLobby();
+			},
+			callChangeColour: function (colour) {
+				this.lobbyService.changeColour(colour);
+			},
+			callChangeTeam: function (team) {
+				this.lobbyService.changeTeam(team);
 			}
 	}
 

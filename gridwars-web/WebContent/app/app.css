@@ -6,3 +6,39 @@
     height: 40vh;
     overflow: auto;
 }
+
+.btn-blueTeam { 
+  color: orange; 
+  background-color: blue; 
+  border-color: black; 
+}
+
+.btn-redTeam { 
+  color: green; 
+  background-color: red; 
+  border-color: black; 
+}
+
+.btn-yellowTeam { 
+  color: purple; 
+  background-color: yellow; 
+  border-color: black; 
+}
+
+.btn-orangeTeam { 
+  color: blue; 
+  background-color: orange; 
+  border-color: black; 
+}
+
+.btn-greenTeam { 
+  color: red; 
+  background-color: green; 
+  border-color: black; 
+}
+
+.btn-pinkTeam { 
+  color: green;
+  background-color: pink; 
+  border-color: black; 
+}
