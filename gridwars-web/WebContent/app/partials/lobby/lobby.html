@@ -2,7 +2,23 @@
 	<h1>LOBBY PAGE</h1>
 
 	<section class="col-md-6">
-	   <h2>Game Options</h2>
+        <h2>Game Options</h2>
+        <h3>Map Selection</h3>
+
+        <table class="table table-striped" id="map-list">
+            <tr>
+                <th>Map Name</th>
+                <th>Max Players</th>
+                <th>Selected</th>
+            </tr>
+            <tr ng-repeat="map in $root.mapList">
+                <td>{{map.mapName}}</td>
+                <td>{{map.maxPlayers}}</td>
+                <td>
+                    <input type="radio" name="mapRadio" ng-click="controller.changeMap(map.mapId)">
+                </td>
+            </tr>
+       </table>
 	</section>
 	
 	<section class="col-md-6">
@@ -40,7 +56,6 @@
                 </td>
             </tr>
         </table>
-        <button ng-click="controller.callJoinGameLobby()" class="btn"><span class="glyphicon glyphicon-user"></span> Join</button>
     </section>
 
 </div>

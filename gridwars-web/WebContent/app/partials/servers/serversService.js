@@ -52,6 +52,7 @@
 				callback(response.data);
 				self.socket.emit("refreshGameLobby", response.data);
 				self.socket.emit("leaveServerLobby", "");
+				self.socket.emit("forceDisconnect");
 			}, function(response) {
 				if (response.status === 401) {
 					console.log("Unauthorised.");
@@ -60,7 +61,6 @@
 		},
 		joinGame : function(lobbyId, callback) {
 			var self = this;
-
 			this.$http.post("/gridwars/rest/game/join/", lobbyId).then(
 					function(response) {
 						callback(response.data);

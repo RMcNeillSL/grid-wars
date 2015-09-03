@@ -20,7 +20,9 @@ public class GameJoinResponse {
 
 	
 	// Constructors
+	public GameJoinResponse() {}
 	public GameJoinResponse(GameLobby sourceGameLobby) {
+		super();
 		this.sourceGameLobby = sourceGameLobby;
 	}
 

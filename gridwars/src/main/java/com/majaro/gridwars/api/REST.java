@@ -81,7 +81,6 @@ public class REST {
 		return requestProcessor.isSessionAuthenticated(sessionId);
 	}
 
-	
 	@POST
 	@Path("/game/new")
 	@JsonView(GameJoinResponse.Views.Summary.class)
@@ -107,7 +106,7 @@ public class REST {
 			ArrayList<GameLobby> gameLobbys = requestProcessor.listGames();
 			return Response.ok(gameLobbys).build();
 		}
-		
+
 		return unauthResponse;
 	}
 
@@ -119,10 +118,10 @@ public class REST {
 			ArrayList<GameMap> gameMaps = requestProcessor.listGameMaps();
 			return Response.ok(gameMaps).build();
 		}
-		
+
 		return unauthResponse;
 	}
-	
+
 	@POST
 	@Path("/game/join")
 	@JsonView(GameJoinResponse.Views.Summary.class)
