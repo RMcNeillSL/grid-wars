@@ -3,7 +3,6 @@
 	<name>gridwars</name>
 	<comment></comment>
 	<projects>
-		<project>gridwars-web</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

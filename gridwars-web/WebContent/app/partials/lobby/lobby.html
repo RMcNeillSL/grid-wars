@@ -46,13 +46,53 @@
                 <th>Colour</th>
                 <th>Ready</th>
             </tr>
-            <tr>
-                <td>{{singleUser.name}}</td>
-                <td>Allied</td>
-                <td>-</td>
-                <td>{{singleUser.colour}}</td>
+            <tr ng-repeat="lobbyUser in $root.lobbyUserList">
+                <td>{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="lobbyUser.factionId==0">Allied</td>
+                <td ng-if="lobbyUser.factionId==1">Soviet</td>
+                <td ng-if="lobbyUser.factionId==3">Empire of the Rising Sun</td>
                 <td>
-                    <input type="checkbox" ng-model="Ready" ng-change="controller.toggleUserReady()" id="toggle-ready">
+                    <!-- Split button -->
+                    <div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
+                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
+                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam==0">-</button>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a ng-click="controller.callChangeTeam(0)">-</a></li>
+                            <li><a ng-click="controller.callChangeTeam(1)">1</a></li>
+                            <li><a ng-click="controller.callChangeTeam(2)">2</a></li>
+                        </ul>
+                    </div>
+                    <div class="btn-group" ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+                        <div ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</div>
+                        <div ng-if="lobbyUser.playerTeam==0">-</div>
+                    </div>
+                </td>
+                <td>
+                    <!-- Split button -->
+					<div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
+					    <button type="button" class="btn btn-default">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+					    <ul class="dropdown-menu">
+					        <li ng-repeat="colour in $root.colourList"><a ng-click="controller.callChangeColour(colour)">{{colour}}</a></li>
+						</ul>
+					</div>
+					<div class="btn-group" ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+                        {{lobbyUser.playerColour}}
+					</div>
+				</td>
+                <td>
+                    <input type="button" class="btn btn-success btn-sm" ng-if="lobbyUser.linkedUser.username==$root.currentUser && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
+                    <div ng-if="lobbyUser.linkedUser.username==$root.currentUser && lobbyUser.ready">
+                        <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
+                    </div>
+                    <div ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+                        <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
+                        <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
+                    </div>
                 </td>
             </tr>
         </table>

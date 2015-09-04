@@ -1,6 +1,7 @@
 # Grid Wars Specific
 gridwars/target/
 gridwars-web/target/
+Servers/
 ~$*.ods
 .recommenders/
 .classpath

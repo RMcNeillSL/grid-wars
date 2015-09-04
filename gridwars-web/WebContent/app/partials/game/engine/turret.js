@@ -1,4 +1,4 @@
-function Turret(phaserRef, mapGroup, turretGroup, xy, width, height, func_explosionRequest) {
+function Turret(phaserRef, mapGroup, turretGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
 	
 	// Make sure dependencies has been passed
 	if (turretGroup) {
@@ -16,6 +16,8 @@ function Turret(phaserRef, mapGroup, turretGroup, xy, width, height, func_explos
 		this.height = height;
 		this.left = xy.x + this.width/2;
 		this.top = xy.y + this.height/2;
+		this.col = col;
+		this.row = row;
 		
 		// Set default misc values
 		this.rotateSpeed = 3;
@@ -25,14 +27,21 @@ function Turret(phaserRef, mapGroup, turretGroup, xy, width, height, func_explos
 		// Create turret base object
 		this.baseSegment = this.phaserRef.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, 0);
 		this.baseSegment.anchor.setTo(0.5, 0.5);
+		this.baseSegment.width = this.width;
+		this.baseSegment.height = this.height;
 		this.baseSegment.z = 10;
 		this.turretGroup.add(this.baseSegment);
 		
 		// Create turrent cannon sprite
 		this.topSegment = this.phaserRef.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, 1);
 		this.topSegment.anchor.setTo(0.5, 0.5);
+		this.topSegment.width = this.width;
+		this.topSegment.height = this.height;
 		this.topSegment.z = 11;
-//		this.turretGroup.add(this.topSegment);
+		this.turretGroup.add(this.topSegment);
+		
+		// Set current mode based on build flag
+		this.setBuildingMode(inBuildingMode);
 		
 		// Create all turret animations
 //		this.animations = [];
@@ -68,6 +77,34 @@ function Turret(phaserRef, mapGroup, turretGroup, xy, width, height, func_explos
 	} else {
 		if (!phaserRef) { console.log("ERROR: Failed to construct turret, missing phaserRef."); }
 	}
+	
+}
+
+Turret.prototype.setBuildingMode = function(inBuildingMode) {
+	
+	if (inBuildingMode) {
+		this.baseSegment.visible = false;
+		this.topSegment.visible = false; 
+	} else {
+		this.baseSegment.visible = true;
+		this.topSegment.visible = true; 		
+	}
+	
+}
+
+Turret.prototype.setPosition = function(left, top, col, row) {
+	
+	// Update internal position keepers
+	this.left = left + this.width/2;
+	this.top = top + this.height/2;
+	this.col = col;
+	this.row = row;
+	
+	// Update sprite positioning
+	this.baseSegment.x = this.left;
+	this.baseSegment.y = this.top;
+	this.topSegment.x = this.left;
+	this.topSegment.y = this.top;
 	
 }
 

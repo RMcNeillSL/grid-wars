@@ -1,4 +1,4 @@
-function MapRenderer(phaserRef, mapGroup, mapData) {
+function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, mapData) {
 	
 	// Save passed phaser reference
 	this.phaserRef = phaserRef;
@@ -16,38 +16,112 @@ function MapRenderer(phaserRef, mapGroup, mapData) {
 	this.tileMapping[1] = CONSTANTS.MAP_TILE_B;
 	
 	// Create map images
-	this.tileSprites = [];
+	this.mapTiles = [];
+	// sprite - tile image sprite
+	// 
+	// building - any building taking up square
+	//
+	
+	// Save local reference to this
+	var self = this;
+	var createMapTile = function(cellId, col, row) {
+
+		// Create sprite for current tile
+		var tileSprite = null;
+		if (self.tileMapping[cellId]) {
+			tileSprite = self.phaserRef.add.sprite(self.tileWidth * col, self.tileHeight * row, self.tileMapping[cellId], 0);
+			tileSprite.width = self.tileWidth;
+			tileSprite.height = self.tileHeight;
+			mapGroup.add(tileSprite);
+		}
+		
+		// Create hover placement sprites
+		var placementSprite = self.phaserRef.add.sprite(self.tileWidth * col, self.tileHeight * row, CONSTANTS.MAP_TILE_PLACEMENT, 1);
+		placementSprite.width = self.tileWidth;
+		placementSprite.height = self.tileHeight;
+		placementSprite.visible = false;
+		mapOverlayGroup.add(placementSprite);
+		
+		// Save new sprites
+		this.tileSprite = tileSprite;
+		this.placementSprite = placementSprite;
+		
+	}
 	
 	// Generate map sprites
 	var colIndex = 0;
 	var rowIndex = 0;
-	var currentTile = null;
 	for (var index = 0; index < this.mapData.map.length; index ++) {
 		
-		// Create sprite for current tile
-		if (this.tileMapping[this.mapData.map[index]]) {
-			currentTile = this.phaserRef.add.sprite(this.tileWidth * colIndex,
-					this.tileHeight * rowIndex,
-					this.tileMapping[this.mapData.map[index]], 0);
-			currentTile.width = this.tileWidth;
-			currentTile.height = this.tileHeight;
-			mapGroup.add(currentTile);
-		}
+		// Add new map tile
+		this.mapTiles.push(new createMapTile(this.mapData.map[index], colIndex, rowIndex));
 		
 		// Check if reached the end of the row
-		if (colIndex >= this.width-1) {
-			rowIndex ++;
-			colIndex = 0;
-		} else {
-			colIndex ++;
+		if (colIndex >= this.width-1) { rowIndex ++; colIndex = 0; } else { colIndex ++; }
+	}
+	
+}
+
+MapRenderer.prototype.colRowToXY = function(col, row) {
+	
+	return {x: col * this.tileWidth, y: row * this.tileHeight };
+	
+}
+
+MapRenderer.prototype.xyToColRow = function(x, y) {
+	
+	return {col: Math.floor(x / this.tileWidth), row: Math.floor(y / this.tileHeight) };
+	
+}
+
+MapRenderer.prototype.getTileFromColRow = function(col, row) {
+	if (col + row * this.width < this.mapTiles.length) {
+		return this.mapTiles[col + row * this.width];
+	} else {
+		return null;
+	}
+}
+
+MapRenderer.prototype.placementHover = function(col, row, canPlace) {
+	
+	// Define local variables
+	var hoverTile = null;
+	
+	// Iterate through all tiles
+	for (var rowIndex = 0; rowIndex < this.height; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.width; colIndex ++) {
+			
+			// Create cell reference
+			hoverTile = this.getTileFromColRow(colIndex, rowIndex);
+			
+			// Check for tile retrieval success
+			if (hoverTile) {
+				if (col == colIndex && row == rowIndex) {
+					if (canPlace) {
+						hoverTile.placementSprite.frame = 1;
+					} else {
+						hoverTile.placementSprite.frame = 2;
+					}
+					hoverTile.placementSprite.visible = true;
+				} else {
+					hoverTile.placementSprite.visible = false;
+				}
+			}
+			
 		}
 	}
 	
 }
 
-MapRenderer.prototype.ColRowToXY = function(col, row) {
-	
-	return {x: col * this.tileWidth, y: row * this.tileHeight };
+MapRenderer.prototype.clearPlacementHover = function() {
+
+	// Iterate through all tiles
+	for (var rowIndex = 0; rowIndex < this.height; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.width; colIndex ++) {
+			hoverTile = this.getTileFromColRow(colIndex, rowIndex);
+			if (hoverTile) { hoverTile.placementSprite.visible = false; }
+		}
+	}
 	
 }
 

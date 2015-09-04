@@ -30,9 +30,55 @@
 			$rootScope.lobbyMessages.push(userJoinedMessage);
 			$rootScope.$apply();
 		});
-		
-		this.socket.on("gameConfig", function(data) {
-			console.log(data);
+
+		this.socket.on("gameConfig", function(mapId, maxPlayers, gameType) {
+			self.$rootScope.gameConfig.mapId = mapId;
+			self.$rootScope.gameConfig.maxPlayers = maxPlayers;
+			self.$rootScope.gameConfig.gameType = gameType;
+		});
+
+		this.socket.on("lobbyUserList", function(lobbyUserList) {
+			$rootScope.lobbyUserList = lobbyUserList;
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				for (var x = 0; x < $rootScope.colourList.length; x++) {
+					if ($rootScope.lobbyUserList[i].playerColour === $rootScope.colourList[x]) {
+						$rootScope.colourList.splice(x, 1);
+					}
+				}
+			}
+			$rootScope.$apply();
+		});
+
+		this.socket.on("toggleUserReady", function(userId) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].ready = !$rootScope.lobbyUserList[i].ready;
+					$rootScope.$apply();
+				}
+			}
+		});
+
+		this.socket.on("changeUserColour", function(userId, colour) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					for (var x = 0; x < $rootScope.colourList.length; x++) {
+						if ($rootScope.colourList[x] === colour) {
+							$rootScope.colourList[x] = $rootScope.lobbyUserList[i].playerColour;
+						}
+					}
+					$rootScope.lobbyUserList[i].playerColour = colour;
+					$rootScope.$apply();
+				}
+			}
+		});
+
+		this.socket.on("changeUserTeam", function(userId, team) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].playerTeam = team;
+					$rootScope.$apply();
+				}
+			}
 		});
 
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
@@ -58,10 +104,16 @@
 				this.socket.emit("joinGameLobby");
 			},
 			updateConfig: function(config) {
-				this.socket.emit("updateGameConfig", {
-					"@class" : "com.majaro.gridwars.apiobject.GameJoinResponse".config
-				});
-				console.log("HIT CLIENT");
+				this.socket.emit("updateGameConfig", config);
+			},
+			toggleReady: function() {
+				this.socket.emit("userToggleReady");
+			},
+			changeColour: function(colour) {
+				this.socket.emit("userChangeColour", colour);
+			},
+			changeTeam: function(team) {
+				this.socket.emit("userChangeTeam", team);
 			}
 	}
 
