@@ -1,18 +1,6 @@
 <div class="gwa-servers">
-	<h1>SERVERS PAGE ({{ servers.length }} servers)</h1>
-	<p><a href="javascript:DoPost()">Log out</a></p>
-	<script language="javascript">
-		function DoPost() {
-			$.post("gridwars/rest/logout");
-			console.log("logged out");
-			{
-				{
-					currentUser = null
-					window.location.replace("/#/login");
-				}
-			}
-		}
-	</script>
+	<h2 class="title">Servers page ({{ servers.length == 1 ? servers.length + " server" : servers.length + " servers" }})
+	<a ng-click="controller.logOut()">Log out</a></h2>
 
 	<table class="table table-striped">
 		<tr>
