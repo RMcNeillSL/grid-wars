@@ -18,6 +18,7 @@ CONSTANTS = {
 		SPRITE_EXPLOSION_B: "sprite_explosion_b",
 		
 		// Map tile image references
+		MAP_TILE_PLACEMENT: "tile_build",
 		MAP_TILE_A: "map_tile_a",
 		MAP_TILE_B: "map_tile_b"
 			
