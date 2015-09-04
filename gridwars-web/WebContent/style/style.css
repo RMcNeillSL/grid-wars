@@ -1,0 +1,85 @@
+@CHARSET "ISO-8859-1";
+
+body {
+  background-image: url("../images/background.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-color: #464646;
+  min-width:400px;
+  min-height:400px;
+}
+
+.margined {
+	margin-top: 80px;
+}
+
+.mainWrapper {
+	display:block;
+	margin:0 auto;
+	padding:20px;
+	width:70%;
+	min-height:200px;
+	border:3px solid #111;
+	background-color: rgba(0,0,0,0.7);
+}
+
+.navbar {
+
+}
+
+.navbar p {
+	color:#fff;
+	text-align:left;
+} 
+
+.navbar a {
+	color:#fff;
+	float:right;
+}
+
+.mainFooter {
+	text-align:center;
+	margin-top:10px;
+	font-size:12px;
+	font-weight:bold;
+	color:#000;
+}
+
+.gwa-form {
+	display:block;
+	
+	margin:auto;
+}
+
+.gwa-form h2 {
+	display:block;
+	width:100%;
+	padding-bottom:5px;
+	color:#fff;
+	font-size:16px;
+	font-weight:bold;
+	border-bottom:1px solid #fff;
+}
+
+.gwa-form input {
+	width:100%;
+	margin:0 auto;
+	margin-bottom:10px;
+}
+
+.gwa-form p {
+	float:left;
+	color:#ff0000;
+	line-height:34px;
+}
+
+.gwa-form button {
+	float:right;
+	margin-left:10px;
+}
+
+.gwa-server h1 {
+	color:#fff;
+}
