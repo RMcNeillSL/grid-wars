@@ -99,11 +99,7 @@ public class GameLobby {
 
 	public void updateUserTeam(int currentUserId, int team) {
 		this.getLobbyUser(currentUserId).setPlayerTeam(team);
-	}
-
-	public void updateUserReady(int currentUserId) {
-		boolean userReady = this.getLobbyUser(currentUserId).isReady();
-		this.getLobbyUser(currentUserId).setReady(!userReady);
+		this.setAllNotReady();
 	}
 
 	public boolean updateUserColour(int currentUserId, String colour) {
@@ -117,9 +113,21 @@ public class GameLobby {
 
 		if (colourUsed == false) {
 			this.getLobbyUser(currentUserId).setPlayerColour(colour);
+			this.setAllNotReady();
 			return true;
 		}
 		return false;
+	}
+	
+	public void updateUserReady(int currentUserId) {
+		boolean userReady = this.getLobbyUser(currentUserId).isReady();
+		this.getLobbyUser(currentUserId).setReady(!userReady);
+	}
+
+	public void setAllNotReady () {
+		for (int index = 0; index < this.connectedUsers.size(); index++) {
+			this.connectedUsers.get(index).setReady(false);
+		}
 	}
 
 	// Getters for summary view

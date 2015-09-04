@@ -125,6 +125,7 @@ public class SocketService {
 			if (colourChanged) {
 				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 				broadcastRoomState.sendEvent("changeUserColour", currentUserId, colour);
+				broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
 			}
 		}
 	}
@@ -141,6 +142,7 @@ public class SocketService {
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			gameLobby.updateUserTeam(currentUserId, team);
 			broadcastRoomState.sendEvent("changeUserTeam", currentUserId, team);
+			broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
 		}
 	}
 

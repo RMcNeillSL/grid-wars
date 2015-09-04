@@ -1,29 +1,61 @@
 <div class="gwa-lobby">
 	<h1>LOBBY PAGE</h1>
 
-	<section class="col-md-6">
+	<section ng-if="$root.gameConfig">
         <h2>Game Options</h2>
+        <section class="col-md-3">
         <h3>Map Selection</h3>
-
-        <table class="table table-striped" id="map-list">
+        <table class="table table-striped map-table" id="map-list">
             <tr>
                 <th>Map Name</th>
-                <th>Max Players</th>
-                <th>Selected</th>
+                <th>Players</th>
+                <th>Select</th>
             </tr>
             <tr ng-repeat="map in $root.mapList">
                 <td>{{map.mapName}}</td>
                 <td>{{map.maxPlayers}}</td>
                 <td>
-                    <input type="radio" name="mapRadio" ng-click="controller.changeMap(map.mapId)">
+                    <button type="button" class="btn btn-default" ng-if="controller.changeMap(map.mapId)"></button>
                 </td>
             </tr>
-       </table>
+        </table>
+        </section>
+
+        <section class="col-md-3">
+            <h3>Map Preview</h3>
+            <div class="map-preview">
+            </div>
+        </section>
 	</section>
-	
+
+    <section ng-if="$root.joinGameResponse">
+        <h2>Game Options</h2>
+        <section class="col-md-3">
+	        <h3>Selected Map</h3>
+	        <div>
+	            <table class="table table-striped map-table" id="map-list">
+	            <tr>
+	                <th>Map Name</th>
+	                <th>Players</th>
+	            </tr>
+	            <tr ng-repeat="map in $root.mapList">
+	                <td ng-if="map.mapId==$root.joinGameResponse.mapId">{{map.mapName}}</td>
+	                <td ng-if="map.mapId==$root.joinGameResponse.mapId">{{map.maxPlayers}}</td>
+	            </tr>
+	        </table>
+	        </div>
+        </section>
+
+        <section class="col-md-3">
+            <h3>Map Preview</h3>
+	        <div class="map-preview">
+	        </div>
+        </section>
+    </section>
+
 	<section class="col-md-6">
         <h2>Lobby Chat</h2>
-        <div class="container-fluid">
+        <div class="container-fluid chat-container">
             <div ng-repeat="message in $root.lobbyMessages">
                 {{message.user}}: {{message.message}}
             </div>
@@ -36,7 +68,7 @@
         </div>
     </section>
 
-    <section class="col-md-12">
+    <section class="col-md-12 player-table">
         <h2>Player Options</h2>
         <table class="table table-striped" id="game-player-list">
             <tr>

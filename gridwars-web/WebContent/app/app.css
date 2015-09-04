@@ -2,43 +2,24 @@
 	border: 1px solid black;
 }
 
-.container-fluid {
+.chat-container {
     height: 40vh;
     overflow: auto;
 }
 
-.btn-blueTeam { 
-  color: orange; 
-  background-color: blue; 
-  border-color: black; 
+.player-table {
+	height: 30vh;
+	overflow: auto;
 }
 
-.btn-redTeam { 
-  color: green; 
-  background-color: red; 
-  border-color: black; 
+.map-table {
+	overflow: auto;
 }
 
-.btn-yellowTeam { 
-  color: purple; 
-  background-color: yellow; 
-  border-color: black; 
-}
-
-.btn-orangeTeam { 
-  color: blue; 
-  background-color: orange; 
-  border-color: black; 
-}
-
-.btn-greenTeam { 
-  color: red; 
-  background-color: green; 
-  border-color: black; 
-}
-
-.btn-pinkTeam { 
-  color: green;
-  background-color: pink; 
-  border-color: black; 
+.map-preview {
+	border-style: solid;
+	border-width: 2px;
+	border-color: black;
+	height: 250px;
+	width: 250px;
 }
