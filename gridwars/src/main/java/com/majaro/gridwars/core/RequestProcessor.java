@@ -50,7 +50,7 @@ public class RequestProcessor {
 
 		// Create game maps
 		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));
-		this.gameMaps.add(new GameMap("2", "Omaga Beach", 2));
+		this.gameMaps.add(new GameMap("2", "Omaha Beach", 2));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);

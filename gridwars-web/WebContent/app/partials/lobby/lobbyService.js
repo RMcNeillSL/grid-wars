@@ -46,6 +46,9 @@
 					}
 				}
 			}
+//			for (var i = ($rootScope.lobbyUserList.length-1); i < $rootScope.lobbyUserList.length; i++) {
+//				$rootScope.lobbyUserList.push("");
+//			}
 			$rootScope.$apply();
 		});
 
@@ -53,9 +56,9 @@
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
 					$rootScope.lobbyUserList[i].ready = !$rootScope.lobbyUserList[i].ready;
-					$rootScope.$apply();
 				}
 			}
+			$rootScope.$apply();
 		});
 
 		this.socket.on("changeUserColour", function(userId, colour) {
@@ -67,18 +70,26 @@
 						}
 					}
 					$rootScope.lobbyUserList[i].playerColour = colour;
-					$rootScope.$apply();
 				}
 			}
+			$rootScope.$apply();
 		});
 
 		this.socket.on("changeUserTeam", function(userId, team) {
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
 					$rootScope.lobbyUserList[i].playerTeam = team;
-					$rootScope.$apply();
 				}
 			}
+			$rootScope.$apply();
+		});
+
+		this.socket.on("gameChanges", function() {		// EVERYONE SET TO NOT READY
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				$rootScope.lobbyUserList[i].ready = false;
+			}
+			$rootScope.lobbyMessages.push("A setting has changed - unreadying everyone");
+			$rootScope.$apply();
 		});
 
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {

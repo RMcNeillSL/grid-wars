@@ -10,7 +10,9 @@
 		this.loginService = loginService;
 
 		// Declare variables
-		$scope.username = $scope.currentUser != "" ? $scope.currentUser : ""; // REMOVE LATER
+		$scope.username = "TestUser";
+		$scope.password = "password";
+		//$scope.username = $scope.currentUser != "" ? $scope.currentUser : ""; // REMOVE LATER
 
 		// Constructor functions
 		this.createAuthRequest = function(username, password, param) {
