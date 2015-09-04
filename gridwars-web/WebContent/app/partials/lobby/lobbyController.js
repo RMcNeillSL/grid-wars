@@ -8,13 +8,13 @@
 		this.$location = $location;
 		this.$rootScope = $rootScope;
 		this.lobbyService = lobbyService;
-		this.$rootScope.lobbyMessages = [];
-		this.$rootScope.mapList = [];
+		$rootScope.lobbyMessages = [];
+		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];
+		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
 
 		// Declare variables
-		this.$scope.userReady = false;
-
+		//this.$scope.userReady = false;
 	}
 
 	LobbyController.prototype = {

@@ -106,8 +106,7 @@ public class SocketService {
 			int currentUserId = user.getId();
 			boolean userReady = gameLobby.getLobbyUser(currentUserId).isReady();
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-
-			gameLobby.getLobbyUser(currentUserId).setReady(!userReady);
+			gameLobby.updateUserReady(currentUserId);
 			broadcastRoomState.sendEvent("toggleUserReady", currentUserId);
 		}
 	}
@@ -121,12 +120,15 @@ public class SocketService {
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
 			int currentUserId = user.getId();
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			gameLobby.getLobbyUser(currentUserId).setPlayerColour(colour);			//TODO: Check colour is available first
-			broadcastRoomState.sendEvent("changeUserColour", currentUserId, colour);
+			boolean colourChanged = gameLobby.updateUserColour(currentUserId, colour);
+
+			if (colourChanged) {
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+				broadcastRoomState.sendEvent("changeUserColour", currentUserId, colour);
+			}
 		}
 	}
-	
+
 	@OnEvent("userChangeTeam")
 	public void onUserTeamChange(SocketIOClient client, int team) {
 		String sessionId = client.getSessionId().toString();
@@ -137,7 +139,7 @@ public class SocketService {
 			String lobbyId = gameLobby.getLobbyId();
 			int currentUserId = user.getId();
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			gameLobby.getLobbyUser(currentUserId).setPlayerTeam(team);
+			gameLobby.updateUserTeam(currentUserId, team);
 			broadcastRoomState.sendEvent("changeUserTeam", currentUserId, team);
 		}
 	}

@@ -87,9 +87,6 @@ public class GameLobby {
 	public GameConfig getGameConfig() { return this.gameConfig; };
 	public void update(GameJoinResponse gameJoinResponse, User user, GameMap map) {
 		if (this.gameConfig != null && this.connectedUsers.size() > 0 && this.includesUser(user)) {
-			
-			
-			
 			// Update game config if request is sent from the creator
 			if(user.getId() == this.connectedUsers.get(0).getLinkedUser().getId())
 			{
@@ -97,10 +94,34 @@ public class GameLobby {
 						gameJoinResponse.getMaxPlayers(), 
 						gameJoinResponse.getGameType());
 			}
-			
 		}
 	}
-	
+
+	public void updateUserTeam(int currentUserId, int team) {
+		this.getLobbyUser(currentUserId).setPlayerTeam(team);
+	}
+
+	public void updateUserReady(int currentUserId) {
+		boolean userReady = this.getLobbyUser(currentUserId).isReady();
+		this.getLobbyUser(currentUserId).setReady(!userReady);
+	}
+
+	public boolean updateUserColour(int currentUserId, String colour) {
+		boolean colourUsed = false;
+
+		for (int index = 0; index < this.connectedUsers.size(); index++) {
+			if (this.connectedUsers.get(index).getPlayerColour().equalsIgnoreCase(colour)) {
+				colourUsed = true;
+			}
+		}
+
+		if (colourUsed == false) {
+			this.getLobbyUser(currentUserId).setPlayerColour(colour);
+			return true;
+		}
+		return false;
+	}
+
 	// Getters for summary view
 	@JsonView(GameLobby.Views.Summary.class)
 	public String getLobbyId() { return this.lobbyId; }

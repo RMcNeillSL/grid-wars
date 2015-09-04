@@ -39,6 +39,13 @@
 
 		this.socket.on("lobbyUserList", function(lobbyUserList) {
 			$rootScope.lobbyUserList = lobbyUserList;
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				for (var x = 0; x < $rootScope.colourList.length; x++) {
+					if ($rootScope.lobbyUserList[i].playerColour === $rootScope.colourList[x]) {
+						$rootScope.colourList.splice(x, 1);
+					}
+				}
+			}
 			$rootScope.$apply();
 		});
 
@@ -54,6 +61,11 @@
 		this.socket.on("changeUserColour", function(userId, colour) {
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					for (var x = 0; x < $rootScope.colourList.length; x++) {
+						if ($rootScope.colourList[x] === colour) {
+							$rootScope.colourList[x] = $rootScope.lobbyUserList[i].playerColour;
+						}
+					}
 					$rootScope.lobbyUserList[i].playerColour = colour;
 					$rootScope.$apply();
 				}

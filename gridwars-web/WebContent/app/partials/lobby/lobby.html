@@ -77,12 +77,7 @@
 					    <button type="button" class="btn btn-default">{{lobbyUser.playerColour}}</button>
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
 					    <ul class="dropdown-menu">
-							<li><a ng-click="controller.callChangeColour('blue')">Blue</a></li>
-							<li><a ng-click="controller.callChangeColour('red')">Red</a></li>
-							<li><a ng-click="controller.callChangeColour('yellow')">Yellow</a></li>
-							<li><a ng-click="controller.callChangeColour('orange')">Orange</a></li>
-							<li><a ng-click="controller.callChangeColour('green')">Green</a></li>
-							<li><a ng-click="controller.callChangeColour('pink')">Pink</a></li>
+					        <li ng-repeat="colour in $root.colourList"><a ng-click="controller.callChangeColour(colour)">{{colour}}</a></li>
 						</ul>
 					</div>
 					<div class="btn-group" ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
@@ -90,7 +85,10 @@
 					</div>
 				</td>
                 <td>
-                    <input type="checkbox" ng-if="lobbyUser.linkedUser.username==$root.currentUser" ng-model="Ready" ng-change="controller.toggleUserReady()" id="toggle-ready">
+                    <input type="button" class="btn btn-success btn-sm" ng-if="lobbyUser.linkedUser.username==$root.currentUser && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
+                    <div ng-if="lobbyUser.linkedUser.username==$root.currentUser && lobbyUser.ready">
+                        <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
+                    </div>
                     <div ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
                         <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
