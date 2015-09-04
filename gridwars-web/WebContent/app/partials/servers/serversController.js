@@ -21,12 +21,16 @@
 
 			this.serversService.getServers(updateServers);
 		},
+		logOut : function() {
+			var self = this;
+			$.post("gridwars/rest/logout");
+			self.$location.path("/login");
+		},
 		createGame : function() {
 			var self = this;
 
 			var updateNewGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
-				console.log(self.$rootScope.gameConfig);
 				self.$location.path("/lobby");
 			};
 
@@ -37,7 +41,6 @@
 
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.joinGameResponse = response;
-				console.log(self.$rootScope.joinGameResponse);
 				self.$location.path("/lobby");
 			};
 
