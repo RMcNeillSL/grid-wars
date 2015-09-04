@@ -12,7 +12,7 @@ import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.Constants.E_GameType;
 import com.majaro.gridwars.game.Engine;
 import com.majaro.gridwars.game.GameConfig;
-import com.majaro.gridwars.game.GameMap;
+import com.majaro.gridwars.game.GameStaticMap;
 
 public class GameLobby {
 	
@@ -24,7 +24,7 @@ public class GameLobby {
 	private Engine engine = null;
 	private String lobbyName;
 	
-	public GameLobby(String lobbyId, User user, GameMap map, String lobbyName) {
+	public GameLobby(String lobbyId, User user, GameStaticMap map, String lobbyName) {
 		
 		// Create core objects
 		this.lobbyId = lobbyId;
@@ -85,7 +85,7 @@ public class GameLobby {
 
 	// Game configuration interaction functions
 	public GameConfig getGameConfig() { return this.gameConfig; };
-	public void update(GameJoinResponse gameJoinResponse, User user, GameMap map) {
+	public void update(GameJoinResponse gameJoinResponse, User user, GameStaticMap map) {
 		if (this.gameConfig != null && this.connectedUsers.size() > 0 && this.includesUser(user)) {
 			// Update game config if request is sent from the creator
 			if(user.getId() == this.connectedUsers.get(0).getLinkedUser().getId())

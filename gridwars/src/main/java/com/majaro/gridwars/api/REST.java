@@ -24,7 +24,8 @@ import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.GameConfig;
-import com.majaro.gridwars.game.GameMap;
+import com.majaro.gridwars.game.GameDynamicMap;
+import com.majaro.gridwars.game.GameStaticMap;
 
 @Produces("application/json")
 @Path("/")
@@ -127,10 +128,10 @@ public class REST {
 
 	@GET
 	@Path("/game/maps")
-	@JsonView(GameMap.Views.Summary.class)
+	@JsonView(GameStaticMap.Views.Summary.class)
 	public Response MapList() {
 		if (checkAuth()) {
-			ArrayList<GameMap> gameMaps = requestProcessor.listGameMaps();
+			ArrayList<GameStaticMap> gameMaps = requestProcessor.listGameMaps();
 			return Response.ok(gameMaps).build();
 		}
 

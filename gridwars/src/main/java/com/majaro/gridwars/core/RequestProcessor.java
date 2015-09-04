@@ -18,14 +18,15 @@ import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.GameConfig;
-import com.majaro.gridwars.game.GameMap;
+import com.majaro.gridwars.game.GameDynamicMap;
+import com.majaro.gridwars.game.GameStaticMap;
 import com.majaro.gridwars.game.Constants.E_GameType;
 
 public class RequestProcessor {
 
 	// Game array objects
 	private ArrayList<GameLobby> activeGameLobbys;
-	private ArrayList<GameMap> gameMaps;
+	private ArrayList<GameStaticMap> gameMaps;
 
 	// Session management arrays
 	private ArrayList<Session> activeSessions;
@@ -47,11 +48,11 @@ public class RequestProcessor {
 		// Set default array values
 		this.activeGameLobbys = new ArrayList<GameLobby>();
 		this.activeSessions = new ArrayList<Session>();
-		this.gameMaps = new ArrayList<GameMap>();
+		this.gameMaps = new ArrayList<GameStaticMap>();
 
 		// Create game maps
-		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));
-		this.gameMaps.add(new GameMap("2", "Omaga Beach", 2));
+		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 2));
+		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
@@ -135,7 +136,7 @@ public class RequestProcessor {
 		return this.activeGameLobbys;
 	}
 
-	public ArrayList<GameMap> listGameMaps() {
+	public ArrayList<GameStaticMap> listGameMaps() {
 		return this.gameMaps;
 	}
 
@@ -286,8 +287,8 @@ public class RequestProcessor {
 		return null;
 	}
 
-	public GameMap getGameMapFromId(String gameMapId) {
-		for (GameMap gameMap : this.gameMaps) {
+	public GameStaticMap getGameMapFromId(String gameMapId) {
+		for (GameStaticMap gameMap : this.gameMaps) {
 			if (gameMap.getMapId() == gameMapId) {
 				return gameMap;
 			}
