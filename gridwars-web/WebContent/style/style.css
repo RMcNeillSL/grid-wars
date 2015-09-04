@@ -7,8 +7,19 @@ body {
   background-attachment: fixed;
   background-size: cover;
   background-color: #464646;
-  min-width:400px;
-  min-height:400px;
+}
+
+html, body {
+    height: 100%;
+}
+
+.main {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 .margined {
@@ -16,8 +27,6 @@ body {
 }
 
 .mainWrapper {
-	display:block;
-	margin:0 auto;
 	padding:20px;
 	width:70%;
 	min-height:200px;
@@ -53,14 +62,20 @@ body {
 	margin:auto;
 }
 
-.gwa-form h2 {
+.title {
 	display:block;
 	width:100%;
 	padding-bottom:5px;
+	margin-top:0px;
 	color:#fff;
 	font-size:16px;
 	font-weight:bold;
 	border-bottom:1px solid #fff;
+}
+
+.title a {
+	float:right;
+	color:#fff;
 }
 
 .gwa-form input {
@@ -73,6 +88,8 @@ body {
 	float:left;
 	color:#ff0000;
 	line-height:34px;
+	margin:0;
+    padding:0;
 }
 
 .gwa-form button {
