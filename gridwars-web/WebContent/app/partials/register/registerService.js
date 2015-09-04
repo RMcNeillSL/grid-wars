@@ -10,10 +10,6 @@
 				this.$http.post("/gridwars/rest/register", register).then(function (response) {
 					callback(response.status);
 				}, function (response) {
-					if (response.status === 400) {
-					} else if (response.status === 500) {
-						console.log("Internal server error");
-					}
 					callback(response.status);
 				});
 			}

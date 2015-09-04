@@ -18,7 +18,7 @@
 		
 		// Constructor functions
 		this.createAuthRequest = function(username, password, params) {
-			password = CryptoJS.MD5(password).toString();			
+			//password = CryptoJS.MD5(password).toString();			
 			var newAuthRequest = {'usernameAttempt': username, 'passwordAttempt': password};
 			if (params) {
 				

@@ -13,7 +13,7 @@
 
 		// Constructor functions
 		this.createRegisterRequest = function (username, password, param) {
-			password1 = CryptoJS.MD5(password1).toString();
+			//password1 = CryptoJS.MD5(password1);
 			var newRegisterRequest = {
 					"newUsername": username,
 					"newPassword": password
@@ -43,6 +43,10 @@
 							_this.$scope.response = response;
 							if (response === 200) {
 								_this.changeView('/login');
+							} else if (response === 400) {
+								_this.$scope.registerError = "That username is taken.";
+							} else if (response === 500) {
+								_this.$scope.registerError = "Internal server error.";
 							}
 						});
 					} else if (username) {

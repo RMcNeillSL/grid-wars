@@ -1,6 +1,19 @@
 <div class="gwa-servers">
 	<h1>SERVERS PAGE ({{ servers.length }} servers)</h1>
-	
+	<p><a href="javascript:DoPost()">Log out</a></p>
+	<script language="javascript">
+		function DoPost() {
+			$.post("gridwars/rest/logout");
+			console.log("logged out");
+			{
+				{
+					currentUser = null
+					window.location.replace("/#/login");
+				}
+			}
+		}
+	</script>
+
 	<table class="table table-striped">
 		<tr>
 			<th>Lobby Id</th>
@@ -14,9 +27,14 @@
 			<td>{{ server.mapName }}</td>
 			<td>{{ server.playerCount }} / {{ server.maxPlayers }}</td>
 			<td>{{ controller.formatGameType(server.gameType) }}</td>
-			<td><button type="button" class="btn" ng-click="controller.joinGame(server.lobbyId)" ng-disabled="server.playerCount == server.maxPlayers">{{ server.playerCount < server.maxPlayers ? "Join Game" : "Game Full" }}</button></td>
+			<td><button type="button" class="btn"
+					ng-click="controller.joinGame(server.lobbyId)"
+					ng-disabled="server.playerCount == server.maxPlayers">{{
+					server.playerCount < server.maxPlayers ? "Join Game" : "Game Full"
+					}}</button></td>
 		</tr>
 	</table>
-	
-	<button type="button" class="btn" ng-click="controller.createGame()">Create Game</button>
+
+	<button type="button" class="btn" ng-click="controller.createGame()">Create
+		Game</button>
 </div>
