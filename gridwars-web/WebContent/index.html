@@ -7,36 +7,77 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-route.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-resource.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="http://crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js"></script>
 </head>
 
 <body>
-<div ng-if="currentUser">
-    <h3>Hello, {{currentUser}}</h3>
+<script language="javascript">
+window.onload = function() {
+	var nonAuthPages = [ "login", "register" ];
+	var currPath = window.location.href;
 
-    <a href="javascript:DoPost()">Logout</A> 
+	if(currPath.indexOf("?") > -1) {
+		currPath = currPath.substring(0, currPath.indexOf("?"));
+	}
 
-    <script language="javascript">
-    function DoPost() {
-    	$.post("gridwars/rest/logout");
-    	console.log("logged out");
-        {{currentUser=null}}
-    }
-    </script>
-</div>
+	for(var i = 0; i < nonAuthPages.length; i++) {
+		if (currPath.indexOf(nonAuthPages[i]) > -1) {
+			return;
+		}
+	}
 
-<div ng-if="!currentUser">
-	<h3>Please log in</h3>
-</div>
+	var redirectToLogin = function(res) {
+		if (res === null || res === undefined || res === "") {
+			window.location.replace("/#/login");
+		}
+	}
+
+	var checkAuth = function(callback) {
+		
+		$.post("gridwars/rest/checkauth", function() {
+		})
+		.complete(function(res) {
+			callback(res.responseText);
+		});
+	}
+
+	checkAuth(redirectToLogin);
+};
+</script>
+	<div ng-if="currentUser">
+		<h3>Hello, {{currentUser}}</h3>
+
+		<a href="javascript:DoPost()">Logout</A>
+
+		<script language="javascript">
+			function DoPost() {
+				$.post("gridwars/rest/logout");
+				console.log("logged out");
+				{
+					{
+						currentUser = null
+					}
+				}
+			}
+		</script>
+	</div>
+
+	<div ng-if="!currentUser">
+		<h3>Please log in</h3>
+	</div>
 
 
-<div ng-view></div>
+	<div ng-view></div>
 
 	<script src="lib/phaser.js"></script>
-	
+
 	<script src="app/partials/game/engine/constants.js"></script>
 	<script src="app/partials/game/engine/player.js"></script>
 	<script src="app/partials/game/engine/mapRenderer.js"></script>
@@ -47,41 +88,40 @@
 	<script src="app/partials/game/engine/turret.js"></script>
 	<script src="app/partials/game/engine/engine.js"></script>
 
-    <script src="app/app.js"></script>
+	<script src="app/app.js"></script>
 
-    <script src="app/partials/game/gameModule.js"></script>
-    <script src="app/partials/game/gameController.js"></script>
-    <script src="app/partials/game/gameDirective.js"></script>
+	<script src="app/partials/game/gameModule.js"></script>
+	<script src="app/partials/game/gameController.js"></script>
+	<script src="app/partials/game/gameDirective.js"></script>
 
-    <script src="app/partials/lobby/lobbyModule.js"></script>
-    <script src="app/partials/lobby/lobbyController.js"></script>
-    <script src="app/partials/lobby/lobbyDirective.js"></script>
-    <script src="app/partials/lobby/lobbyService.js"></script>
+	<script src="app/partials/lobby/lobbyModule.js"></script>
+	<script src="app/partials/lobby/lobbyController.js"></script>
+	<script src="app/partials/lobby/lobbyDirective.js"></script>
+	<script src="app/partials/lobby/lobbyService.js"></script>
 
-    <script src="app/partials/login/loginModule.js"></script>
-    <script src="app/partials/login/loginController.js"></script>
-    <script src="app/partials/login/loginDirective.js"></script>
-    <script src="app/partials/login/loginService.js"></script>
+	<script src="app/partials/login/loginModule.js"></script>
+	<script src="app/partials/login/loginController.js"></script>
+	<script src="app/partials/login/loginDirective.js"></script>
+	<script src="app/partials/login/loginService.js"></script>
 
-    <script src="app/partials/register/registerModule.js"></script>
-    <script src="app/partials/register/registerController.js"></script>
-    <script src="app/partials/register/registerDirective.js"></script>
-    <script src="app/partials/register/registerService.js"></script>
+	<script src="app/partials/register/registerModule.js"></script>
+	<script src="app/partials/register/registerController.js"></script>
+	<script src="app/partials/register/registerDirective.js"></script>
+	<script src="app/partials/register/registerService.js"></script>
 
-    <script src="app/partials/results/resultsModule.js"></script>
-    <script src="app/partials/results/resultsController.js"></script>
-    <script src="app/partials/results/resultsDirective.js"></script>
+	<script src="app/partials/results/resultsModule.js"></script>
+	<script src="app/partials/results/resultsController.js"></script>
+	<script src="app/partials/results/resultsDirective.js"></script>
 
-    <script src="app/partials/servers/serversModule.js"></script>
-    <script src="app/partials/servers/serversController.js"></script>
-    <script src="app/partials/servers/serversDirective.js"></script>
-    <script src="app/partials/servers/serversService.js"></script>
-    
-    <script src="app/partials/testing/testingModule.js"></script>
-    <script src="app/partials/testing/testingController.js"></script>
-    <script src="app/partials/testing/testingDirective.js"></script>
-    <script src="app/partials/testing/testingService.js"></script>
+	<script src="app/partials/servers/serversModule.js"></script>
+	<script src="app/partials/servers/serversController.js"></script>
+	<script src="app/partials/servers/serversDirective.js"></script>
+	<script src="app/partials/servers/serversService.js"></script>
 
+	<script src="app/partials/testing/testingModule.js"></script>
+	<script src="app/partials/testing/testingController.js"></script>
+	<script src="app/partials/testing/testingDirective.js"></script>
+	<script src="app/partials/testing/testingService.js"></script>
 </body>
-    <link href="app/app.css" rel="stylesheet" type="text/css">
+<link href="app/app.css" rel="stylesheet" type="text/css">
 </html>

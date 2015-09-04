@@ -31,9 +31,10 @@ import com.majaro.gridwars.game.GameMap;
 public class REST {
 	private final static RequestProcessor requestProcessor = new RequestProcessor();
 	private final Response unauthResponse = Response.status(401).build();
-	
-	@Context private HttpServletRequest request;
-	
+
+	@Context
+	private HttpServletRequest request;
+
 	@POST
 	@Path("/auth")
 	// If session already authenticated, skips the authentication
@@ -42,14 +43,28 @@ public class REST {
 	// and 401 if incorrect credentials were provided.
 	public Response Authenticate(AuthRequest authRequest) {
 		String sessionId = request.getSession(true).getId();
-		if(!requestProcessor.isSessionAuthenticated(sessionId)) {
+		if (!requestProcessor.isSessionAuthenticated(sessionId)) {
 			int authResponse = requestProcessor.authenticate(sessionId, authRequest);
 			return Response.status(authResponse).build();
 		} else {
 			return Response.status(200).build();
 		}
 	}
-	
+
+	@POST
+	@Path("/checkauth")
+	// Checks to see if the current users session is authenticated and returns username of logged in user.
+	public Response IsAuthenticated() {
+		String sessionId = request.getSession(true).getId();
+		String user = null;
+
+		if (requestProcessor.isSessionAuthenticated(sessionId)) {
+			user = requestProcessor.getUserFromRESTSessionId(sessionId).getUsername();
+		}
+
+		return Response.ok(user).build();
+	}
+
 	@POST
 	@Path("/register")
 	// attempts to create a user with the provided credentials
@@ -60,22 +75,22 @@ public class REST {
 		int response = requestProcessor.register(regRequest);
 		return Response.status(response).build();
 	}
-	
+
 	@POST
 	@Path("/logout")
 	// Does not return anything, if the user is logged in
 	// the user is logged out else nothing happens.
 	public Response LogOut() {
 		String sessionId = request.getSession(true).getId();
-		
-		if(checkAuth()) {
+
+		if (checkAuth()) {
 			requestProcessor.LogOut(sessionId);
 			return Response.ok().build();
 		}
-		
+
 		return unauthResponse;
 	}
-	
+
 	private boolean checkAuth() {
 		String sessionId = request.getSession(true).getId();
 		return requestProcessor.isSessionAuthenticated(sessionId);
@@ -85,7 +100,7 @@ public class REST {
 	@Path("/game/new")
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public Response GameNew() {
-		if(checkAuth()) {
+		if (checkAuth()) {
 			String sessionId = request.getSession(true).getId();
 			GameJoinResponse gameJoinResponse = requestProcessor.newGame(sessionId);
 			if (gameJoinResponse != null) {
@@ -94,7 +109,7 @@ public class REST {
 				return Response.status(500).build();
 			}
 		}
-		
+
 		return unauthResponse;
 	}
 
@@ -102,11 +117,11 @@ public class REST {
 	@Path("/game/list")
 	@JsonView(GameLobby.Views.Summary.class)
 	public Response GameList() {
-		if(checkAuth()) {
+		if (checkAuth()) {
 			ArrayList<GameLobby> gameLobbys = requestProcessor.listGames();
 			return Response.ok(gameLobbys).build();
 		}
-		
+
 		return unauthResponse;
 	}
 
@@ -114,19 +129,19 @@ public class REST {
 	@Path("/game/maps")
 	@JsonView(GameMap.Views.Summary.class)
 	public Response MapList() {
-		if(checkAuth()) {
+		if (checkAuth()) {
 			ArrayList<GameMap> gameMaps = requestProcessor.listGameMaps();
 			return Response.ok(gameMaps).build();
 		}
-		
+
 		return unauthResponse;
 	}
-	
+
 	@POST
 	@Path("/game/join")
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public Response GameJoin(String lobbyId) {
-		if(checkAuth()) {
+		if (checkAuth()) {
 			String sessionId = request.getSession(true).getId();
 			GameJoinResponse gameJoinResponse = requestProcessor.joinGame(lobbyId, sessionId);
 			if (gameJoinResponse != null) {
@@ -135,8 +150,8 @@ public class REST {
 				return Response.status(500).build();
 			}
 		}
-		
+
 		return unauthResponse;
 	}
-	
+
 }

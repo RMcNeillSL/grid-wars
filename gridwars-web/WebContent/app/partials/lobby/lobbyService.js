@@ -8,12 +8,11 @@
 		self = this;
 
 		this.socket = io.connect("http://localhost:8080", {
-			"reconnection delay": 2000,
-			"force new connection": false
+			"force new connection": true
 		});
 
 		this.socket.on("connect", function () {
-			self.socket.emit("bindSocket", {
+			self.socket.emit("joinGameLobby", {
 				"user" : self.$rootScope.currentUser
 			});
 		});
@@ -31,17 +30,78 @@
 			$rootScope.lobbyMessages.push(userJoinedMessage);
 			$rootScope.$apply();
 		});
+
+		this.socket.on("gameConfig", function(mapId, maxPlayers, gameType) {
+			self.$rootScope.gameConfig.mapId = mapId;
+			self.$rootScope.gameConfig.maxPlayers = maxPlayers;
+			self.$rootScope.gameConfig.gameType = gameType;
+		});
+
+		this.socket.on("lobbyUserList", function(lobbyUserList) {
+			$rootScope.lobbyUserList = lobbyUserList;
+			$rootScope.$apply();
+		});
+
+		this.socket.on("toggleUserReady", function(userId) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].ready = !$rootScope.lobbyUserList[i].ready;
+					$rootScope.$apply();
+				}
+			}
+		});
+
+		this.socket.on("changeUserColour", function(userId, colour) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].playerColour = colour;
+					$rootScope.$apply();
+				}
+			}
+		});
+
+		this.socket.on("changeUserTeam", function(userId, team) {
+			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+					$rootScope.lobbyUserList[i].playerTeam = team;
+					$rootScope.$apply();
+				}
+			}
+		});
+
+		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
+			response.data.forEach(function(map) {
+				$rootScope.mapList.push(map);
+			});
+		}, function(response) {
+			if (response.status !== 200) {
+				console.log("ERROR.");		//TODO: Add more error checking
+			}
+		});
+
 	}
 	LobbyService.prototype = {
 			sendMessage: function (newMessage) {
-				this.socket.emit("sendMessage", {
-					"user" : this.$rootScope.currentUser,
-					"message" : newMessage
-				});
+				var tempObject = {
+						"user" : this.$rootScope.currentUser,
+						"message" : newMessage
+					};
+				this.socket.emit("sendMessage", tempObject);
 			},
-
-			joinGameLobby: function () {
+			joinGameLobby: function() {
 				this.socket.emit("joinGameLobby");
+			},
+			updateConfig: function(config) {
+				this.socket.emit("updateGameConfig", config);
+			},
+			toggleReady: function() {
+				this.socket.emit("userToggleReady");
+			},
+			changeColour: function(colour) {
+				this.socket.emit("userChangeColour", colour);
+			},
+			changeTeam: function(team) {
+				this.socket.emit("userChangeTeam", team);
 			}
 	}
 

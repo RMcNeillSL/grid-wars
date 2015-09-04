@@ -14,7 +14,6 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.apiobjects.AuthRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
-import com.majaro.gridwars.apiobjects.NewGameLobbyRequest;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
@@ -51,6 +50,7 @@ public class RequestProcessor {
 
 		// Create game maps
 		this.gameMaps.add(new GameMap("1", "Hunting Ground", 2));
+		this.gameMaps.add(new GameMap("2", "Omaga Beach", 2));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
@@ -89,7 +89,8 @@ public class RequestProcessor {
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
 					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(0), lobbyName);
-					responseConfig = new GameJoinResponse(gameLobby);
+					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
+					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);
 				}
 			}
@@ -115,8 +116,8 @@ public class RequestProcessor {
 			GameLobby gameLobby = this.getGameLobbyFromLobbyId(lobbyId);
 			User user = this.getUserFromRESTSessionId(sessionId);
 			if (gameLobby != null && user != null && !gameLobby.includesUser(user) && gameLobby.canJoin()) {
-				gameLobby.addUser(user);
-				responseConfig = new GameJoinResponse(gameLobby);
+				LobbyUser lobbyUser = gameLobby.addUser(user);
+				responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 			}
 
 		} catch (Exception e) {
@@ -136,20 +137,17 @@ public class RequestProcessor {
 		return this.gameMaps;
 	}
 
-	public void updateGameConfig(GameJoinResponse gameJoinResponse) {
-
+	public void updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
 		// Proceed if gamelobby and gameconfig are found
 		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
+		User user = this.getUserFromSocketSessionId(sessionId);
 		if (gameLobby != null) {
-			GameConfig gameConfig = gameLobby.getGameConfig();
-			if (gameConfig != null) {
-				gameConfig.updateGameConfig(this.getGameMapFromId(gameJoinResponse.getMapId()),
-						gameJoinResponse.getMaxPlayers(), gameJoinResponse.getGameType());
-			}
+			gameLobby.update(gameJoinResponse, user, this.getGameMapFromId(gameJoinResponse.getMapId()));
 		}
 
 	}
-
+	
+	
 	// Session authentication and management methods
 
 	private void addNewSession(String sessionId, User user) {

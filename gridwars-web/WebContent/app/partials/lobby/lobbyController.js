@@ -9,15 +9,21 @@
 		this.$rootScope = $rootScope;
 		this.lobbyService = lobbyService;
 		this.$rootScope.lobbyMessages = [];
+		this.$rootScope.mapList = [];
+		$rootScope.lobbyUserList = [];
 
 		// Declare variables
-		$scope.userReady = false;
+		this.$scope.userReady = false;
 
 	}
 
 	LobbyController.prototype = {
 			toggleUserReady: function () {
-				console.log("Toggle ready");
+				this.lobbyService.toggleReady();
+			},
+			changeMap: function (mapId) {
+				this.$rootScope.gameConfig.mapId = mapId;
+				this.lobbyService.updateConfig(this.$rootScope.gameConfig);
 			},
 			callSendMessage: function (newMessage) {
 				this.lobbyService.sendMessage(newMessage);
@@ -25,6 +31,12 @@
 			},
 			callJoinGameLobby: function () {
 				this.lobbyService.joinGameLobby();
+			},
+			callChangeColour: function (colour) {
+				this.lobbyService.changeColour(colour);
+			},
+			callChangeTeam: function (team) {
+				this.lobbyService.changeTeam(team);
 			}
 	}
 

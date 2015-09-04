@@ -25,8 +25,8 @@
 			var self = this;
 
 			var updateNewGameResponse = function(response) {
-				self.$rootScope.newGameResponse = response;
-				console.log(self.$rootScope.newGameResponse);
+				self.$rootScope.gameConfig = response;
+				console.log(self.$rootScope.gameConfig);
 				self.$location.path("/lobby");
 			};
 
@@ -34,7 +34,7 @@
 		},
 		joinGame : function(lobbyId) {
 			var self = this;
-			
+
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.joinGameResponse = response;
 				console.log(self.$rootScope.joinGameResponse);
@@ -42,6 +42,13 @@
 			};
 
 			this.serversService.joinGame(lobbyId, updateJoinGameResponse);
+		},
+		formatGameType : function(gameType) {
+			if (gameType === "FREE_FOR_ALL") {
+				return "Free for all";
+			} else if (gameType === "DM00") {
+				return "Death Match 00";
+			}
 		}
 	}
 

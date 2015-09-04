@@ -12,11 +12,11 @@
 		<tr ng-repeat="server in servers">
 			<td>{{ server.lobbyName }}</td>
 			<td>{{ server.mapName }}</td>
-			<td>{{ server.connectedUsersString.length }} / {{ server.maxPlayers }}</td>
-			<td>{{ server.gameType }}</td>
-			<td><button type="button" class="button" ng-click="controller.joinGame(server.lobbyId)">Join Game</button></td>
+			<td>{{ server.playerCount }} / {{ server.maxPlayers }}</td>
+			<td>{{ controller.formatGameType(server.gameType) }}</td>
+			<td><button type="button" class="btn" ng-click="controller.joinGame(server.lobbyId)" ng-disabled="server.playerCount == server.maxPlayers">{{ server.playerCount < server.maxPlayers ? "Join Game" : "Game Full" }}</button></td>
 		</tr>
 	</table>
 	
-	<button type="button" class="button" ng-click="controller.createGame()">Create Game</button>
+	<button type="button" class="btn" ng-click="controller.createGame()">Create Game</button>
 </div>
