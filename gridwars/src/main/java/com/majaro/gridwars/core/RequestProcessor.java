@@ -36,9 +36,10 @@ public class RequestProcessor {
 	private static final String PERSISTENCE_UNIT = "gridwars";
 	private final EntityManager dao;
 	
-	// constants
+	// Constants
 	private static final String DEFAULT_LOBBY_NAME = "Europe Server #";
 
+	
 	// Constructors
 
 	public RequestProcessor() {
@@ -60,6 +61,7 @@ public class RequestProcessor {
 		SocketService socketService = new SocketService(this);
 	}
 
+	
 	// Managing game lobbies including joining, creating and game info retrieval
 
 	public GameJoinResponse newGame(String sessionId) {
@@ -147,6 +149,18 @@ public class RequestProcessor {
 
 	}
 	
+	public GameJoinResponse getUsersGame(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromRESTSessionId(sessionId);
+		User user = this.getUserFromRESTSessionId(sessionId);
+		if (gameLobby != null && user != null) {
+			LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
+			if (lobbyUser != null) {
+				return new GameJoinResponse(gameLobby, lobbyUser);
+			}
+		}
+		return null;
+	}
+	
 	
 	// Session authentication and management methods
 
@@ -194,6 +208,7 @@ public class RequestProcessor {
 		return response;
 	}
 
+	
 	// User login and registration methods
 
 	public int register(RegRequest regRequest) {
@@ -209,6 +224,7 @@ public class RequestProcessor {
 		}
 	}
 
+	
 	// Utility methods
 
 	public void bindSocketSessionId(String username, String socketSessionId) {
