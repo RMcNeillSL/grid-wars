@@ -5,20 +5,20 @@ import com.majaro.gridwars.game.Constants.E_GameType;
 public class GameConfig {
 	
 	// Define private variables
-	private GameMap map;
+	private GameStaticMap map;
 	private int maxPlayers = 2;
 	private E_GameType gameType;
 	
 	
 	// Constructors
-	public GameConfig(GameMap map, E_GameType gameType) {
+	public GameConfig(GameStaticMap map, E_GameType gameType) {
 		this.map = map;
 		this.gameType = gameType;
 	}
 	
 	
 	// Update game config
-	public void updateGameConfig(GameMap map, int maxPlayers, E_GameType gameType) {
+	public void updateGameConfig(GameStaticMap map, int maxPlayers, E_GameType gameType) {
 		if (map != null) { this.map = map; }
 		if (maxPlayers > 1) { this.maxPlayers = maxPlayers; }
 		if (gameType != E_GameType.UNDEFINED) { this.gameType = gameType; }

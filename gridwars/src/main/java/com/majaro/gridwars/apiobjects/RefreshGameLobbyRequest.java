@@ -1,7 +1,7 @@
 package com.majaro.gridwars.apiobjects;
 
 import com.majaro.gridwars.entities.User;
-import com.majaro.gridwars.game.GameMap;
+import com.majaro.gridwars.game.GameDynamicMap;
 
 public class RefreshGameLobbyRequest {
 	private String lobbyId;

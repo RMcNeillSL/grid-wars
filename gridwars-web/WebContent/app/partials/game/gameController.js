@@ -2,30 +2,38 @@
 
 (function() {
 
-	function GameController() {
+	function GameController($scope, gameService) {
 
-		// Create game config object
-		var gameConfig = {
-			map : {
-				name : "Random Name",
-				width : 8,
-				height : 6,
-				map : [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-			},
-			maxPlayers : 2,
-			gameType : "FREE_FOR_ALL"
-		};
+		var startGame = function() {
 
-		// Define core game phaser variable
-		var phaserGame = new Engine(gameConfig);
+			// Create game config object
+			var gameConfig = {
+				map : {
+					name : "Random Name",
+					width : 8,
+					height : 6,
+					map : [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+				},
+				maxPlayers : 2,
+				gameType : "FREE_FOR_ALL"
+			};
 
-		// Define server interface object
-		var serverAPI = new ServerAPI();
+			// Define core game phaser variable
+			var phaserGame = new Engine(gameConfig);
+
+			// Define server interface object
+			var serverAPI = new ServerAPI();
+
+		}
+		
+		// Call connect and start the game
+		gameService.debugConnect(startGame);
 
 	}
 
-	angular.module('gridWarsApp.game.module').controller(
-			'gridWarsApp.game.controller', GameController);
+	GameController.$inject = [ '$scope', 'gridWarsApp.game.service' ];
+
+	angular.module('gridWarsApp.game.module').controller('gridWarsApp.game.controller', GameController);
 }());
