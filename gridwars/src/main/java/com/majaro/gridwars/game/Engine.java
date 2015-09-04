@@ -1,12 +1,16 @@
 package com.majaro.gridwars.game;
 
+import java.util.ArrayList;
+
 public class Engine extends Thread {
+
+	private class Player {
+		
+	}
 	
-	public Engine() {
-		
-		// Initialise create empty game grid
-		Grid gameGrid = new Grid(18, 5);
-		
+	private ArrayList<Player> players = null;
+	
+	public Engine(GameConfig gameConfig) {
 		
 	}
 	
