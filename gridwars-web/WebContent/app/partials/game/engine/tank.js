@@ -49,7 +49,7 @@ function Tank(phaserRef, mapGroup, tankGroup, xy, col, row, width, height, func_
 	
 }
 
-Turret.prototype.setBuildingMode = function(inBuildingMode) {
+Tank.prototype.setBuildingMode = function(inBuildingMode) {
 	
 	if (inBuildingMode) {
 		this.bodySegment.visible = false;
@@ -61,7 +61,7 @@ Turret.prototype.setBuildingMode = function(inBuildingMode) {
 	
 }
 
-Turret.prototype.setPosition = function(left, top, col, row) {
+Tank.prototype.setPosition = function(left, top, col, row) {
 	
 	// Update internal position keepers
 	this.left = left + this.width/2;
