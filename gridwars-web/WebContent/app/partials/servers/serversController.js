@@ -31,7 +31,7 @@
 
 			var updateNewGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
-				self.$rootScope.gameCreator = true;
+				self.$rootScope.gameLeader = true;
 				console.log(response);
 				self.$location.path("/lobby");
 			};

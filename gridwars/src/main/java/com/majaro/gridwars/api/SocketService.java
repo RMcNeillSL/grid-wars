@@ -134,6 +134,23 @@ public class SocketService {
 		}
 	}
 
+	@OnEvent("changeLobbyLeader")
+	public void onChangeLeader (SocketIOClient client, int targetUserId) {
+		String sessionId = client.getSessionId().toString();
+		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+
+		if (user != null && gameLobby != null) {
+			String lobbyId = gameLobby.getLobbyId();
+			String targetUsername = gameLobby.getLobbyUser(targetUserId).getLinkedUser().getUsername();
+			gameLobby.changeLobbyLeader(user, targetUserId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("leaderChanged", targetUsername);
+			gameLobby.setAllNotReady();
+			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
+		}
+	}
+
 	@OnEvent("userToggleReady")
 	public void onUserToggleReady(SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();

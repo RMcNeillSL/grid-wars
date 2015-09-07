@@ -130,6 +130,17 @@
 			$rootScope.$apply();
 		});
 
+		this.socket.on("leaderChanged", function (targetUsername) {
+			if (targetUsername == $rootScope.currentUser) {
+				self.$rootScope.gameLeader = true;
+			} else {
+				self.$rootScope.gameLeader = false;
+			}
+
+			$rootScope.lobbyMessages.push({user: "SERVER", message: "Leader has been changed to " + targetUsername});
+			$rootScope.$apply();
+		});
+
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
 			response.data.forEach(function(map) {
 				$rootScope.mapList.push(map);
@@ -167,6 +178,9 @@
 			},
 			startGame: function () {
 				this.socket.emit("startGameInitialisation");
+			},
+			changeLeader: function (userId) {
+				this.socket.emit("changeLobbyLeader", userId);
 			}
 	}
 

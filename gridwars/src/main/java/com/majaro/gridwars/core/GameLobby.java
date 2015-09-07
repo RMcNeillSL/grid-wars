@@ -130,6 +130,18 @@ public class GameLobby {
 		}
 	}
 	
+	public void changeLobbyLeader (User user, int targetUserId) {
+		if(user.getId() == this.connectedUsers.get(0).getLinkedUser().getId())
+		{
+			LobbyUser currentLeader = this.getLobbyUser(user.getId());
+			LobbyUser target = this.getLobbyUser(targetUserId);
+			int targetIndex = this.getLobbyUserIndex(targetUserId);
+
+			this.connectedUsers.set(0, target);
+			this.connectedUsers.set(targetIndex, currentLeader);
+		}
+	}
+	
 	public boolean checkAllReady () {
 		boolean allReady = true;
 		for (int index = 1; index < this.connectedUsers.size(); index++) {
@@ -164,13 +176,21 @@ public class GameLobby {
 		return result;
 	}
 	public LobbyUser getLobbyUser(int userId) {
-		ArrayList<LobbyUser> connectedUsers = this.getConnectedLobbyUsers();
 		for (int index = 0; index < this.connectedUsers.size(); index++) {
-			if (connectedUsers.get(index).getLinkedUser().getId() == userId) {
-				return connectedUsers.get(index);
+			if (this.connectedUsers.get(index).getLinkedUser().getId() == userId) {
+				return this.connectedUsers.get(index);
 			}
 		}
 		return null;
+	}
+	
+	private int getLobbyUserIndex(int userId) {
+		for (int index = 0; index < this.connectedUsers.size(); index++) {
+			if (this.connectedUsers.get(index).getLinkedUser().getId() == userId) {
+				return index;
+			}
+		}
+		return -1;
 	}
 	@JsonView(GameLobby.Views.Summary.class)
 	public ArrayList<LobbyUser> getConnectedLobbyUsers() {

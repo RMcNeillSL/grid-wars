@@ -57,6 +57,9 @@
 			},
 			callStartGame: function () {
 				this.lobbyService.startGame();
+			}, 
+			callChangeLeader: function (userId) {
+				this.lobbyService.changeLeader(userId);
 			}
 	}
 
