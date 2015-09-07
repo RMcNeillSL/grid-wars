@@ -86,12 +86,18 @@ public class SocketService {
 	public void onUpdateGameConfig(SocketIOClient client, GameJoinResponse data) {
 		String sessionId = client.getSessionId().toString();
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		boolean updateComplete = false;
 
-		if (gameLobby != null) {
+		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
-			this.requestProcessor.updateGameConfig(sessionId, data);
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());
+			updateComplete = this.requestProcessor.updateGameConfig(sessionId, data);
+			if (updateComplete) {
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+				broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());
+				broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
+				broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+			}
 		}
 	}
 
@@ -145,6 +151,23 @@ public class SocketService {
 			broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
 		}
 	}
+	
+//	@OnEvent("openGameSlot")
+//	public void onOpenSlot(SocketIOClient client) {
+//		String sessionId = client.getSessionId().toString();
+//		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+//		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+//		
+//		if (user != null && gameLobby != null) {
+//			String lobbyId = gameLobby.getLobbyId();
+//			int currentUserId = user.getId();
+//			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+//			
+//			gameLobby.update(currentUserId);
+//			broadcastRoomState.sendEvent("changeUserTeam", currentUserId, team);
+//			broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+//		}
+//	}
 
 	@OnEvent("joinServerLobby")
 	public void onJoinServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {

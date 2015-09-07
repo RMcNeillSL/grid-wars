@@ -15,7 +15,7 @@
                 <td>{{map.mapName}}</td>
                 <td>{{map.maxPlayers}}</td>
                 <td>
-                    <button type="button" class="btn btn-default" ng-click="controller.changeMap(map.mapId)">Select</button>
+                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.mapId)">Select</button>
                 </td>
             </tr>
         </table>
@@ -64,7 +64,7 @@
 	        <form ng-submit="controller.callSendMessage(newMessage)" class="col-md-10">
 		        <input type="text" placeholder="What would you like to say?" ng-model="newMessage" id="new-message" class="form-control">
 	        </form>
-	        <button ng-click="controller.callSendMessage(newMessage)" class="btn col-md-2"><span class="glyphicon glyphicon-user"></span> Send</button>
+	        <button ng-click="controller.callSendMessage(newMessage)" class="btn col-md-2 btn-sm"><span class="glyphicon glyphicon-user"></span> Send</button>
         </div>
     </section>
 
@@ -79,16 +79,30 @@
                 <th>Ready</th>
             </tr>
             <tr ng-repeat="lobbyUser in $root.lobbyUserList">
-                <td>{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="lobbyUser.linkedUser.id!=-1 || (lobbyUser.linkedUser.id==-1 && !$root.gameConfig)">{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="lobbyUser.linkedUser.id==-1 && $root.gameConfig">
+                    <div class="btn-group" ng-if="$root.gameConfig">
+                        <button type="button" class="btn btn-default btn-sm">{{lobbyUser.linkedUser.username}}</button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li ng-if="lobbyUser.linkedUser.username!=='Open'"><a ng-click="controller.openSlot()">Open</a></li>
+                            <li ng-if="lobbyUser.linkedUser.username!=='Closed'"><a ng-click="controller.closeSlot()">Close</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td ng-if="lobbyUser.factionId==-1">N/A</td>
                 <td ng-if="lobbyUser.factionId==0">Allied</td>
                 <td ng-if="lobbyUser.factionId==1">Soviet</td>
                 <td ng-if="lobbyUser.factionId==3">Empire of the Rising Sun</td>
                 <td>
                     <!-- Split button -->
                     <div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
-                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
-                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam==0">-</button>
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
+                        <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam==0">-</button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
                             <span class="caret"></span>
                             <span class="sr-only">Toggle Dropdown</span>
                         </button>
@@ -106,8 +120,8 @@
                 <td>
                     <!-- Split button -->
 					<div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
-					    <button type="button" class="btn btn-default">{{lobbyUser.playerColour}}</button>
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+					    <button type="button" class="btn btn-default btn-sm">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
 					    <ul class="dropdown-menu">
 					        <li ng-repeat="colour in $root.colourList"><a ng-click="controller.callChangeColour(colour)">{{colour}}</a></li>
 						</ul>

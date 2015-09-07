@@ -51,7 +51,7 @@ public class RequestProcessor {
 		this.gameMaps = new ArrayList<GameStaticMap>();
 
 		// Create game maps
-		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 2));
+		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 4));
 		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2));
 
 		// Construct DB link
@@ -140,14 +140,17 @@ public class RequestProcessor {
 		return this.gameMaps;
 	}
 
-	public void updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
+	public boolean updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
 		// Proceed if gamelobby and gameconfig are found
 		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
 		User user = this.getUserFromSocketSessionId(sessionId);
+		boolean updateComplete = false;
+
 		if (gameLobby != null) {
-			gameLobby.update(gameJoinResponse, user, this.getGameMapFromId(gameJoinResponse.getMapId()));
+			updateComplete = gameLobby.updateGameConfig(gameJoinResponse, user, this.getGameMapFromId(gameJoinResponse.getMapId()));
 		}
 
+		return updateComplete;
 	}
 	
 	public GameJoinResponse getUsersGame(String sessionId) {

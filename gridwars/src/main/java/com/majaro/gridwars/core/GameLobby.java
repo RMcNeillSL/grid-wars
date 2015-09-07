@@ -85,16 +85,16 @@ public class GameLobby {
 
 	// Game configuration interaction functions
 	public GameConfig getGameConfig() { return this.gameConfig; };
-	public void update(GameJoinResponse gameJoinResponse, User user, GameStaticMap map) {
-		if (this.gameConfig != null && this.connectedUsers.size() > 0 && this.includesUser(user)) {
-			// Update game config if request is sent from the creator
-			if(user.getId() == this.connectedUsers.get(0).getLinkedUser().getId())
-			{
-				this.gameConfig.updateGameConfig(map,
-						gameJoinResponse.getMaxPlayers(), 
-						gameJoinResponse.getGameType());
-			}
+
+	public boolean updateGameConfig(GameJoinResponse gameJoinResponse, User user, GameStaticMap map) {
+		if(user.getId() == this.connectedUsers.get(0).getLinkedUser().getId())
+		{
+			this.gameConfig.updateGameConfig(map,
+					gameJoinResponse.getMaxPlayers(), 
+					gameJoinResponse.getGameType());
+			return true;
 		}
+		return false;
 	}
 
 	public void updateUserTeam(int currentUserId, int team) {

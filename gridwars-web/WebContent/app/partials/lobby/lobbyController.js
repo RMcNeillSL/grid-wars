@@ -23,7 +23,24 @@
 			},
 			changeMap: function (mapId) {
 				this.$rootScope.gameConfig.mapId = mapId;
-				this.lobbyService.updateConfig(this.$rootScope.gameConfig);
+				this.lobbyService.updateConfig();
+			},
+			openSlot: function() {
+				if (self.$rootScope.gameConfig.maxPlayers < self.$rootScope.gameConfig.mapMaxPlayers) {
+					self.$rootScope.gameConfig.maxPlayers++;
+					this.lobbyService.updateConfig();
+				} else {
+					alert("Cannot increase the players above the map maximum");
+				}
+
+			},
+			closeSlot: function() {
+				if (self.$rootScope.gameConfig.maxPlayers > 2) {
+					self.$rootScope.gameConfig.maxPlayers--;
+					this.lobbyService.updateConfig();
+				} else {
+					alert("Cannot reduce the players below 2");
+				}
 			},
 			callSendMessage: function (newMessage) {
 				this.lobbyService.sendMessage(newMessage);

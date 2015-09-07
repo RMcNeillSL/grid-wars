@@ -35,6 +35,8 @@
 			self.$rootScope.gameConfig.mapId = mapId;
 			self.$rootScope.gameConfig.maxPlayers = maxPlayers;
 			self.$rootScope.gameConfig.gameType = gameType;
+			console.log(self.$rootScope.gameConfig);
+			$rootScope.$apply();
 		});
 
 		this.socket.on("lobbyUserList", function(lobbyUserList) {
@@ -46,9 +48,25 @@
 					}
 				}
 			}
-//			for (var i = ($rootScope.lobbyUserList.length-1); i < $rootScope.lobbyUserList.length; i++) {
-//				$rootScope.lobbyUserList.push("");
-//			}
+			if ($rootScope.gameConfig) {
+				for (var i = ($rootScope.lobbyUserList.length); i < self.$rootScope.gameConfig.mapMaxPlayers; i++) {
+					var emptyPlayer = {
+							factionId : -1,
+							linkedUser : { id : -1, username : "Empty"},
+							playerColour : "N/A",
+							playerTeam : 0,
+							ready : false
+					}
+
+					if (i < $rootScope.gameConfig.maxPlayers) {
+						emptyPlayer.linkedUser.username = "Open";
+					} else {
+						emptyPlayer.linkedUser.username = "Closed";
+					}
+
+					$rootScope.lobbyUserList.push(emptyPlayer);
+				}
+			}
 			$rootScope.$apply();
 		});
 
@@ -88,7 +106,6 @@
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				$rootScope.lobbyUserList[i].ready = false;
 			}
-			$rootScope.lobbyMessages.push("A setting has changed - unreadying everyone");
 			$rootScope.$apply();
 		});
 
@@ -114,8 +131,8 @@
 			joinGameLobby: function() {
 				this.socket.emit("joinGameLobby");
 			},
-			updateConfig: function(config) {
-				this.socket.emit("updateGameConfig", config);
+			updateConfig: function() {
+				this.socket.emit("updateGameConfig", this.$rootScope.gameConfig);
 			},
 			toggleReady: function() {
 				this.socket.emit("userToggleReady");
