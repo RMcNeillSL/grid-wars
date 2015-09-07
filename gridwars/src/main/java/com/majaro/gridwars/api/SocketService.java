@@ -91,10 +91,17 @@ public class SocketService {
 
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
+			int maxPlayers = data.getMaxPlayers();
+			int mapMaxPlayers = this.requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers();
+
+			if (data.getMaxPlayers() > this.requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers()) {
+				data.setMaxPlayers(mapMaxPlayers);
+			}
+
 			updateComplete = this.requestProcessor.updateGameConfig(sessionId, data);
 			if (updateComplete) {
 				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-				broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());
+				broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(), mapMaxPlayers);
 				broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
 				broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
 			}

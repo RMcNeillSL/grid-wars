@@ -31,16 +31,18 @@
 			$rootScope.$apply();
 		});
 
-		this.socket.on("gameConfig", function(mapId, maxPlayers, gameType) {
+		this.socket.on("gameConfig", function(mapId, maxPlayers, gameType, mapMaxPlayers) {
 			self.$rootScope.gameConfig.mapId = mapId;
 			self.$rootScope.gameConfig.maxPlayers = maxPlayers;
 			self.$rootScope.gameConfig.gameType = gameType;
+			self.$rootScope.gameConfig.mapMaxPlayers = mapMaxPlayers;
 			console.log(self.$rootScope.gameConfig);
 			$rootScope.$apply();
 		});
 
 		this.socket.on("lobbyUserList", function(lobbyUserList) {
 			$rootScope.lobbyUserList = lobbyUserList;
+
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				for (var x = 0; x < $rootScope.colourList.length; x++) {
 					if ($rootScope.lobbyUserList[i].playerColour === $rootScope.colourList[x]) {
@@ -48,6 +50,9 @@
 					}
 				}
 			}
+
+			$rootScope.connectedUserCount = $rootScope.lobbyUserList.length;
+
 			if ($rootScope.gameConfig) {
 				for (var i = ($rootScope.lobbyUserList.length); i < self.$rootScope.gameConfig.mapMaxPlayers; i++) {
 					var emptyPlayer = {
@@ -63,7 +68,6 @@
 					} else {
 						emptyPlayer.linkedUser.username = "Closed";
 					}
-
 					$rootScope.lobbyUserList.push(emptyPlayer);
 				}
 			}

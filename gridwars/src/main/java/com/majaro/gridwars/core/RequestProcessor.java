@@ -292,7 +292,7 @@ public class RequestProcessor {
 
 	public GameStaticMap getGameMapFromId(String gameMapId) {
 		for (GameStaticMap gameMap : this.gameMaps) {
-			if (gameMap.getMapId() == gameMapId) {
+			if (gameMap.getMapId().equals(gameMapId)) {
 				return gameMap;
 			}
 		}
