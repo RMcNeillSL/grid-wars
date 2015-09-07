@@ -94,16 +94,22 @@ public class SocketService {
 			int maxPlayers = data.getMaxPlayers();
 			int mapMaxPlayers = this.requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers();
 
-			if (data.getMaxPlayers() > this.requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers()) {
-				data.setMaxPlayers(mapMaxPlayers);
-			}
+			if (gameLobby.getConnectedUsers().size() > mapMaxPlayers) {
+				client.sendEvent("mapChangeError", "Cannot change map - too many players in lobby");
+			} else {
 
-			updateComplete = this.requestProcessor.updateGameConfig(sessionId, data);
-			if (updateComplete) {
-				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-				broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(), mapMaxPlayers);
-				broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
-				broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+				if (data.getMaxPlayers() > this.requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers()) {
+					data.setMaxPlayers(mapMaxPlayers);
+				}
+
+				updateComplete = this.requestProcessor.updateGameConfig(sessionId, data);
+
+				if (updateComplete) {
+					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(), mapMaxPlayers);
+					broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
+					broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+				}
 			}
 		}
 	}

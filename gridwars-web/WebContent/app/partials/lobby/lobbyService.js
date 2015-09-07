@@ -36,7 +36,6 @@
 			self.$rootScope.gameConfig.maxPlayers = maxPlayers;
 			self.$rootScope.gameConfig.gameType = gameType;
 			self.$rootScope.gameConfig.mapMaxPlayers = mapMaxPlayers;
-			console.log(self.$rootScope.gameConfig);
 			$rootScope.$apply();
 		});
 
@@ -74,7 +73,11 @@
 			$rootScope.$apply();
 		});
 
-		this.socket.on("toggleUserReady", function(userId) {
+		this.socket.on("mapChangeError", function (message) {
+			alert(message);
+		})
+
+		this.socket.on("toggleUserReady", function (userId) {
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
 					$rootScope.lobbyUserList[i].ready = !$rootScope.lobbyUserList[i].ready;
@@ -124,6 +127,7 @@
 		});
 
 	}
+	
 	LobbyService.prototype = {
 			sendMessage: function (newMessage) {
 				var tempObject = {
