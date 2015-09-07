@@ -107,9 +107,29 @@ public class SocketService {
 				if (updateComplete) {
 					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(), mapMaxPlayers);
+					gameLobby.setAllNotReady();
 					broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
-					broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
 				}
+			}
+		}
+	}
+	
+	@OnEvent("startGameInitialisation")
+	public void onStartGame (SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+
+		if (user != null && gameLobby != null) {
+			String lobbyId = gameLobby.getLobbyId();
+			int currentUserId = user.getId();
+			boolean allReady = false;
+
+			allReady = gameLobby.checkAllReady();
+
+			if (allReady) {
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+				broadcastRoomState.sendEvent("gameInitialising");
 			}
 		}
 	}
@@ -144,7 +164,8 @@ public class SocketService {
 			if (colourChanged) {
 				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 				broadcastRoomState.sendEvent("changeUserColour", currentUserId, colour);
-				broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+				gameLobby.setAllNotReady();
+				broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
 			}
 		}
 	}
@@ -161,26 +182,10 @@ public class SocketService {
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			gameLobby.updateUserTeam(currentUserId, team);
 			broadcastRoomState.sendEvent("changeUserTeam", currentUserId, team);
-			broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+			gameLobby.setAllNotReady();
+			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
 		}
 	}
-	
-//	@OnEvent("openGameSlot")
-//	public void onOpenSlot(SocketIOClient client) {
-//		String sessionId = client.getSessionId().toString();
-//		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
-//		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-//		
-//		if (user != null && gameLobby != null) {
-//			String lobbyId = gameLobby.getLobbyId();
-//			int currentUserId = user.getId();
-//			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-//			
-//			gameLobby.update(currentUserId);
-//			broadcastRoomState.sendEvent("changeUserTeam", currentUserId, team);
-//			broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
-//		}
-//	}
 
 	@OnEvent("joinServerLobby")
 	public void onJoinServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {

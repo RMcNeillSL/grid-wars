@@ -129,6 +129,16 @@ public class GameLobby {
 			this.connectedUsers.get(index).setReady(false);
 		}
 	}
+	
+	public boolean checkAllReady () {
+		boolean allReady = true;
+		for (int index = 1; index < this.connectedUsers.size(); index++) {
+			if (this.connectedUsers.get(index).isReady() == false) {
+				allReady = false;
+			}
+		}
+		return allReady;
+	}
 
 	// Getters for summary view
 	@JsonView(GameLobby.Views.Summary.class)

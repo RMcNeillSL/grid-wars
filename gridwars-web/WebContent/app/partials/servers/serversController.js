@@ -31,6 +31,7 @@
 
 			var updateNewGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
+				self.$rootScope.gameCreator = true;
 				console.log(response);
 				self.$location.path("/lobby");
 			};
@@ -41,7 +42,8 @@
 			var self = this;
 
 			var updateJoinGameResponse = function(response) {
-				self.$rootScope.joinGameResponse = response;
+				self.$rootScope.gameConfig = response;
+				//self.$rootScope.joinGameResponse = response;
 				self.$location.path("/lobby");
 			};
 

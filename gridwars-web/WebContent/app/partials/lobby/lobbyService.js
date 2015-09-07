@@ -2,9 +2,10 @@
 
 (function () {
 
-	function LobbyService ($rootScope, $http) {
+	function LobbyService ($rootScope, $location, $http) {
 		this.$http = $http;
 		this.$rootScope = $rootScope;
+		this.$location = $location;
 		self = this;
 
 		this.socket = io.connect("http://localhost:8080", {
@@ -41,6 +42,8 @@
 
 		this.socket.on("lobbyUserList", function(lobbyUserList) {
 			$rootScope.lobbyUserList = lobbyUserList;
+			var tempNotReadyCount = 0;
+			$rootScope.connectedUsers = 0;
 
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
 				for (var x = 0; x < $rootScope.colourList.length; x++) {
@@ -48,7 +51,13 @@
 						$rootScope.colourList.splice(x, 1);
 					}
 				}
+				if ($rootScope.lobbyUserList[i].ready == false) {
+					tempNotReadyCount++;
+				}
+				$rootScope.connectedUsers++;
 			}
+
+			$rootScope.notReadyCount = tempNotReadyCount-1;
 
 			$rootScope.connectedUserCount = $rootScope.lobbyUserList.length;
 
@@ -59,7 +68,7 @@
 							linkedUser : { id : -1, username : "Empty"},
 							playerColour : "N/A",
 							playerTeam : 0,
-							ready : false
+							ready : null
 					}
 
 					if (i < $rootScope.gameConfig.maxPlayers) {
@@ -75,14 +84,20 @@
 
 		this.socket.on("mapChangeError", function (message) {
 			alert(message);
-		})
+		});
 
 		this.socket.on("toggleUserReady", function (userId) {
+			var tempNotReadyCount = 0;
+
 			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
-				if (userId === $rootScope.lobbyUserList[i].linkedUser.id) {
+				if (userId === $rootScope.lobbyUserList[i].linkedUser.id && $rootScope.lobbyUserList[i].ready != null) {
 					$rootScope.lobbyUserList[i].ready = !$rootScope.lobbyUserList[i].ready;
 				}
+				if ($rootScope.lobbyUserList[i].ready == false) {
+					tempNotReadyCount++;
+				}
 			}
+			$rootScope.notReadyCount = tempNotReadyCount-1;
 			$rootScope.$apply();
 		});
 
@@ -109,10 +124,9 @@
 			$rootScope.$apply();
 		});
 
-		this.socket.on("gameChanges", function() {		// EVERYONE SET TO NOT READY
-			for (var i = 0; i < $rootScope.lobbyUserList.length; i++) {
-				$rootScope.lobbyUserList[i].ready = false;
-			}
+		this.socket.on("gameInitialising", function () {
+			$rootScope.lobbyMessages.push({user: "SERVER", message: "All users ready - initialising game"});
+			self.$location.path("/game");
 			$rootScope.$apply();
 		});
 
@@ -136,24 +150,27 @@
 					};
 				this.socket.emit("sendMessage", tempObject);
 			},
-			joinGameLobby: function() {
+			joinGameLobby: function () {
 				this.socket.emit("joinGameLobby");
 			},
-			updateConfig: function() {
+			updateConfig: function () {
 				this.socket.emit("updateGameConfig", this.$rootScope.gameConfig);
 			},
-			toggleReady: function() {
+			toggleReady: function () {
 				this.socket.emit("userToggleReady");
 			},
-			changeColour: function(colour) {
+			changeColour: function (colour) {
 				this.socket.emit("userChangeColour", colour);
 			},
-			changeTeam: function(team) {
+			changeTeam: function (team) {
 				this.socket.emit("userChangeTeam", team);
+			},
+			startGame: function () {
+				this.socket.emit("startGameInitialisation");
 			}
 	}
 
-	LobbyService.$inject = ['$rootScope', '$http'];
+	LobbyService.$inject = ['$rootScope', '$location','$http'];
 
 	angular.module('gridWarsApp.lobby.module').service('gridWarsApp.lobby.service', LobbyService);
 }());

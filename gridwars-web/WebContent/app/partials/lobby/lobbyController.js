@@ -54,6 +54,9 @@
 			},
 			callChangeTeam: function (team) {
 				this.lobbyService.changeTeam(team);
+			},
+			callStartGame: function () {
+				this.lobbyService.startGame();
 			}
 	}
 
