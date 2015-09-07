@@ -139,6 +139,14 @@ public class RequestProcessor {
 	public ArrayList<GameStaticMap> listGameMaps() {
 		return this.gameMaps;
 	}
+	
+	public void deleteGameLobby (String gameLobby) {
+		for (int index = 0; index < this.activeGameLobbys.size(); index++) {
+			if (this.activeGameLobbys.get(index).getLobbyId().equals(gameLobby)) {
+				this.activeGameLobbys.remove(index);
+			}
+		}
+	}
 
 	public boolean updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
 		// Proceed if gamelobby and gameconfig are found

@@ -150,6 +150,20 @@ public class SocketService {
 			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
 		}
 	}
+	
+	@OnEvent("deleteGame")
+	public void onDeleteGame (SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+
+		if (user != null && gameLobby != null) {
+			String lobbyId = gameLobby.getLobbyId();
+			this.requestProcessor.deleteGameLobby(lobbyId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("roomDeleted");
+		}
+	}
 
 	@OnEvent("userToggleReady")
 	public void onUserToggleReady(SocketIOClient client) {

@@ -141,6 +141,12 @@
 			$rootScope.$apply();
 		});
 
+		this.socket.on("roomDeleted", function () {
+			alert("The lobby leader has delete the lobby, returning to the server lobby page");
+			self.$location.path("/servers");
+			$rootScope.$apply();
+		})
+
 		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
 			response.data.forEach(function(map) {
 				$rootScope.mapList.push(map);
@@ -181,6 +187,9 @@
 			},
 			changeLeader: function (userId) {
 				this.socket.emit("changeLobbyLeader", userId);
+			},
+			deleteGame: function () {
+				this.socket.emit("deleteGame");
 			}
 	}
 

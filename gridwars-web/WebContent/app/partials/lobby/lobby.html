@@ -26,6 +26,11 @@
             <h3>Map Preview</h3>
             <div class="map-preview">
             </div>
+
+            <h3>Delete Game</h3>
+            <button ng-click="controller.checkDelete()" class="btn btn-danger btn-sm" ng-if="!$root.deleteSelected"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+            <button ng-click="controller.uncheckDelete()" class="btn btn-success btn-sm" ng-if="$root.deleteSelected"><span class="glyphicon glyphicon-floppy-disk"></span> Don't Delete</button>
+            <button ng-click="controller.callDeleteGame()" class="btn btn-danger btn-sm" ng-if="$root.deleteSelected"><span class="glyphicon glyphicon-trash"></span> Delete</button>
         </section>
 	</section>
 
@@ -48,9 +53,9 @@
         </section>
 
         <section class="col-md-3">
-            <h3>Map Preview</h3>
-	        <div class="map-preview">
-	        </div>
+            <h3>Maps Preview</h3>
+		        <div class="map-preview">
+		        </div>
         </section>
     </section>
 

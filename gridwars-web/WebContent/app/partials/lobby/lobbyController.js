@@ -12,9 +12,7 @@
 		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];
 		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
-
-		// Declare variables
-		//this.$scope.userReady = false;
+		$rootScope.deleteSelected = false;
 	}
 
 	LobbyController.prototype = {
@@ -60,6 +58,15 @@
 			}, 
 			callChangeLeader: function (userId) {
 				this.lobbyService.changeLeader(userId);
+			},
+			checkDelete: function () {
+				this.$rootScope.deleteSelected = true;
+			},
+			uncheckDelete: function () {
+				this.$rootScope.deleteSelected = false;
+			},
+			callDeleteGame: function () {
+				this.lobbyService.deleteGame();
 			}
 	}
 
