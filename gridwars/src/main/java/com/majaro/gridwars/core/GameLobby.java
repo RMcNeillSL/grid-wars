@@ -24,6 +24,7 @@ public class GameLobby {
 	private Engine engine = null;
 	private String lobbyName;
 	
+	// Constructor
 	public GameLobby(String lobbyId, User user, GameStaticMap map, String lobbyName) {
 		
 		// Create core objects
@@ -35,8 +36,16 @@ public class GameLobby {
 		this.connectedUsers = new ArrayList<LobbyUser>();
 		this.connectedUsers.add(new LobbyUser(user, 0, "blue", 0));
 	}
+
+	// Gameplay methods
+	public void initGame() {
+		
+	}
+	public void startGame() {
+		
+	}
 	
-	// Add a new user to the lobby, checking the user is not already present
+	// User management methods
 	public LobbyUser addUser(User user) {
 		LobbyUser lobbyUser = null;
 		for (int index = 0; index < this.connectedUsers.size(); index ++) {
@@ -49,6 +58,61 @@ public class GameLobby {
 			this.connectedUsers.add(lobbyUser);
 		}
 		return lobbyUser;
+	}
+	public boolean canJoin() {
+		return true;
+	}
+	public boolean includesUser(User checkUser) {
+		for (int index = 0; index < this.connectedUsers.size(); index ++) {
+			if (this.connectedUsers.get(index).getLinkedUser().getId() == checkUser.getId()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	public boolean isLobbyLeader(User checkUser) {
+		return (checkUser == this.connectedUsers.get(0).getLinkedUser());
+	}
+	public void updateUserTeam(int currentUserId, int team) {
+		this.getLobbyUser(currentUserId).setPlayerTeam(team);
+		this.setAllNotReady();
+	}
+	public boolean updateUserColour(int currentUserId, String colour) {
+		boolean colourUsed = false;
+
+		for (int index = 0; index < this.connectedUsers.size(); index++) {
+			if (this.connectedUsers.get(index).getPlayerColour().equalsIgnoreCase(colour)) {
+				colourUsed = true;
+			}
+		}
+
+		if (colourUsed == false) {
+			this.getLobbyUser(currentUserId).setPlayerColour(colour);
+			this.setAllNotReady();
+			return true;
+		}
+		return false;
+	}
+	public void updateUserReady(int currentUserId) {
+		boolean userReady = this.getLobbyUser(currentUserId).isReady();
+		this.getLobbyUser(currentUserId).setReady(!userReady);
+	}
+	public void setAllNotReady () {
+		for (int index = 0; index < this.connectedUsers.size(); index++) {
+			this.connectedUsers.get(index).setReady(false);
+		}
+	}
+	public boolean areAllUsersReadyAndUpdate(User user) {
+		for (LobbyUser lobbyUser : this.connectedUsers) {
+			if (lobbyUser.getLinkedUser().getId() == user.getId()) {
+				lobbyUser.markGameAsInitialised();
+			} else {
+				if (!lobbyUser.isReady()) {
+					return false;
+				}	
+			}
+		}
+		return true;
 	}
 	
 	// Select an unused colour for the player
@@ -68,21 +132,6 @@ public class GameLobby {
 		return result;
 	}
 
-	// Check to see if the lobby can be joined
-	public boolean canJoin() {
-		return true;
-	}
-	
-	// Check to see if the the lobby includes a user
-	public boolean includesUser(User checkUser) {
-		for (int index = 0; index < this.connectedUsers.size(); index ++) {
-			if (this.connectedUsers.get(index).getLinkedUser().getId() == checkUser.getId()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	// Game configuration interaction functions
 	public GameConfig getGameConfig() { return this.gameConfig; };
 	public void update(GameJoinResponse gameJoinResponse, User user, GameStaticMap map) {
@@ -94,39 +143,6 @@ public class GameLobby {
 						gameJoinResponse.getMaxPlayers(), 
 						gameJoinResponse.getGameType());
 			}
-		}
-	}
-
-	public void updateUserTeam(int currentUserId, int team) {
-		this.getLobbyUser(currentUserId).setPlayerTeam(team);
-		this.setAllNotReady();
-	}
-
-	public boolean updateUserColour(int currentUserId, String colour) {
-		boolean colourUsed = false;
-
-		for (int index = 0; index < this.connectedUsers.size(); index++) {
-			if (this.connectedUsers.get(index).getPlayerColour().equalsIgnoreCase(colour)) {
-				colourUsed = true;
-			}
-		}
-
-		if (colourUsed == false) {
-			this.getLobbyUser(currentUserId).setPlayerColour(colour);
-			this.setAllNotReady();
-			return true;
-		}
-		return false;
-	}
-	
-	public void updateUserReady(int currentUserId) {
-		boolean userReady = this.getLobbyUser(currentUserId).isReady();
-		this.getLobbyUser(currentUserId).setReady(!userReady);
-	}
-
-	public void setAllNotReady () {
-		for (int index = 0; index < this.connectedUsers.size(); index++) {
-			this.connectedUsers.get(index).setReady(false);
 		}
 	}
 

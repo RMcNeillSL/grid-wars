@@ -19,6 +19,7 @@ import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.apiobjects.BindSocketRequest;
+import com.majaro.gridwars.apiobjects.GameInitRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.apiobjects.JoinRoomRequest;
 
@@ -50,14 +51,37 @@ public class SocketService {
 		socketServer.start();
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
+
+	@OnEvent("initGame")
+	public void initGame(SocketIOClient client, GameInitRequest data, AckRequest ackRequest) {
+		String sessionId = client.getSessionId().toString();
+		String lobbyId = requestProcessor.validateGameInitRequest(data, sessionId);
+		if (lobbyId != null) {
+			System.out.println("Initialising game for lobby #" + lobbyId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("gameInit");
+			requestProcessor.initGameEngine();
+		}
+	}
+	
+	@OnEvent("startGame")
+	public void startGame(SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		if (requestProcessor.markUserAsReady(sessionId)) {
+			GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+			System.out.println("Starting game in lobby #" + gameLobby.getLobbyId());
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameLobby.getLobbyId());
+			broadcastRoomState.sendEvent("gameStart");
+		}
+	}
 	
 	@OnEvent("joinGameLobby")
 	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
 		String username = data.getUser();
 		String sessionId = client.getSessionId().toString();
-		this.requestProcessor.bindSocketSessionId(username, sessionId);
-		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		requestProcessor.bindSocketSessionId(username, sessionId);
+		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
@@ -85,11 +109,11 @@ public class SocketService {
 	@OnEvent("updateGameConfig")
 	public void onUpdateGameConfig(SocketIOClient client, GameJoinResponse data) {
 		String sessionId = client.getSessionId().toString();
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 
 		if (gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
-			this.requestProcessor.updateGameConfig(sessionId, data);
+			requestProcessor.updateGameConfig(sessionId, data);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());
 		}
@@ -99,7 +123,7 @@ public class SocketService {
 	public void onUserToggleReady(SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();

@@ -13,6 +13,7 @@ import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.apiobjects.AuthRequest;
+import com.majaro.gridwars.apiobjects.GameInitRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
@@ -42,7 +43,7 @@ public class RequestProcessor {
 
 	
 	// Constructors
-
+	
 	public RequestProcessor() {
 
 		// Set default array values
@@ -62,6 +63,31 @@ public class RequestProcessor {
 		SocketService socketService = new SocketService(this);
 	}
 
+	
+	// Gameplay methods
+	
+	public String validateGameInitRequest(GameInitRequest gameInitRequest, String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby != null && user != null && gameLobby.isLobbyLeader(user)) {
+			return gameLobby.getLobbyId();
+		}
+		return null;
+	}
+	
+	public void initGameEngine() {
+		
+	}
+	
+	public boolean markUserAsReady(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby != null && user != null) {
+			return gameLobby.areAllUsersReadyAndUpdate(user);
+		}
+		return false;
+	}
+	
 	
 	// Managing game lobbies including joining, creating and game info retrieval
 
@@ -289,7 +315,7 @@ public class RequestProcessor {
 
 	public GameStaticMap getGameMapFromId(String gameMapId) {
 		for (GameStaticMap gameMap : this.gameMaps) {
-			if (gameMap.getMapId() == gameMapId) {
+			if (gameMap.getMapId().equals(gameMapId)) {
 				return gameMap;
 			}
 		}

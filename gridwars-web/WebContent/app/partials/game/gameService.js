@@ -2,10 +2,83 @@
 
 (function () {
 	
-	function GameService ($http) {
+	function GameService ($rootScope, $http) {
+		
+		// Save passed variables
 		this.$http = $http;
+		this.$rootScope = $rootScope;
+		
 	}
 	GameService.prototype = {
+			
+			// Socket initialisation method
+			initialiseSockets: function() {
+
+				// Save refernce to self
+				var self = this;
+
+				// Socket connect event
+				this.socket = io.connect("http://localhost:8080", {
+					"force new connection": true
+				});
+
+				// On socket connection established submit user join room request
+				this.socket.on("connect", function () {
+					console.log("Joining lobby room");
+					self.socket.emit("joinGameLobby", {
+						"user" : self.$rootScope.currentUser
+					});
+				});
+
+				// When user has joined a room mark sockets as ready
+				this.socket.on("userJoinedGameLobby", function (userId) {
+					self.$rootScope.socketsReady = (userId == self.$rootScope.currentUser);
+				});
+
+				// Listen for game initialisation
+				this.socket.on("gameInit", function() {
+					console.log("REC: Game initialisation request received.");
+				});
+
+				// Listen for game start message from server
+				this.socket.on("gameStart", function() {
+					console.log("REC: Game has started over sockets");
+				});
+
+			},
+
+			// Game startup socket methods
+			gameInitRequest: function(callback, data) {
+				var self = this;
+				console.log("Submitted game init request");
+				self.socket.emit("initGame", {
+					"lobbyId" : self.$rootScope.gameConfig.lobbyId
+				});
+				if (callback) { callback(); }
+			},
+			gameStartRequest: function(callback, data) {
+				var self = this;
+				console.log("Marking user as ready to play");
+				self.socket.emit("startGame");
+			},
+			
+			// Gameplay socket methods
+			socketGameplayRequest: function(callback, data) {
+				
+			},
+			
+			// Game big data retrieval methods
+			getMapData: function (mapId, callback) {
+				this.$http.get("/gridwars/rest/game/map/" + mapId).then(function(response) {
+					console.log("SUCCESS: Map data retrieved");
+					console.log(response.data);
+					if (callback) { callback("M", response.data); }
+				}, function (error) {
+					console.log("ERROR: Failed to gather map data");
+				});
+			},
+			
+			// Debug methods to make testing easier
 			debugConnect: function (callback) {
 				var self = this;
 				this.$http.post("/gridwars/rest/auth", {
@@ -26,8 +99,10 @@
 			debugNewLobby: function (callback) {
 				var self = this;
 				this.$http.post("/gridwars/rest/game/new").then(function(response) {
+					self.initialiseSockets();
 					console.log("SUCCESS: New game retrieved");
-					console.log(response.data);
+					self.$rootScope.gameConfig = response.data;
+					console.log(self.$rootScope.gameConfig);
 					self.getMapData(response.data.mapId);
 					if (callback) { callback("L", response.data); }
 				}, function(response) {
@@ -41,26 +116,19 @@
 			debugGetLobbyInformation: function (callback) {
 				var self = this;
 				this.$http.get("/gridwars/rest/user/game").then(function(response) {
+					self.initialiseSockets();
 					console.log("SUCCESS: Existing game retrieved");
-					console.log(response.data);
+					self.$rootScope.gameConfig = response.data;
+					console.log(self.$rootScope.gameConfig);
 					self.getMapData(response.data.mapId);
 					if (callback) { callback("L", response.data); }
 				}, function (error) {
 					console.log("ERROR: Failed to retrieve game");
 				});
-			},
-			getMapData: function (mapId, callback) {
-				this.$http.get("/gridwars/rest/game/map/" + mapId).then(function(response) {
-					console.log("SUCCESS: Map data retrieved");
-					console.log(response.data);
-					if (callback) { callback("M", response.data); }
-				}, function (error) {
-					console.log("ERROR: Failed to gather map data");
-				});
 			}
 	}
 	
-	GameService.$inject = ['$http'];
+	GameService.$inject = ['$rootScope', '$http'];
 	
 	angular.module('gridWarsApp.game.module').service('gridWarsApp.game.service', GameService);
 }());
