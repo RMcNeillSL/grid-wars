@@ -15,7 +15,8 @@
                 <td>{{map.mapName}}</td>
                 <td>{{map.maxPlayers}}</td>
                 <td>
-                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.mapId)">Select</button>
+                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.mapId)" ng-if="$root.gameConfig.mapId!=map.mapId">Select</button>
+                    <span class="glyphicon glyphicon-ok" ng-if="$root.gameConfig.mapId==map.mapId"></span>
                 </td>
             </tr>
         </table>
