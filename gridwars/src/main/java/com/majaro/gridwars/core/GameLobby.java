@@ -9,6 +9,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.game.Constants;
 import com.majaro.gridwars.game.Constants.E_GameType;
 import com.majaro.gridwars.game.Engine;
 import com.majaro.gridwars.game.GameConfig;
@@ -16,8 +17,6 @@ import com.majaro.gridwars.game.GameStaticMap;
 
 public class GameLobby {
 	
-	private static final String[] colours = {"blue", "red", "yellow", "orange", "green", "pink"};
-
 	private String lobbyId = "";
 	private ArrayList<LobbyUser> connectedUsers;
 	private GameConfig gameConfig = null;
@@ -38,11 +37,18 @@ public class GameLobby {
 	}
 
 	// Gameplay methods
-	public void initGame() {
+	public void initGame(GameStaticMap gameMap) {
+		
+		this.engine = new Engine(this.gameConfig, this.connectedUsers, gameMap);
 		
 	}
 	public void startGame() {
 		
+		this.engine.start();
+		
+	}
+	public boolean started() {
+		return this.engine != null;
 	}
 	
 	// User management methods
@@ -117,9 +123,9 @@ public class GameLobby {
 	
 	// Select an unused colour for the player
 	private String getUnusedColour() {
-		String result = this.colours[0];
+		String result = Constants.COLOURS[0];
 		boolean colourInUse = false;
-		for (String colour : this.colours) {
+		for (String colour : Constants.COLOURS) {
 			result = colour;
 			colourInUse = false;
 			for (int index = 0; index < this.connectedUsers.size(); index ++) {

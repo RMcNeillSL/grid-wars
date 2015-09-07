@@ -4,13 +4,13 @@
 
 	function GameController($rootScope, $scope, gameService) {
 		
-		// Save this reference
-		var self = this;
-		
 		// Save passed variables
 		this.$rootScope = $rootScope;
 		this.$scope = $scope;
 		this.gameService = gameService;
+		
+		// Save this reference
+		var self = this;
 		
 		// Hacky-slash debug settings
 		this.$rootScope.currentUser = "JamesHill05";
@@ -18,44 +18,39 @@
 		// Start game method
 		var startGame = function() {
 
-			// Create game config object
-			var gameConfig = {
-				map : {
-					name : "Random Name",
-					width : 8,
-					height : 6,
-					map : [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-							0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-				},
-				maxPlayers : 2,
-				gameType : "FREE_FOR_ALL"
-			};
-
 			// Define core game phaser variable
-			var phaserGame = new Engine(gameConfig);
+			self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser);
 
 			// Define server interface object
-			var serverAPI = new ServerAPI();
+			self.serverAPI = new ServerAPI();
 			
 			// Submit ready message
 			gameService.gameStartRequest();
 
 		}
 		
+		// Delay and wait for config information before proceeding
+		var gameplayConfigWaiter = function() {
+			if (self.$rootScope.gameplayConfig) {
+				startGame();
+			} else {
+				setTimeout(gameplayConfigWaiter, 100);
+			}
+		}
+		
 		// Local caller methods
-		var gameInit = function() { gameService.gameInitRequest(startGame); }
+		var gameInit = function() { gameService.gameInitRequest(gameplayConfigWaiter); }
 		
 		// Call connect debug methods
 		this.$rootScope.socketsReady = false;
 		gameService.debugConnect();
 		
-		// Wait until connections finished before proceeding
+		// Wait until connections finished before proceeding  
 		var connectionWaiter = function() {
 			if (self.$rootScope.socketsReady) {
 				gameInit();
 			} else {
-				setTimeout(connectionWaiter, 500);
+				setTimeout(connectionWaiter, 100);
 			}
 		};
 		connectionWaiter();

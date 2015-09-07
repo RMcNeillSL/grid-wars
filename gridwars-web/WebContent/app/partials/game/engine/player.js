@@ -1,7 +1,10 @@
-function Player(userBoolean) {
+function Player(playerId, isUser) {
 	
 	// Mark current player as user
 	this.userBoolean = true;
+	
+	// Save playerId
+	this.playerId = playerId;
 	
 	// Define array object
 	this.turrets = [];

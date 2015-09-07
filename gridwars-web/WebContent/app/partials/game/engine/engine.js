@@ -1,4 +1,4 @@
-function Engine() {
+function Engine(gameplayConfig, playerId) {
 
 	var self = this;
 	var local_preload = function() { self.preload(); }
@@ -12,12 +12,23 @@ function Engine() {
 	this.phaserGame.newBuilding = { active: false, target: null };
 	
 	// Create user objects
-	this.currentPlayer = new Player(true);
-	this.players = [this.currentPlayer];
+	this.currentPlayer = null;
+	this.players = [];
+	for (var index = 0; index < gameplayConfig.userName.length; index ++) {
+		var newPlayer = new Player(gameplayConfig.userName[index], 
+				gameplayConfig.userColour[index], 
+				gameplayConfig.userTeam[index], 
+				(gameplayConfig.userName[index] == playerId));
+		this.players.push(newPlayer);
+		if (gameplayConfig.userName[index] == playerId) {
+			this.currentPlayer = newPlayer;
+		}
+	}
 	
 	// Define core phaser objects
 	this.mapRender = null;
 	this.explosionManager = null;
+	this.gameplayConfig = gameplayConfig;
 	
 	// Define core phaser object arrays
 	
@@ -26,17 +37,6 @@ function Engine() {
 	this.mapOverlayGroup = null;
 	this.turretGroup = null;
 	this.tankGroup = null;
-	
-	// Define test variables
-	this.test_map = {name: "Random Name",
-			width: 8,
-			height: 6,
-			map: [0, 0, 0, 0, 0, 0, 0, 0,
-			      0, 0, 0, 0, 0, 0, 0, 0,
-			      0, 0, 0, 0, 0, 0, 0, 0,
-			      0, 0, 0, 0, 0, 0, 0, 0,
-			      0, 0, 0, 0, 0, 0, 0, 0,
-			      0, 0, 0, 0, 0, 0, 0, 0]};
 	
 }
 
@@ -75,7 +75,8 @@ Engine.prototype.create = function() {
 	this.explosionManager = new ExplosionManager(this.phaserGame);
 	
 	// Construct map renderer
-	this.mapRender = new MapRenderer(this.phaserGame, this.mapGroup, this.mapOverlayGroup, this.test_map);
+	this.mapRender = new MapRenderer(this.phaserGame, this.mapGroup, this.mapOverlayGroup, 
+			this.gameplayConfig.width, this.gameplayConfig.height, this.gameplayConfig.cells);
 
 	// Construct event listeners
 	this.phaserGame.input.onDown.add(this.onMouseClick, this);

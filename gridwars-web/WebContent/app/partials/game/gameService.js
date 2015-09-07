@@ -36,8 +36,10 @@
 				});
 
 				// Listen for game initialisation
-				this.socket.on("gameInit", function() {
+				this.socket.on("gameInit", function(gameplayConfig) {
 					console.log("REC: Game initialisation request received.");
+					console.log(gameplayConfig);
+					self.$rootScope.gameplayConfig = gameplayConfig;
 				});
 
 				// Listen for game start message from server
@@ -45,7 +47,13 @@
 					console.log("REC: Game has started over sockets");
 				});
 
+				// Listen for game responses which occurred
+				this.socket.on("gameplayResponse", function(data) {
+					self.$rootScope.gameplayResponse = data;
+				});
+
 			},
+			
 
 			// Game startup socket methods
 			gameInitRequest: function(callback, data) {
@@ -57,26 +65,27 @@
 				if (callback) { callback(); }
 			},
 			gameStartRequest: function(callback, data) {
-				var self = this;
 				console.log("Marking user as ready to play");
-				self.socket.emit("startGame");
+				this.socket.emit("startGame");
+			},
+			gameplayRequest: function(callback, data) {
+				this.socket.emit("gameplayRequest", data);
+			},
+			gameplayRequestAndWait: function(callback, data) {
+				var self = this;
+				self.$rootScope.gameplayResponse = null;
+				self.socket.emit("gameplayRequest", data);
+				var waitFunction = function() {
+					if (self.$rootScope.gameplayResponse) {
+						if (callback) {
+							callback(self.$rootScope.gameplayResponse);
+						}
+					} else {
+						setTimeout(waitFunction, 50);
+					}
+				}
 			},
 			
-			// Gameplay socket methods
-			socketGameplayRequest: function(callback, data) {
-				
-			},
-			
-			// Game big data retrieval methods
-			getMapData: function (mapId, callback) {
-				this.$http.get("/gridwars/rest/game/map/" + mapId).then(function(response) {
-					console.log("SUCCESS: Map data retrieved");
-					console.log(response.data);
-					if (callback) { callback("M", response.data); }
-				}, function (error) {
-					console.log("ERROR: Failed to gather map data");
-				});
-			},
 			
 			// Debug methods to make testing easier
 			debugConnect: function (callback) {
@@ -103,7 +112,6 @@
 					console.log("SUCCESS: New game retrieved");
 					self.$rootScope.gameConfig = response.data;
 					console.log(self.$rootScope.gameConfig);
-					self.getMapData(response.data.mapId);
 					if (callback) { callback("L", response.data); }
 				}, function(response) {
 					if (response.status === 401) {
@@ -120,7 +128,6 @@
 					console.log("SUCCESS: Existing game retrieved");
 					self.$rootScope.gameConfig = response.data;
 					console.log(self.$rootScope.gameConfig);
-					self.getMapData(response.data.mapId);
 					if (callback) { callback("L", response.data); }
 				}, function (error) {
 					console.log("ERROR: Failed to retrieve game");
