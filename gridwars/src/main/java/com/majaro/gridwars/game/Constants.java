@@ -5,13 +5,17 @@ public class Constants {
 	// Game types
 	public enum E_GameType { UNDEFINED, FREE_FOR_ALL, TEAM_ALLIANCE }
 	
-	// Game response codes
-	public enum E_ResponseCode { GENERIC_UNKNOWN_ERROR }
+	// Gameplay response codes
+	public enum E_GameplayResponseCode { GENERIC_UNKNOWN_ERROR }
+
+	// Gameplay request codes
+	public enum E_RequestCode { NEW_BUILDING }
 	
 	// Game building codes
 	public enum E_GameBuilding { TURRET }
 
 	// Player colours
 	public static final String[] COLOURS = {"blue", "red", "yellow", "orange", "green", "pink"};
+	
 
 }

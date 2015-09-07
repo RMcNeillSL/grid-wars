@@ -1,4 +1,4 @@
-function Engine(gameplayConfig, playerId) {
+function Engine(gameplayConfig, playerId, serverAPI) {
 
 	var self = this;
 	var local_preload = function() { self.preload(); }
@@ -24,6 +24,9 @@ function Engine(gameplayConfig, playerId) {
 			this.currentPlayer = newPlayer;
 		}
 	}
+	
+	// Save and setup server object
+	this.serverAPI = serverAPI;
 	
 	// Define core phaser objects
 	this.mapRender = null;
@@ -86,17 +89,23 @@ Engine.prototype.create = function() {
 
 Engine.prototype.onMouseClick = function(pointer, x, y) {
 	
+	// Save self reference
+	var self = this;
+	
 	// Render placement overlay
 	if (this.phaserGame.newBuilding.active) {
 		var colRow = this.mapRender.xyToColRow(this.phaserGame.input.mousePointer.x, this.phaserGame.input.mousePointer.y);
 		var xy = this.mapRender.colRowToXY(colRow.col, colRow.row);
 		var canPlace = this.currentPlayer.isSquareEmpty(colRow.col, colRow.row);
 		if (canPlace) {
-			this.phaserGame.newBuilding.active = false;
-			this.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
-			this.phaserGame.newBuilding.target.setBuildingMode(false);
-			this.currentPlayer.placeDefence(this.phaserGame.newBuilding.target);
-			this.mapRender.clearPlacementHover();
+			this.serverAPI.requestBuildingPlacement(function(response) {
+				console.log(response);
+				self.phaserGame.newBuilding.active = false;
+				self.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
+				self.phaserGame.newBuilding.target.setBuildingMode(false);
+				self.currentPlayer.placeDefence(self.phaserGame.newBuilding.target);
+				self.mapRender.clearPlacementHover();
+			}, this.phaserGame.newBuilding);
 		}
 	} else {
 
@@ -169,4 +178,8 @@ Engine.prototype.getY = function() {
 
 Engine.prototype.getPhaser = function() {
 	return this.phaserEngine;
+}
+
+Engine.prototype.processGameplayResponse = function(responseData) {
+	
 }

@@ -48,8 +48,12 @@
 				});
 
 				// Listen for game responses which occurred
-				this.socket.on("gameplayResponse", function(data) {
-					self.$rootScope.gameplayResponse = data;
+				this.socket.on("gameplayResponse", function(response) {
+					console.log(response);
+					self.$rootScope.gameplayResponse = response;
+					if (self.$rootScope.gameplayResponseManager) {
+						self.$rootScope.gameplayResponseManager(response);
+					}
 				});
 
 			},
@@ -74,8 +78,8 @@
 			gameplayRequestAndWait: function(callback, data) {
 				var self = this;
 				self.$rootScope.gameplayResponse = null;
-				self.socket.emit("gameplayRequest", data);
 				var waitFunction = function() {
+					console.log("Waiting...");
 					if (self.$rootScope.gameplayResponse) {
 						if (callback) {
 							callback(self.$rootScope.gameplayResponse);
@@ -84,6 +88,8 @@
 						setTimeout(waitFunction, 50);
 					}
 				}
+				waitFunction();
+				self.socket.emit("gameplayRequest", data);
 			},
 			
 			

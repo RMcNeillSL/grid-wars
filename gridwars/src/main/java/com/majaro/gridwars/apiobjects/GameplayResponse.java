@@ -2,19 +2,19 @@ package com.majaro.gridwars.apiobjects;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
-import com.majaro.gridwars.game.Constants.E_ResponseCode;
+import com.majaro.gridwars.game.Constants.E_GameplayResponseCode;
 
 public class GameplayResponse {
 	
 	// Response variables
-	private E_ResponseCode responseCode;
+	private E_GameplayResponseCode responseCode;
 	
 	
 	// Constructors
 	public GameplayResponse() {
-		this.responseCode = E_ResponseCode.GENERIC_UNKNOWN_ERROR;
+		this.responseCode = E_GameplayResponseCode.GENERIC_UNKNOWN_ERROR;
 	}
-	public GameplayResponse(E_ResponseCode responseCode) {
+	public GameplayResponse(E_GameplayResponseCode responseCode) {
 		
 		// Save passed response code
 		this.responseCode = responseCode;
@@ -26,7 +26,7 @@ public class GameplayResponse {
 	
 	// Getters for summary view
 	@JsonView(GameplayResponse.Views.Summary.class)
-	public E_ResponseCode getResponseCode() {
+	public E_GameplayResponseCode getResponseCode() {
 		return this.responseCode;
 	}
 	

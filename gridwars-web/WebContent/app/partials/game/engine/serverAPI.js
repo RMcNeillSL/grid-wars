@@ -1,47 +1,30 @@
-function ServerAPI(gameConfig) {
+function GameplayRequest(requestCode) {
+	this.requestCode = requestCode;
+}
 
-	// Save passed config
-	this.gameConfig = gameConfig;
+
+function ServerAPI(gameService) {
+
+	// Save passed variables
+	this.gameService = gameService;
 	
-	// Create core variables
-	this.players = [];
+}
+
+ServerAPI.prototype.requestBuildingPlacement = function(callback, buildingObject) {
 	
-	// Create this reference
-	var self = this;
-	
-	// Private methods
-	this.getMapBuildingState = function() {
+	// Make sure a building object is present
+	if (buildingObject) {
 		
-		// Generate static map using source map
-		var resultMap = []; // -1 - unowned obstruction, 0 - unoccupied, 1-n player owned obstruction
-		for (var index = 0; index < self.gameConfig.map.length; index ++) {
-			if (self.gameConfig.map[index] in [0]) {
-				resultMap.push(0);
-			} else {
-				resultMap.push(-1);
-			}
-		}
+		// Generate request object
+		var request = new GameplayRequest("NEW_BUILDING", buildingObject.identifier);
+		this.gameService.gameplayRequestAndWait(callback, request);
 		
-		// Generate player detail for map
-		for (var playerIndex = 0; playerIndex < self.players.length; playerIndex ++) {
-			
-		}
-		
+	} else {
+		console.log("ERROR: Attempted to construct building from no source.");
 	}
 	
-
-//	var gameConfig = {
-//		map : {
-//			name : "Random Name",
-//			width : 8,
-//			height : 6,
-//			map : [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-//					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-//					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-//		},
-//		maxPlayers : 2,
-//		gameType : "FREE_FOR_ALL"
-//	};
+	// Return failed
+	return null;
 	
 }
 

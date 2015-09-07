@@ -18,11 +18,12 @@
 		// Start game method
 		var startGame = function() {
 
-			// Define core game phaser variable
-			self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser);
-
 			// Define server interface object
-			self.serverAPI = new ServerAPI();
+			self.serverAPI = new ServerAPI(gameService);
+			
+			// Define core game phaser variable
+			self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser, self.serverAPI);
+			self.$rootScope.gameplayResponseManager = self.phaserGame.processGameplayResponse;
 			
 			// Submit ready message
 			gameService.gameStartRequest();

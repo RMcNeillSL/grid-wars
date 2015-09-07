@@ -81,7 +81,7 @@ public class SocketService {
 		GameplayResponse gameplayResponse = requestProcessor.processGameplayRequest(gameplayRequest, sessionId);
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameLobby.getLobbyId());
 		if (gameLobby != null && gameplayResponse != null) {
-			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
+			broadcastRoomState.sendEvent("gameplayResponse", gameplayResponse);
 		} else {
 			
 		}

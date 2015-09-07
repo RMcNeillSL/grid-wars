@@ -3,6 +3,9 @@ function Turret(phaserRef, mapGroup, turretGroup, xy, col, row, width, height, f
 	// Make sure dependencies has been passed
 	if (turretGroup) {
 		
+		// Set identifying values
+		this.identifier = "TURRET";
+		
 		// Save phaser references
 		this.phaserRef = phaserRef;
 		this.turretGroup = turretGroup;
