@@ -150,23 +150,34 @@ public class SocketService {
 			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
 		}
 	}
-	
-	@OnEvent("deleteGame")
-	public void onDeleteGame (SocketIOClient client) {
+
+	@OnEvent("leaveLobby")
+	public void onLeaveLobby (SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 
 		if (user != null && gameLobby != null) {
 			String lobbyId = gameLobby.getLobbyId();
-			this.requestProcessor.deleteGameLobby(lobbyId);
+			gameLobby.removeLobbyUser(user.getId());
+
+			if (gameLobby.getConnectedLobbyUsers().size() == 0) {
+				this.requestProcessor.deleteGameLobby(lobbyId);
+			}
+
+			client.leaveRoom(lobbyId);
+			client.sendEvent("leftLobby");
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			broadcastRoomState.sendEvent("roomDeleted");
+			gameLobby.setAllNotReady();
+			broadcastRoomState.sendEvent("userLeftLobby", user.getUsername());
+			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
+			broadcastRoomState.sendEvent("leaderChanged", gameLobby.getConnectedLobbyUsers().get(0).getLinkedUser().getUsername());
 		}
+
 	}
 
 	@OnEvent("userToggleReady")
-	public void onUserToggleReady(SocketIOClient client) {
+	public void onUserToggleReady (SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
 		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);

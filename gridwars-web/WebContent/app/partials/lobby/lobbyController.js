@@ -59,14 +59,8 @@
 			callChangeLeader: function (userId) {
 				this.lobbyService.changeLeader(userId);
 			},
-			checkDelete: function () {
-				this.$rootScope.deleteSelected = true;
-			},
-			uncheckDelete: function () {
-				this.$rootScope.deleteSelected = false;
-			},
-			callDeleteGame: function () {
-				this.lobbyService.deleteGame();
+			callLeaveGame: function () {
+				this.lobbyService.leaveGame();
 			}
 	}
 

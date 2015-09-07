@@ -151,6 +151,12 @@ public class GameLobby {
 		}
 		return allReady;
 	}
+	
+	
+	public void removeLobbyUser (int userId) {
+		int index = this.getLobbyUserIndex(userId);
+		this.connectedUsers.remove(index);
+	}
 
 	// Getters for summary view
 	@JsonView(GameLobby.Views.Summary.class)

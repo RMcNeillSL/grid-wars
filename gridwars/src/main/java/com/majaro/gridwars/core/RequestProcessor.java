@@ -140,9 +140,9 @@ public class RequestProcessor {
 		return this.gameMaps;
 	}
 	
-	public void deleteGameLobby (String gameLobby) {
+	public void deleteGameLobby (String gameLobbyId) {
 		for (int index = 0; index < this.activeGameLobbys.size(); index++) {
-			if (this.activeGameLobbys.get(index).getLobbyId().equals(gameLobby)) {
+			if (this.activeGameLobbys.get(index).getLobbyId().equals(gameLobbyId)) {
 				this.activeGameLobbys.remove(index);
 			}
 		}
