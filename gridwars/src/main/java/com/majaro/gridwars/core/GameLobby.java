@@ -130,16 +130,18 @@ public class GameLobby {
 		}
 	}
 	
-	public void changeLobbyLeader (User user, int targetUserId) {
-		if(user.getId() == this.connectedUsers.get(0).getLinkedUser().getId())
-		{
-			LobbyUser currentLeader = this.getLobbyUser(user.getId());
+	public boolean changeLobbyLeader (int userId, int targetUserId) {
+		if(userId == this.connectedUsers.get(0).getLinkedUser().getId()) {
+			LobbyUser currentLeader = this.getLobbyUser(userId);
 			LobbyUser target = this.getLobbyUser(targetUserId);
 			int targetIndex = this.getLobbyUserIndexFromUserId(targetUserId);
 
 			this.connectedUsers.set(0, target);
 			this.connectedUsers.set(targetIndex, currentLeader);
+
+			return true;
 		}
+		return false;
 	}
 	
 	public boolean checkAllReady () {
@@ -151,8 +153,7 @@ public class GameLobby {
 		}
 		return allReady;
 	}
-	
-	
+
 	public void removeLobbyUser (int userId) {
 		int index = this.getLobbyUserIndexFromUserId(userId);
 		this.connectedUsers.remove(index);

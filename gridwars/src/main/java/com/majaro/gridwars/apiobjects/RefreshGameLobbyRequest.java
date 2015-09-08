@@ -11,9 +11,9 @@ public class RefreshGameLobbyRequest {
 	private int playerCount;
 	private String gameType;
 	private String lobbyName;
-	
+
 	public RefreshGameLobbyRequest() { }
-	
+
 	public RefreshGameLobbyRequest(String lobbyId, String lobbyName, String mapId, int maxPlayers, int playerCount, String gameType, String mapName) {
 		super();
 		this.setLobbyId(lobbyId);
@@ -24,59 +24,59 @@ public class RefreshGameLobbyRequest {
 		this.setGameType(gameType);
 		this.setMapName(mapName);
 	}
-	
+
 	public String getLobbyId() {
 		return lobbyId;
 	}
-	
+
 	public String getLobbyName() {
 		return lobbyName;
 	}
-	
+
 	public String getMapId() {
 		return mapId;
 	}
-	
+
 	public String getMapName() {
 		return mapName;
 	}
-	
+
 	public int getMaxPlayers() {
 		return maxPlayers;
 	}
-	
+
 	public int getPlayerCount() {
 		return playerCount;
 	}
-	
+
 	public String getGameType() {
 		return gameType;
 	}
-	
+
 	public void setLobbyId(String lobbyId) {
 		this.lobbyId = lobbyId;
 	}
-	
+
 	public void setLobbyName(String lobbyName) {
 		this.lobbyName = lobbyName;
 	}
-	
+
 	public void setMapId(String mapId) {
 		this.mapId = mapId;
 	}
-	
+
 	public void setMapName(String mapName) {
 		this.mapName = mapName;
 	}
-	
+
 	public void setMaxPlayers(int maxPlayers) {
 		this.maxPlayers = maxPlayers;
 	}
-	
+
 	public void setPlayerCount(int playerCount) {
 		this.playerCount = playerCount;
 	}
-	
+
 	public void setGameType(String gameType) {
 		this.gameType = gameType;
 	}
