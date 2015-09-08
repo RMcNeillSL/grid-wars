@@ -99,7 +99,7 @@ public class SocketService {
 				if (updateComplete) {
 					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(), mapMaxPlayers);
-					requestProcessor.setAllNotReady(sessionId);
+					requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 					broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 				}
 			}
@@ -134,7 +134,7 @@ public class SocketService {
 			if (complete) {
 				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 				broadcastRoomState.sendEvent("leaderChanged", targetUsername);
-				requestProcessor.setAllNotReady(sessionId);
+				requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 				broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 			}
 		}
@@ -181,7 +181,7 @@ public class SocketService {
 			if (colourChanged) {
 				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 				broadcastRoomState.sendEvent("changeUserColour", gameAndUserInfo.getUserId(), colour);
-				requestProcessor.setAllNotReady(sessionId);
+				requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 				broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 			}
 		}
@@ -196,7 +196,7 @@ public class SocketService {
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 			requestProcessor.updateUserTeam(sessionId, team);
 			broadcastRoomState.sendEvent("changeUserTeam", gameAndUserInfo.getUserId(), team);
-			requestProcessor.setAllNotReady(sessionId);
+			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 		}
 	}
