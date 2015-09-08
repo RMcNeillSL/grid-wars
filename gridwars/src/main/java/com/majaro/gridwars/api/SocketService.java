@@ -81,30 +81,26 @@ public class SocketService {
 	@OnEvent("updateGameConfig")
 	public void onUpdateGameConfig(SocketIOClient client, GameJoinResponse data) {
 		String sessionId = client.getSessionId().toString();
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 		boolean updateComplete = false;
 
-		if (user != null && gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			int maxPlayers = data.getMaxPlayers();
-			int mapMaxPlayers = this.requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers();
+		if (gameAndUserInfo != null) {
+			int mapMaxPlayers = requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers();
 
-			if (gameLobby.getConnectedUsers().size() > mapMaxPlayers) {
+			if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).size() > mapMaxPlayers) {
 				client.sendEvent("mapChangeError", "Cannot change map - too many players in lobby");
 			} else {
-
-				if (data.getMaxPlayers() > this.requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers()) {
+				if (data.getMaxPlayers() > requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers()) {
 					data.setMaxPlayers(mapMaxPlayers);
 				}
 
-				updateComplete = this.requestProcessor.updateGameConfig(sessionId, data);
+				updateComplete = requestProcessor.updateGameConfig(sessionId, data);
 
 				if (updateComplete) {
-					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(), mapMaxPlayers);
-					gameLobby.setAllNotReady();
-					broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
+					requestProcessor.setAllNotReady(sessionId);
+					broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 				}
 			}
 		}

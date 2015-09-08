@@ -134,7 +134,6 @@
 			});
 
 			self.socket.on("leaderChanged", function (targetUsername) {
-				console.log("LEADER CHANGED", targetUsername);
 				if (targetUsername == self.$rootScope.currentUser) {
 					self.$rootScope.gameLeader = true;
 				} else {
