@@ -13,6 +13,15 @@ html, body {
     height: 100%;
 }
 
+.table-striped>tbody>tr:nth-child(odd)>td, 
+.table-striped>tbody>tr:nth-child(odd)>th {
+   color: #333;
+ }
+ 
+ .table-striped>tbody>tr:nth-child(even)>td.tdInfo {
+   color: #fff;
+ }
+
 .main {
     height: 100%;
     width: 100%;
@@ -100,3 +109,21 @@ html, body {
 .gwa-server h1 {
 	color:#fff;
 }
+
+.filter {
+	float:right;
+	padding-bottom:10px;
+}
+
+.filterLabel {
+	color:#fff;
+	padding-right:10px;
+}
+
+.filterApplied {
+	margin-top:5px;
+	padding:5px;
+	font-size:12px;
+	float:left;
+}
+.

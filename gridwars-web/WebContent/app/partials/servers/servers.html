@@ -1,21 +1,52 @@
 <div class="gwa-servers">
-	<h2 class="title">Servers page ({{ servers.length == 1 ? servers.length + " server" : servers.length + " servers" }})
-	<a ng-click="controller.logOut()">Log out</a></h2>
+	<h2 class="title">
+		Servers page ({{ servers.length == 1 ? servers.length + " server" :
+		servers.length + " servers" }}) <a ng-click="controller.logOut()">Log
+			out</a>
+	</h2>
+	<span class="label label-info filterApplied"
+		ng-show="filterText.length > 0">A filter is currently being
+		applied</span>
+	<div class="filter">
+		<form class="form-inline">
+			<label class="filterLabel">Filter</label><input type="search"
+				placeholder="Filter Text" class="form-control input-sm"
+				ng-model="filterText">
+		</form>
+	</div>
 
 	<table class="table table-striped">
 		<tr>
-			<th>Lobby Id</th>
-			<th>Map Name</th>
-			<th>Player Count</th>
-			<th>Game Type</th>
+			<th><a
+				ng-click="orderByField='lobbyName'; reverseSort = !reverseSort">
+					Lobby Name </a><span ng-show="orderByField == 'lobbyName'"><span
+					ng-show="!reverseSort">&#x25B4;</span><span ng-show="reverseSort">&#x25BE;</span></span>
+			</th>
+			<th><a
+				ng-click="orderByField='mapName'; reverseSort = !reverseSort">
+					Map Name </a><span ng-show="orderByField == 'mapName'"><span
+					ng-show="!reverseSort">&#x25B4;</span><span ng-show="reverseSort">&#x25BE;</span></span>
+			</th>
+			<th><a
+				ng-click="orderByField='playerCount'; reverseSort = !reverseSort">
+					Player Count </a><span ng-show="orderByField == 'playerCount'"><span
+					ng-show="!reverseSort">&#x25B4;</span><span ng-show="reverseSort">&#x25BE;</span></span>
+			</th>
+			<th><a
+				ng-click="orderByField='gameType'; reverseSort = !reverseSort">
+					Game Type </a><span ng-show="orderByField == 'gameType'"><span
+					ng-show="!reverseSort">&#x25B4;</span><span ng-show="reverseSort">&#x25BE;</span></span>
+			</th>
 			<th>Actions</th>
 		</tr>
-		<tr ng-repeat="server in servers">
-			<td>{{ server.lobbyName }}</td>
-			<td>{{ server.mapName }}</td>
-			<td>{{ server.playerCount }} / {{ server.maxPlayers }}</td>
-			<td>{{ controller.formatGameType(server.gameType) }}</td>
-			<td><button type="button" class="btn"
+		<tr ng-repeat="server in servers | filter:filterText | orderBy:orderByField:reverseSort">
+			<td class="tdInfo">{{ server.lobbyName }}</td>
+			<td class="tdInfo">{{ server.mapName }}</td>
+			<td class="tdInfo">{{ server.playerCount }} / {{
+				server.maxPlayers }}</td>
+			<td class="tdInfo">{{ controller.formatGameType(server.gameType)
+				}}</td>
+			<td><button type="button" class="btn btn-xs"
 					ng-click="controller.joinGame(server.lobbyId)"
 					ng-disabled="server.playerCount == server.maxPlayers">{{
 					server.playerCount < server.maxPlayers ? "Join Game" : "Game Full"
