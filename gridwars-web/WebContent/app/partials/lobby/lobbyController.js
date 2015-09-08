@@ -8,6 +8,7 @@
 		this.$location = $location;
 		this.$rootScope = $rootScope;
 		this.lobbyService = lobbyService;
+		this.lobbyService.socketSetup();
 		$rootScope.lobbyMessages = [];
 		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];

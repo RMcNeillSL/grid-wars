@@ -5,7 +5,6 @@
 		this.$rootScope = $rootScope;
 		this.$http = $http;
 		self = this;
-		//this.openSocket();
 	}
 	ServersService.prototype = {
 		openSocket : function() {
