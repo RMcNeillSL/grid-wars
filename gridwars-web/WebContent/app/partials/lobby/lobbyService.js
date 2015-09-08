@@ -7,16 +7,6 @@
 		this.$rootScope = $rootScope;
 		this.$location = $location;
 		self = this;
-
-		this.$http.get("/gridwars/rest/game/maps").then(function(response) {
-			response.data.forEach(function(map) {
-				$rootScope.mapList.push(map);
-			});
-		}, function(response) {
-			if (response.status !== 200) {
-				console.log("ERROR.");		//TODO: Add more error checking
-			}
-		});
 	}
 
 	LobbyService.prototype = {
@@ -169,6 +159,17 @@
 				alert("The lobby leader has delete the lobby, returning to the server lobby page");
 				self.$location.path("/servers");
 				self.$rootScope.$apply();
+			});
+		},
+		getMaps: function () {
+			self.$http.get("/gridwars/rest/game/maps").then(function(response) {
+				response.data.forEach(function(map) {
+					self.$rootScope.mapList.push(map);
+				});
+			}, function(response) {
+				if (response.status !== 200) {
+					console.log("ERROR.");		//TODO: Add more error checking
+				}
 			});
 		},
 		sendMessage: function (newMessage) {

@@ -8,12 +8,19 @@
 		this.$location = $location;
 		this.$rootScope = $rootScope;
 		this.lobbyService = lobbyService;
-		this.lobbyService.socketSetup();
+
+		// Initialise variables
 		$rootScope.lobbyMessages = [];
 		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];
 		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
 		$rootScope.deleteSelected = false;
+
+		// Setup the socket
+		this.lobbyService.socketSetup();
+
+		// Get information from server
+		this.lobbyService.getMaps();
 	}
 
 	LobbyController.prototype = {
