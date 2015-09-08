@@ -1,38 +1,55 @@
 <div class="gwa-lobby">
 	<h1>LOBBY PAGE</h1>
 
-	<section ng-if="$root.gameLeader">
+	<section ng-if="!$root.gameLeader">
         <h2>Game Options</h2>
-        <section class="col-md-3">
-        <h3>Map Selection</h3>
-        <table class="table table-striped map-table" id="map-list">
-            <tr>
-                <th>Map Name</th>
-                <th>Players</th>
-                <th>Select</th>
-            </tr>
-            <tr ng-repeat="map in $root.mapList">
-                <td>{{map.mapName}}</td>
-                <td>{{map.maxPlayers}}</td>
-                <td>
-                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.mapId)" ng-if="$root.gameConfig.mapId!=map.mapId">Select</button>
-                    <span class="glyphicon glyphicon-ok" ng-if="$root.gameConfig.mapId==map.mapId"></span>
-                </td>
-            </tr>
-        </table>
-        </section>
 
-        <section class="col-md-3">
-            <h3>Map Preview</h3>
-            <div class="map-preview">
+        <div class="col-md-6">
+	        <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
+				<li class="active"><a>Map Selection</a></li>
+				<li><a ng-click="controller.setTab('Game Rules')">Game Rules</a></li>
+			</ul>
+			<ul class="nav nav-tabs col-md-12" ng-if="tabSelect==='Game Rules'">
+                <li><a ng-click="controller.setTab('Map Selection')">Map Selection</a></li>
+                <li class="active"><a>Game Rules</a></li>
+            </ul>
+	        <div ng-if="tabSelect!=='Game Rules'">
+		        <section class="col-md-6">
+		        <h3>Map Selection</h3>
+		        <table class="table table-striped map-table" id="map-list">
+		            <tr>
+		                <th>Map Name</th>
+		                <th>Players</th>
+		                <th>Select</th>
+		            </tr>
+		            <tr ng-repeat="map in $root.mapList">
+		                <td>{{map.mapName}}</td>
+		                <td>{{map.maxPlayers}}</td>
+		                <td>
+		                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.mapId)" ng-if="$root.gameConfig.mapId!=map.mapId">Select</button>
+		                    <span class="glyphicon glyphicon-ok" ng-if="$root.gameConfig.mapId==map.mapId"></span>
+		                </td>
+		            </tr>
+		        </table>
+		        </section>
+
+                <section class="col-md-6">
+                    <h3>Map Preview</h3>
+                    <div class="map-preview">
+                    </div>
+                </section>
+	        </div>
+
+            <div ng-if="tabSelect==='Game Rules'">
+                <section class="col-md-12">
+                <h3>Game Rules</h3>
+                    HELLO
+                </section>
             </div>
-
-            <h3>Leave Game</h3>
-            <button ng-click="controller.callLeaveGame()" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-euro"></span> Leave Lobby</button>
-        </section>
+        </div>
 	</section>
 
-    <section ng-if="!$root.gameLeader">
+    <section ng-if="$root.gameLeader">
         <h2>Game Options</h2>
         <section class="col-md-3">
 	        <h3>Selected Map</h3>
@@ -162,5 +179,8 @@
             </tr>
         </table>
     </section>
+    <div class="col-md-12">
+            <button ng-click="controller.callLeaveGame()" class="btn btn-default btn-lg" style="float: right"><span class="glyphicon glyphicon-euro"></span> Leave Lobby</button>
+        </div>
 
 </div>

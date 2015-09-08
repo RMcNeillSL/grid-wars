@@ -69,6 +69,8 @@
 			},
 			callLeaveGame: function () {
 				this.lobbyService.leaveGame();
+			}, setTab: function (tab) {
+				this.$scope.tabSelect = tab;
 			}
 	}
 
