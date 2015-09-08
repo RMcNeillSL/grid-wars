@@ -7,7 +7,8 @@
 		this.serversService = serversService;
 		this.$location = $location;
 		this.$rootScope = $rootScope;
-		this.$rootScope.servers = [];
+		this.$rootScope.servers = []
+		this.$rootScope.pageName = "Servers";
 		this.loadServers();
 	}
 

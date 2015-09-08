@@ -8,6 +8,7 @@
 		this.$location = $location;
 		this.$rootScope = $rootScope;
 		this.loginService = loginService;
+		this.$rootScope.pageName = "Login";
 
 		// Declare variables
 		$scope.username = "TestUser";

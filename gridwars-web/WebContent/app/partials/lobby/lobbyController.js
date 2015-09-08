@@ -12,6 +12,7 @@
 		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];
 		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
+		this.$rootScope.pageName = "Game Lobby";
 
 		// Declare variables
 		//this.$scope.userReady = false;

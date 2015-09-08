@@ -7,6 +7,7 @@
 		this.$scope = $scope;
 		this.$location = $location;
 		this.$rootScope = $rootScope;
+		this.$rootScope.pageName = "Register";
 		this.registerService = registerService;
 
 		// Declare variables

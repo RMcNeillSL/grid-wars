@@ -2,8 +2,10 @@
 
 (function() {
 
-	function GameController($scope, gameService) {
+	function GameController($scope, $rootScope, gameService) {
 
+		this.$rootScope.pageName = "Game";
+		
 		var startGame = function() {
 
 			// Create game config object
@@ -33,7 +35,7 @@
 
 	}
 
-	GameController.$inject = [ '$scope', 'gridWarsApp.game.service' ];
+	GameController.$inject = [ '$scope', '$rootScope', 'gridWarsApp.game.service' ];
 
 	angular.module('gridWarsApp.game.module').controller('gridWarsApp.game.controller', GameController);
 }());
