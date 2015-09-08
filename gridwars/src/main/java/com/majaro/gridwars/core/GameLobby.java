@@ -135,7 +135,7 @@ public class GameLobby {
 		{
 			LobbyUser currentLeader = this.getLobbyUser(user.getId());
 			LobbyUser target = this.getLobbyUser(targetUserId);
-			int targetIndex = this.getLobbyUserIndex(targetUserId);
+			int targetIndex = this.getLobbyUserIndexFromUserId(targetUserId);
 
 			this.connectedUsers.set(0, target);
 			this.connectedUsers.set(targetIndex, currentLeader);
@@ -154,7 +154,7 @@ public class GameLobby {
 	
 	
 	public void removeLobbyUser (int userId) {
-		int index = this.getLobbyUserIndex(userId);
+		int index = this.getLobbyUserIndexFromUserId(userId);
 		this.connectedUsers.remove(index);
 	}
 
@@ -190,7 +190,7 @@ public class GameLobby {
 		return null;
 	}
 	
-	private int getLobbyUserIndex(int userId) {
+	private int getLobbyUserIndexFromUserId(int userId) {
 		for (int index = 0; index < this.connectedUsers.size(); index++) {
 			if (this.connectedUsers.get(index).getLinkedUser().getId() == userId) {
 				return index;

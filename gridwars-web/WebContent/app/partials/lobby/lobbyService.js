@@ -7,6 +7,8 @@
 		this.$rootScope = $rootScope;
 		this.$location = $location;
 		self = this;
+		
+		console.log("TEST");
 
 		this.socket = io.connect("http://localhost:8080", {
 			"force new connection": true

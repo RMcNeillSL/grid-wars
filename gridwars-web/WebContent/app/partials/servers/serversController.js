@@ -9,6 +9,7 @@
 		this.$rootScope = $rootScope;
 		this.$rootScope.servers = [];
 		this.loadServers();
+		this.serversService.openSocket();
 	}
 
 	ServersController.prototype = {

@@ -4,13 +4,14 @@
 	function ServersService($rootScope, $http) {
 		this.$rootScope = $rootScope;
 		this.$http = $http;
-		var self = this;
-		this.openSocket(self);
+		self = this;
+		//this.openSocket();
 	}
 	ServersService.prototype = {
-		openSocket : function(_this) {
+		openSocket : function() {
+			var _this = this;
 			this.socket = io.connect("http://localhost:8080", {
-				reconnection : false
+				"force new connection" : true
 			});
 
 			this.socket.on("connect", function() {
@@ -21,19 +22,19 @@
 				var exists = false;
 				var serverIndex = -1;
 
-				exists = _this.$rootScope.servers.some(function(server) {
+				exists = self.$rootScope.servers.some(function(server) {
 					if (server.lobbyId === data.lobbyId) {
-						serverIndex = _this.$rootScope.servers.indexOf(server);
+						serverIndex = self.$rootScope.servers.indexOf(server);
 						return server.lobbyId === data.lobbyId;
 					}
 				});
 
 				if (exists) {
-					_this.$rootScope.servers.splice(serverIndex, 1);
+					self.$rootScope.servers.splice(serverIndex, 1);
 				}
 
-				_this.$rootScope.servers.push(data);
-				_this.$rootScope.$apply();
+				self.$rootScope.servers.push(data);
+				self.$rootScope.$apply();
 			});
 		},
 		getServers : function(callback) {
