@@ -213,6 +213,11 @@ public class RequestProcessor {
 	// User login and registration methods
 
 	public int register(RegRequest regRequest) {
+		if(regRequest.getNewUsername().length() < 1 || regRequest.getNewPassword().length() < 1
+				|| regRequest.getNewUsername().length() > 15) {
+			return 400;
+		}
+		
 		return dao.register(regRequest.getNewUsername(), regRequest.getNewPassword());
 	}
 
