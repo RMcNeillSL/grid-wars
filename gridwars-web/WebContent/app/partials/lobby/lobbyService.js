@@ -35,11 +35,18 @@
 				self.$rootScope.$apply();
 			});
 
-			self.socket.on("gameConfig", function(mapId, maxPlayers, gameType, mapMaxPlayers) {
+			self.socket.on("gameConfig", function(mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
+					gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
 				self.$rootScope.gameConfig.mapId = mapId;
 				self.$rootScope.gameConfig.maxPlayers = maxPlayers;
 				self.$rootScope.gameConfig.gameType = gameType;
-				self.$rootScope.gameConfig.mapMaxPlayers = mapMaxPlayers;
+				self.$rootScope.gameConfig.startingCash = startingCash;
+				self.$rootScope.gameConfig.gameSpeed = gameSpeed;
+				self.$rootScope.gameConfig.unitHealth = unitHealth;
+				self.$rootScope.gameConfig.buildingHealth = buildingHealth;
+				self.$rootScope.gameConfig.turretHealth = turretHealth;
+				self.$rootScope.gameConfig.randomCrates = randomCrates;
+				self.$rootScope.gameConfig.redeployableMCV = redeployableMCV;
 				self.$rootScope.$apply();
 			});
 

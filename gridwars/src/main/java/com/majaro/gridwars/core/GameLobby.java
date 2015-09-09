@@ -91,7 +91,14 @@ public class GameLobby {
 		{
 			this.gameConfig.updateGameConfig(map,
 					gameJoinResponse.getMaxPlayers(), 
-					gameJoinResponse.getGameType());
+					gameJoinResponse.getGameType(),
+					gameJoinResponse.getStartingCash(),
+					gameJoinResponse.getGameSpeed(),
+					gameJoinResponse.getUnitHealth(),
+					gameJoinResponse.getBuildingHealth(),
+					gameJoinResponse.getTurretHealth(),
+					gameJoinResponse.isRandomCrates(),
+					gameJoinResponse.isRedeployableMCV());
 			return true;
 		}
 		return false;

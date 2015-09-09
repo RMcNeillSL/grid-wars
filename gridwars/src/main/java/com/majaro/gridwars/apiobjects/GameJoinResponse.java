@@ -22,6 +22,13 @@ public class GameJoinResponse {
 	private int maxPlayers = -1;
 	private int mapMaxPlayers = -1;
 	private E_GameType gameType = E_GameType.UNDEFINED;
+	private int startingCash = -1;
+	private int gameSpeed = -1;
+	private int unitHealth = -1;
+	private int buildingHealth = -1;
+	private int turretHealth = -1;
+	private boolean randomCrates = false;
+	private boolean redeployableMCV = false;
 	
 	private int factionId = 0;
 	private int playerNumber;
@@ -77,6 +84,22 @@ public class GameJoinResponse {
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public int getMapMaxPlayers() { return this.sourceGameLobby.getGameConfig().getMapMaxPlayers(); }	
 
+	public int getFactionId() {
+		return factionId;
+	}
+	public int getPlayerNumber() {
+		return playerNumber;
+	}
+	public String getPlayerColour() {
+		return playerColour;
+	}
+	public int getPlayerTeam() {
+		return playerTeam;
+	}
+	public boolean isReady() {
+		return ready;
+	}
+
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public E_GameType getGameType() { 
 		if (this.sourceGameLobby != null) {
@@ -85,6 +108,65 @@ public class GameJoinResponse {
 			return this.gameType;
 		}
 		return E_GameType.UNDEFINED;
+	}
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public int getStartingCash() { 
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getStartingCash();
+		} else if (this.sourceGameLobby == null && this.startingCash != -1) {
+			return this.startingCash;
+		}
+		return -1;
+	}
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public int getGameSpeed() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getGameSpeed();
+		} else if (this.sourceGameLobby == null && this.gameSpeed != -1) {
+			return this.gameSpeed;
+		}
+		return -1;
+	}
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public int getUnitHealth() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getUnitHealth();
+		} else if (this.sourceGameLobby == null && this.unitHealth != -1) {
+			return this.unitHealth;
+		}
+		return -1;
+	}
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public int getBuildingHealth() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getBuildingHealth();
+		} else if (this.sourceGameLobby == null && this.buildingHealth != -1) {
+			return this.buildingHealth;
+		}
+		return -1;
+	}
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public int getTurretHealth() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getTurretHealth();
+		} else if (this.sourceGameLobby == null && this.turretHealth != -1) {
+			return this.turretHealth;
+		}
+		return -1;
+	}
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public boolean isRandomCrates() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().isRandomCrates();
+		}
+		return this.randomCrates;
+	}
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public boolean isRedeployableMCV() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().isRedeployableMCV();
+		}
+		return this.redeployableMCV;
 	}
 
 
@@ -95,38 +177,17 @@ public class GameJoinResponse {
 	public void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
 	public void setMapMaxPlayers(int mapMaxPlayers) { this.mapMaxPlayers = mapMaxPlayers; }
 	public void setGameType(E_GameType gameType) { this.gameType = gameType; }
-
-	
-	// Getters and setters for lobbyUser configs
-	public int getFactionId() {
-		return factionId;
-	}
-	public void setFactionId(int factionId) {
-		this.factionId = factionId;
-	}
-	public int getPlayerNumber() {
-		return playerNumber;
-	}
-	public String getPlayerColour() {
-		return playerColour;
-	}
-	public void setPlayerColour(String playerColour) {
-		this.playerColour = playerColour;
-	}
-	public int getPlayerTeam() {
-		return playerTeam;
-	}
-	public void setPlayerTeam(int playerTeam) {
-		this.playerTeam = playerTeam;
-	}
-	public boolean isReady() {
-		return ready;
-	}
-	public void setReady(boolean ready) {
-		this.ready = ready;
-	}
-
-
+	public void setFactionId(int factionId) { this.factionId = factionId; }
+	public void setPlayerColour(String playerColour) { this.playerColour = playerColour; }
+	public void setPlayerTeam(int playerTeam) { this.playerTeam = playerTeam; }
+	public void setReady(boolean ready) { this.ready = ready; }
+	public void setStartingCash(int startingCash) { this.startingCash = startingCash; }
+	public void setGameSpeed(int gameSpeed) { this.gameSpeed = gameSpeed; }
+	public void setUnitHealth(int unitHealth) { this.unitHealth = unitHealth; }
+	public void setBuildingHealth(int buildingHealth) { this.buildingHealth = buildingHealth; }
+	public void setTurretHealth(int turretHealth) { this.turretHealth = turretHealth; }
+	public void setRandomCrates(boolean randomCrates) { this.randomCrates = randomCrates; }
+	public void setRedeployableMCV(boolean redeployableMCV) { this.redeployableMCV = redeployableMCV; }
 
 	// Class views
 	public static class Views {
