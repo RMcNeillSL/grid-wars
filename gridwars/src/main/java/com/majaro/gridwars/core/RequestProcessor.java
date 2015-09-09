@@ -3,24 +3,19 @@ package com.majaro.gridwars.core;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 
-import org.joda.time.DateTime;
-
-import com.corundumstudio.socketio.BroadcastOperations;
-import com.corundumstudio.socketio.Configuration;
-import com.corundumstudio.socketio.SocketIOServer;
 import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.apiobjects.AuthRequest;
+import com.majaro.gridwars.apiobjects.GameInitRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
+import com.majaro.gridwars.apiobjects.GameplayConfig;
+import com.majaro.gridwars.apiobjects.GameplayRequest;
+import com.majaro.gridwars.apiobjects.GameplayResponse;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
-import com.majaro.gridwars.game.GameConfig;
-import com.majaro.gridwars.game.GameDynamicMap;
 import com.majaro.gridwars.game.GameStaticMap;
-import com.majaro.gridwars.game.Constants.E_GameType;
 
 public class RequestProcessor {
 
@@ -37,12 +32,16 @@ public class RequestProcessor {
 	private static final String PERSISTENCE_UNIT = "gridwars";
 	private final EntityManager dao;
 	
+	// Socket variables
+	@SuppressWarnings("unused")
+	private SocketService socketService;
+	
 	// Constants
 	private static final String DEFAULT_LOBBY_NAME = "Europe Server #";
 
 	
 	// Constructors
-
+	
 	public RequestProcessor() {
 
 		// Set default array values
@@ -51,17 +50,76 @@ public class RequestProcessor {
 		this.gameMaps = new ArrayList<GameStaticMap>();
 
 		// Create game maps
-		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 4));
-		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2));
+		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 2, 8, 6,
+				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
+		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2, 8, 6,
+				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
 
 		// Setup sessions and sockets
 		initialiseSessionCleanUp();
-		SocketService socketService = new SocketService(this);
+		this.socketService = new SocketService(this);
 	}
 
+	
+	// Gameplay methods
+	
+	public String validateGameInitRequest(GameInitRequest gameInitRequest, String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby != null && user != null && gameLobby.isLobbyLeader(user)) {
+			return gameLobby.getLobbyId();
+		}
+		return null;
+	}
+	
+	public GameplayConfig generateGameplayConfig(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		if (gameLobby != null) {
+			return new GameplayConfig(gameLobby, this.getGameMapFromId(gameLobby.getMapId()));
+		}
+		return null;
+	}
+	
+	public void initGameEngine(String lobbyId) {
+		GameLobby gameLobby = this.getGameLobbyFromLobbyId(lobbyId);
+		if (gameLobby != null && !gameLobby.started()) {
+			GameStaticMap gameMap = this.getGameMapFromId(gameLobby.getMapId());
+			if (gameMap != null) {
+				gameLobby.initGame(gameMap);
+			}
+		}
+	}
+	
+	public void startGameEngine(String lobbyId) {
+		GameLobby gameLobby = this.getGameLobbyFromLobbyId(lobbyId);
+		if (gameLobby != null && gameLobby.started()) {
+			gameLobby.startGame();
+		}
+	}
+	
+	public boolean markUserAsReady(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby != null && user != null) {
+			return gameLobby.areAllUsersReadyAndUpdate(user);
+		}
+		return false;
+	}
+	
+	public GameplayResponse processGameplayRequest(GameplayRequest gameplayRequest, String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby != null && user != null) {
+			System.out.println("Game lobby exists.");
+			GameplayResponse gameplayResponse = gameLobby.processGameplayRequest(gameplayRequest, user.getId());
+			return gameplayResponse;
+		}
+		return new GameplayResponse();
+	}
+	
 	
 	// Managing game lobbies including joining, creating and game info retrieval
 
@@ -322,6 +380,18 @@ public class RequestProcessor {
 			for (GameLobby gameLobby : this.activeGameLobbys) {
 				if (gameLobby.includesUser(user)) {
 					return gameLobby;
+				}
+			}
+		}
+		return null;
+	}
+
+	public String getGameLobbyIdFromSocketSessionId(String sessionId) {
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (user != null) {
+			for (GameLobby gameLobby : this.activeGameLobbys) {
+				if (gameLobby.includesUser(user)) {
+					return gameLobby.getLobbyId();
 				}
 			}
 		}

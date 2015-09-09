@@ -1,12 +1,12 @@
-function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, mapData) {
+function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells) {
 	
 	// Save passed phaser reference
 	this.phaserRef = phaserRef;
 	
 	// Save map data
-	this.mapData = mapData;
-	this.width = mapData.width;
-	this.height = mapData.height;
+	this.cells = cells;
+	this.width = width;
+	this.height = height;
 	this.tileWidth = 100;
 	this.tileHeight = 100;
 	
@@ -51,10 +51,10 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, mapData) {
 	// Generate map sprites
 	var colIndex = 0;
 	var rowIndex = 0;
-	for (var index = 0; index < this.mapData.map.length; index ++) {
+	for (var index = 0; index < this.cells.length; index ++) {
 		
 		// Add new map tile
-		this.mapTiles.push(new createMapTile(this.mapData.map[index], colIndex, rowIndex));
+		this.mapTiles.push(new createMapTile(this.cells[index], colIndex, rowIndex));
 		
 		// Check if reached the end of the row
 		if (colIndex >= this.width-1) { rowIndex ++; colIndex = 0; } else { colIndex ++; }

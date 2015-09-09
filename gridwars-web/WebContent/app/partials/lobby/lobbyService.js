@@ -135,6 +135,7 @@
 			});
 
 			self.socket.on("gameInitialising", function () {
+				console.log("GAME MADE");
 				self.$rootScope.lobbyMessages.push({user: "SERVER", message: "All users ready - initialising game"});
 				self.$location.path("/game");
 				self.$rootScope.$apply();
