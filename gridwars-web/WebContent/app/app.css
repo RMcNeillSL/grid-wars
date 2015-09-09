@@ -3,12 +3,12 @@
 }
 
 .chat-container {
-    height: 40vh;
+    height: 30vh;
     overflow: auto;
 }
 
 .player-table {
-	height: 30vh;
+	height: 40vh;
 	overflow: auto;
 }
 

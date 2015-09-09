@@ -10,6 +10,7 @@
 		this.$rootScope.servers = []
 		this.$rootScope.pageName = "Servers";
 		this.loadServers();
+		this.serversService.openSocket();
 	}
 
 	ServersController.prototype = {
@@ -32,6 +33,8 @@
 
 			var updateNewGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
+				self.$rootScope.gameLeader = true;
+				console.log(response);
 				self.$location.path("/lobby");
 			};
 
@@ -41,7 +44,8 @@
 			var self = this;
 
 			var updateJoinGameResponse = function(response) {
-				self.$rootScope.joinGameResponse = response;
+				self.$rootScope.gameConfig = response;
+				//self.$rootScope.joinGameResponse = response;
 				self.$location.path("/lobby");
 			};
 

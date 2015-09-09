@@ -15,12 +15,12 @@ import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import com.majaro.gridwars.apiobjects.MessageRequest;
 import com.majaro.gridwars.apiobjects.RefreshGameLobbyRequest;
+import com.majaro.gridwars.core.GameAndUserInfo;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.apiobjects.BindSocketRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
-import com.majaro.gridwars.apiobjects.JoinRoomRequest;
 
 public class SocketService {
 
@@ -50,34 +50,30 @@ public class SocketService {
 		socketServer.start();
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
-	
+
 	@OnEvent("joinGameLobby")
 	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
 		String username = data.getUser();
 		String sessionId = client.getSessionId().toString();
-		this.requestProcessor.bindSocketSessionId(username, sessionId);
-		User user = this.requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		requestProcessor.bindSocketSessionId(username, sessionId);
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 
-		if (user != null && gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			socketServer.addNamespace(lobbyId);
-			client.joinRoom(lobbyId);
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			broadcastRoomState.sendEvent("userJoinedGameLobby", user.getUsername());
-			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
+		if (gameAndUserInfo != null) {
+			socketServer.addNamespace(gameAndUserInfo.getLobbyId());
+			client.joinRoom(gameAndUserInfo.getLobbyId());
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			broadcastRoomState.sendEvent("userJoinedGameLobby", gameAndUserInfo.getUsername());
+			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 		}
 	}
-	
+
 	@OnEvent("sendMessage")
     public void onMessage(SocketIOClient client, MessageRequest data, AckRequest ackRequest) {
 		String sessionId = client.getSessionId().toString();
-		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 
-		if (user != null && gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+		if (gameAndUserInfo != null) {
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 			broadcastRoomState.sendEvent("gameLobbyMessage", data);
 		}
     }
@@ -85,47 +81,110 @@ public class SocketService {
 	@OnEvent("updateGameConfig")
 	public void onUpdateGameConfig(SocketIOClient client, GameJoinResponse data) {
 		String sessionId = client.getSessionId().toString();
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		boolean updateComplete = false;
 
-		if (gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			this.requestProcessor.updateGameConfig(sessionId, data);
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType());
+		if (gameAndUserInfo != null) {
+			int mapMaxPlayers = requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers();
+
+			if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).size() > mapMaxPlayers) {
+				client.sendEvent("mapChangeError", "Cannot change map - too many players in lobby");
+			} else {
+				if (data.getMaxPlayers() > requestProcessor.getGameMapFromId(data.getMapId()).getMaxPlayers()) {
+					data.setMaxPlayers(mapMaxPlayers);
+				}
+
+				updateComplete = requestProcessor.updateGameConfig(sessionId, data);
+
+				if (updateComplete) {
+					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(),
+							mapMaxPlayers, data.getStartingCash(), data.getGameSpeed(), data.getUnitHealth(), 
+							data.getBuildingHealth(), data.getTurretHealth(), data.isRandomCrates(), data.isRedeployableMCV());
+					requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+					broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+				}
+			}
 		}
 	}
 
-	@OnEvent("userToggleReady")
-	public void onUserToggleReady(SocketIOClient client) {
+	@OnEvent("startGameInitialisation")
+	public void onStartGame (SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
-		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 
-		if (user != null && gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			int currentUserId = user.getId();
-			boolean userReady = gameLobby.getLobbyUser(currentUserId).isReady();
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			gameLobby.updateUserReady(currentUserId);
-			broadcastRoomState.sendEvent("toggleUserReady", currentUserId);
+		if (gameAndUserInfo != null) {
+			boolean allReady = false;
+			allReady = requestProcessor.checkAllReady(gameAndUserInfo.getLobbyId());
+
+			if (allReady) {
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("gameInitialising");
+			}
+		}
+	}
+
+	@OnEvent("changeLobbyLeader")
+	public void onChangeLeader (SocketIOClient client, int targetUserId) {
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+
+		if (gameAndUserInfo != null) {
+			String targetUsername = requestProcessor.getUserNameByUserId(gameAndUserInfo.getLobbyId(), targetUserId);
+			boolean complete = requestProcessor.changeLobbyLeader(sessionId, targetUserId);
+
+			if (complete) {
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("leaderChanged", targetUsername);
+				requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+			}
+		}
+	}
+
+	@OnEvent("leaveLobby")
+	public void onLeaveLobby (SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+
+		if (gameAndUserInfo != null) {
+			requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+			client.leaveRoom(gameAndUserInfo.getLobbyId());
+			client.sendEvent("leftLobby");
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+			broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
+			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+			broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+		}
+
+	}
+
+	@OnEvent("userToggleReady")
+	public void onUserToggleReady (SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+
+		if (gameAndUserInfo != null) {
+			requestProcessor.toggleUserReady(sessionId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			broadcastRoomState.sendEvent("toggleUserReady", gameAndUserInfo.getUserId());
 		}
 	}
 
 	@OnEvent("userChangeColour")
-	public void onUserColourChange(SocketIOClient client, String colour) {
+	public void gameAndUserInfo(SocketIOClient client, String colour) {
 		String sessionId = client.getSessionId().toString();
-		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 
-		if (user != null && gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			int currentUserId = user.getId();
-			boolean colourChanged = gameLobby.updateUserColour(currentUserId, colour);
+		if (gameAndUserInfo != null) {
+			boolean colourChanged = requestProcessor.updateUserColour(sessionId, colour);
 
 			if (colourChanged) {
-				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-				broadcastRoomState.sendEvent("changeUserColour", currentUserId, colour);
-				broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("changeUserColour", gameAndUserInfo.getUserId(), colour);
+				requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 			}
 		}
 	}
@@ -133,16 +192,14 @@ public class SocketService {
 	@OnEvent("userChangeTeam")
 	public void onUserTeamChange(SocketIOClient client, int team) {
 		String sessionId = client.getSessionId().toString();
-		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
-		GameLobby gameLobby = this.requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 
-		if (user != null && gameLobby != null) {
-			String lobbyId = gameLobby.getLobbyId();
-			int currentUserId = user.getId();
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
-			gameLobby.updateUserTeam(currentUserId, team);
-			broadcastRoomState.sendEvent("changeUserTeam", currentUserId, team);
-			broadcastRoomState.sendEvent("gameChanges"); // SET NOT READY
+		if (gameAndUserInfo != null) {
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			requestProcessor.updateUserTeam(sessionId, team);
+			broadcastRoomState.sendEvent("changeUserTeam", gameAndUserInfo.getUserId(), team);
+			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 		}
 	}
 

@@ -51,7 +51,7 @@ public class RequestProcessor {
 		this.gameMaps = new ArrayList<GameStaticMap>();
 
 		// Create game maps
-		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 2));
+		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 4));
 		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2));
 
 		// Construct DB link
@@ -139,17 +139,28 @@ public class RequestProcessor {
 	public ArrayList<GameStaticMap> listGameMaps() {
 		return this.gameMaps;
 	}
+	
+	public void deleteGameLobby (String gameLobbyId) {
+		for (int index = 0; index < this.activeGameLobbys.size(); index++) {
+			if (this.activeGameLobbys.get(index).getLobbyId().equals(gameLobbyId)) {
+				this.activeGameLobbys.remove(index);
+			}
+		}
+	}
 
-	public void updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
+	public boolean updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
 		// Proceed if gamelobby and gameconfig are found
 		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
 		User user = this.getUserFromSocketSessionId(sessionId);
+		boolean updateComplete = false;
+
 		if (gameLobby != null) {
-			gameLobby.update(gameJoinResponse, user, this.getGameMapFromId(gameJoinResponse.getMapId()));
+			updateComplete = gameLobby.updateGameConfig(gameJoinResponse, user, this.getGameMapFromId(gameJoinResponse.getMapId()));
 		}
 
+		return updateComplete;
 	}
-	
+
 	public GameJoinResponse getUsersGame(String sessionId) {
 		GameLobby gameLobby = this.getGameLobbyFromRESTSessionId(sessionId);
 		User user = this.getUserFromRESTSessionId(sessionId);
@@ -161,8 +172,7 @@ public class RequestProcessor {
 		}
 		return null;
 	}
-	
-	
+
 	// Session authentication and management methods
 
 	private void addNewSession(String sessionId, User user) {
@@ -209,7 +219,57 @@ public class RequestProcessor {
 		return response;
 	}
 
-	
+	public boolean checkAllReady (String lobbyId) {
+		GameLobby gameLobby = getGameLobbyFromLobbyId(lobbyId);
+		return gameLobby.checkAllReady();
+	}
+
+	public String getUserNameByUserId (String lobbyId, int userId) {
+		GameLobby gameLobby = getGameLobbyFromLobbyId(lobbyId);
+		return gameLobby.getLobbyUser(userId).getLinkedUser().getUsername();
+	}
+
+	public boolean changeLobbyLeader (String sessionId, int targetUserId) {
+		GameLobby gameLobby = getGameLobbyFromSocketSessionId(sessionId);
+		User user = getUserFromSocketSessionId(sessionId);
+
+		return gameLobby.changeLobbyLeader(user.getId(), targetUserId);
+	}
+
+	public void setAllNotReady (String lobbyId) {
+		GameLobby gameLobby = getGameLobbyFromLobbyId(lobbyId);
+		gameLobby.setAllNotReady();
+	}
+
+	public void removeLobbyUserAndDeleteLobbyIfEmpty (String sessionId) {
+		GameLobby gameLobby = getGameLobbyFromSocketSessionId(sessionId);
+		int userId = getUserFromSocketSessionId(sessionId).getId();
+		gameLobby.removeLobbyUser(userId);
+
+		if (gameLobby.getConnectedLobbyUsers().size() == 0) {
+			this.deleteGameLobby(gameLobby.getLobbyId());
+		}
+	}
+
+	public void toggleUserReady (String sessionId) {
+		GameLobby gameLobby = getGameLobbyFromSocketSessionId(sessionId);
+		int userId = getUserFromSocketSessionId(sessionId).getId();
+		gameLobby.updateUserReady(userId);
+	}
+
+	public boolean updateUserColour (String sessionId, String colour) {
+		GameLobby gameLobby = getGameLobbyFromSocketSessionId(sessionId);
+		int userId = getUserFromSocketSessionId(sessionId).getId();
+
+		return gameLobby.updateUserColour(userId, colour);
+	}
+
+	public void updateUserTeam (String sessionId, int team) {
+		GameLobby gameLobby = getGameLobbyFromSocketSessionId(sessionId);
+		int userId = getUserFromSocketSessionId(sessionId).getId();
+		gameLobby.updateUserTeam(userId, team);
+	}
+
 	// User login and registration methods
 
 	public int register(RegRequest regRequest) {
@@ -230,7 +290,7 @@ public class RequestProcessor {
 		}
 	}
 
-	
+
 	// Utility methods
 
 	public void bindSocketSessionId(String username, String socketSessionId) {
@@ -248,6 +308,12 @@ public class RequestProcessor {
 			}
 		}
 		return null;
+	}
+	
+	public ArrayList<LobbyUser> getConnectedLobbyUsersForLobbyId(String lobbyId) {
+		GameLobby gameLobby = getGameLobbyFromLobbyId(lobbyId);
+		
+		return gameLobby.getConnectedLobbyUsers();
 	}
 
 	public GameLobby getGameLobbyFromSocketSessionId(String sessionId) {
@@ -294,7 +360,7 @@ public class RequestProcessor {
 
 	public GameStaticMap getGameMapFromId(String gameMapId) {
 		for (GameStaticMap gameMap : this.gameMaps) {
-			if (gameMap.getMapId() == gameMapId) {
+			if (gameMap.getMapId().equals(gameMapId)) {
 				return gameMap;
 			}
 		}
@@ -368,4 +434,14 @@ public class RequestProcessor {
 		this.sessionCleanUpThread.start();
 	}
 
+	public GameAndUserInfo validateAndReturnGameLobbyAndUserInfo (String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+
+		if (gameLobby == null || user == null) {
+			return null;
+		}
+
+		return new GameAndUserInfo(gameLobby.getLobbyId(), user.getId(), gameLobby.getConnectedLobbyUsers(), user.getUsername());
+	}
 }

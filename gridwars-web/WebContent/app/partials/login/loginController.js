@@ -11,15 +11,15 @@
 		this.$rootScope.pageName = "Login";
 
 		// Declare variables
-		//$scope.username = $scope.currentUser; // REMOVE LATER
+		$scope.username = "TestUser"; // REMOVE LATER
+		$scope.password = "password";
 		if(this.$rootScope.newUsername && this.$rootScope.newPassword) {
 			this.login(this.$rootScope.newUsername, this.$rootScope.newPassword);
 			this.$rootScope.newUsername = "";
 			this.$rootScope.newPassword = "";
 			return;
 		}
-	}
-	;
+	};
 
 	LoginController.prototype = {
 		login : function(username, password) {

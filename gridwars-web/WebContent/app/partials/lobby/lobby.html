@@ -1,56 +1,190 @@
 <div class="gwa-lobby">
 	<h1>LOBBY PAGE</h1>
 
-	<section ng-if="$root.gameConfig">
+	<section ng-if="$root.gameLeader">      <!-- CREATOR VIEW -->
+        <div class="col-md-6">
         <h2>Game Options</h2>
-        <section class="col-md-3">
-        <h3>Map Selection</h3>
-        <table class="table table-striped map-table" id="map-list">
-            <tr>
-                <th>Map Name</th>
-                <th>Players</th>
-                <th>Select</th>
-            </tr>
-            <tr ng-repeat="map in $root.mapList">
-                <td>{{map.mapName}}</td>
-                <td>{{map.maxPlayers}}</td>
-                <td>
-                    <button type="button" class="btn btn-default" ng-click="controller.changeMap(map.mapId)">Select</button>
-                </td>
-            </tr>
-        </table>
-        </section>
+	        <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
+				<li class="active"><a>Map Selection</a></li>
+				<li><a ng-click="controller.setTab('Game Rules')">Game Rules</a></li>
+			</ul>
+			<ul class="nav nav-tabs col-md-12" ng-if="tabSelect==='Game Rules'">
+                <li><a ng-click="controller.setTab('Map Selection')">Map Selection</a></li>
+                <li class="active"><a>Game Rules</a></li>
+            </ul>
+	        <div ng-if="tabSelect!=='Game Rules'">
+		        <section class="col-md-6">
+		        <h3>Map Selection</h3>
+		        <table class="table table-striped map-table" id="map-list">
+		            <tr>
+		                <th>Map Name</th>
+		                <th>Players</th>
+		                <th>Select</th>
+		            </tr>
+		            <tr ng-repeat="map in $root.mapList">
+		                <td>{{map.mapName}}</td>
+		                <td>{{map.maxPlayers}}</td>
+		                <td>
+		                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.mapId)" ng-if="$root.gameConfig.mapId!=map.mapId">Select</button>
+		                    <span class="glyphicon glyphicon-ok" ng-if="$root.gameConfig.mapId==map.mapId"></span>
+		                </td>
+		            </tr>
+		        </table>
+		        </section>
 
-        <section class="col-md-3">
-            <h3>Map Preview</h3>
-            <div class="map-preview">
+                <section class="col-md-6">
+                    <h3>Map Preview</h3>
+                    <div class="map-preview">
+                    </div>
+                </section>
+	        </div>
+
+            <div ng-if="tabSelect==='Game Rules'">  <!-- GAME RULES TAB -->
+                <section class="col-md-12">
+                    <h3>Game Rules</h3>
+                    <section class="col-md-6">
+	                    <p></p>
+	                    <b>Starting Cash: </b>
+		                <div class="btn-group">
+		                    <button type="button" class="btn btn-default btn-sm">${{$root.gameConfig.startingCash}}</button>
+		                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+		                        <span class="caret"></span>
+		                        <span class="sr-only">Toggle Dropdown</span>
+		                    </button>
+		                    <ul class="dropdown-menu">
+		                        <li><a ng-click="controller.changeCash(5000)">$5000</a></li>
+		                        <li><a ng-click="controller.changeCash(10000)">$10000 (Default)</a></li>
+		                        <li><a ng-click="controller.changeCash(20000)">$20000</a></li>
+		                    </ul>
+		                </div>
+
+	                    <p></p>
+		                <b>Game Speed: </b>
+		                <div class="btn-group">
+		                    <button type="button" class="btn btn-default btn-sm" ng-if="$root.gameConfig.gameSpeed===100">{{$root.gameConfig.gameSpeed}}%</button>
+		                    <button type="button" class="btn btn-default btn-sm" ng-if="$root.gameConfig.gameSpeed!==100">{{$root.gameConfig.gameSpeed}}%</button>
+		                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+		                        <span class="caret"></span>
+		                        <span class="sr-only">Toggle Dropdown</span>
+		                    </button>
+		                    <ul class="dropdown-menu">
+		                        <li><a ng-click="controller.changeSpeed(80)">-20%</a></li>
+		                        <li><a ng-click="controller.changeSpeed(90)">-10%</a></li>
+		                        <li><a ng-click="controller.changeSpeed(100)">0% (Default)</a></li>
+		                        <li><a ng-click="controller.changeSpeed(110)">+10%</a></li>
+		                        <li><a ng-click="controller.changeSpeed(120)">+20%</a></li>
+		                    </ul>
+		                </div>
+	                </section>
+
+                    <section class="col-md-6">
+	                    <p></p>
+	                    <b>Unit Health: </b>
+	                    <div class="btn-group">
+	                        <button type="button" class="btn btn-default btn-sm">{{$root.gameConfig.unitHealth}}%</button>
+	                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+	                            <span class="caret"></span>
+	                            <span class="sr-only">Toggle Dropdown</span>
+	                        </button>
+	                        <ul class="dropdown-menu">
+	                            <li><a ng-click="controller.changeUnitHealth(80)">-20%</a></li>
+	                            <li><a ng-click="controller.changeUnitHealth(90)">-10%</a></li>
+	                            <li><a ng-click="controller.changeUnitHealth(100)">0% (Default)</a></li>
+	                            <li><a ng-click="controller.changeUnitHealth(110)">+10%</a></li>
+	                            <li><a ng-click="controller.changeUnitHealth(120)">+20%</a></li>
+	                        </ul>
+	                    </div>
+
+	                    <p></p>
+	                    <b>Building Health: </b>
+	                    <div class="btn-group">
+	                        <button type="button" class="btn btn-default btn-sm">{{$root.gameConfig.buildingHealth}}%</button>
+	                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+	                            <span class="caret"></span>
+	                            <span class="sr-only">Toggle Dropdown</span>
+	                        </button>
+	                        <ul class="dropdown-menu">
+	                            <li><a ng-click="controller.changeBuildingHealth(80)">-20%</a></li>
+	                            <li><a ng-click="controller.changeBuildingHealth(90)">-10%</a></li>
+	                            <li><a ng-click="controller.changeBuildingHealth(100)">0% (Default)</a></li>
+	                            <li><a ng-click="controller.changeBuildingHealth(110)">+10%</a></li>
+	                            <li><a ng-click="controller.changeBuildingHealth(120)">+20%</a></li>
+	                        </ul>
+	                    </div>
+
+	                    <p></p>
+	                    <b>Turret Health: </b>
+	                    <div class="btn-group">
+	                        <button type="button" class="btn btn-default btn-sm">{{$root.gameConfig.turretHealth}}%</button>
+	                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+	                            <span class="caret"></span>
+	                            <span class="sr-only">Toggle Dropdown</span>
+	                        </button>
+	                        <ul class="dropdown-menu">
+	                            <li><a ng-click="controller.changeTurretHealth(80)">-20%</a></li>
+	                            <li><a ng-click="controller.changeTurretHealth(90)">-10%</a></li>
+	                            <li><a ng-click="controller.changeTurretHealth(100)">0% (Default)</a></li>
+	                            <li><a ng-click="controller.changeTurretHealth(110)">+10%</a></li>
+	                            <li><a ng-click="controller.changeTurretHealth(120)">+20%</a></li>
+	                        </ul>
+	                    </div>
+                    </section>
+                </section>
+
+                <section class="col-md-12">
+	                <p></p>
+	                <b>Random Crates Appear : </b>
+					 <input type="checkbox" id="cratesCheckbox" ng-click="controller.toggleCrates()">
+                    <b style="margin-left: 30px">Redeployable MCV : </b>
+                    <input type="checkbox" id="mcvCheckbox" ng-click="controller.toggleRedeployableMCV()">
+					<p></p>
+					<button ng-click="controller.resetToDefault()" class="btn btn-default btn-md"><span class="glyphicon glyphicon-pencil"></span> Reset to default</button>
+                </section>
             </div>
-        </section>
+        </div>
 	</section>
 
-    <section ng-if="$root.joinGameResponse">
-        <h2>Game Options</h2>
-        <section class="col-md-3">
-	        <h3>Selected Map</h3>
-	        <div>
-	            <table class="table table-striped map-table" id="map-list">
-	            <tr>
-	                <th>Map Name</th>
-	                <th>Players</th>
-	            </tr>
-	            <tr ng-repeat="map in $root.mapList">
-	                <td ng-if="map.mapId==$root.joinGameResponse.mapId">{{map.mapName}}</td>
-	                <td ng-if="map.mapId==$root.joinGameResponse.mapId">{{map.maxPlayers}}</td>
-	            </tr>
-	        </table>
-	        </div>
-        </section>
+    <section ng-if="!$root.gameLeader">      <!-- JOINER VIEW -->
+        <div class="col-md-6">
+        <h2>Game Configuration</h2>
+	        <section class="col-md-6">
+		        <h3>Selected Map</h3>
+		        <div>
+		            <table class="table" id="map-list">
+		            <tr ng-repeat="map in $root.mapList | filter: {mapId: $root.gameConfig.mapId}">
+		                <td>{{map.mapName}}</td>
+		                <td>{{map.maxPlayers}} Players Max</td>
+		            </tr>
+		        </table>
+		        </div>
+		        <div>
+			        <p></p>
+	                <b>Starting Cash: </b>{{$root.gameConfig.startingCash}}
+	                <p></p>
+	                <b>Game Speed: </b>{{$root.gameConfig.gameSpeed}}
+	                <p></p>
+	                <b>Unit Health: </b>{{$root.gameConfig.unitHealth}}
+	                <p></p>
+	                <b>Building Health: </b>{{$root.gameConfig.buildingHealth}}
+	                <p></p>
+	                <b>Turret Health: </b>{{$root.gameConfig.turretHealth}}
+                    <p></p>
+                    <b>Random Crates: </b>
+                    <span ng-if="$root.gameConfig.randomCrates===true">Enabled</span>
+                    <span ng-if="$root.gameConfig.randomCrates===false">Disabled</span>
+                    <p></p>
+                    <b>Redeployable MCV: </b>
+                    <span ng-if="$root.gameConfig.redeployableMCV===true">Enabled</span>
+                    <span ng-if="$root.gameConfig.redeployableMCV===false">Disabled</span>
+                </div>
+	        </section>
 
-        <section class="col-md-3">
-            <h3>Map Preview</h3>
-	        <div class="map-preview">
-	        </div>
-        </section>
+	        <section class="col-md-6">
+	            <h3>Map Preview</h3>
+		        <div class="map-preview">
+		        </div>
+	        </section>
+        </div>
     </section>
 
 	<section class="col-md-6">
@@ -64,7 +198,7 @@
 	        <form ng-submit="controller.callSendMessage(newMessage)" class="col-md-10">
 		        <input type="text" placeholder="What would you like to say?" ng-model="newMessage" id="new-message" class="form-control">
 	        </form>
-	        <button ng-click="controller.callSendMessage(newMessage)" class="btn col-md-2"><span class="glyphicon glyphicon-user"></span> Send</button>
+	        <button ng-click="controller.callSendMessage(newMessage)" class="btn col-md-2 btn-sm"><span class="glyphicon glyphicon-user"></span> Send</button>
         </div>
     </section>
 
@@ -79,16 +213,35 @@
                 <th>Ready</th>
             </tr>
             <tr ng-repeat="lobbyUser in $root.lobbyUserList">
-                <td>{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="(lobbyUser.linkedUser.id==-1 && !$root.gameLeader)">{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="lobbyUser.linkedUser.id!=-1 && !$root.gameLeader">{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader">
+                    {{lobbyUser.linkedUser.username}}
+                    <button type="button" ng-if="$root.gameLeader && lobbyUser.linkedUser.username!=$root.currentUser" class="btn btn-default btn-sm" style="float: right" ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make Leader</button>
+                </td>
+                <td ng-if="lobbyUser.linkedUser.id==-1 && $root.gameLeader">
+                    <div class="btn-group" ng-if="$root.gameLeader">
+                        <button type="button" class="btn btn-default btn-sm">{{lobbyUser.linkedUser.username}}</button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li ng-if="lobbyUser.linkedUser.username!=='Open'"><a ng-click="controller.openSlot()">Open</a></li>
+                            <li ng-if="lobbyUser.linkedUser.username!=='Closed'"><a ng-click="controller.closeSlot()">Close</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td ng-if="lobbyUser.factionId==-1">N/A</td>
                 <td ng-if="lobbyUser.factionId==0">Allied</td>
                 <td ng-if="lobbyUser.factionId==1">Soviet</td>
                 <td ng-if="lobbyUser.factionId==3">Empire of the Rising Sun</td>
                 <td>
                     <!-- Split button -->
                     <div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
-                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
-                        <button type="button" class="btn btn-default" ng-if="lobbyUser.playerTeam==0">-</button>
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
+                        <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam==0">-</button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
                             <span class="caret"></span>
                             <span class="sr-only">Toggle Dropdown</span>
                         </button>
@@ -106,8 +259,8 @@
                 <td>
                     <!-- Split button -->
 					<div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
-					    <button type="button" class="btn btn-default">{{lobbyUser.playerColour}}</button>
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
+					    <button type="button" class="btn btn-default btn-sm">{{lobbyUser.playerColour}}</button>
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
 					    <ul class="dropdown-menu">
 					        <li ng-repeat="colour in $root.colourList"><a ng-click="controller.callChangeColour(colour)">{{colour}}</a></li>
 						</ul>
@@ -116,7 +269,7 @@
                         {{lobbyUser.playerColour}}
 					</div>
 				</td>
-                <td>
+                <td ng-if="!$root.gameLeader">
                     <input type="button" class="btn btn-success btn-sm" ng-if="lobbyUser.linkedUser.username==$root.currentUser && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
                     <div ng-if="lobbyUser.linkedUser.username==$root.currentUser && lobbyUser.ready">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
@@ -126,8 +279,19 @@
                         <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
                     </div>
                 </td>
+                <td ng-if="$root.gameLeader">
+                    <input type="button" class="btn btn-success btn-sm" ng-if="$root.notReadyCount==0 && lobbyUser.linkedUser.username==$root.currentUser && $root.connectedUsers!=1" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
+                    <input type="button" class="btn btn-sm disabled" ng-if="($root.notReadyCount!=0 && lobbyUser.linkedUser.username==$root.currentUser) || ($root.connectedUsers==1 && lobbyUser.linkedUser.username==$root.currentUser)" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
+                    <div ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+                        <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
+                        <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
+                    </div>
+                </td>
             </tr>
         </table>
     </section>
+    <div class="col-md-12">
+            <button ng-click="controller.callLeaveGame()" class="btn btn-default btn-lg" style="float: right"><span class="glyphicon glyphicon-euro"></span> Leave Lobby</button>
+        </div>
 
 </div>
