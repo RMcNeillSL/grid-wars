@@ -14,7 +14,6 @@
 
 		// Constructor functions
 		this.createRegisterRequest = function (username, password, param) {
-			//password1 = CryptoJS.MD5(password1);
 			var newRegisterRequest = {
 					"newUsername": username,
 					"newPassword": password
@@ -35,14 +34,14 @@
 				_this.$scope.noUsername = false;
 				_this.$scope.noPasswordMatch = false;
 
-				this.$rootScope.currentUser = username;
-
 				if (password1 === password2) {
 					if(username && password1) {
 						var register = this.createRegisterRequest(username, password1);
 						this.registerService.sendRegister(register, function(response) {
 							_this.$scope.response = response;
 							if (response === 200) {
+								_this.$rootScope.newUsername = username;
+								_this.$rootScope.newPassword = password1;
 								_this.changeView('/login');
 							} else if (response === 400) {
 								_this.$scope.registerError = "That username is taken.";

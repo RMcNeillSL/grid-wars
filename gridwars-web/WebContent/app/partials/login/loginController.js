@@ -11,27 +11,23 @@
 		this.$rootScope.pageName = "Login";
 
 		// Declare variables
-		$scope.username = "TestUser";
-		$scope.password = "password";
-		//$scope.username = $scope.currentUser != "" ? $scope.currentUser : ""; // REMOVE LATER
-
-		// Constructor functions
-		this.createAuthRequest = function(username, password, param) {
-			//password = CryptoJS.MD5(password).toString();
-			var newAuthRequest = {
-				"usernameAttempt" : username,
-				"passwordAttempt" : password
-			};
-
-			return newAuthRequest;
-		};
+		//$scope.username = $scope.currentUser; // REMOVE LATER
+		if(this.$rootScope.newUsername && this.$rootScope.newPassword) {
+			this.login(this.$rootScope.newUsername, this.$rootScope.newPassword);
+			this.$rootScope.newUsername = "";
+			this.$rootScope.newPassword = "";
+			return;
+		}
 	}
 	;
 
 	LoginController.prototype = {
 		login : function(username, password) {
-			var auth = this.createAuthRequest(username, password);
 			var _this = this;
+			var auth = {
+				"usernameAttempt" : username,
+				"passwordAttempt" : password
+			};
 			this.loginService.sendLogin(auth, function(response) {
 				_this.$scope.response = response;
 				if (response === 200) {
@@ -46,11 +42,9 @@
 				}
 			});
 		},
-
 		goToRegister : function() {
 			this.changeView('/register');
 		},
-
 		changeView : function(path) {
 			this.$location.path(path);
 		}
