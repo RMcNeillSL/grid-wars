@@ -48,7 +48,7 @@ public class Engine extends Thread {
 	
 	// Game request methods (more specific functionality for each request type)
 	
-	private GameplayResponse processBuildingPlaceRequest(Player player, GameBuilding[] sourceBuildings, int cellX, int cellY) {
+	private GameplayResponse processBuildingPlaceRequest(Player player, GameBuilding[] sourceBuildings, int col, int row) {
 		
 		// Set default result
 		GameplayResponse response = null;
@@ -58,13 +58,13 @@ public class Engine extends Thread {
 		for (GameBuilding sourceBuilding : sourceBuildings) {
 
 			// Check all cells required for building are free in the static map -- currently a single cell
-			if (validConstruction && this.staticMap.isCellObstructed(cellX, cellY)) {
+			if (validConstruction && this.staticMap.isCellObstructed(col, row)) {
 				validConstruction = false;
 				response = new GameplayResponse(E_GameplayResponseCode.STATIC_MAP_OBSTRUCTION);
 			}
 
 			// Check all cells required for building are free in the dynamic map -- currently a single cell
-			if (validConstruction && this.dynamicMap.isCellObstructed(cellX, cellY)) {
+			if (validConstruction && this.dynamicMap.isCellObstructed(col, row)) {
 				validConstruction = false;
 				response = new GameplayResponse(E_GameplayResponseCode.DYNAMIC_MAP_OBSTRUCTION);
 			}
@@ -86,6 +86,10 @@ public class Engine extends Thread {
 		// Construct valid response
 		if (validConstruction) {
 			response = new GameplayResponse(E_GameplayResponseCode.NEW_BUILDING);
+			for (GameBuilding sourceBuilding : sourceBuildings) {
+				response.addCoord(col, row);
+				response.addSource(sourceBuilding);
+			}
 		}
 
 		System.out.println(response);
@@ -112,7 +116,7 @@ public class Engine extends Thread {
 			// Determine which request was sent 
 			switch (gameplayRequest.getRequestCode()) {
 		        case NEW_BUILDING:  
-		        	GameBuilding[] sourceBuildings = this.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource());
+		        	GameBuilding[] sourceBuildings = Const.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource());
 		        	int cellX = gameplayRequest.getTargetCellX();
 		        	int cellY = gameplayRequest.getTargetCellY();
 		        	gameplayResponse = this.processBuildingPlaceRequest(sender, sourceBuildings, cellX, cellY);
@@ -141,14 +145,4 @@ public class Engine extends Thread {
 		return null;
 	}
 	
-	private GameBuilding[] getGameBuildingArrayFromGameObjectArrayList(ArrayList<GameObject> sourceArray) {
-		ArrayList<GameBuilding> result = new ArrayList<GameBuilding>();
-		for (GameObject gameObject : sourceArray) {
-			if (gameObject instanceof GameBuilding) {
-				result.add((GameBuilding) gameObject);
-			}
-		}
-		return result.toArray(new GameBuilding[result.size()]);
-	}
-
 }

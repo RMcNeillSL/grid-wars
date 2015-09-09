@@ -49,11 +49,28 @@
 
 				// Listen for game responses which occurred
 				this.socket.on("gameplayResponse", function(response) {
+					
+					// Format coords of response
+					var tempCoords = response.coords.slice(0);
+					response.coords = []; var newCoord = {};
+					for (var index = 0; index < tempCoords.length; index ++) {
+						if (index % 2 == 0) {
+							newCoord.col = tempCoords[index];
+						} else {
+							newCoord.row = tempCoords[index];
+							response.coords.push(newCoord);
+						}
+					}
+					
+					// Log response for debug
 					console.log(response);
+					
+					// Invoke response method
 					self.$rootScope.gameplayResponse = response;
 					if (self.$rootScope.gameplayResponseManager) {
 						self.$rootScope.gameplayResponseManager(response);
 					}
+					
 				});
 
 			},

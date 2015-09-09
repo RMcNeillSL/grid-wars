@@ -45,7 +45,7 @@ function Turret(phaserRef, mapGroup, turretGroup, xy, col, row, width, height, f
 		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
-		
+
 		// Create all turret animations
 //		this.animations = [];
 //		this.animations.add(new customAnimation('charge', [2,3,4,5], 1));

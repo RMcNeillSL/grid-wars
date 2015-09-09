@@ -1,5 +1,10 @@
 package com.majaro.gridwars.game;
 
+import java.util.ArrayList;
+
+import com.majaro.gridwars.game.Const.GameBuilding;
+import com.majaro.gridwars.game.Const.GameObject;
+
 public final class Const {
 
 	// Gameplay response codes
@@ -12,10 +17,10 @@ public final class Const {
 		INSUFFICIENT_TECH_LEVEL("INSUFFICIENT_TECH_LEVEL"), INSUFFICIENT_FUNDS("INSUFFICIENT_FUNDS"),
 	
 		// Building response codes
-		NEW_BUILDING("NEW_BUILDING"), STATIC_MAP_OBSTRUCTION("STATIC_MAP_OBSTRUCTION"), DYNAMIC_MAP_OBSTRUCTION("DYNAMIC_MAP_OBSTRUCTION");
+		NEW_BUILDING("NEW_BUILDING"), STATIC_MAP_OBSTRUCTION("STATIC_MAP_OBSTRUCTION"), DYNAMIC_MAP_OBSTRUCTION("DYNAMIC_MAP_OBSTRUCTION"),
 		
 		// Unit response codes
-		
+		WAYPOINT_PATH_COORDS("WAYPOINT_PATH_COORDS");
 		
 		// Object methods and fields
 		private String altName = "";
@@ -176,5 +181,28 @@ public final class Const {
 		// Return erroneous result
 		return null;
 	}
+	public static GameBuilding[] getGameBuildingArrayFromGameObjectArrayList(ArrayList<GameObject> sourceArray) {
+		ArrayList<GameBuilding> result = new ArrayList<GameBuilding>();
+		for (GameObject gameObject : sourceArray) {
+			if (gameObject instanceof GameBuilding) {
+				result.add((GameBuilding) gameObject);
+			}
+		}
+		return result.toArray(new GameBuilding[result.size()]);
+	}
+	public static String[] getIdentifierArrayFromGameObjectList(ArrayList<GameObject> source, boolean keepErroneous) {
+		ArrayList<String> resultList = new ArrayList<String>();
+		if (source != null) {
+			String identifier = null;
+			for (GameObject gameObject : source) {
+				identifier = gameObject.getIdentifier();
+				if (identifier != null || keepErroneous) {
+					resultList.add(identifier);
+				}
+			}
+		}
+		return resultList.toArray(new String[resultList.size()]);
+	}
+
 	
 }

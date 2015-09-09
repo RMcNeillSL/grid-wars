@@ -23,7 +23,9 @@
 			
 			// Define core game phaser variable
 			self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser, self.serverAPI);
-			self.$rootScope.gameplayResponseManager = self.phaserGame.processGameplayResponse;
+			self.$rootScope.gameplayResponseManager = function(responseData) {
+				self.phaserGame.processGameplayResponse(responseData);
+			};
 			
 			// Submit ready message
 			gameService.gameStartRequest();

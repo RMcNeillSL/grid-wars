@@ -1,3 +1,6 @@
+
+// Constructor
+
 function Engine(gameplayConfig, playerId, serverAPI) {
 
 	var self = this;
@@ -32,8 +35,11 @@ function Engine(gameplayConfig, playerId, serverAPI) {
 	this.mapRender = null;
 	this.explosionManager = null;
 	this.gameplayConfig = gameplayConfig;
+	this.mouse = {x: 0, y: 0};
 	
 	// Define core phaser object arrays
+	this.units = [];
+	this.buildings = [];
 	
 	// Define sprite groups
 	this.mapGroup = null;
@@ -84,8 +90,31 @@ Engine.prototype.create = function() {
 	// Construct event listeners
 	this.phaserGame.input.onDown.add(this.onMouseClick, this);
 	this.phaserGame.input.keyboard.addCallbacks(this, null, null, local_onKeyPressed) ;
+	this.phaserGame.input.addMoveCallback(this.onMouseMove, this);
 	
 }
+
+Engine.prototype.update = function() {
+
+	// Render map
+	this.mapRender.renderMap();
+
+	// Render placement overlay
+	if (this.phaserGame.newBuilding.active) {
+		var colRow = this.mapRender.xyToColRow(this.phaserGame.input.mousePointer.x, this.phaserGame.input.mousePointer.y);
+		var canPlace = this.isSquareEmpty(colRow.col, colRow.row);
+		this.mapRender.placementHover(colRow.col, colRow.row, canPlace);
+	}
+	
+	// Render test turrets
+	for (var index = 0; index < this.buildings.length; index ++) {
+		this.buildings[index].update();
+	}
+	
+}
+
+
+// Input event methods
 
 Engine.prototype.onMouseClick = function(pointer, x, y) {
 	
@@ -94,25 +123,39 @@ Engine.prototype.onMouseClick = function(pointer, x, y) {
 	
 	// Render placement overlay
 	if (this.phaserGame.newBuilding.active) {
-		var colRow = this.mapRender.xyToColRow(this.phaserGame.input.mousePointer.x, this.phaserGame.input.mousePointer.y);
+		var colRow = this.mapRender.xyToColRow(this.mouse.x, this.mouse.y);
 		var xy = this.mapRender.colRowToXY(colRow.col, colRow.row);
 		var canPlace = this.currentPlayer.isSquareEmpty(colRow.col, colRow.row);
 		if (canPlace) {
 			self.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
-			this.serverAPI.requestBuildingPlacement(function(response) {
-				self.phaserGame.newBuilding.active = false;
-				self.phaserGame.newBuilding.target.setBuildingMode(false);
-				self.currentPlayer.placeDefence(self.phaserGame.newBuilding.target);
-				self.mapRender.clearPlacementHover();
-			}, this.phaserGame.newBuilding);
+			
+			this.serverAPI.requestBuildingPlacement(null, this.phaserGame.newBuilding);
+			self.phaserGame.newBuilding.active = false;
+			self.mapRender.clearPlacementHover();
+			
+//			this.serverAPI.requestBuildingPlacement(function(response) {
+//				self.phaserGame.newBuilding.active = false;
+//				self.phaserGame.newBuilding.target.setBuildingMode(false);
+//				self.currentPlayer.placeDefence(self.phaserGame.newBuilding.target);
+//				self.mapRender.clearPlacementHover();
+//			}, this.phaserGame.newBuilding);
+			
 		}
 	} else {
 
-		for (var index = 0; index < this.currentPlayer.turrets.length; index ++) {
-			this.currentPlayer.turrets[index].rotateAndShoot(this.phaserGame.input.mousePointer.x, this.phaserGame.input.mousePointer.y);
+		for (var index = 0; index < this.buildings.length; index ++) {
+			this.buildings[index].rotateAndShoot(this.mouse.x, this.mouse.y);
 		}
 		
 	}
+	
+}
+
+Engine.prototype.onMouseMove = function(pointer, x, y) {
+	
+	// Save position information
+	this.mouse.x = x;
+	this.mouse.y = y;
 	
 }
 
@@ -135,50 +178,79 @@ Engine.prototype.onKeyPressed = function(char) {
                 0, 0, 100, 100,
                 this.explosionManager.requestExplosion, true);
 	}
-	
-}
 
-Engine.prototype.update = function() {
+	if (char == '3') {
+		this.processGameplayResponse({
+			responseCode: "WAYPOINT_PATH_COORDS",
+			coords: [{col: 4, row: 5}, {col: 4, row: 6}, {col: 5, row: 6}],
+			source: ["U000", "U000", "U000"],
+			target: []
+		});
+	}
 
-	// Render map
-	this.mapRender.renderMap();
-
-	// Render placement overlay
-	if (this.phaserGame.newBuilding.active) {
-		var colRow = this.mapRender.xyToColRow(this.phaserGame.input.mousePointer.x, this.phaserGame.input.mousePointer.y);
-		var canPlace = this.currentPlayer.isSquareEmpty(colRow.col, colRow.row);
-		this.mapRender.placementHover(colRow.col, colRow.row, canPlace);
+	if (char == '4') {
+		new Tank(this.phaserGame, this.mapGroup, this.tankGroup,
+                this.mapRender.colRowToXY(0, 0),
+                0, 0, 100, 100,
+                this.explosionManager.requestExplosion, true);
 	}
 	
-	// Render test turrets
-//	this.test_turret.update();
-	for (var index = 0; index < this.currentPlayer.turrets.length; index ++) {
-		this.currentPlayer.turrets[index].update();
+}
+
+
+// Utility methods
+
+Engine.prototype.isSquareEmpty = function(col, row) {
+	for (var index = 0; index < this.buildings.length; index ++) {
+		if (this.buildings[index].col == col && this.buildings[index].row == row) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// Specialised methods for dealing with individual responses
+
+Engine.prototype.processNewBuilding = function(responseData) {
+	
+	// Iterate through all buildings
+	for (var index = 0; index < responseData.source.length; index ++) {
+		
+		// Create quick reference object
+		var refObject = {
+				identifier: responseData.source[index], 
+				col: responseData.coords[index].col,
+				row: responseData.coords[index].row,
+			};
+		
+		// Create XY position from col/row
+		var xy = this.mapRender.colRowToXY(refObject.col, refObject.row);
+		
+		// Construct object for positioning
+		var newBuilding = new Turret(this.phaserGame,  this.mapGroup, this.turretGroup, xy, refObject.col, refObject.row, 100, 100, 
+				this.explosionManager.requestExplosion, false);
+		
+		// Add object to building array
+		this.buildings.push(newBuilding);
 	}
 	
-//	this.test_turret_2.update();
-//	this.test_turret_3.update();
-//	this.test_turret_4.update();
-//	test_tank.update();
-	
 }
 
-Engine.prototype.getX = function() {
-	
-	return this.phaserGame.input.mousePointer.x;
-	
-}
 
-Engine.prototype.getY = function() {
-	
-	return this.phaserGame.input.mousePointer.y;
-	
-}
-
-Engine.prototype.getPhaser = function() {
-	return this.phaserEngine;
-}
+// Process any server messages and call appropriate functions
 
 Engine.prototype.processGameplayResponse = function(responseData) {
+	
+	switch(responseData.responseCode) {
+	    case "NEW_BUILDING":
+	        this.processNewBuilding(responseData);
+	        break;
+//	    case n:
+//	        code block
+//	        break;
+	    default:
+	        // Do nothing
+	}
 	
 }
