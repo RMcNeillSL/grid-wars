@@ -8,9 +8,11 @@ import javax.persistence.OneToMany;
 import org.codehaus.jackson.map.annotate.JsonView;
 
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
+import com.majaro.gridwars.apiobjects.GameplayRequest;
+import com.majaro.gridwars.apiobjects.GameplayResponse;
 import com.majaro.gridwars.entities.User;
-import com.majaro.gridwars.game.Constants;
-import com.majaro.gridwars.game.Constants.E_GameType;
+import com.majaro.gridwars.game.Const;
+import com.majaro.gridwars.game.Const.E_GameType;
 import com.majaro.gridwars.game.Engine;
 import com.majaro.gridwars.game.GameConfig;
 import com.majaro.gridwars.game.GameStaticMap;
@@ -49,6 +51,10 @@ public class GameLobby {
 	}
 	public boolean started() {
 		return this.engine != null;
+	}
+	public GameplayResponse processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
+		GameplayResponse gameplayResponse = this.engine.processGameplayRequest(gameplayRequest, userId);
+		return gameplayResponse;
 	}
 	
 	// User management methods
@@ -123,9 +129,9 @@ public class GameLobby {
 	
 	// Select an unused colour for the player
 	private String getUnusedColour() {
-		String result = Constants.COLOURS[0];
+		String result = Const.COLOURS[0];
 		boolean colourInUse = false;
-		for (String colour : Constants.COLOURS) {
+		for (String colour : Const.COLOURS) {
 			result = colour;
 			colourInUse = false;
 			for (int index = 0; index < this.connectedUsers.size(); index ++) {

@@ -7,7 +7,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.LobbyUser;
 import com.majaro.gridwars.entities.User;
-import com.majaro.gridwars.game.Constants.E_GameType;
+import com.majaro.gridwars.game.Const.E_GameType;
 
 public class GameJoinResponse {
 	

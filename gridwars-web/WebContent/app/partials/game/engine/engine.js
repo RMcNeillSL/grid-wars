@@ -98,10 +98,9 @@ Engine.prototype.onMouseClick = function(pointer, x, y) {
 		var xy = this.mapRender.colRowToXY(colRow.col, colRow.row);
 		var canPlace = this.currentPlayer.isSquareEmpty(colRow.col, colRow.row);
 		if (canPlace) {
+			self.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
 			this.serverAPI.requestBuildingPlacement(function(response) {
-				console.log(response);
 				self.phaserGame.newBuilding.active = false;
-				self.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
 				self.phaserGame.newBuilding.target.setBuildingMode(false);
 				self.currentPlayer.placeDefence(self.phaserGame.newBuilding.target);
 				self.mapRender.clearPlacementHover();

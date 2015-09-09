@@ -1,6 +1,6 @@
 package com.majaro.gridwars.game;
 
-import com.majaro.gridwars.game.Constants.E_GameType;
+import com.majaro.gridwars.game.Const.E_GameType;
 
 public class GameConfig {
 	

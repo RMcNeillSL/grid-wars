@@ -1,5 +1,9 @@
-function GameplayRequest(requestCode) {
+function GameplayRequest(requestCode, newBuilding) {
 	this.requestCode = requestCode;
+	this.targetCellX = newBuilding.col;
+	this.targetCellY = newBuilding.row;
+	this.source = [newBuilding.identifier];
+	this.target = [];
 }
 
 
@@ -10,13 +14,14 @@ function ServerAPI(gameService) {
 	
 }
 
-ServerAPI.prototype.requestBuildingPlacement = function(callback, buildingObject) {
+ServerAPI.prototype.requestBuildingPlacement = function(callback, newBuilding) {
 	
 	// Make sure a building object is present
-	if (buildingObject) {
+	if (newBuilding) {
 		
 		// Generate request object
-		var request = new GameplayRequest("NEW_BUILDING", buildingObject.identifier);
+		var request = new GameplayRequest("NEW_BUILDING", newBuilding.target);
+		console.log(request);
 		this.gameService.gameplayRequestAndWait(callback, request);
 		
 	} else {
@@ -27,4 +32,3 @@ ServerAPI.prototype.requestBuildingPlacement = function(callback, buildingObject
 	return null;
 	
 }
-

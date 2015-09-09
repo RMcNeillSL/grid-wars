@@ -31,6 +31,17 @@ public class GameStaticMap {
 		this.cells = cells;
 	}
 
+	// Check cell has no obstruction
+	public boolean isCellObstructed(int cellX, int cellY) {
+		if (cellX + cellY * this.width < cells.length) {
+			int cellValue = this.cells[cellX + cellY * this.width];
+			if (cellValue == 0 || cellValue == 1) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	// Getters for summary view
 	@JsonView(GameStaticMap.Views.Summary.class)
 	public String getMapId() {

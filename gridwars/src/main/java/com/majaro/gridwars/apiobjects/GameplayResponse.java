@@ -2,7 +2,7 @@ package com.majaro.gridwars.apiobjects;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
-import com.majaro.gridwars.game.Constants.E_GameplayResponseCode;
+import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
 
 public class GameplayResponse {
 	
@@ -15,6 +15,9 @@ public class GameplayResponse {
 		this.responseCode = E_GameplayResponseCode.GENERIC_UNKNOWN_ERROR;
 	}
 	public GameplayResponse(E_GameplayResponseCode responseCode) {
+		
+		// Call default constructor
+		this();
 		
 		// Save passed response code
 		this.responseCode = responseCode;
@@ -34,6 +37,21 @@ public class GameplayResponse {
 	// Class views
 	public static class Views {
 		public static class Summary {}
+	}
+	
+	
+	// To string debug methods
+	public String toString() {
+		
+		// Declare string objects
+		String newLine = System.getProperty("line.separator") + "    ";
+		String outputString = "";
+		
+		// Compile output string
+		outputString = this.responseCode.toString();
+		
+		// Return generated response
+		return "Gameplay Response: " + outputString;
 	}
 
 }

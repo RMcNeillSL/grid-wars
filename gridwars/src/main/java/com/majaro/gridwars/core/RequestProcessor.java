@@ -111,8 +111,11 @@ public class RequestProcessor {
 	
 	public GameplayResponse processGameplayRequest(GameplayRequest gameplayRequest, String sessionId) {
 		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
-		if (gameLobby != null) {
-			
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby != null && user != null) {
+			System.out.println("Game lobby exists.");
+			GameplayResponse gameplayResponse = gameLobby.processGameplayRequest(gameplayRequest, user.getId());
+			return gameplayResponse;
 		}
 		return new GameplayResponse();
 	}

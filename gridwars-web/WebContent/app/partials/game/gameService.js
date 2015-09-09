@@ -79,7 +79,7 @@
 				var self = this;
 				self.$rootScope.gameplayResponse = null;
 				var waitFunction = function() {
-					console.log("Waiting...");
+//					console.log("Waiting...");
 					if (self.$rootScope.gameplayResponse) {
 						if (callback) {
 							callback(self.$rootScope.gameplayResponse);

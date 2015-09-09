@@ -10,19 +10,21 @@ public class GameDynamicMap {
 	private class DynamicCell {
 		private int cellX;
 		private int cellY;
-		private BuildingObject gameObject;
-		public DynamicCell(int cellX, int cellY, BuildingObject gameObject) {
+		private DynGameBuilding gameObject;
+		public DynamicCell(int cellX, int cellY, DynGameBuilding gameObject) {
 			this.cellX = cellX;
 			this.cellY = cellY;
 			this.gameObject = gameObject;
+		}
+		public boolean isCellObstructed() {
+			return !(gameObject == null);
 		}
 	}
 	
 	// Map cell information
 	private int width = 0;
 	private int height = 0;
-	private ArrayList<DynamicCell> mapCells;
-//	private static BuildingObject obstruction = new BuildingObject();
+	private ArrayList<DynamicCell> cells;
 	
 	
 	// Constructors
@@ -31,7 +33,7 @@ public class GameDynamicMap {
 		// Construct cells for map
 		this.width = staticMap.getWidth();
 		this.height = staticMap.getHeight();
-		this.mapCells = new ArrayList<DynamicCell>();
+		this.cells = new ArrayList<DynamicCell>();
 		
 		// Populate dynamic cell contents
 		int colIndex = 0; int rowIndex = 0;
@@ -39,7 +41,7 @@ public class GameDynamicMap {
 		for (int index = 0; index < staticCells.length; index ++) {
 			
 			// Fill cell contents
-			this.mapCells.add(new DynamicCell(colIndex, rowIndex, null));
+			this.cells.add(new DynamicCell(colIndex, rowIndex, null));
 			
 			// Manage transition to next row
 			colIndex ++;
@@ -52,8 +54,15 @@ public class GameDynamicMap {
 		
 	}
 	
-	
-	// Dynamic map info retrieval
-	
+
+	// Check cell has no obstruction
+	public boolean isCellObstructed(int cellX, int cellY) {
+		for (DynamicCell cell : this.cells) {
+			if (cell.cellX == cellX && cell.cellY == cellY) {
+				return cell.isCellObstructed();
+			}
+		}
+		return true;
+	}
 	
 }

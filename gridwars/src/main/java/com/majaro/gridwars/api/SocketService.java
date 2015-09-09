@@ -104,7 +104,7 @@ public class SocketService {
 			broadcastRoomState.sendEvent("lobbyUserList", gameLobby.getConnectedLobbyUsers());
 		}
 	}
-	
+
 	@OnEvent("sendMessage")
     public void onMessage(SocketIOClient client, MessageRequest data, AckRequest ackRequest) {
 		String sessionId = client.getSessionId().toString();
