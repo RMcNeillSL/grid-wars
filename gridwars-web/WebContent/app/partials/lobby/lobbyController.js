@@ -8,6 +8,7 @@
 		this.$location = $location;
 		this.$rootScope = $rootScope;
 		this.lobbyService = lobbyService;
+		var _this = this;
 
 		// Initialise variables
 		$rootScope.lobbyMessages = [];
@@ -21,6 +22,10 @@
 
 		// Get information from server
 		this.lobbyService.getMaps();
+
+		$scope.$on('$locationChangeStart', function () {
+			_this.lobbyService.leaveGame();
+		});
 	}
 
 	LobbyController.prototype = {
