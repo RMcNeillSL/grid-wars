@@ -29,7 +29,8 @@ public class Player {
 		return gameBuilding.validFromTechLevel(this.techLevel);
 	}
 	public boolean playerHasCash(GameObject gameBuilding) {
-		return (this.cash >= gameBuilding.getCost());
+//		return (this.cash >= gameBuilding.getCost());
+		return true;
 	}
 	
 	// Getters

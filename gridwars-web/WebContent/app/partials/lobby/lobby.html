@@ -134,41 +134,32 @@
 
     <section ng-if="$root.gameLeader===false">      <!-- JOINER VIEW -->
         <div class="col-md-6">
-        <h2>Game Configuration</h2>
-	        <section class="col-md-6">
-		        <h3>Selected Map</h3>
+        <h2 class="title">Game Configuration</h2>
+	        <section class="col-md-6 rulesColumn">
+		        <h3 class="subTitle">Selected Map</h3>
 		        <div>
 		            <table class="table" id="map-list">
 		            <tr ng-repeat="map in $root.mapList | filter: {mapId: $root.gameConfig.mapId}">
-		                <td>{{map.mapName}}</td>
-		                <td>{{map.maxPlayers}} Players Max</td>
+		                <td class="whiteText">{{map.mapName}}</td>
+		                <td class="whiteText">{{map.maxPlayers}} Players Max</td>
 		            </tr>
 		        </table>
 		        </div>
 		        <div>
-			        <p></p>
-	                <b>Starting Cash: </b>{{$root.gameConfig.startingCash}}
-	                <p></p>
-	                <b>Game Speed: </b>{{$root.gameConfig.gameSpeed}}
-	                <p></p>
-	                <b>Unit Health: </b>{{$root.gameConfig.unitHealth}}
-	                <p></p>
-	                <b>Building Health: </b>{{$root.gameConfig.buildingHealth}}
-	                <p></p>
-	                <b>Turret Health: </b>{{$root.gameConfig.turretHealth}}
-                    <p></p>
-                    <b>Random Crates: </b>
-                    <span ng-if="$root.gameConfig.randomCrates===true">Enabled</span>
-                    <span ng-if="$root.gameConfig.randomCrates===false">Disabled</span>
-                    <p></p>
-                    <b>Redeployable MCV: </b>
-                    <span ng-if="$root.gameConfig.redeployableMCV===true">Enabled</span>
-                    <span ng-if="$root.gameConfig.redeployableMCV===false">Disabled</span>
+			        <p>Starting Cash: {{$root.gameConfig.startingCash}}</p>
+	                <p>Game Speed: </b>{{$root.gameConfig.gameSpeed}}</p>
+	                <p>Unit Health: </b>{{$root.gameConfig.unitHealth}}</p>
+	                <p>Building Health: </b>{{$root.gameConfig.buildingHealth}}</p>
+	                <p>Turret Health: </b>{{$root.gameConfig.turretHealth}}</p>
+                    <p>Random Crates: <span ng-if="$root.gameConfig.randomCrates===true">Enabled</span>
+                    <span ng-if="$root.gameConfig.randomCrates===false">Disabled</span></p>
+                    <p>Redeployable MCV: <span ng-if="$root.gameConfig.redeployableMCV===true">Enabled</span>
+                    <span ng-if="$root.gameConfig.redeployableMCV===false">Disabled</span></p>
                 </div>
 	        </section>
 
 	        <section class="col-md-6">
-	            <h3>Map Preview</h3>
+	            <h3 class="subTitle">Map Preview</h3>
 		        <div class="map-preview">
 		        </div>
 	        </section>
@@ -254,7 +245,7 @@
                         {{lobbyUser.playerColour}}
 					</div>
 				</td>
-                <td class="tdInfo" ng-if="$root.gameLeader===false">
+                <td class="tdInfo textCentral" ng-if="$root.gameLeader===false">
                     <input type="button" class="btn btn-success btn-sm" ng-if="lobbyUser.linkedUser.username==$root.currentUser && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
                     <div ng-if="lobbyUser.linkedUser.username==$root.currentUser && lobbyUser.ready">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>

@@ -24,7 +24,7 @@
 
 				// On socket connection established submit user join room request
 				this.socket.on("connect", function () {
-					console.log("GAME - Joining lobby room");
+					console.log("REC: Joining lobby room");
 					self.socket.emit("joinGameLobby", {
 						"user" : self.$rootScope.currentUser
 					});
@@ -32,7 +32,7 @@
 
 				// When user has joined a room mark sockets as ready
 				this.socket.on("userJoinedGameLobby", function (userId) {
-					self.$rootScope.socketsReady = (userId == self.$rootScope.currentUser);
+					self.$rootScope.socketsReady = (userId == self.$rootScope.currentUser || self.$rootScope.socketsReady);
 					console.log("UserId:" + userId);
 					console.log("currentUser:" + self.$rootScope.currentUser);
 				});
@@ -79,36 +79,36 @@
 			
 
 			// Game startup socket methods
-			gameInitRequest: function(callback, data) {
+			gameInitRequest: function(waiter) {
 				var self = this;
-				console.log("Submitted game init request");
+				console.log("SND: Submitted game init request");
 				self.socket.emit("initGame", {
 					"lobbyId" : self.$rootScope.gameConfig.lobbyId
 				});
-				if (callback) { callback(); }
+				if (waiter) { waiter.start(); }
 			},
 			gameStartRequest: function(callback, data) {
-				console.log("Marking user as ready to play");
+				console.log("SND: Marking user as ready to play");
 				this.socket.emit("startGame");
 			},
-			gameplayRequest: function(callback, data) {
+			gameplayRequest: function(data) {
 				this.socket.emit("gameplayRequest", data);
 			},
-			gameplayRequestAndWait: function(callback, data) {
-				var self = this;
-				self.$rootScope.gameplayResponse = null;
-				var waitFunction = function() {
-					if (self.$rootScope.gameplayResponse) {
-						if (callback) {
-							callback(self.$rootScope.gameplayResponse);
-						}
-					} else {
-						setTimeout(waitFunction, 50);
-					}
-				}
-				waitFunction();
-				self.socket.emit("gameplayRequest", data);
-			},
+//			gameplayRequestAndWait: function(callback, data) {
+//				var self = this;
+//				self.$rootScope.gameplayResponse = null;
+//				var waitFunction = function() {
+//					if (self.$rootScope.gameplayResponse) {
+//						if (callback) {
+//							callback(self.$rootScope.gameplayResponse);
+//						}
+//					} else {
+//						setTimeout(waitFunction, 50);
+//					}
+//				}
+//				waitFunction();
+//				self.socket.emit("gameplayRequest", data);
+//			},
 			
 			
 			// Debug methods to make testing easier

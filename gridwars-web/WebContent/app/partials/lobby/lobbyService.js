@@ -202,6 +202,7 @@
 		},
 		joinGameLobby: function () {
 			self.socket.emit("joinGameLobby");
+			self.$rootScope.gameLobbyName = self.$rootScope.gameConfig.lobbyName;
 		},
 		updateConfig: function () {
 			self.socket.emit("updateGameConfig", self.$rootScope.gameConfig);
