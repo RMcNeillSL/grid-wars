@@ -2,11 +2,12 @@
 
 (function() {
 
-	function LoginController($scope, $location, $rootScope, loginService) {
+	function LoginController($scope, $location, $rootScope, $window, loginService) {
 		// Save injected items
 		this.$scope = $scope;
 		this.$location = $location;
 		this.$rootScope = $rootScope;
+		this.$window = $window;
 		this.loginService = loginService;
 		this.$rootScope.pageName = "Login";
 
@@ -32,6 +33,7 @@
 				_this.$scope.response = response;
 				if (response === 200) {
 					_this.$rootScope.currentUser = username;
+					_this.$window.sessionStorage.username = username;
 					_this.changeView('/servers');
 				} else if (response === 401) {
 					_this.$scope.loginError = "Invalid username or password entered.";
@@ -50,7 +52,7 @@
 		}
 	};
 
-	LoginController.$inject = [ '$scope', '$location', '$rootScope', 'gridWarsApp.login.service' ];
+	LoginController.$inject = [ '$scope', '$location', '$rootScope', '$window', 'gridWarsApp.login.service' ];
 
 	angular.module('gridWarsApp.login.module').controller(
 			'gridWarsApp.login.controller', LoginController);

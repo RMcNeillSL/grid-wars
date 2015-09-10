@@ -67,6 +67,31 @@ public class SocketService {
 		}
 	}
 
+	@OnEvent("getNewConfig")
+	public void onGetNewConfig (SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+
+		if (gameAndUserInfo != null) {
+			GameJoinResponse gameconfig = requestProcessor.getAllGAmeConfigBySocketId(sessionId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			broadcastRoomState.sendEvent("gameConfig", gameconfig.getMapId(), gameconfig.getMaxPlayers(), gameconfig.getGameType(),
+					gameconfig.getMapMaxPlayers(), gameconfig.getStartingCash(), gameconfig.getGameSpeed(), gameconfig.getUnitHealth(), 
+					gameconfig.getBuildingHealth(), gameconfig.getTurretHealth(), gameconfig.isRandomCrates(), gameconfig.isRedeployableMCV());
+		}
+	}
+
+	@OnEvent("getNewUserList")
+	public void onGetNewUserList (SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+
+		if (gameAndUserInfo != null) {
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+		}
+	}
+
 	@OnEvent("sendMessage")
     public void onMessage(SocketIOClient client, MessageRequest data, AckRequest ackRequest) {
 		String sessionId = client.getSessionId().toString();

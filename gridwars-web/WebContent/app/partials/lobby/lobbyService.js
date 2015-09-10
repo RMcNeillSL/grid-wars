@@ -2,9 +2,10 @@
 
 (function () {
 
-	function LobbyService ($rootScope, $location, $http) {
+	function LobbyService ($rootScope, $location, $window, $http) {
 		this.$http = $http;
 		this.$rootScope = $rootScope;
+		this.$window = $window;
 		this.$location = $location;
 		self = this;
 	}
@@ -37,16 +38,33 @@
 
 			self.socket.on("gameConfig", function(mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
 					gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
-				self.$rootScope.gameConfig.mapId = mapId;
-				self.$rootScope.gameConfig.maxPlayers = maxPlayers;
-				self.$rootScope.gameConfig.gameType = gameType;
-				self.$rootScope.gameConfig.startingCash = startingCash;
-				self.$rootScope.gameConfig.gameSpeed = gameSpeed;
-				self.$rootScope.gameConfig.unitHealth = unitHealth;
-				self.$rootScope.gameConfig.buildingHealth = buildingHealth;
-				self.$rootScope.gameConfig.turretHealth = turretHealth;
-				self.$rootScope.gameConfig.randomCrates = randomCrates;
-				self.$rootScope.gameConfig.redeployableMCV = redeployableMCV;
+				if (!self.$rootScope.gameConfig) {
+						self.$rootScope.gameConfig = {
+							"mapId" : mapId,
+							"maxPlayers" : maxPlayers,
+							"gameType" : gameType,
+							"mapMaxPlayers": mapMaxPlayers,
+							"startingCash" : startingCash,
+							"gameSpeed" : gameSpeed,
+							"unitHealth" : unitHealth,
+							"buildingHealth" : buildingHealth,
+							"turretHealth" : turretHealth,
+							"randomCrates" : randomCrates,
+							"redeployableMCV" : redeployableMCV
+					};
+				} else {
+					self.$rootScope.gameConfig.mapId = mapId;
+					self.$rootScope.gameConfig.maxPlayers = maxPlayers;
+					self.$rootScope.gameConfig.gameType = gameType;
+					self.$rootScope.gameConfig.maxPlayers = maxPlayers;
+					self.$rootScope.gameConfig.startingCash = startingCash;
+					self.$rootScope.gameConfig.gameSpeed = gameSpeed;
+					self.$rootScope.gameConfig.unitHealth = unitHealth;
+					self.$rootScope.gameConfig.buildingHealth = buildingHealth;
+					self.$rootScope.gameConfig.turretHealth = turretHealth;
+					self.$rootScope.gameConfig.randomCrates = randomCrates;
+					self.$rootScope.gameConfig.redeployableMCV = redeployableMCV;
+				}
 				self.$rootScope.$apply();
 			});
 
@@ -143,8 +161,10 @@
 			self.socket.on("leaderChanged", function (targetUsername) {
 				if (targetUsername == self.$rootScope.currentUser) {
 					self.$rootScope.gameLeader = true;
+					self.$window.gameLeader = true;
 				} else {
 					self.$rootScope.gameLeader = false;
+					self.$window.gameLeader = false;
 				}
 
 				self.$rootScope.lobbyMessages.push({user: "SERVER", message: "Leader has been changed to " + targetUsername});
@@ -186,6 +206,12 @@
 				};
 			self.socket.emit("sendMessage", tempObject);
 		},
+		getConfig: function () {
+			self.socket.emit("getNewConfig");
+		},
+		getUsers: function () {
+			self.socket.emit("getNewUserList");
+		},
 		joinGameLobby: function () {
 			self.socket.emit("joinGameLobby");
 		},
@@ -210,10 +236,11 @@
 		leaveGame: function () {
 			self.socket.emit("leaveLobby");
 			self.$rootScope.gameLeader = false;
+			self.$window.gameLeader = false;
 		}
 	}
 
-	LobbyService.$inject = ['$rootScope', '$location','$http'];
+	LobbyService.$inject = ['$rootScope', '$location', '$window', '$http'];
 
 	angular.module('gridWarsApp.lobby.module').service('gridWarsApp.lobby.service', LobbyService);
 }());

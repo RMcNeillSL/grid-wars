@@ -172,6 +172,18 @@ public class RequestProcessor {
 		}
 		return null;
 	}
+	
+	public GameJoinResponse getAllGAmeConfigBySocketId (String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby != null && user != null) {
+			LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
+			if (lobbyUser != null) {
+				return new GameJoinResponse(gameLobby, lobbyUser);
+			}
+		}
+		return null;
+	}
 
 	// Session authentication and management methods
 
