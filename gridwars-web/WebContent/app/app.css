@@ -51,7 +51,7 @@ html, body {
 	border-width: 2px;
 	border-color: #aaa;
 	height: 250px;
-	width: 250px;
+	width: 100%;
 }
 
 .table-striped>tbody>tr:nth-child(odd)>td, 
