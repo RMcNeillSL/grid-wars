@@ -54,6 +54,8 @@ public class RequestProcessor {
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2, 8, 6,
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
+		this.gameMaps.add(new GameStaticMap("3", "Pacific Heights", 4, 8, 6,
+				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
@@ -208,7 +210,7 @@ public class RequestProcessor {
 
 	public boolean updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
 		// Proceed if gamelobby and gameconfig are found
-		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
 		User user = this.getUserFromSocketSessionId(sessionId);
 		boolean updateComplete = false;
 

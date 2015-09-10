@@ -45,8 +45,8 @@
 			toggleUserReady: function () {
 				this.lobbyService.toggleReady();
 			},
-			changeMap: function (mapId) {
-				this.$rootScope.gameConfig.mapId = mapId;
+			changeMap: function (map) {
+				this.$rootScope.gameConfig.mapId = map.mapId;
 				this.lobbyService.updateConfig();
 			},
 			changeCash: function (cash) {

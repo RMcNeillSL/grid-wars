@@ -37,34 +37,22 @@
 			});
 
 			self.socket.on("gameConfig", function(mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
-					gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
-				if (!self.$rootScope.gameConfig) {
-						self.$rootScope.gameConfig = {
-							"mapId" : mapId,
-							"maxPlayers" : maxPlayers,
-							"gameType" : gameType,
-							"mapMaxPlayers": mapMaxPlayers,
-							"startingCash" : startingCash,
-							"gameSpeed" : gameSpeed,
-							"unitHealth" : unitHealth,
-							"buildingHealth" : buildingHealth,
-							"turretHealth" : turretHealth,
-							"randomCrates" : randomCrates,
-							"redeployableMCV" : redeployableMCV
-					};
-				} else {
-					self.$rootScope.gameConfig.mapId = mapId;
-					self.$rootScope.gameConfig.maxPlayers = maxPlayers;
-					self.$rootScope.gameConfig.gameType = gameType;
-					self.$rootScope.gameConfig.maxPlayers = maxPlayers;
-					self.$rootScope.gameConfig.startingCash = startingCash;
-					self.$rootScope.gameConfig.gameSpeed = gameSpeed;
-					self.$rootScope.gameConfig.unitHealth = unitHealth;
-					self.$rootScope.gameConfig.buildingHealth = buildingHealth;
-					self.$rootScope.gameConfig.turretHealth = turretHealth;
-					self.$rootScope.gameConfig.randomCrates = randomCrates;
-					self.$rootScope.gameConfig.redeployableMCV = redeployableMCV;
+				gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
+				self.$rootScope.gameConfig = {
+					"mapId" : mapId,
+					"maxPlayers" : maxPlayers,
+					"gameType" : gameType,
+					"mapMaxPlayers": mapMaxPlayers,
+					"startingCash" : startingCash,
+					"gameSpeed" : gameSpeed,
+					"unitHealth" : unitHealth,
+					"buildingHealth" : buildingHealth,
+					"turretHealth" : turretHealth,
+					"randomCrates" : randomCrates,
+					"redeployableMCV" : redeployableMCV
 				}
+
+				console.log(self.$rootScope.gameConfig);
 				self.$rootScope.$apply();
 			});
 
@@ -90,6 +78,7 @@
 				self.$rootScope.connectedUserCount = self.$rootScope.lobbyUserList.length;
 
 				if (self.$rootScope.gameConfig) {
+					console.log(self.$rootScope.gameConfig.mapMaxPlayers);
 					for (var i = (self.$rootScope.lobbyUserList.length); i < self.$rootScope.gameConfig.mapMaxPlayers; i++) {
 						var emptyPlayer = {
 								factionId : -1,
