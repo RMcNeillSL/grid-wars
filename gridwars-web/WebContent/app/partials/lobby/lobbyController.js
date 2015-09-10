@@ -24,8 +24,10 @@
 		// Get information from server
 		this.lobbyService.getMaps();
 
-		$scope.$on('$locationChangeStart', function () {
-			_this.lobbyService.leaveGame();
+		$scope.$on('$locationChangeStart', function (event, next, current) {
+			if(next !== "http://localhost/#/game") {
+				_this.lobbyService.leaveGame();
+			}
 		});
 	}
 
