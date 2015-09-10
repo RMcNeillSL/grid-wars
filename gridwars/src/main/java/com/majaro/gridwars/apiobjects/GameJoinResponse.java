@@ -68,6 +68,15 @@ public class GameJoinResponse {
 		}
 		return "";
 	}
+	
+	@JsonView(GameJoinResponse.Views.Summary.class)
+	public String getMapName() {
+		if (this.sourceGameLobby != null) {
+			return this.sourceGameLobby.getGameConfig().getMapName();
+		}
+		
+		return "";
+	}
 
 	@JsonView(GameJoinResponse.Views.Summary.class)
 	public int getMaxPlayers() { 

@@ -9,15 +9,15 @@
 	ServersService.prototype = {
 		openSocket : function() {
 			var _this = this;
-			this.socket = io.connect("http://localhost:8080", {
+			this.serversSocket = io.connect("http://localhost:8080", {
 				"force new connection" : true
 			});
 
-			this.socket.on("connect", function() {
-				_this.socket.emit("joinServerLobby", "");
+			this.serversSocket.on("connect", function() {
+				_this.serversSocket.emit("joinServerLobby", "");
 			});
 
-			this.socket.on("refreshGameLobby", function(data) {
+			this.serversSocket.on("refreshGameLobby", function(data) {
 				var exists = false;
 				var serverIndex = -1;
 
@@ -50,9 +50,9 @@
 
 			this.$http.post("/gridwars/rest/game/new").then(function(response) {
 				callback(response.data);
-				self.socket.emit("refreshGameLobby", response.data);
-				self.socket.emit("leaveServerLobby", "");
-				self.socket.emit("forceDisconnect");
+				self.serversSocket.emit("refreshGameLobby", response.data);
+				self.serversSocket.emit("leaveServerLobby", "");
+				self.serversSocket.emit("forceDisconnect");
 			}, function(response) {
 				if (response.status === 401) {
 					console.log("Unauthorised.");
@@ -64,8 +64,8 @@
 			this.$http.post("/gridwars/rest/game/join/", lobbyId).then(
 					function(response) {
 						callback(response.data);
-						self.socket.emit("refreshGameLobby", response.data);
-						self.socket.emit("leaveServerLobby", "");
+						self.serversSocket.emit("refreshGameLobby", response.data);
+						self.serversSocket.emit("leaveServerLobby", "");
 					}, function(response) {
 						if (response.status === 401) {
 							console.log("Unauthorised.");

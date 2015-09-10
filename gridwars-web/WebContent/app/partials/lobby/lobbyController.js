@@ -19,9 +19,12 @@
 		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
 		this.$rootScope.pageName = "Game Lobby";
 		$rootScope.deleteSelected = false;
-		$rootScope.gameLeader = $window.sessionStorage.gameLeader;
-		console.log($rootScope.gameLeader);
-		console.log($window.sessionStorage.gameLeader);
+
+		if ($window.sessionStorage.gameLeader == "true") {
+			$rootScope.gameLeader = true;
+		} else {
+			$rootScope.gameLeader = false;
+		}
 
 		// Setup the socket
 		this.lobbyService.socketSetup();

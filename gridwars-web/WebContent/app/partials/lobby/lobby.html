@@ -1,7 +1,7 @@
 <div class="gwa-lobby">
 	<h1>LOBBY PAGE</h1>
 
-	<section ng-if="$root.gameLeader==='true'">      <!-- CREATOR VIEW -->
+	<section ng-if="$root.gameLeader===true">      <!-- CREATOR VIEW -->
         <div class="col-md-6">
         <h2>Game Options</h2>
 	        <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
@@ -144,7 +144,7 @@
         </div>
 	</section>
 
-    <section ng-if="$root.gameLeader==='false'">      <!-- JOINER VIEW -->
+    <section ng-if="$root.gameLeader===false">      <!-- JOINER VIEW -->
         <div class="col-md-6">
         <h2>Game Configuration</h2>
 	        <section class="col-md-6">
@@ -213,14 +213,14 @@
                 <th>Ready</th>
             </tr>
             <tr ng-repeat="lobbyUser in $root.lobbyUserList">
-                <td ng-if="(lobbyUser.linkedUser.id==-1 && $root.gameLeader==='false')">{{lobbyUser.linkedUser.username}}</td>
-                <td ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader==='false'">{{lobbyUser.linkedUser.username}}</td>
-                <td ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader==='true'">
+                <td ng-if="(lobbyUser.linkedUser.id==-1 && $root.gameLeader===false)">{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===false">{{lobbyUser.linkedUser.username}}</td>
+                <td ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===true">
                     {{lobbyUser.linkedUser.username}}
-                    <button type="button" ng-if="$root.gameLeader==='true' && lobbyUser.linkedUser.username!=$root.currentUser" class="btn btn-default btn-sm" style="float: right" ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make Leader</button>
+                    <button type="button" ng-if="$root.gameLeader===true && lobbyUser.linkedUser.username!=$root.currentUser" class="btn btn-default btn-sm" style="float: right" ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make Leader</button>
                 </td>
-                <td ng-if="lobbyUser.linkedUser.id==-1 && $root.gameLeader==='true'">
-                    <div class="btn-group" ng-if="$root.gameLeader==='true'">
+                <td ng-if="lobbyUser.linkedUser.id==-1 && $root.gameLeader===true">
+                    <div class="btn-group" ng-if="$root.gameLeader===true">
                         <button type="button" class="btn btn-default btn-sm">{{lobbyUser.linkedUser.username}}</button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
                             <span class="caret"></span>
@@ -269,7 +269,7 @@
                         {{lobbyUser.playerColour}}
 					</div>
 				</td>
-                <td ng-if="$root.gameLeader==='false'">
+                <td ng-if="$root.gameLeader===false">
                     <input type="button" class="btn btn-success btn-sm" ng-if="lobbyUser.linkedUser.username==$root.currentUser && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
                     <div ng-if="lobbyUser.linkedUser.username==$root.currentUser && lobbyUser.ready">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
@@ -279,7 +279,7 @@
                         <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
                     </div>
                 </td>
-                <td ng-if="$root.gameLeader==='true'">
+                <td ng-if="$root.gameLeader===true">
                     <input type="button" class="btn btn-success btn-sm" ng-if="$root.notReadyCount==0 && lobbyUser.linkedUser.username==$root.currentUser && $root.connectedUsers!=1" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
                     <input type="button" class="btn btn-sm disabled" ng-if="($root.notReadyCount!=0 && lobbyUser.linkedUser.username==$root.currentUser) || ($root.connectedUsers==1 && lobbyUser.linkedUser.username==$root.currentUser)" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
                     <div ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
