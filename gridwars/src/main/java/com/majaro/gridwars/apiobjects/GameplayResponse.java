@@ -6,7 +6,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 import com.majaro.gridwars.game.Const;
 import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
-import com.majaro.gridwars.game.Const.E_RequestCode;
+import com.majaro.gridwars.game.Const.E_GameplayRequestCode;
 import com.majaro.gridwars.game.Const.GameObject;
 
 public class GameplayResponse {

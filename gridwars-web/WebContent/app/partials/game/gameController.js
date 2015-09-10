@@ -52,9 +52,10 @@
 		this.gameService = gameService;
 
 		// Setup variables for game page
+		this.$scope.gameEngine = CONSTANTS.GAME_NAME;
 		this.$rootScope.pageName = "Game";
 		this.$rootScope.socketsReady = false;
-
+		
 		// Save this reference for anonymous methods
 		var self = this;
 		
@@ -75,32 +76,18 @@
 
 		}
 		
-		// Delay and wait for config information before proceeding
-		var gameplayConfigWaiter = function() {
-			if (self.$rootScope.gameplayConfig) {
-				startGame();
-			} else {
-				setTimeout(gameplayConfigWaiter, 100);
-			}
-		}
-		
-		// Local caller methods
-		var gameInit = function() {
-			if (self.$rootScope.gameLeader) {
-				console.log("HOST");
-				gameService.gameInitRequest(gameplayConfigWaiter);
-			} else {
-				console.log("NOT HOST");
-				gameplayConfigWaiter();
-			}
-		}
-
 		// Call connect debug methods
 //		gameService.debugConnect();
 		gameService.initialiseSockets();
 		
-		// Wait until connections finished before proceeding  
-		(new Waiter(function() { return self.$rootScope.socketsReady; }, gameInit, 100)).start();
+		// Wait until connections finished before proceeding - then run the game configuration method
+		var gameplayConfigWaiter = new Waiter(function() { return self.$rootScope.gameplayConfig; }, startGame, 100); // -- should really change so the server has a list of acknowleged users
+		(new Waiter(function() { return self.$rootScope.socketsReady; }, function() {
+			if (self.$rootScope.gameLeader) {
+				setTimeout(function() { gameService.gameInitRequest(gameplayConfigWaiter); }, 500);
+			} else {
+				gameplayConfigWaiter.start();
+			}}, 100)).start();
 
 	}
 

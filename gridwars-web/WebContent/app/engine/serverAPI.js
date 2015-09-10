@@ -14,7 +14,7 @@ function ServerAPI(gameService) {
 	
 }
 
-ServerAPI.prototype.requestBuildingPlacement = function(callback, newBuilding) {
+ServerAPI.prototype.requestBuildingPlacement = function(newBuilding) {
 	
 	// Make sure a building object is present
 	if (newBuilding) {
@@ -22,7 +22,7 @@ ServerAPI.prototype.requestBuildingPlacement = function(callback, newBuilding) {
 		// Generate request object
 		var request = new GameplayRequest("NEW_BUILDING", newBuilding.target);
 		console.log(request);
-		this.gameService.gameplayRequestAndWait(callback, request);
+		this.gameService.gameplayRequest(request);
 		
 	} else {
 		console.log("ERROR: Attempted to construct building from no source.");
@@ -32,3 +32,8 @@ ServerAPI.prototype.requestBuildingPlacement = function(callback, newBuilding) {
 	return null;
 	
 }
+
+ServerAPI.prototype.requestDefenceAttackXY = function() {
+	
+}
+
