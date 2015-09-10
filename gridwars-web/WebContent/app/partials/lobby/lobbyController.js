@@ -2,27 +2,32 @@
 
 (function () {
 
-	function LobbyController ($scope, $location, $rootScope, lobbyService) {
+	function LobbyController ($scope, $location, $rootScope, $window, lobbyService) {
 		// Save injected items
 		this.$scope = $scope;
 		this.$location = $location;
 		this.$rootScope = $rootScope;
+		this.$window = $window;
 		this.lobbyService = lobbyService;
 		var _this = this;
 
 		// Initialise variables
+		$rootScope.currentUser = this.$window.sessionStorage.username;
 		$rootScope.lobbyMessages = [];
 		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];
 		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
 		this.$rootScope.pageName = "Game Lobby";
 		$rootScope.deleteSelected = false;
+		$rootScope.gameLeader = $window.sessionStorage.gameLeader;
 
 		// Setup the socket
 		this.lobbyService.socketSetup();
 
 		// Get information from server
 		this.lobbyService.getMaps();
+		this.lobbyService.getConfig();
+		this.lobbyService.getUsers();
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
 			if(next !== "http://localhost/#/game") {
@@ -122,8 +127,7 @@
 			}
 	}
 
-	LobbyController.$inject = ['$scope', '$location', '$rootScope', 'gridWarsApp.lobby.service'];
-
+	LobbyController.$inject = ['$scope', '$location', '$rootScope', '$window', 'gridWarsApp.lobby.service'];
 
 	angular.module('gridWarsApp.lobby.module').controller('gridWarsApp.lobby.controller', LobbyController);
 }());

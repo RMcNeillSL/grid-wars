@@ -2,15 +2,17 @@
 
 (function() {
 
-	function ServersController($scope, $location, $rootScope, serversService) {
+	function ServersController($scope, $location, $rootScope, $window, serversService) {
 		this.$scope = $scope;
 		this.serversService = serversService;
 		this.$location = $location;
 		this.$rootScope = $rootScope;
+		this.$window = $window;
 		this.$rootScope.servers = []
 		this.$rootScope.pageName = "Servers";
 		this.loadServers();
 		this.serversService.openSocket();
+		console.log(this.$window.sessionStorage.username);
 	}
 
 	ServersController.prototype = {
@@ -34,6 +36,7 @@
 			var updateNewGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
 				self.$rootScope.gameLeader = true;
+				self.$window.sessionStorage.gameLeader = true;
 				console.log(response);
 				self.$location.path("/lobby");
 			};
@@ -45,6 +48,7 @@
 
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
+				self.$window.sessionStorage.gameLeader = false;
 				//self.$rootScope.joinGameResponse = response;
 				self.$location.path("/lobby");
 			};
@@ -60,7 +64,7 @@
 		}
 	}
 
-	ServersController.$inject = [ '$scope', '$location', '$rootScope',
+	ServersController.$inject = [ '$scope', '$location', '$rootScope', '$window',
 			'gridWarsApp.servers.service' ];
 
 	angular.module('gridWarsApp.servers.module').controller(
