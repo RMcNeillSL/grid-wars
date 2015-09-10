@@ -12,6 +12,7 @@ import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.apiobjects.GameplayConfig;
 import com.majaro.gridwars.apiobjects.GameplayRequest;
 import com.majaro.gridwars.apiobjects.GameplayResponse;
+import com.majaro.gridwars.apiobjects.RefreshGameLobbyRequest;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
@@ -229,6 +230,15 @@ public class RequestProcessor {
 			if (lobbyUser != null) {
 				return new GameJoinResponse(gameLobby, lobbyUser);
 			}
+		}
+		return null;
+	}
+	
+	public RefreshGameLobbyRequest getGameInfo(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		if (gameLobby != null) {
+			return new RefreshGameLobbyRequest(gameLobby.getLobbyId(), gameLobby.getLobbyName(), gameLobby.getMapId(), gameLobby.getMaxPlayers(), 
+					gameLobby.getPlayerCount(), gameLobby.getGameType(), gameLobby.getMapName());
 		}
 		return null;
 	}

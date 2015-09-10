@@ -171,6 +171,10 @@ public class SocketService {
 							data.getBuildingHealth(), data.getTurretHealth(), data.isRandomCrates(), data.isRedeployableMCV());
 					requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 					broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+
+					RefreshGameLobbyRequest refreshLobby = requestProcessor.getGameInfo(sessionId);
+					BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
+					broadcastServerRoomState.sendEvent("refreshGameLobby", refreshLobby);
 				}
 			}
 		}

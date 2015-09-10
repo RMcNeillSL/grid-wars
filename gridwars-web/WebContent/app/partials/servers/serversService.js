@@ -31,6 +31,7 @@
 				if (exists) {
 					self.$rootScope.servers.splice(serverIndex, 1);
 				}
+				console.log(data);
 
 				self.$rootScope.servers.push(data);
 				self.$rootScope.$apply();
