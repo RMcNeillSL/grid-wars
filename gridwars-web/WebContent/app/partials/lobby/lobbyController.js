@@ -46,6 +46,7 @@
 				this.lobbyService.toggleReady();
 			},
 			changeMap: function (map) {
+				this.$rootScope.previousMapId = this.$rootScope.gameConfig.mapId;
 				this.$rootScope.gameConfig.mapId = map.mapId;
 				this.lobbyService.updateConfig();
 			},

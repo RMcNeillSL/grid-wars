@@ -97,7 +97,9 @@
 			});
 
 			self.socket.on("mapChangeError", function (message) {
+				self.$rootScope.gameConfig.mapId = self.$rootScope.previousMapId;
 				alert(message);
+				self.$rootScope.$apply();
 			});
 
 			self.socket.on("toggleUserReady", function (userId) {
