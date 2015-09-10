@@ -51,8 +51,6 @@
 					"randomCrates" : randomCrates,
 					"redeployableMCV" : redeployableMCV
 				}
-
-				console.log(self.$rootScope.gameConfig);
 				self.$rootScope.$apply();
 			});
 
@@ -78,7 +76,6 @@
 				self.$rootScope.connectedUserCount = self.$rootScope.lobbyUserList.length;
 
 				if (self.$rootScope.gameConfig) {
-					console.log(self.$rootScope.gameConfig.mapMaxPlayers);
 					for (var i = (self.$rootScope.lobbyUserList.length); i < self.$rootScope.gameConfig.mapMaxPlayers; i++) {
 						var emptyPlayer = {
 								factionId : -1,
