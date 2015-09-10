@@ -133,7 +133,22 @@ public class Engine extends Thread {
 
 		// Set default result
 		GameplayResponse response = null;
-		
+		boolean validConstruction = true;
+
+		// Check each object in turn
+		for (GameDefence sourceDefence : sourceDefences) {
+			
+		}
+
+		// Construct valid response
+		if (validConstruction) {
+			response = new GameplayResponse(E_GameplayResponseCode.DEFENCE_ATTACK_XY);
+			response.addCoord(col, row);
+			for (GameDefence sourceDefence : sourceDefences) {
+				response.addSource(sourceDefence);
+			}
+		}
+
 		// Return calculated result
 		return response;
 	}

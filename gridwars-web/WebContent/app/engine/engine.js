@@ -125,19 +125,18 @@ Engine.prototype.onMouseClick = function(pointer, x, y) {
 	if (this.phaserGame.newBuilding.active) {
 		var colRow = this.mapRender.xyToColRow(this.mouse.x, this.mouse.y);
 		var xy = this.mapRender.colRowToXY(colRow.col, colRow.row);
-		var canPlace = this.currentPlayer.isSquareEmpty(colRow.col, colRow.row);
+		var canPlace = this.isSquareEmpty(colRow.col, colRow.row);
 		if (canPlace) {
 			self.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
-			this.serverAPI.requestBuildingPlacement(self.phaserGame.newBuilding);
+			this.serverAPI.requestBuildingPlacement(this.phaserGame.newBuilding);
 			self.phaserGame.newBuilding.active = false;
 			self.mapRender.clearPlacementHover();
 		}
 	} else {
-
-		for (var index = 0; index < this.buildings.length; index ++) {
-			this.buildings[index].rotateAndShoot(this.mouse.x, this.mouse.y);
-		}
 		
+		// Submit request to fire all turrets
+		this.serverAPI.requestDefenceAttackXY(this.mouse.x, this.mouse.y);
+
 	}
 	
 }
@@ -228,6 +227,14 @@ Engine.prototype.processNewBuilding = function(responseData) {
 	
 }
 
+Engine.prototype.processDefenceAttackXY = function(responseData) {
+
+	for (var index = 0; index < this.buildings.length; index ++) {
+		this.buildings[index].rotateAndShoot(responseData.coords[0].col, responseData.coords[0].row);
+	}
+	
+}
+
 
 // Process any server messages and call appropriate functions
 
@@ -237,9 +244,9 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 	    case "NEW_BUILDING":
 	        this.processNewBuilding(responseData);
 	        break;
-//	    case n:
-//	        code block
-//	        break;
+	    case "DEFENCE_ATTACK_XY":
+	        this.processDefenceAttackXY(responseData);
+	        break;
 	    default:
 	        // Do nothing
 	}

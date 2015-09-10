@@ -9,7 +9,8 @@
 	ServersService.prototype = {
 		openSocket : function() {
 			var _this = this;
-			this.serversSocket = io.connect("http://localhost:8080", {
+			console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
+			this.serversSocket = io.connect(CONSTANTS.SOCKET_SERVER, {
 				"force new connection" : true
 			});
 

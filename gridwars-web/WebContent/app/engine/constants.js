@@ -1,4 +1,7 @@
 CONSTANTS = {
+		
+	// Misc constants
+	SOCKET_SERVER : "ws://" + window.location.host + ":8080/",
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",

@@ -1,5 +1,7 @@
 package com.majaro.gridwars.api;
 
+import javax.websocket.server.ServerEndpoint;
+
 import com.corundumstudio.socketio.AckRequest;
 import com.corundumstudio.socketio.BroadcastOperations;
 import com.corundumstudio.socketio.Configuration;
@@ -22,6 +24,7 @@ import com.majaro.gridwars.apiobjects.GameplayConfig;
 import com.majaro.gridwars.apiobjects.GameplayRequest;
 import com.majaro.gridwars.apiobjects.GameplayResponse;
 
+@ServerEndpoint("/")
 public class SocketService {
 
 	// Request processor reference
@@ -39,7 +42,6 @@ public class SocketService {
 
 		// Generate config for socket server
 		socketServerConfig = new Configuration();
-		socketServerConfig.setHostname("localhost");
 		socketServerConfig.setPort(8080);
 
 		// Construct socket server

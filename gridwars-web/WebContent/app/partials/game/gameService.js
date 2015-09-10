@@ -18,7 +18,8 @@
 				var self = this;
 				
 				// Socket connect event
-				this.socket = io.connect("http://localhost:8080", {
+				console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
+				this.socket = io.connect(CONSTANTS.SOCKET_SERVER, {
 					"force new connection": true
 				});
 
