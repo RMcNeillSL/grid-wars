@@ -166,7 +166,11 @@
 
 			self.socket.on("leftLobby", function () {
 				self.socket.emit("forceDisconnect");
-				self.$location.path("/servers");
+				if (this.$rootScope.loggedOut) {
+					self.$location.path("/login");
+				} else {
+					self.$location.path("/servers");
+				}
 				self.$rootScope.$apply();
 			});
 
