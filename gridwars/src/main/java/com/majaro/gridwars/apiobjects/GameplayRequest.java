@@ -3,13 +3,13 @@ package com.majaro.gridwars.apiobjects;
 import java.util.ArrayList;
 
 import com.majaro.gridwars.game.Const;
-import com.majaro.gridwars.game.Const.E_RequestCode;
+import com.majaro.gridwars.game.Const.E_GameplayRequestCode;
 import com.majaro.gridwars.game.Const.GameObject;
 
 public class GameplayRequest {
 	
 	// Core request variables
-	private E_RequestCode requestCode;
+	private E_GameplayRequestCode requestCode;
 	private int targetCellX;
 	private int targetCellY;
 	private String[] sourceString;
@@ -25,12 +25,12 @@ public class GameplayRequest {
 		this.target = null;
 		
 		// Set default values
-		this.requestCode = E_RequestCode.UNKNOWN;
+		this.requestCode = E_GameplayRequestCode.UNKNOWN;
 		this.targetCellX = -1;
 		this.targetCellY = -1;
 
 	}
-	public GameplayRequest(E_RequestCode requestCode, int targetCellX, int targetCellY, String[] sourceString, String[] targetString) {
+	public GameplayRequest(E_GameplayRequestCode requestCode, int targetCellX, int targetCellY, String[] sourceString, String[] targetString) {
 		
 		// Call alternate constructor
 		this();
@@ -71,14 +71,14 @@ public class GameplayRequest {
 	}
 	
 	// Setters
-	public void setRequestCode(E_RequestCode requestCode) { this.requestCode = requestCode; }
+	public void setRequestCode(E_GameplayRequestCode requestCode) { this.requestCode = requestCode; }
 	public void setTargetCellX(int targetCellX) { this.targetCellX = targetCellX; }
 	public void setTargetCellY(int targetCellY) { this.targetCellY = targetCellY; }
 	public void setSource(String[] sourceString) {this.source = generateGameObjectArrayFromString(sourceString, true);}
 	public void setTarget(String[] target) {this.target = generateGameObjectArrayFromString(targetString, true);}
 	
 	// Getters
-	public E_RequestCode getRequestCode() { return this.requestCode; }
+	public E_GameplayRequestCode getRequestCode() { return this.requestCode; }
 	public int getTargetCellX() { return this.targetCellX; }
 	public int getTargetCellY() { return this.targetCellY; }
 	public ArrayList<GameObject> getSource() { return this.source; }

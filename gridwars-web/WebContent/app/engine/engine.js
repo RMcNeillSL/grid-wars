@@ -9,7 +9,7 @@ function Engine(gameplayConfig, playerId, serverAPI) {
 	var local_update = function() { self.update(); }
 	
 	// Create phaser game object
-	this.phaserGame = new Phaser.Game(800, 600, Phaser.AUTO, CONSTANTS.GAME_NAME, { preload: local_preload, create: local_create, update: local_update });
+	this.phaserGame = new Phaser.Game(800, 600, Phaser.AUTO, 'gridwars-engine', { preload: local_preload, create: local_create, update: local_update });
 
 	// Introduce dynamic pointer objects
 	this.phaserGame.newBuilding = { active: false, target: null };
@@ -128,18 +128,9 @@ Engine.prototype.onMouseClick = function(pointer, x, y) {
 		var canPlace = this.currentPlayer.isSquareEmpty(colRow.col, colRow.row);
 		if (canPlace) {
 			self.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
-			
-			this.serverAPI.requestBuildingPlacement(null, this.phaserGame.newBuilding);
+			this.serverAPI.requestBuildingPlacement(self.phaserGame.newBuilding);
 			self.phaserGame.newBuilding.active = false;
 			self.mapRender.clearPlacementHover();
-			
-//			this.serverAPI.requestBuildingPlacement(function(response) {
-//				self.phaserGame.newBuilding.active = false;
-//				self.phaserGame.newBuilding.target.setBuildingMode(false);
-//				self.currentPlayer.placeDefence(self.phaserGame.newBuilding.target);
-//				self.mapRender.clearPlacementHover();
-//			}, this.phaserGame.newBuilding);
-			
 		}
 	} else {
 

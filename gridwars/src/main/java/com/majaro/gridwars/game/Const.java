@@ -6,12 +6,35 @@ import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameObject;
 
 public final class Const {
+	
+	// Gameplay request codes
+	public enum E_GameplayRequestCode { 
+		
+		// Common request codes
+		UNKNOWN("UNKNOWN"),
+		
+		// Purchasing request codes
+		NEW_BUILDING("NEW_BUILDING"), NEW_UNIT("NEW_UNIT"),
+		
+		// Unit attacking request codes
+		UNIT_ATTACK_XY("UNIT_ATTACK_XY"), UNIT_ATTACK_UNIT("UNIT_ATTACK_UNIT"), UNIT_ATTACK_BUILDING("UNIT_ATTACK_BUILDING"),
+		
+		// Defence attacking request codes
+		DEFENCE_ATTACK_XY("DEFENCE_ATTACK_XY"), DEFENCE_ATTACK_UNIT("DEFENCE_ATTACK_UNIT"), DEFENCE_ATTACK_BUILDING("DEFENCE_ATTACK_BUILDING");
 
+		// Object methods and fields
+		private String altName = "";
+		private E_GameplayRequestCode(String altName) {
+			this.altName = altName;
+		}
+		public String toString() { return this.altName; }
+	}
+	
 	// Gameplay response codes
 	public enum E_GameplayResponseCode { 
 		
 		// Common response codes
-		GENERIC_UNKNOWN_ERROR("GENERIC_UNKNOWN_ERROR"), MISSING_REQUIRED_PARAMS("MISSING_REQUIRED_PARAMS"),
+		GENERIC_UNKNOWN_ERROR("GENERIC_UNKNOWN_ERROR"), MISSING_REQUIRED_PARAMS("MISSING_REQUIRED_PARAMS"), SERVER_ERROR("SERVER_ERROR"),
 		
 		// Purchasing attempt errors
 		INSUFFICIENT_TECH_LEVEL("INSUFFICIENT_TECH_LEVEL"), INSUFFICIENT_FUNDS("INSUFFICIENT_FUNDS"),
@@ -30,9 +53,6 @@ public final class Const {
 		public String toString() { return this.altName; }
 	}
 
-	// Gameplay request codes
-	public enum E_RequestCode { UNKNOWN, NEW_BUILDING, NEW_UNIT }
-	
 	// Player colours
 	public static final String[] COLOURS = {"blue", "red", "yellow", "orange", "green", "pink"};	
 
@@ -46,13 +66,15 @@ public final class Const {
 	public static class GameObject {
 		
 		// Core variables
-		private String identifier;
-		private int cost;
-		private E_TechLevel techlv;
+		protected String identifier;
+		protected int health;
+		protected int cost;
+		protected E_TechLevel techlv;
 		
 		// Constructor
-		public GameObject(String identifier, int cost, E_TechLevel techlv) {
+		public GameObject(String identifier, int health, int cost, E_TechLevel techlv) {
 			this.identifier = identifier;
+			this.health = health;
 			this.cost = cost;
 			this.techlv = techlv;
 		}
@@ -74,6 +96,7 @@ public final class Const {
 		
 		// Getters
 		public String getIdentifier() { return this.identifier; }
+		public int getHealth() { return this.health; }
 		public int getCost() { return this.cost; }
 		public E_TechLevel getTechLv() { return this.techlv; }
 
@@ -84,19 +107,19 @@ public final class Const {
 		
 	}
 	
-	// Units in game [identifier, cash, techlv | speed, ]
-	public static final class GameUnit extends GameObject {
+	// Units in game     [identifier, health, cash, techlv | speed, ]
+	public static class GameUnit extends GameObject {
 
 		// Unit variables
-		private int speed;
+		protected int speed;
 		
 		// Constructors
-		public GameUnit(String identifier, int cost, E_TechLevel techlv, int speed) {
-			super(identifier, cost, techlv);
+		public GameUnit(String identifier, int health, int cost, E_TechLevel techlv, int speed) {
+			super(identifier, health, cost, techlv);
 			this.speed = speed;
 		}
 		public GameUnit(GameUnit source) {
-			this(source.getIdentifier(), source.getCost(), source.getTechLv(), source.getSpeed());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getSpeed());
 		}
 		
 		// Getters
@@ -104,19 +127,19 @@ public final class Const {
 		
 	}
 	
-	// Buildings in game [identifier, cash, techlv | power, ]
+	// Buildings in game [identifier, health, cash, techlv | power, ]
 	public static class GameBuilding extends GameObject {
 
 		// Building variables
-		private int power;
+		protected int power;
 		
 		// Constructors
-		public GameBuilding(String identifier, int cost, E_TechLevel techlv, int power) {
-			super(identifier, cost, techlv);
+		public GameBuilding(String identifier, int health, int cost, E_TechLevel techlv, int power) {
+			super(identifier, health, cost, techlv);
 			this.power = power;
 		}
 		public GameBuilding(GameBuilding source) {
-			this(source.getIdentifier(), source.getCost(), source.getTechLv(), source.getPower());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getPower());
 		}
 		
 		// Getters
@@ -124,26 +147,26 @@ public final class Const {
 		
 	}
 
-	// Defences in game [identifier, cash, techlv | power, 
+	// Defences in game  [identifier, health, cash, techlv | power, | range, damage, ]
 	public static class GameDefence extends GameBuilding {
 
 		// Building variables
-		private double range;
-		private double damage;
+		private int range;
+		private int damage;
 		
 		// Constructors
-		public GameDefence(String identifier, int cost, E_TechLevel techlv, int power, double range, double damage) {
-			super(identifier, cost, techlv, power);
+		public GameDefence(String identifier, int health, int cost, E_TechLevel techlv, int power, int range, int damage) {
+			super(identifier, health, cost, techlv, power);
 			this.range = range;
 			this.damage = damage;
 		}
 		public GameDefence(GameDefence source) {
-			this(source.getIdentifier(), source.getCost(), source.getTechLv(), source.getPower(), source.getRange(), source.getDamage());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getPower(), source.getRange(), source.getDamage());
 		}
 		
 		// Getters
-		public double getRange() { return this.range; }
-		public double getDamage() { return this.damage; }
+		public int getRange() { return this.range; }
+		public int getDamage() { return this.damage; }
 		
 	}
 	
@@ -151,12 +174,12 @@ public final class Const {
 	
 	// Buildings in game
 	public static final GameBuilding[] BUILDINGS = {
-			new GameDefence("TURRET", 0, E_TechLevel.TECH_01, 2, 5.0, 1.0)
+			new GameDefence("TURRET", 1000, 500, E_TechLevel.TECH_01, 2, 5, 1)
 		};
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
-			new GameUnit("TANK", 0, E_TechLevel.TECH_01, 2)
+			new GameUnit("TANK", 1000, 400, E_TechLevel.TECH_01, 2)
 		};
 	
 	
@@ -189,6 +212,15 @@ public final class Const {
 			}
 		}
 		return result.toArray(new GameBuilding[result.size()]);
+	}
+	public static GameDefence[] getGameDefenceArrayFromGameObjectArrayList(ArrayList<GameObject> sourceArray) {
+		ArrayList<GameDefence> result = new ArrayList<GameDefence>();
+		for (GameObject gameObject : sourceArray) {
+			if (gameObject instanceof GameDefence) {
+				result.add((GameDefence) gameObject);
+			}
+		}
+		return result.toArray(new GameDefence[result.size()]);
 	}
 	public static String[] getIdentifierArrayFromGameObjectList(ArrayList<GameObject> source, boolean keepErroneous) {
 		ArrayList<String> resultList = new ArrayList<String>();
