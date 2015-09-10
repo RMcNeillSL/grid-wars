@@ -130,6 +130,11 @@
 				this.lobbyService.leaveGame();
 			}, setTab: function (tab) {
 				this.$scope.tabSelect = tab;
+			},
+			logOut : function() {
+				var self = this;
+				$.post("gridwars/rest/logout");
+				self.$location.path("/login");
 			}
 	}
 
