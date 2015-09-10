@@ -16,6 +16,7 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, x,
 		var localImpact = this.phaserRef.add.sprite(x, y, CONSTANTS.SPRITE_IMPACT_DECALS, 0);
 		localImpact.anchor.setTo(0.5, 0.5);
 		localImpact.z = 0;
+		localImpact.angle = Math.random() * 100;
 		mapGroup.add(localImpact);
 		
 		// Create explosion sprite

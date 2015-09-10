@@ -10,6 +10,7 @@ public class LobbyUser {
 	private int playerTeam;
 	private boolean ready = false;
 	private User linkedUser = null;
+	private boolean gameInitialised = false;
 	
 	public LobbyUser(User linkedUser, int playerNumber, String playerColour, int playerTeam) {
 		this.linkedUser = linkedUser;
@@ -65,4 +66,8 @@ public class LobbyUser {
 	public void setLinkedUser(User linkedUser) {
 		this.linkedUser = linkedUser;
 	}
+
+	public boolean isGameInitialised() { return this.gameInitialised; }
+	public void markGameAsInitialised() { this.gameInitialised = true; }
+	
 }

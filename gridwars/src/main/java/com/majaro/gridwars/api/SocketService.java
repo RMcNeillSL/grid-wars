@@ -1,10 +1,5 @@
 package com.majaro.gridwars.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.websocket.OnMessage;
-
 import com.corundumstudio.socketio.AckRequest;
 import com.corundumstudio.socketio.BroadcastOperations;
 import com.corundumstudio.socketio.Configuration;
@@ -19,8 +14,13 @@ import com.majaro.gridwars.core.GameAndUserInfo;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.game.GameStaticMap;
 import com.majaro.gridwars.apiobjects.BindSocketRequest;
+import com.majaro.gridwars.apiobjects.GameInitRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
+import com.majaro.gridwars.apiobjects.GameplayConfig;
+import com.majaro.gridwars.apiobjects.GameplayRequest;
+import com.majaro.gridwars.apiobjects.GameplayResponse;
 
 public class SocketService {
 
@@ -51,19 +51,59 @@ public class SocketService {
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
 
+	@OnEvent("initGame")
+	public void initGame(SocketIOClient client, GameInitRequest data, AckRequest ackRequest) {
+		String sessionId = client.getSessionId().toString();
+		String lobbyId = requestProcessor.validateGameInitRequest(data, sessionId);
+		if (lobbyId != null) {
+			System.out.println("Initialising game for lobby #" + lobbyId);
+			GameplayConfig gameplayConfig = requestProcessor.generateGameplayConfig(sessionId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("gameInit", gameplayConfig);
+			requestProcessor.initGameEngine(lobbyId);
+		}
+	}
+	
+	@OnEvent("startGame")
+	public void startGame(SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		String lobbyId = requestProcessor.getGameLobbyIdFromSocketSessionId(sessionId);
+		if (requestProcessor.markUserAsReady(sessionId) && lobbyId != null) {
+			System.out.println("Starting game in lobby #" + lobbyId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
+			broadcastRoomState.sendEvent("gameStart");
+		}
+	}
+	
+	@OnEvent("gameplayRequest")
+	public void processGameplayRequest(SocketIOClient client, GameplayRequest gameplayRequest) {
+		String sessionId = client.getSessionId().toString();
+		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
+		GameplayResponse gameplayResponse = requestProcessor.processGameplayRequest(gameplayRequest, sessionId);
+		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameLobby.getLobbyId());
+		if (gameLobby != null && gameplayResponse != null) {
+			broadcastRoomState.sendEvent("gameplayResponse", gameplayResponse);
+		} else {
+			
+		}
+	}
+	
 	@OnEvent("joinGameLobby")
 	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
 		String username = data.getUser();
 		String sessionId = client.getSessionId().toString();
 		requestProcessor.bindSocketSessionId(username, sessionId);
+//		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
+//		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
-
+		
 		if (gameAndUserInfo != null) {
-			socketServer.addNamespace(gameAndUserInfo.getLobbyId());
-			client.joinRoom(gameAndUserInfo.getLobbyId());
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			String lobbyId = gameAndUserInfo.getLobbyId();
+			socketServer.addNamespace(lobbyId);
+			client.joinRoom(lobbyId);
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("userJoinedGameLobby", gameAndUserInfo.getUsername());
-			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+			broadcastRoomState.sendEvent("lobbyUserList", gameAndUserInfo.getConnectedUsers());
 		}
 	}
 

@@ -171,22 +171,4 @@ public class REST {
 		return unauthResponse;
 	}
 
-	@GET
-	@Path("/game/map/{mapId}")
-	@JsonView(GameJoinResponse.Views.Summary.class)
-	public Response GetMap(@PathParam("mapId")String mapId) {
-		if (checkAuth()) {
-			System.out.println(mapId);
-//			String sessionId = request.getSession(true).getId();
-//			GameJoinResponse gameJoinResponse = requestProcessor.getUsersGame(sessionId);
-//			if (gameJoinResponse != null) {
-//				return Response.ok(gameJoinResponse).build();
-//			} else {
-//				return Response.status(500).build();
-//			}
-			return Response.ok().build();
-		}
-		return unauthResponse;
-	}
-
 }

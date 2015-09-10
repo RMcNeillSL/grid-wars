@@ -1,4 +1,4 @@
-function Tank(phaserRef, mapGroup, tankGroup, xy, col, row, width, height, func_explosionRequest) {
+function Tank(phaserRef, mapGroup, tankGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
 
 	// Make sure dependencies has been passed
 	if (tankGroup) {
