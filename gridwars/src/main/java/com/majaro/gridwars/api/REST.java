@@ -134,7 +134,6 @@ public class REST {
 			ArrayList<GameStaticMap> gameMaps = requestProcessor.listGameMaps();
 			return Response.ok(gameMaps).build();
 		}
-
 		return unauthResponse;
 	}
 

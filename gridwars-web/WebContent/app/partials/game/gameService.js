@@ -14,11 +14,9 @@
 			// Socket initialisation method
 			initialiseSockets: function() {
 
-				// Save refernce to self
+				// Save reference to self
 				var self = this;
 				
-				console.log(this);
-
 				// Socket connect event
 				this.socket = io.connect("http://localhost:8080", {
 					"force new connection": true
@@ -26,7 +24,7 @@
 
 				// On socket connection established submit user join room request
 				this.socket.on("connect", function () {
-					console.log("Joining lobby room");
+					console.log("GAME - Joining lobby room");
 					self.socket.emit("joinGameLobby", {
 						"user" : self.$rootScope.currentUser
 					});
@@ -100,7 +98,6 @@
 				var self = this;
 				self.$rootScope.gameplayResponse = null;
 				var waitFunction = function() {
-//					console.log("Waiting...");
 					if (self.$rootScope.gameplayResponse) {
 						if (callback) {
 							callback(self.$rootScope.gameplayResponse);
@@ -116,6 +113,8 @@
 			
 			// Debug methods to make testing easier
 			debugConnect: function (callback) {
+				this.$rootScope.currentUser = "JamesHill05";
+				this.$rootScope.gameLeader = true;
 				var self = this;
 				this.$http.post("/gridwars/rest/auth", {
 					"usernameAttempt" : "JamesHill05",

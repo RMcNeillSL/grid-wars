@@ -1,17 +1,61 @@
 'use strict';
 
 (function() {
+	
+	// Waiting function to keep games synchronised
+	function Waiter(waitCondition, successMethod, interval) {
+		
+		// Save passed variables
+		var running = false;
+		this.waitCondition = waitCondition;
+		this.successMethod = successMethod;
+		this.interval = interval;
 
+		// Save this reference for anonymous methods
+		var self = this;
+
+		// Local method for main waiting execution
+		var run = function() {
+			console.log("Waiting...");
+			if (running) {
+				if (self.waitCondition()) {
+					running = false;
+					self.successMethod();
+				} else {
+					setTimeout(run, interval);
+				}
+			} else {
+				running = false;
+			}
+		}
+		
+		// Start waiter
+		this.start = function() {
+			if (!running) {
+				running = true;
+				run();
+			}
+		}
+		
+		// Halt waiter
+		this.stop = function() {
+			running = false;
+		}
+		
+	}
+	
 	function GameController($rootScope, $scope, gameService) {
 
-		$rootScope.pageName = "Game";
-		
 		// Save passed variables
 		this.$rootScope = $rootScope;
 		this.$scope = $scope;
 		this.gameService = gameService;
-		
-		// Save this reference
+
+		// Setup variables for game page
+		this.$rootScope.pageName = "Game";
+		this.$rootScope.socketsReady = false;
+
+		// Save this reference for anonymous methods
 		var self = this;
 		
 		// Start game method
@@ -41,25 +85,22 @@
 		}
 		
 		// Local caller methods
-		var gameInit = function() { gameService.gameInitRequest(gameplayConfigWaiter); }
-
-		// Hacky-slash debug settings
-//		this.$rootScope.currentUser = "JamesHill05";
+		var gameInit = function() {
+			if (self.$rootScope.gameLeader) {
+				console.log("HOST");
+				gameService.gameInitRequest(gameplayConfigWaiter);
+			} else {
+				console.log("NOT HOST");
+				gameplayConfigWaiter();
+			}
+		}
 
 		// Call connect debug methods
-		this.$rootScope.socketsReady = false;
 //		gameService.debugConnect();
 		gameService.initialiseSockets();
 		
 		// Wait until connections finished before proceeding  
-		var connectionWaiter = function() {
-			if (self.$rootScope.socketsReady) {
-				gameInit();
-			} else {
-				setTimeout(connectionWaiter, 100);
-			}
-		};
-		connectionWaiter();
+		(new Waiter(function() { return self.$rootScope.socketsReady; }, gameInit, 100)).start();
 
 	}
 
