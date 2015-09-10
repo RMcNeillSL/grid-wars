@@ -46,6 +46,7 @@
 				this.lobbyService.toggleReady();
 			},
 			changeMap: function (map) {
+				this.$rootScope.previousMapId = this.$rootScope.gameConfig.mapId;
 				this.$rootScope.gameConfig.mapId = map.mapId;
 				this.lobbyService.updateConfig();
 			},
@@ -127,8 +128,16 @@
 			},
 			callLeaveGame: function () {
 				this.lobbyService.leaveGame();
-			}, setTab: function (tab) {
+			},
+			setTab: function (tab) {
 				this.$scope.tabSelect = tab;
+			},
+			logOut : function() {
+				var self = this;
+				this.$rootScope.loggedOut = true;
+				$.post("gridwars/rest/logout");
+				this.lobbyService.leaveGame();
+				self.$location.path("/login");
 			}
 	}
 

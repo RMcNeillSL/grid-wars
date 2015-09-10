@@ -98,7 +98,9 @@
 			});
 
 			this.lobbySocket.on("mapChangeError", function (message) {
+				self.$rootScope.gameConfig.mapId = self.$rootScope.previousMapId;
 				alert(message);
+				self.$rootScope.$apply();
 			});
 
 			this.lobbySocket.on("toggleUserReady", function (userId) {
@@ -164,8 +166,12 @@
 			});
 
 			this.lobbySocket.on("leftLobby", function () {
-				self.lobbySocket.emit("forceDisconnect");
-				self.$location.path("/servers");
+				self.socket.emit("forceDisconnect");
+				if (self.$rootScope.loggedOut) {
+					self.$location.path("/login");
+				} else {
+					self.$location.path("/servers");
+				}
 				self.$rootScope.$apply();
 			});
 
@@ -201,6 +207,7 @@
 		},
 		joinGameLobby: function () {
 			this.lobbySocket.emit("joinGameLobby");
+			this.$rootScope.gameLobbyName = self.$rootScope.gameConfig.lobbyName;
 		},
 		updateConfig: function () {
 			this.lobbySocket.emit("updateGameConfig", self.$rootScope.gameConfig);
