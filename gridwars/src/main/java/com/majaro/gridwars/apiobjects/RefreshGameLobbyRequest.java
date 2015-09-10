@@ -1,6 +1,7 @@
 package com.majaro.gridwars.apiobjects;
 
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.game.Const.E_GameType;
 import com.majaro.gridwars.game.GameDynamicMap;
 
 public class RefreshGameLobbyRequest {
@@ -9,12 +10,12 @@ public class RefreshGameLobbyRequest {
 	private String mapName;
 	private int maxPlayers;
 	private int playerCount;
-	private String gameType;
+	private E_GameType gameType;
 	private String lobbyName;
 
 	public RefreshGameLobbyRequest() { }
 
-	public RefreshGameLobbyRequest(String lobbyId, String lobbyName, String mapId, int maxPlayers, int playerCount, String gameType, String mapName) {
+	public RefreshGameLobbyRequest(String lobbyId, String lobbyName, String mapId, int maxPlayers, int playerCount, E_GameType gameType, String mapName) {
 		super();
 		this.setLobbyId(lobbyId);
 		this.setLobbyName(lobbyName);
@@ -49,7 +50,7 @@ public class RefreshGameLobbyRequest {
 		return playerCount;
 	}
 
-	public String getGameType() {
+	public E_GameType getGameType() {
 		return gameType;
 	}
 
@@ -77,7 +78,7 @@ public class RefreshGameLobbyRequest {
 		this.playerCount = playerCount;
 	}
 
-	public void setGameType(String gameType) {
+	public void setGameType(E_GameType gameType) {
 		this.gameType = gameType;
 	}
 }

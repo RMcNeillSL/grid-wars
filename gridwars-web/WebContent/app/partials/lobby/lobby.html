@@ -25,7 +25,7 @@
 		                <td class="tdInfo">{{map.mapName}}</td>
 		                <td class="tdInfo textCentral">{{map.maxPlayers}}</td>
 		                <td class="tdInfo textCentral">
-		                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.mapId)" ng-if="$root.gameConfig.mapId!=map.mapId">Select</button>
+		                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map.map)" ng-if="$root.gameConfig.mapId!=map.mapId">Select</button>
 		                    <span class="glyphicon glyphicon-ok textCentral" ng-if="$root.gameConfig.mapId==map.mapId"></span>
 		                </td>
 		            </tr>
@@ -266,7 +266,7 @@
                 </td>
                 <td class="textCentral" ng-if="$root.gameLeader===true">
                     <input type="button" class="btn btn-success btn-sm" ng-if="$root.notReadyCount==0 && lobbyUser.linkedUser.username==$root.currentUser && $root.connectedUsers!=1" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
-                    <input type="button" class="btn btn-sm disabled" ng-if="($root.notReadyCount!=0 && lobbyUser.linkedUser.username==$root.currentUser) || ($root.connectedUsers==1 && lobbyUser.linkedUser.username==$root.currentUser)" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
+                    <input type="button" class="btn btn-sm disabled" ng-disabled="$root.notReadyCount!=0 || $root.connectedUsers==1" ng-if="($root.notReadyCount!=0 && lobbyUser.linkedUser.username==$root.currentUser) || ($root.connectedUsers==1 && lobbyUser.linkedUser.username==$root.currentUser)" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
                     <div ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
                         <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>

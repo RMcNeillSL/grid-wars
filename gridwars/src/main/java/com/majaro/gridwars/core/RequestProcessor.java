@@ -12,6 +12,7 @@ import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.apiobjects.GameplayConfig;
 import com.majaro.gridwars.apiobjects.GameplayRequest;
 import com.majaro.gridwars.apiobjects.GameplayResponse;
+import com.majaro.gridwars.apiobjects.RefreshGameLobbyRequest;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
@@ -54,7 +55,7 @@ public class RequestProcessor {
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2, 8, 6,
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
-		this.gameMaps.add(new GameStaticMap("3", "Pearl Harbour", 4, 8, 6,
+		this.gameMaps.add(new GameStaticMap("3", "Pacific Heights", 4, 8, 6,
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 
 		// Construct DB link
@@ -210,7 +211,7 @@ public class RequestProcessor {
 
 	public boolean updateGameConfig(String sessionId, GameJoinResponse gameJoinResponse) {
 		// Proceed if gamelobby and gameconfig are found
-		GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameJoinResponse.getLobbyId());
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
 		User user = this.getUserFromSocketSessionId(sessionId);
 		boolean updateComplete = false;
 
@@ -229,6 +230,15 @@ public class RequestProcessor {
 			if (lobbyUser != null) {
 				return new GameJoinResponse(gameLobby, lobbyUser);
 			}
+		}
+		return null;
+	}
+	
+	public RefreshGameLobbyRequest getGameInfo(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		if (gameLobby != null) {
+			return new RefreshGameLobbyRequest(gameLobby.getLobbyId(), gameLobby.getLobbyName(), gameLobby.getMapId(), gameLobby.getMaxPlayers(), 
+					gameLobby.getPlayerCount(), gameLobby.getGameType(), gameLobby.getMapName());
 		}
 		return null;
 	}

@@ -208,7 +208,7 @@ public class GameLobby {
 	@JsonView(GameLobby.Views.Summary.class)
 	public String getMapName() { return this.gameConfig.getMapName(); }
 	@JsonView(GameLobby.Views.Summary.class)
-	public String getGameType() { return this.gameConfig.getGameType().toString(); }
+	public E_GameType getGameType() { return this.gameConfig.getGameType(); }
 	@JsonView(GameLobby.Views.Summary.class)
 	public String getLobbyName() { return this.lobbyName; }
 	@JsonView(GameLobby.Views.Summary.class)
