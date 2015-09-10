@@ -12,7 +12,6 @@
 		this.$rootScope.pageName = "Servers";
 		this.loadServers();
 		this.serversService.openSocket();
-		console.log(this.$window.sessionStorage.username);
 	}
 
 	ServersController.prototype = {
@@ -37,7 +36,6 @@
 				self.$rootScope.gameConfig = response;
 				self.$rootScope.gameLeader = true;
 				self.$window.sessionStorage.gameLeader = true;
-				console.log(response);
 				self.$location.path("/lobby");
 			};
 
