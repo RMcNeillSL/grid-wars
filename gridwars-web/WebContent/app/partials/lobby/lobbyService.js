@@ -163,9 +163,11 @@
 				if (targetUsername == self.$rootScope.currentUser) {
 					self.$rootScope.gameLeader = true;
 					self.$window.gameLeader = true;
+					console.log("leader now true");
 				} else {
 					self.$rootScope.gameLeader = false;
 					self.$window.gameLeader = false;
+					console.log("leader now false");
 				}
 
 				self.$rootScope.lobbyMessages.push({user: "SERVER", message: "Leader has been changed to " + targetUsername});
