@@ -42,11 +42,11 @@
 		<tr ng-repeat="server in servers | filter:filterText | orderBy:orderByField:reverseSort">
 			<td class="tdInfo">{{ server.lobbyName }}</td>
 			<td class="tdInfo">{{ server.mapName }}</td>
-			<td class="tdInfo">{{ server.playerCount }} / {{
+			<td class="tdInfo textCentral">{{ server.playerCount }} / {{
 				server.maxPlayers }}</td>
 			<td class="tdInfo">{{ controller.formatGameType(server.gameType)
 				}}</td>
-			<td><button type="button" class="btn btn-xs"
+			<td class="textCentral"><button type="button" class="btn btn-xs"
 					ng-click="controller.joinGame(server.lobbyId)"
 					ng-disabled="server.playerCount == server.maxPlayers">{{
 					server.playerCount < server.maxPlayers ? "Join Game" : "Game Full"

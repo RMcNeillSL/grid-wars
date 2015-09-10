@@ -1,5 +1,35 @@
+@CHARSET "ISO-8859-1";
+
+body {
+  background-image: url("../images/background.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-color: #464646;
+  padding-top:50px;
+  padding-bottom:50px;
+}
+
+html, body {
+    height: 100%;
+}
+
 .boxed {
 	border: 1px solid black;
+}
+
+.fullWidth {
+	width:100%;
+}
+
+.dropdownBtn {
+	width:85%;
+	text-align:left;
+}
+
+.dropdownArrow {
+	width:15%;
 }
 
 .chat-container {
@@ -8,7 +38,7 @@
 }
 
 .player-table {
-	height: 40vh;
+	min-height: 140px;
 	overflow: auto;
 }
 
@@ -19,7 +49,177 @@
 .map-preview {
 	border-style: solid;
 	border-width: 2px;
-	border-color: black;
+	border-color: #aaa;
 	height: 250px;
 	width: 250px;
 }
+
+.table-striped>tbody>tr:nth-child(odd)>td, 
+.table-striped>tbody>tr:nth-child(odd)>th {
+   color: #333;
+ }
+ 
+ .table-striped>tbody>tr:nth-child(even)>td.tdInfo {
+   color: #fff;
+ }
+ 
+ .textCentral {
+ 	text-align:center;
+ }
+ 
+ th {
+ 	text-align:center;
+ }
+
+.main {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.margined {
+	margin-top: 80px;
+}
+
+.mainWrapper {
+	padding:20px;
+	width:70%;
+	min-height:200px;
+	border:3px solid #111;
+	background-color: rgba(0,0,0,0.7);
+}
+
+.navbar {
+
+}
+
+.navbar p {
+	color:#fff;
+	text-align:left;
+} 
+
+.navbar a {
+	color:#fff;
+	float:right;
+}
+
+.mainFooter {
+	text-align:center;
+	margin-top:10px;
+	font-size:12px;
+	font-weight:bold;
+	color:#000;
+}
+
+.gwa-form {
+	display:block;
+	
+	margin:auto;
+}
+
+.title {
+	display:block;
+	width:100%;
+	padding-bottom:5px;
+	margin-top:0px;
+	color:#fff;
+	font-size:18px;
+	font-weight:bold;
+	border-bottom:1px solid #fff;
+}
+
+.title a {
+	float:right;
+	color:#fff;
+}
+
+.subTitle {
+	display:block;
+	width:100%;
+	padding-top:15px;
+	margin-top:0px;
+	color:#fff;
+	font-size:16px;
+	font-weight:bold;
+}
+
+.gwa-form input {
+	width:100%;
+	margin:0 auto;
+	margin-bottom:10px;
+}
+
+.gwa-form p {
+	float:left;
+	color:#ff0000;
+	line-height:34px;
+	margin:0;
+    padding:0;
+}
+
+.gwa-form button {
+	float:right;
+	margin-left:10px;
+}
+
+.gwa-server h1 {
+	color:#fff;
+}
+
+.filter {
+	float:right;
+	padding-bottom:10px;
+}
+
+.filterLabel {
+	color:#fff;
+	padding-right:10px;
+}
+
+.filterApplied {
+	margin-top:5px;
+	padding:5px;
+	font-size:12px;
+	float:left;
+}
+
+.whiteText {
+	color:#fff;
+}
+
+.inactiveTab:hover {
+	color:#555;
+}
+
+.rulesContainer {
+	display:block;
+	width:100%;
+}
+
+.rulesColumn {
+	display:inline;
+}
+
+.rulesColumn p {
+	text-align:left;
+	color:#fff;
+	font-weight:bold;
+	display:inline-block;
+	padding-bottom:5px;
+	padding-top:5px;
+	margin-bottom:0px;
+	width:100%;
+}
+
+.rulesColumn input {
+	padding-right:20px;
+}
+
+.rulesBtn {
+	padding-top:5px;
+	text-align:right;
+}
+.
