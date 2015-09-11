@@ -8,7 +8,7 @@ function ExplosionManager(phaserRef) {
 ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, x, y) {
 	
 	// Check phaser ref is assigned
-	if (this.phaserRef) {
+	if (this.phaserRef && false) {
 		
 		var self = this;
 

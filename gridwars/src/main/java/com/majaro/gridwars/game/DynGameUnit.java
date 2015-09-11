@@ -6,6 +6,11 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 	
 	// Player link
 	private Player playerRef = null;
+
+	// Core building object variables
+	protected int cellX = 0;
+	protected int cellY = 0;
+	protected String instanceId = "";
 	
 	// Constructor
 	public DynGameUnit(GameUnit sourceUnit) {
@@ -16,8 +21,8 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 	}
 
 	// DynGameObject interface methods
-	public String getObjectId() {
-		return null;
+	public String getInstanceId() {
+		return this.instanceId;
 	}
 	
 }

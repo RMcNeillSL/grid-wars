@@ -35,7 +35,7 @@
 		this.lobbyService.getUsers();
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
-			if(next !== "http://localhost/#/game") {
+			if(next !== "http://" + window.location.host + "/#/game") {
 				_this.lobbyService.leaveGame();
 			}
 		});

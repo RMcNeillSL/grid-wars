@@ -6,8 +6,10 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 import com.majaro.gridwars.game.Const;
 import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
+import com.majaro.gridwars.game.Const.GameDefence;
 import com.majaro.gridwars.game.Const.E_GameplayRequestCode;
 import com.majaro.gridwars.game.Const.GameObject;
+import com.majaro.gridwars.game.DynGameBuilding;
 
 public class GameplayResponse {
 	
@@ -26,6 +28,7 @@ public class GameplayResponse {
 	private ArrayList<Coordinate> coords;
 	private ArrayList<GameObject> source;
 	private ArrayList<GameObject> target;
+	private ArrayList<String> misc;
 		
 	// Constructors
 	public GameplayResponse() {
@@ -34,6 +37,7 @@ public class GameplayResponse {
 		this.coords = new ArrayList<Coordinate>();
 		this.source = new ArrayList<GameObject>();
 		this.target = new ArrayList<GameObject>();
+		this.misc = new ArrayList<String>();
 		
 		// Set default values
 		this.responseCode = E_GameplayResponseCode.GENERIC_UNKNOWN_ERROR;
@@ -66,6 +70,9 @@ public class GameplayResponse {
 	public void addTarget(GameObject gameObject) {
 		this.target.add(gameObject);
 	}
+	public void addMisc(String miscString) {
+		this.misc.add(miscString);
+	}
 	
 	// Getters for summary view
 	@JsonView(GameplayResponse.Views.Summary.class)
@@ -82,9 +89,80 @@ public class GameplayResponse {
 		return result;
 	}
 	@JsonView(GameplayResponse.Views.Summary.class)
-	public String[] getSource() { return Const.getIdentifierArrayFromGameObjectList(this.source, false); }
+	public String[] getMisc() {
+		String[] result = new String[this.misc.size()];
+		for (int index = 0; index < this.misc.size(); index ++) {
+			result[index] = this.misc.get(index);
+		}
+		return result;
+	}
+	
+	// Customise view for source response
 	@JsonView(GameplayResponse.Views.Summary.class)
-	public String[] getTarget() { return Const.getIdentifierArrayFromGameObjectList(this.target, false); }
+	public String[] getSource() {
+		
+		// Declare/Initialise variables
+		String[] result = null;
+		
+		// Determine response type
+		switch (this.responseCode) {
+			case NEW_BUILDING:
+				result = Const.getIdentifierArrayFromGameObjectList(this.source, false);
+				break;
+			case DEFENCE_ATTACK_XY:
+				System.out.println(this.source);
+				result = this.getInstanceArrayFromDynGameBuildingList(this.source, false);
+				break;
+			default:
+				break;
+		}
+		
+		// Return generated array
+		return result;
+		
+	}
+	
+	// Customise view for target response
+	@JsonView(GameplayResponse.Views.Summary.class)
+	public String[] getTarget() {
+
+		// Declare/Initialise variables
+		String[] result = null;
+		
+		// Determine response type
+		switch (this.responseCode) {
+			case NEW_BUILDING:
+				ArrayList<String> resultArray = new ArrayList<String>();
+				for (GameObject gameObject : this.source) {
+					if (gameObject instanceof DynGameBuilding) {
+						resultArray.add(((DynGameBuilding) gameObject).getInstanceId());
+					}
+				}
+				result = resultArray.toArray(new String[resultArray.size()]);
+				break;
+			default:
+				break;
+		}
+		
+		// Return generated array
+		return result;
+		
+	}
+	
+	// Utility methods
+	private String[] getInstanceArrayFromDynGameBuildingList(ArrayList<GameObject> dynGameBuildings, boolean keepErroneous) {
+		if (dynGameBuildings == null) {
+			return null;
+		} else {
+			ArrayList<String> resultArray = new ArrayList<String>();
+			for (GameObject gameObject : dynGameBuildings) {
+				if (gameObject instanceof DynGameBuilding) {
+					resultArray.add(((DynGameBuilding) gameObject).getInstanceId());
+				}
+			}
+			return resultArray.toArray(new String[resultArray.size()]);
+		}
+	}
 	
 	// Class views
 	public static class Views {
@@ -102,7 +180,8 @@ public class GameplayResponse {
 		outputString = this.responseCode.toString();
 		
 		// Return generated response
-		return "Gameplay Response: " + outputString;
+		return "Gameplay Response: " + 
+			newLine + "Response Code: " + outputString;
 	}
 
 }

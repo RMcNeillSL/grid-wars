@@ -5,7 +5,9 @@ CONSTANTS = {
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",
-
+	TILE_WIDTH : 100,
+	TILE_HEIGHT : 100,
+	
 	// Directory locations
 	ROOT_SPRITES_LOC : "app/assets/",
 

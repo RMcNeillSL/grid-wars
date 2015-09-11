@@ -1,10 +1,10 @@
-function Turret(phaserRef, mapGroup, turretGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
+function Turret(phaserRef, gameCore, mapGroup, turretGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
 	
 	// Make sure dependencies has been passed
 	if (turretGroup) {
 		
-		// Set identifying values
-		this.identifier = "TURRET";
+		// Save core game object
+		this.gameCore = gameCore;
 		
 		// Save phaser references
 		this.phaserRef = phaserRef;
@@ -95,13 +95,17 @@ Turret.prototype.setBuildingMode = function(inBuildingMode) {
 	
 }
 
-Turret.prototype.setPosition = function(left, top, col, row) {
+Turret.prototype.setPosition = function(cell) {
 	
 	// Update internal position keepers
-	this.left = left + this.width/2;
-	this.top = top + this.height/2;
-	this.col = col;
-	this.row = row;
+	this.left = cell.toPoint().x + this.width/2;
+	this.top = cell.toPoint().y + this.height/2;
+	this.col = cell.col;
+	this.row = cell.row;
+	
+	// Update game core
+	this.gameCore.cell = cell;
+	this.gameCore.point = cell.toPoint();
 	
 	// Update sprite positioning
 	this.baseSegment.x = this.left;

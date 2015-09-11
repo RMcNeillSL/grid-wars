@@ -104,9 +104,9 @@ Engine.prototype.update = function() {
 
 	// Render placement overlay
 	if (this.phaserGame.newBuilding.active) {
-		var colRow = this.mapRender.xyToColRow(this.phaserGame.input.mousePointer.x, this.phaserGame.input.mousePointer.y);
-		var canPlace = this.isSquareEmpty(colRow.col, colRow.row);
-		this.mapRender.placementHover(colRow.col, colRow.row, canPlace);
+		var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
+		var canPlace = this.isSquareEmpty(cell.col, cell.row);
+		this.mapRender.placementHover(cell.col, cell.row, canPlace);
 	}
 	
 	// Render test turrets
@@ -126,19 +126,28 @@ Engine.prototype.onMouseClick = function(pointer, x, y) {
 	
 	// Render placement overlay
 	if (this.phaserGame.newBuilding.active) {
-		var colRow = this.mapRender.xyToColRow(this.mouse.x, this.mouse.y);
-		var xy = this.mapRender.colRowToXY(colRow.col, colRow.row);
-		var canPlace = this.isSquareEmpty(colRow.col, colRow.row);
+		var point = new Point(this.mouse.x, this.mouse.y);
+		var cell = point.toCell();
+		var canPlace = this.isSquareEmpty(cell.col, cell.row);
 		if (canPlace) {
-			self.phaserGame.newBuilding.target.setPosition(xy.x, xy.y, colRow.col, colRow.row);
+			self.phaserGame.newBuilding.target.setPosition(cell);
 			this.serverAPI.requestBuildingPlacement(this.phaserGame.newBuilding);
 			self.phaserGame.newBuilding.active = false;
 			self.mapRender.clearPlacementHover();
 		}
 	} else {
 		
+		// Generate list of defences for attack
+		var defences = [];
+		for (var index = 0; index < this.buildings.length; index++) {
+			if (this.buildings[index].gameCore.isDefence &&
+					this.currentPlayer.playerId == this.buildings[index].gameCore.playerId) {
+				defences.push(this.buildings[index]);
+			}
+		}
+		
 		// Submit request to fire all turrets
-		this.serverAPI.requestDefenceAttackXY(this.mouse.x, this.mouse.y);
+		this.serverAPI.requestDefenceAttackXY(defences, this.mouse.x, this.mouse.y);
 
 	}
 	
@@ -153,39 +162,26 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 }
 
 Engine.prototype.onKeyPressed = function(char) {
+	
+	// Check if creating a new object
+	if (char == '1' || char == '2' || char == '3') {
 
-	// Set active building object
-	if (char == '1') {
-		this.phaserGame.newBuilding.active = true;
-		this.phaserGame.newBuilding.target = new Turret(this.phaserGame, this.mapGroup, this.turretGroup,
-                this.mapRender.colRowToXY(0, 0),
-                0, 0, 100, 100,
-                this.explosionManager.requestExplosion, true);
-	}
+		// Game core object
+		var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
+		var gameCore = new GameCore("TURRET", cell);
 
-	// Set active building object -phaserRef, -mapGroup, -tankGroup, -xy, width, height, func_explosionRequest
-	if (char == '2') {
-		this.phaserGame.newBuilding.active = true;
-		this.phaserGame.newBuilding.target = new Tank(this.phaserGame, this.mapGroup, this.tankGroup,
-                this.mapRender.colRowToXY(0, 0),
-                0, 0, 100, 100,
-                this.explosionManager.requestExplosion, true);
-	}
+		// Set active building object
+		if (char == '1') { this.createNewBuildingObject(gameCore); }
 
-	if (char == '3') {
-		this.processGameplayResponse({
-			responseCode: "WAYPOINT_PATH_COORDS",
-			coords: [{col: 4, row: 5}, {col: 4, row: 6}, {col: 5, row: 6}],
-			source: ["U000", "U000", "U000"],
-			target: []
-		});
-	}
+//		// Set active building object -phaserRef, -mapGroup, -tankGroup, -xy, width, height, func_explosionRequest
+//		if (char == '2') {
+//			this.phaserGame.newBuilding.active = true;
+//			this.phaserGame.newBuilding.target = new Tank(this.phaserGame, this.mapGroup, this.tankGroup,
+//	                this.mapRender.toPoint(0, 0),
+//	                0, 0, 100, 100,
+//	                this.explosionManager.requestExplosion, true);
+//		}
 
-	if (char == '4') {
-		new Tank(this.phaserGame, this.mapGroup, this.tankGroup,
-                this.mapRender.colRowToXY(0, 0),
-                0, 0, 100, 100,
-                this.explosionManager.requestExplosion, true);
 	}
 	
 }
@@ -195,11 +191,42 @@ Engine.prototype.onKeyPressed = function(char) {
 
 Engine.prototype.isSquareEmpty = function(col, row) {
 	for (var index = 0; index < this.buildings.length; index ++) {
-		if (this.buildings[index].col == col && this.buildings[index].row == row) {
+		if (this.buildings[index].gameCore.cell.col == col && this.buildings[index].gameCore.cell.row == row) {
 			return false;
 		}
 	}
 	return true;
+}
+
+Engine.prototype.createNewBuildingObject = function(gameCore) {
+	
+	// Create new object and return
+	this.phaserGame.newBuilding.active = true;
+	this.phaserGame.newBuilding.target = new Turret(this.phaserGame, gameCore, this.mapGroup, this.turretGroup,
+			gameCore.cell.toPoint(),
+            0, 0, 100, 100,
+            this.explosionManager.requestExplosion, true);
+}
+
+Engine.prototype.getObjectFromInstanceId = function(instanceId) {
+	
+	// Look through buildings
+	for (var index = 0; index < this.buildings.length; index ++) {
+		if (this.buildings[index].gameCore.instanceId == instanceId) {
+			return this.buildings[index];
+		}
+	}
+	
+	// Look through units
+	for (var index = 0; index < this.units.length; index ++) {
+		if (this.units[index].gameCore.instanceId == instanceId) {
+			return this.units[index];
+		}
+	}	
+	
+	// Return erroneous result
+	return null;
+	
 }
 
 
@@ -212,16 +239,22 @@ Engine.prototype.processNewBuilding = function(responseData) {
 		
 		// Create quick reference object
 		var refObject = {
+				instanceId: responseData.target[index],
 				identifier: responseData.source[index], 
-				col: responseData.coords[index].col,
-				row: responseData.coords[index].row,
+				cell: responseData.coords[index],
+				playerId: responseData.misc[index]
 			};
 		
 		// Create XY position from col/row
-		var xy = this.mapRender.colRowToXY(refObject.col, refObject.row);
+		refObject.xy = refObject.cell.toPoint();
+
+		// Create GameCore object
+		var gameCore = new GameCore("TURRET", refObject.cell);
+		gameCore.setInstanceId(refObject.instanceId);
+		gameCore.setPlayerId(refObject.playerId);
 		
 		// Construct object for positioning
-		var newBuilding = new Turret(this.phaserGame,  this.mapGroup, this.turretGroup, xy, refObject.col, refObject.row, 100, 100, 
+		var newBuilding = new Turret(this.phaserGame, gameCore, this.mapGroup, this.turretGroup, refObject.xy, refObject.col, refObject.row, 100, 100, 
 				this.explosionManager.requestExplosion, false);
 		
 		// Add object to building array
@@ -231,9 +264,25 @@ Engine.prototype.processNewBuilding = function(responseData) {
 }
 
 Engine.prototype.processDefenceAttackXY = function(responseData) {
-
-	for (var index = 0; index < this.buildings.length; index ++) {
-		this.buildings[index].rotateAndShoot(responseData.coords[0].col, responseData.coords[0].row);
+	
+	// Process all items of request
+	for (var reqIndex = 0; reqIndex < responseData.source.length; reqIndex ++) {
+		
+		// Create reference object
+		var refObject = {
+				instanceId: responseData.source[reqIndex],
+				targetX: responseData.coords[reqIndex].col,
+				targetY: responseData.coords[reqIndex].row
+			};
+		
+		// Loop through all defences set to fire
+		var defence = null;
+		for (var index = 0; index < responseData.source.length; index ++) {
+			defence = this.getObjectFromInstanceId(refObject.instanceId);
+			if (defence != null && defence.gameCore.isDefence) {
+				defence.rotateAndShoot(refObject.targetX, refObject.targetY);
+			}
+		}
 	}
 	
 }

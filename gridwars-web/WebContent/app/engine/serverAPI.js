@@ -31,9 +31,9 @@ ServerAPI.prototype.requestBuildingPlacement = function(newBuilding) {
 		
 		// Create request params
 		var params = {
-				source: [newBuilding.target.identifier],
-				targetCellX: newBuilding.target.col,
-				targetCellY: newBuilding.target.row
+				source: [newBuilding.target.gameCore.identifier],
+				targetCellX: newBuilding.target.gameCore.cell.col,
+				targetCellY: newBuilding.target.gameCore.cell.row
 		};
 		
 		// Generate request object
@@ -50,16 +50,20 @@ ServerAPI.prototype.requestBuildingPlacement = function(newBuilding) {
 	
 }
 
-ServerAPI.prototype.requestDefenceAttackXY = function(targetX, targetY) {
+ServerAPI.prototype.requestDefenceAttackXY = function(defences, targetX, targetY) {
 
 	// Make sure a building object is present
 	if (targetX && targetY) {
 
 		// Create request params
 		var params = {
+				source: [],
 				targetCellX: targetX,
 				targetCellY: targetY
 		};
+		for (var index = 0; index < defences.length; index ++) {
+			params.source.push(defences[index].gameCore.instanceId);
+		}
 		
 		// Generate request object
 		var request = new GameplayRequest("DEFENCE_ATTACK_XY", params);
