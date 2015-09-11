@@ -220,8 +220,12 @@ public class SocketService {
 	public void onLeaveLobby (SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		boolean leaderDisconnect = false;
 
 		if (gameAndUserInfo != null) {
+			if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
+				leaderDisconnect = true;
+			}
 			requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
 			client.leaveRoom(gameAndUserInfo.getLobbyId());
 			client.sendEvent("leftLobby");
@@ -229,7 +233,9 @@ public class SocketService {
 			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 			broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
 			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
-			broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+			if (leaderDisconnect) {
+				broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+			}
 		}
 
 	}
@@ -307,6 +313,27 @@ public class SocketService {
 
 	@OnDisconnect
 	public void onDisconnectHandler(SocketIOClient client) {
-		System.out.println("A user has disconnected.");
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		boolean leaderDisconnect = false;
+
+		if (client.isChannelOpen()) {
+			System.out.println(gameAndUserInfo.getUsername() + "'s socket timed-out, but they are still active");
+		} else {
+			System.out.println("A user has disconnected.");
+			if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
+				leaderDisconnect = true;
+			}
+			requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+			client.leaveRoom(gameAndUserInfo.getLobbyId());
+			client.sendEvent("leftLobby");
+			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+			broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
+			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+			if (leaderDisconnect) {
+				broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+			}
+		}
 	}
 }
