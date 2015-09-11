@@ -180,6 +180,7 @@
 				self.$location.path("/servers");
 				self.$rootScope.$apply();
 			});
+
 		},
 		getMaps: function () {
 			this.$http.get("/gridwars/rest/game/maps").then(function(response) {

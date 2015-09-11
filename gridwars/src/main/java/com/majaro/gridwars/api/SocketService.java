@@ -1,5 +1,7 @@
 package com.majaro.gridwars.api;
 
+import java.util.ArrayList;
+
 import javax.websocket.server.ServerEndpoint;
 
 import com.corundumstudio.socketio.AckRequest;
@@ -220,19 +222,23 @@ public class SocketService {
 	public void onLeaveLobby (SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
 		boolean leaderDisconnect = false;
 
 		if (gameAndUserInfo != null) {
 			if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
 				leaderDisconnect = true;
 			}
+
 			requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+			broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
 			client.leaveRoom(gameAndUserInfo.getLobbyId());
 			client.sendEvent("leftLobby");
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 			broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
 			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+
 			if (leaderDisconnect) {
 				broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
 			}
@@ -326,6 +332,8 @@ public class SocketService {
 					leaderDisconnect = true;
 				}
 				requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+				BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
+				broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
 				client.leaveRoom(gameAndUserInfo.getLobbyId());
 				client.sendEvent("leftLobby");
 				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());

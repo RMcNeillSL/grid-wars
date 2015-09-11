@@ -18,7 +18,14 @@
 				_this.serversSocket.emit("joinServerLobby", "");
 			});
 
+			this.serversSocket.on("updateServerLobby", function(data) {
+				self.$rootScope.servers = data;
+				console.log(data);
+				self.$rootScope.$apply();
+			});
+
 			this.serversSocket.on("refreshGameLobby", function(data) {
+				console.log(data);
 				var exists = false;
 				var serverIndex = -1;
 
