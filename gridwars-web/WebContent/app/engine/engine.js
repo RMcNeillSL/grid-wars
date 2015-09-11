@@ -50,6 +50,9 @@ function Engine(gameplayConfig, playerId, serverAPI) {
 }
 
 Engine.prototype.preload = function() {
+	
+	// Set system to render even when not active
+	this.phaserGame.stage.disableVisibilityChange = true;
 
 	// Load sprite sheets
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 13);
