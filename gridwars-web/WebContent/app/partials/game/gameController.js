@@ -52,6 +52,7 @@
 		this.gameService = gameService;
 
 		// Setup variables for game page
+		this.engineExists = false;
 		this.$scope.gameEngine = CONSTANTS.GAME_NAME;
 		this.$rootScope.pageName = "Game";
 		this.$rootScope.socketsReady = false;
@@ -61,18 +62,26 @@
 		
 		// Start game method
 		var startGame = function() {
+			
+			// Make sure a second engine is not being created
+			if (!self.engineExists) {
 
-			// Define server interface object
-			self.serverAPI = new ServerAPI(gameService);
-			
-			// Define core game phaser variable
-			self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser, self.serverAPI);
-			self.$rootScope.gameplayResponseManager = function(responseData) {
-				self.phaserGame.processGameplayResponse(responseData);
-			};
-			
-			// Submit ready message
-			gameService.gameStartRequest();
+				// Mark engine as constructed
+				self.engineExists = true;
+				
+				// Define server interface object
+				self.serverAPI = new ServerAPI(gameService);
+				
+				// Define core game phaser variable
+				self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser, self.serverAPI);
+				self.$rootScope.gameplayResponseManager = function(responseData) {
+					self.phaserGame.processGameplayResponse(responseData);
+				};
+				
+				// Submit ready message
+				gameService.gameStartRequest();
+
+			}
 
 		}
 		
@@ -88,7 +97,6 @@
 			} else {
 				gameplayConfigWaiter.start();
 			}}, 100)).start();
-
 	}
 
 	GameController.$inject = [ '$rootScope', '$scope', 'gridWarsApp.game.service' ];
