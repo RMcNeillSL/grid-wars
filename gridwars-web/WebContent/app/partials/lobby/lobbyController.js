@@ -16,7 +16,7 @@
 		$rootScope.lobbyMessages = [];
 		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];
-		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
+		$rootScope.colourList = ["blue", "red", "purple", "green", "yellow", "cyan"];
 		this.$rootScope.pageName = "Game Lobby";
 		$rootScope.deleteSelected = false;
 

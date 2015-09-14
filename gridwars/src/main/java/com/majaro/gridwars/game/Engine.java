@@ -1,10 +1,13 @@
 package com.majaro.gridwars.game;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.majaro.gridwars.apiobjects.GameplayRequest;
 import com.majaro.gridwars.apiobjects.GameplayResponse;
+import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.LobbyUser;
 import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
 import com.majaro.gridwars.game.Const.GameBuilding;
@@ -25,6 +28,7 @@ public class Engine extends Thread {
 
 	// In-game object lists
 	private ArrayList<DynGameBuilding> buildings;
+	private ArrayList<DynGameUnit> units;
 	
 	
 	// Constructors
@@ -43,6 +47,7 @@ public class Engine extends Thread {
 		
 		// Initialise in-game object lists
 		this.buildings = new ArrayList<DynGameBuilding>();
+		this.units = new ArrayList<DynGameUnit>();
 		
 	}
 	
@@ -104,11 +109,11 @@ public class Engine extends Thread {
 			// Create game object(s)
 			for (GameBuilding sourceBuilding : sourceBuildings) {
 				newBuilding = null;
-				if (sourceBuilding instanceof GameBuilding) {
-					newBuilding = new DynGameBuilding(sourceBuilding, player, col, row); // -- need to calculate for multiBuilding structures later e.g. walls
-				} else if (sourceBuilding instanceof GameDefence) {
-					newBuilding = new DynGameDefence((GameDefence)sourceBuilding, player, col, row); // -- need to calculate for multiBuilding structures later e.g. walls
-				}
+				if (sourceBuilding instanceof GameDefence) {
+					newBuilding = new DynGameDefence(this.generateInstanceId(player), (GameDefence)sourceBuilding, player, col, row); // -- need to calculate for multiBuilding structures later e.g. walls
+				} else if (sourceBuilding instanceof GameBuilding) {
+					newBuilding = new DynGameBuilding(this.generateInstanceId(player), sourceBuilding, player, col, row); // -- need to calculate for multiBuilding structures later e.g. walls
+				} 
 				if (newBuilding != null) { this.buildings.add(newBuilding); }
 			}
 			
@@ -119,7 +124,8 @@ public class Engine extends Thread {
 				response = new GameplayResponse(E_GameplayResponseCode.NEW_BUILDING);
 				for (GameBuilding sourceBuilding : sourceBuildings) {
 					response.addCoord(col, row); // -- need to calculate for multiBuilding structures later e.g. walls
-					response.addSource(sourceBuilding);
+					response.addSource(newBuilding);
+					response.addMisc(player.getPlayerName());
 				}
 			}
 			
@@ -129,22 +135,22 @@ public class Engine extends Thread {
 		return response;
 	}
 	
-	private GameplayResponse processDefenceAttackRequest(Player player, GameDefence[] sourceDefences, int col, int row) {
+	private GameplayResponse processDefenceAttackRequest(Player player, DynGameDefence[] sourceDefences, int col, int row) {
 
 		// Set default result
 		GameplayResponse response = null;
 		boolean validConstruction = true;
-
+		
 		// Check each object in turn
-		for (GameDefence sourceDefence : sourceDefences) {
+		for (DynGameDefence sourceDefence : sourceDefences) {
 			
 		}
 
 		// Construct valid response
 		if (validConstruction) {
 			response = new GameplayResponse(E_GameplayResponseCode.DEFENCE_ATTACK_XY);
-			response.addCoord(col, row);
-			for (GameDefence sourceDefence : sourceDefences) {
+			for (DynGameDefence sourceDefence : sourceDefences) {
+				response.addCoord(col, row);
 				response.addSource(sourceDefence);
 			}
 		}
@@ -183,7 +189,7 @@ public class Engine extends Thread {
 	        	break;
 	        case DEFENCE_ATTACK_XY:
 	        	gameplayResponse = this.processDefenceAttackRequest(sender, 
-	        			Const.getGameDefenceArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
+	        			this.getGameDefencesFromInstanceIds(gameplayRequest.getSourceString(), false), 
 	        			gameplayRequest.getTargetCellX(), 
 	        			gameplayRequest.getTargetCellY());
 	        	break;
@@ -204,6 +210,114 @@ public class Engine extends Thread {
 	
 	
 	// Utility methods
+	
+	private DynGameBuilding getGameBuildingFromInstanceId(String instanceId) {
+		for (DynGameBuilding dynGameBuilding : this.buildings) {
+			if (dynGameBuilding.getInstanceId().equals(instanceId)) {
+				return dynGameBuilding;
+			}
+		}
+		return null;
+	}
+	
+	private DynGameBuilding[] getGameBuildingsFromInstanceIds(String[] instanceIds, boolean keepErroneous) {
+		if (instanceIds == null) {
+			return new DynGameBuilding[0];
+		} else {
+			DynGameBuilding searchBuilding;
+			ArrayList<DynGameBuilding> gameBuildings = new ArrayList<DynGameBuilding>();
+			for (String instanceId : instanceIds) {
+				searchBuilding = this.getGameBuildingFromInstanceId(instanceId);
+				if (keepErroneous || searchBuilding != null) {
+					gameBuildings.add(searchBuilding);
+				}
+			}
+			return gameBuildings.toArray(new DynGameBuilding[gameBuildings.size()]);
+		}
+	}
+	
+	private DynGameUnit getGameUnitFromInstanceId(String instanceId) {
+		for (DynGameUnit dynGameUnit : this.units) {
+			if (dynGameUnit.getInstanceId().equals(instanceId)) {
+				return dynGameUnit;
+			}
+		}
+		return null;
+	}
+
+	private DynGameUnit[] getGameUnitFromInstanceIds(String[] instanceIds, boolean keepErroneous) {
+		if (instanceIds == null) {
+			return new DynGameUnit[0];
+		} else {
+			DynGameUnit searchUnit;
+			ArrayList<DynGameUnit> gameUnits = new ArrayList<DynGameUnit>();
+			for (String instanceId : instanceIds) {
+				searchUnit = this.getGameUnitFromInstanceId(instanceId);
+				if (keepErroneous || searchUnit != null) {
+					gameUnits.add(searchUnit);
+				}
+			}
+			return gameUnits.toArray(new DynGameUnit[gameUnits.size()]);
+		}
+	}
+	
+	private DynGameDefence getGameDefenceFromInstanceId(String instanceId) {
+		DynGameBuilding dynGameBuilding = getGameBuildingFromInstanceId(instanceId);
+		if (dynGameBuilding instanceof DynGameDefence) {
+			return (DynGameDefence)dynGameBuilding;
+		} else {
+			return null;
+		}
+	}
+
+	private DynGameDefence[] getGameDefencesFromInstanceIds(String[] instanceIds, boolean keepErroneous) {
+		if (instanceIds == null) {
+			return new DynGameDefence[0];
+		} else {
+			DynGameDefence searchDefence;
+			ArrayList<DynGameDefence> gameDefences = new ArrayList<DynGameDefence>();
+			for (String instanceId : instanceIds) {
+				searchDefence = this.getGameDefenceFromInstanceId(instanceId);
+				if (keepErroneous || searchDefence != null) {
+					gameDefences.add(searchDefence);
+				}
+			}
+			return gameDefences.toArray(new DynGameDefence[gameDefences.size()]);
+		}
+	}
+	
+	private String generateInstanceId(Player player) {
+		
+		// Setup variables
+		SecureRandom random = new SecureRandom();
+		boolean instanceIdReserved = true;
+		String instanceId = null;
+		
+		// Repeatedly generate new Id until a free one is found
+		while (instanceIdReserved) {
+			
+			// Setup attemptId and reserved boolean
+			instanceIdReserved = false;
+			instanceId = new BigInteger(130, random).toString(32);
+			
+			// Check against buildings
+			for (DynGameBuilding dynGameBuilding : this.buildings) {
+				if (dynGameBuilding.getInstanceId().equals(instanceId)) {
+					instanceIdReserved = true;
+				}
+			}
+			
+			// Check against units
+			for (DynGameUnit dynGameUnit : this.units) {
+				if (dynGameUnit.getInstanceId().equals(instanceId)) {
+					instanceIdReserved = true;
+				}
+			}
+		}
+		
+		// Return generated Id
+		return instanceId;
+	}
 	
 	private Player getPlayerFromUserId(int userId) {
 		for (Player player : this.players) {

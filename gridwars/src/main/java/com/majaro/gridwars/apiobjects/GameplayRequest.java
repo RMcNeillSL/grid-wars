@@ -41,6 +41,8 @@ public class GameplayRequest {
 		this.targetCellY = targetCellY;
 
 		// Construct and Populate source & target
+		this.sourceString = sourceString;
+		this.targetString = targetString;
 		this.source = generateGameObjectArrayFromString(sourceString, true);
 		this.target = generateGameObjectArrayFromString(targetString, true);
 	}
@@ -74,8 +76,28 @@ public class GameplayRequest {
 	public void setRequestCode(E_GameplayRequestCode requestCode) { this.requestCode = requestCode; }
 	public void setTargetCellX(int targetCellX) { this.targetCellX = targetCellX; }
 	public void setTargetCellY(int targetCellY) { this.targetCellY = targetCellY; }
-	public void setSource(String[] sourceString) {this.source = generateGameObjectArrayFromString(sourceString, true);}
-	public void setTarget(String[] target) {this.target = generateGameObjectArrayFromString(targetString, true);}
+
+	// Customise view for source in strings
+	public void setSource(String[] sourceString) {
+		
+		// Save source string
+		this.sourceString = sourceString;
+		
+		// Generate request specific values
+		if (this.requestCode == E_GameplayRequestCode.NEW_BUILDING) { this.source = generateGameObjectArrayFromString(this.sourceString, true); }
+		
+	}
+
+	// Customise view for target in strings
+	public void setTarget(String[] targetString) {
+
+		// Save source string
+		this.targetString = targetString; 
+
+		// Generate request specific values
+		if (this.requestCode == E_GameplayRequestCode.NEW_BUILDING) { this.target = generateGameObjectArrayFromString(this.targetString, true);  }
+		
+	}
 	
 	// Getters
 	public E_GameplayRequestCode getRequestCode() { return this.requestCode; }
@@ -83,6 +105,8 @@ public class GameplayRequest {
 	public int getTargetCellY() { return this.targetCellY; }
 	public ArrayList<GameObject> getSource() { return this.source; }
 	public ArrayList<GameObject> getTarget() { return this.target; }
+	public String[] getSourceString() { return this.sourceString; }
+	public String[] getTargetString() { return this.targetString; }
 
 	// Debugging methods
 	public String toString() {

@@ -16,9 +16,10 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	// Core building object variables
 	protected int cellX = 0;
 	protected int cellY = 0;
+	protected String instanceId = "";
 	
 	// Constructor
-	public DynGameBuilding(GameBuilding sourceBuilding, Player playerRef, int cellX, int cellY) {
+	public DynGameBuilding(String instanceId, GameBuilding sourceBuilding, Player playerRef, int cellX, int cellY) {
 		
 		// Call super
 		super(sourceBuilding);
@@ -30,6 +31,7 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 		this.playerRef = playerRef;
 		this.cellX = cellX;
 		this.cellY = cellY;		
+		this.instanceId = instanceId;
 	}
 	
 	// Overriden getters
@@ -49,8 +51,14 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	public int getMaxPower() { return super.power; }
 
 	// DynGameObject interface methods
-	public String getObjectId() {
-		return null;
+	public String getInstanceId() {
+		return this.instanceId;
+	}
+	
+	// Debugging methods
+	public String toString() {
+		String superResult = super.toString();
+		return superResult + " " + this.instanceId;
 	}
 	
 }
