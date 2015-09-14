@@ -8,8 +8,9 @@ function ExplosionManager(phaserRef) {
 ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, x, y) {
 	
 	// Check phaser ref is assigned
-	if (this.phaserRef && false) {
+	if (this.phaserRef) {
 		
+		// Save reference to this for local calls
 		var self = this;
 
 		// Create impact decal sprite
