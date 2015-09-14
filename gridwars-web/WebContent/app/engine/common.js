@@ -13,6 +13,7 @@ function GameCore(identifier, cell) {
 	this.height = 0;
 	this.instanceId = null;
 	this.playerId = null;
+	this.colour = null;
 	
 	// FLag properties (not existing in all objects)
 	this.isDefence = false;
@@ -28,10 +29,15 @@ function GameCore(identifier, cell) {
 	this.setInstanceId = function(instanceId) {
 		this.instanceId = instanceId;
 	}
-	this.setPlayerId = function(playerId) {
-		this.playerId = playerId;
+	this.setPlayer = function(player) {
+		this.playerId = player.playerId;
+		this.colour = CONSTANTS.COLOUR_TURRET[0];
+		for (var index = 1; index < CONSTANTS.COLOUR_TURRET.length; index ++) {
+			if (player.colour === CONSTANTS.COLOUR_TURRET[index].COLOUR) {
+				this.colour = CONSTANTS.COLOUR_TURRET[index];
+			}
+		}
 	}
-	
 }
 
 

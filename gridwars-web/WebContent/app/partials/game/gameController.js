@@ -86,8 +86,8 @@
 		}
 		
 		// Call connect debug methods
-		gameService.debugConnect();
-//		gameService.initialiseSockets();
+//		gameService.debugConnect();
+		gameService.initialiseSockets();
 		
 		// Wait until connections finished before proceeding - then run the game configuration method
 		var gameplayConfigWaiter = new Waiter(function() { return self.$rootScope.gameplayConfig; }, startGame, 100); // -- should really change so the server has a list of acknowleged users
