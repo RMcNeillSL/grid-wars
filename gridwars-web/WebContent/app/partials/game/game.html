@@ -1,3 +1,6 @@
 <div class="gwa-game">
-	<div id="gridwars-engine"></div>
+	<div id="gridwars-loading" ng-show="!gameLoaded">
+		<h2 class="title">Game Loading...</h2>
+	</div>
+	<div id="gridwars-engine" ng-show="gameLoaded"></div>
 </div>

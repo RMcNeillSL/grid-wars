@@ -16,10 +16,10 @@ public class DynGameDefence extends DynGameBuilding {
 	private int cellY = 0;
 	
 	// Constructor
-	public DynGameDefence(GameDefence sourceDefence, Player playerRef, int cellX, int cellY) {
+	public DynGameDefence(String instanceId, GameDefence sourceDefence, Player playerRef, int cellX, int cellY) {
 		
 		// Call super
-		super(sourceDefence, playerRef, cellX, cellY);
+		super(instanceId, sourceDefence, playerRef, cellX, cellY);
 		
 		// Save passed values
 		this.playerRef = playerRef;

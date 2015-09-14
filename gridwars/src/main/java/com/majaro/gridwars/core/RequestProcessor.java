@@ -116,7 +116,6 @@ public class RequestProcessor {
 		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
 		User user = this.getUserFromSocketSessionId(sessionId);
 		if (gameLobby != null && user != null) {
-			System.out.println("Game lobby exists.");
 			GameplayResponse gameplayResponse = gameLobby.processGameplayRequest(gameplayRequest, user.getId());
 			return gameplayResponse;
 		}
@@ -255,6 +254,7 @@ public class RequestProcessor {
 		return null;
 	}
 
+	
 	// Session authentication and management methods
 
 	private void addNewSession(String sessionId, User user) {
@@ -354,6 +354,7 @@ public class RequestProcessor {
 		gameLobby.updateUserTeam(userId, team);
 	}
 
+	
 	// User login and registration methods
 
 	public int register(RegRequest regRequest) {
@@ -502,7 +503,7 @@ public class RequestProcessor {
 	}
 
 	private void initialiseSessionCleanUp() {
-		this.sessionCleanUp = new Runnable() {
+/*		this.sessionCleanUp = new Runnable() {
 			public void run() {
 				while (true) {
 					if (activeSessions.size() > 0) {
@@ -527,7 +528,7 @@ public class RequestProcessor {
 		};
 
 		this.sessionCleanUpThread = new Thread(sessionCleanUp);
-		this.sessionCleanUpThread.start();
+		this.sessionCleanUpThread.start();*/
 	}
 
 	public GameAndUserInfo validateAndReturnGameLobbyAndUserInfo (String sessionId) {

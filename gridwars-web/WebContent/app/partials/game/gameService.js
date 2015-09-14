@@ -7,7 +7,6 @@
 		// Save passed variables
 		this.$http = $http;
 		this.$rootScope = $rootScope;
-		
 	}
 	GameService.prototype = {
 			
@@ -47,6 +46,8 @@
 
 				// Listen for game start message from server
 				this.socket.on("gameStart", function() {
+					self.$rootScope.gameLoaded = true;
+					self.$rootScope.$apply();
 					console.log("REC: Game has started over sockets");
 				});
 
@@ -56,22 +57,25 @@
 					// Format coords of response
 					var tempCoords = response.coords.slice(0);
 					response.coords = []; var newCoord = {};
-					for (var index = 0; index < tempCoords.length; index ++) {
-						if (index % 2 == 0) {
-							newCoord.col = tempCoords[index];
-						} else {
-							newCoord.row = tempCoords[index];
-							response.coords.push(newCoord);
-						}
+					for (var index = 0; index < tempCoords.length; index = index + 2) {
+						response.coords.push(new Cell(tempCoords[index], tempCoords[index+1]));
 					}
 					
 					// Log response for debug
-					console.log(response);
+					function GameplayResponse(response) {
+						this.responseCode = response.responseCode;
+						if (response.coords) { this.coords = response.coords; } else { this.coords = []; }
+						if (response.source) { this.source = response.source; } else { this.source = []; }
+						if (response.target) { this.target = response.target; } else { this.target = []; }
+						if (response.misc) { this.misc = response.misc; } else { this.misc = []; }
+					}
+					var gameplayResponse = new GameplayResponse(response);
+					console.log(gameplayResponse);
 					
 					// Invoke response method
-					self.$rootScope.gameplayResponse = response;
+					self.$rootScope.gameplayResponse = gameplayResponse;
 					if (self.$rootScope.gameplayResponseManager) {
-						self.$rootScope.gameplayResponseManager(response);
+						self.$rootScope.gameplayResponseManager(gameplayResponse);
 					}
 					
 				});

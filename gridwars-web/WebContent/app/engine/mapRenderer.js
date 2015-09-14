@@ -7,8 +7,6 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells)
 	this.cells = cells;
 	this.width = width;
 	this.height = height;
-	this.tileWidth = 100;
-	this.tileHeight = 100;
 	
 	// Create tile-map mapping
 	this.tileMapping = {};
@@ -29,16 +27,16 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells)
 		// Create sprite for current tile
 		var tileSprite = null;
 		if (self.tileMapping[cellId]) {
-			tileSprite = self.phaserRef.add.sprite(self.tileWidth * col, self.tileHeight * row, self.tileMapping[cellId], 0);
-			tileSprite.width = self.tileWidth;
-			tileSprite.height = self.tileHeight;
+			tileSprite = self.phaserRef.add.sprite(CONSTANTS.TILE_WIDTH * col, CONSTANTS.TILE_HEIGHT * row, self.tileMapping[cellId], 0);
+			tileSprite.width = CONSTANTS.TILE_WIDTH;
+			tileSprite.height = CONSTANTS.TILE_HEIGHT;
 			mapGroup.add(tileSprite);
 		}
 		
 		// Create hover placement sprites
-		var placementSprite = self.phaserRef.add.sprite(self.tileWidth * col, self.tileHeight * row, CONSTANTS.MAP_TILE_PLACEMENT, 1);
-		placementSprite.width = self.tileWidth;
-		placementSprite.height = self.tileHeight;
+		var placementSprite = self.phaserRef.add.sprite(CONSTANTS.TILE_WIDTH * col, CONSTANTS.TILE_HEIGHT * row, CONSTANTS.MAP_TILE_PLACEMENT, 1);
+		placementSprite.width = CONSTANTS.TILE_WIDTH;
+		placementSprite.height = CONSTANTS.TILE_HEIGHT;
 		placementSprite.visible = false;
 		mapOverlayGroup.add(placementSprite);
 		
@@ -59,18 +57,6 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells)
 		// Check if reached the end of the row
 		if (colIndex >= this.width-1) { rowIndex ++; colIndex = 0; } else { colIndex ++; }
 	}
-	
-}
-
-MapRenderer.prototype.colRowToXY = function(col, row) {
-	
-	return {x: col * this.tileWidth, y: row * this.tileHeight };
-	
-}
-
-MapRenderer.prototype.xyToColRow = function(x, y) {
-	
-	return {col: Math.floor(x / this.tileWidth), row: Math.floor(y / this.tileHeight) };
 	
 }
 
