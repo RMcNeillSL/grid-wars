@@ -379,7 +379,7 @@ public class RequestProcessor {
 
 	public void bindSocketSessionId(String username, String socketSessionId) {
 		for (Session session : this.activeSessions) {
-			if (session.getUser().getUsername().equals(username)) {
+			if (session.getUser().getUsername().toUpperCase().equals(username.toUpperCase())) {
 				session.bindSocketSessionId(socketSessionId);
 			}
 		}

@@ -34,14 +34,16 @@
 		// Get information from server
 		function getAllData () {
 			setTimeout(function () {
-				console.log("Haven't received all the data yet....");
 				if (_this.$rootScope.mapList.length === 0) {
+					console.log("Haven't received maps yet.");
 					_this.lobbyService.getMaps();
 				}
 				if (!_this.$rootScope.gameConfig) {
+					console.log("Haven't received config yet.");
 					_this.lobbyService.getConfig();
 				}
 				if (_this.$rootScope.lobbyUserList.length === 0) {
+					console.log("Haven't received users yet.");
 					_this.lobbyService.getUsers();
 				}
 
