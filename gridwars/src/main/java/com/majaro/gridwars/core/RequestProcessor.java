@@ -501,7 +501,7 @@ public class RequestProcessor {
 	}
 
 	private void initialiseSessionCleanUp() {
-		this.sessionCleanUp = new Runnable() {
+/*		this.sessionCleanUp = new Runnable() {
 			public void run() {
 				while (true) {
 					if (activeSessions.size() > 0) {
@@ -526,7 +526,7 @@ public class RequestProcessor {
 		};
 
 		this.sessionCleanUpThread = new Thread(sessionCleanUp);
-		this.sessionCleanUpThread.start();
+		this.sessionCleanUpThread.start();*/
 	}
 
 	public GameAndUserInfo validateAndReturnGameLobbyAndUserInfo (String sessionId) {
