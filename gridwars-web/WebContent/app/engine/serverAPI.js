@@ -29,20 +29,41 @@ ServerAPI.prototype.requestBuildingPlacement = function(newBuilding) {
 	// Make sure a building object is present
 	if (newBuilding) {
 		
-		// Create request params
-		var params = {
-				source: [newBuilding.target.gameCore.identifier],
-				targetCellX: newBuilding.target.gameCore.cell.col,
-				targetCellY: newBuilding.target.gameCore.cell.row
-		};
+		// Define variables
+		var request = null;
 		
-		// Generate request object
-		var request = new GameplayRequest("NEW_BUILDING", params);
+		// Check if debug tank pathfinding request
+		if (newBuilding.target instanceof Turret) {
 
-		console.log(request);
+			// Create request params
+			var params = {
+					source: [newBuilding.target.gameCore.identifier],
+					targetCellX: newBuilding.target.gameCore.cell.col,
+					targetCellY: newBuilding.target.gameCore.cell.row
+			};
+			
+			// Generate request object
+			request = new GameplayRequest("NEW_BUILDING", params);
+
+		} else if (newBuilding.target instanceof Tank) {
+
+			// Create request params
+			var params = {
+					source: [newBuilding.target.gameCore.identifier],
+					targetCellX: newBuilding.target.gameCore.cell.col,
+					targetCellY: newBuilding.target.gameCore.cell.row
+			};
+			
+			// Generate request object
+			request = new GameplayRequest("DEBUG_PLACEMENT", params);
+
+		}
 		
-		// Submit request
-		this.gameService.gameplayRequest(request);
+		// Submit request if one was constructed
+		if (request) {
+			console.log(request);
+			this.gameService.gameplayRequest(request);
+		}
 		
 	} else {
 		console.log("ERROR: Attempted to construct building from no source.");
@@ -67,10 +88,9 @@ ServerAPI.prototype.requestDefenceAttackXY = function(defences, targetX, targetY
 		
 		// Generate request object
 		var request = new GameplayRequest("DEFENCE_ATTACK_XY", params);
-	
-		console.log(request);
-		
+
 		// Submit request
+		console.log(request);
 		this.gameService.gameplayRequest(request);
 	
 	} else {
@@ -78,4 +98,39 @@ ServerAPI.prototype.requestDefenceAttackXY = function(defences, targetX, targetY
 	}
 	
 }
+
+ServerAPI.prototype.requestUnitMoveCell = function(units, cell) {
+
+	// Make sure a building object is present
+	if (units && cell) {
+
+		// Create request params
+		var params = {
+				source: [units.gameCore.instanceId],
+				targetCellX: cell.col,
+				targetCellY: cell.row
+		};
+		
+		// Generate request object
+		var request = new GameplayRequest("WAYPOINT_PATH_COORDS", params);
+	
+		// Submit request
+		console.log(request);
+		this.gameService.gameplayRequest(request);
+	
+	} else {
+		if (!units) { console.log("ERROR: Attempted to move units to cell with missing units."); }
+		else if (!cell) { console.log("ERROR: Attempted to move units to cell with missing cell."); }
+		else { console.log("ERROR: Unable to move units to cell for unknown reason"); }
+	}
+	
+}
+
+
+
+
+
+
+
+
 

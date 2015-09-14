@@ -1,7 +1,10 @@
-function Tank(phaserRef, mapGroup, tankGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
+function Tank(phaserRef, gameCore, mapGroup, tankGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
 
 	// Make sure dependencies has been passed
 	if (tankGroup) {
+
+		// Save core game object
+		this.gameCore = gameCore;
 		
 		// Save phaser references
 		this.phaserRef = phaserRef;
@@ -61,13 +64,17 @@ Tank.prototype.setBuildingMode = function(inBuildingMode) {
 	
 }
 
-Tank.prototype.setPosition = function(left, top, col, row) {
-	
+Tank.prototype.setPosition = function(cell) {
+
 	// Update internal position keepers
-	this.left = left + this.width/2;
-	this.top = top + this.height/2;
-	this.col = col;
-	this.row = row;
+	this.left = cell.toPoint().x + this.width/2;
+	this.top = cell.toPoint().y + this.height/2;
+	this.col = cell.col;
+	this.row = cell.row;
+	
+	// Update game core
+	this.gameCore.cell = cell;
+	this.gameCore.point = cell.toPoint();
 	
 	// Update sprite positioning
 	this.bodySegment.x = this.left;

@@ -9,19 +9,11 @@ import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
 import com.majaro.gridwars.game.Const.GameDefence;
 import com.majaro.gridwars.game.Const.E_GameplayRequestCode;
 import com.majaro.gridwars.game.Const.GameObject;
+import com.majaro.gridwars.game.Coordinate;
 import com.majaro.gridwars.game.DynGameBuilding;
+import com.majaro.gridwars.game.DynGameUnit;
 
 public class GameplayResponse {
-	
-	// Coordinates object
-	private class Coordinate {
-		private int col;
-		private int row;
-		public Coordinate(int col, int row) {
-			this.col = col;
-			this.row = row;
-		}
-	}
 	
 	// Response variables
 	private E_GameplayResponseCode responseCode;
@@ -64,6 +56,9 @@ public class GameplayResponse {
 	public void addCoord(int col, int row) {
 		this.coords.add(new Coordinate(col, row));
 	}
+	public void addCoord(Coordinate coord) {
+		this.coords.add(coord);
+	}
 	public void addSource(GameObject gameObject) {
 		this.source.add(gameObject);
 	}
@@ -83,8 +78,8 @@ public class GameplayResponse {
 	public int[] getCoords() {
 		int[] result = new int[this.coords.size()*2];
 		for (int index = 0; index < this.coords.size(); index ++) {
-			result[index*2] = this.coords.get(index).col;
-			result[index*2+1] = this.coords.get(index).row;
+			result[index*2] = this.coords.get(index).getCol();
+			result[index*2+1] = this.coords.get(index).getRow();
 		}
 		return result;
 	}
@@ -110,8 +105,10 @@ public class GameplayResponse {
 				result = Const.getIdentifierArrayFromGameObjectList(this.source, false);
 				break;
 			case DEFENCE_ATTACK_XY:
-				System.out.println(this.source);
 				result = this.getInstanceArrayFromDynGameBuildingList(this.source, false);
+				break;
+			case DEBUG_PLACEMENT:
+				result = Const.getIdentifierArrayFromGameObjectList(this.source, false);
 				break;
 			default:
 				break;
@@ -132,13 +129,10 @@ public class GameplayResponse {
 		// Determine response type
 		switch (this.responseCode) {
 			case NEW_BUILDING:
-				ArrayList<String> resultArray = new ArrayList<String>();
-				for (GameObject gameObject : this.source) {
-					if (gameObject instanceof DynGameBuilding) {
-						resultArray.add(((DynGameBuilding) gameObject).getInstanceId());
-					}
-				}
-				result = resultArray.toArray(new String[resultArray.size()]);
+				result = this.getInstanceArrayFromDynGameBuildingList(this.source, false);
+				break;
+			case DEBUG_PLACEMENT:
+				result = this.getInstanceArrayFromDynGameUnitList(this.source, false);
 				break;
 			default:
 				break;
@@ -158,6 +152,19 @@ public class GameplayResponse {
 			for (GameObject gameObject : dynGameBuildings) {
 				if (gameObject instanceof DynGameBuilding) {
 					resultArray.add(((DynGameBuilding) gameObject).getInstanceId());
+				}
+			}
+			return resultArray.toArray(new String[resultArray.size()]);
+		}
+	}
+	private String[] getInstanceArrayFromDynGameUnitList(ArrayList<GameObject> dynGameUnits, boolean keepErroneous) {
+		if (dynGameUnits == null) {
+			return null;
+		} else {
+			ArrayList<String> resultArray = new ArrayList<String>();
+			for (GameObject gameObject : dynGameUnits) {
+				if (gameObject instanceof DynGameUnit) {
+					resultArray.add(((DynGameUnit) gameObject).getInstanceId());
 				}
 			}
 			return resultArray.toArray(new String[resultArray.size()]);

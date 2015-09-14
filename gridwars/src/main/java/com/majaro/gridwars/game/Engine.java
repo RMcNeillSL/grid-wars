@@ -13,8 +13,159 @@ import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
 import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameDefence;
 import com.majaro.gridwars.game.Const.GameObject;
+import com.majaro.gridwars.game.Const.GameUnit;
 
 public class Engine extends Thread {
+	
+	// A* pathfinder class
+	private class AStarPathFinder {
+		
+		// Cells containing information on costs
+		private class AStarCell {
+			private double moveToCost = 0.0;		// Cost of movement from starting cell
+			private double mDistanceCost = 0.0;		// Cost of travelling to target using manhattan method
+			private Coordinate coord = null; 		// Coordinate cell represents
+			private AStarCell parentCell = null; 	// Cell the current cell branched from
+			public AStarCell(AStarCell parentCell, Coordinate coord, double moveToCost, double mDistanceCost) {
+				this.parentCell = parentCell;
+				this.coord = coord;
+				this.moveToCost = moveToCost;
+				this.mDistanceCost = mDistanceCost;
+			}
+			public boolean isCoord(Coordinate compareCoord) {
+				return (this.coord.getCol() == compareCoord.getCol() &&
+						this.coord.getRow() == compareCoord.getRow());
+			}
+			public double score() { return this.mDistanceCost + this.moveToCost; }
+			public ArrayList<AStarCell> getPathToSource() {
+				AStarCell currentCell = this;
+				ArrayList<AStarCell> result = new ArrayList<AStarCell>();
+				while (currentCell != null) {
+					result.add(currentCell);
+					currentCell = currentCell.parentCell;
+				}
+				return result;
+			}
+			public boolean isNeighbour(AStarCell compareCell) {
+				return (compareCell != null &&
+						( (Math.abs(compareCell.coord.getCol() - this.coord.getCol()) == 1 && Math.abs(compareCell.coord.getRow() - this.coord.getRow()) == 0) ||
+						  (Math.abs(compareCell.coord.getCol() - this.coord.getCol()) == 0 && Math.abs(compareCell.coord.getRow() - this.coord.getRow()) == 1) ) );
+			}
+		}
+		
+		// References to engine objects
+		private GameStaticMap staticMapRef = null;
+		private GameDynamicMap dynamicMapRef = null;
+		
+		// Constructor
+		public AStarPathFinder(GameStaticMap staticMapRef, GameDynamicMap dynamicMapRef) {
+			this.staticMapRef = staticMapRef;
+			this.dynamicMapRef = dynamicMapRef;
+		}
+		
+		// Path finding methods
+		public ArrayList<Coordinate> calculatePath(Coordinate startCoord, Coordinate endCoord) {
+			
+			// Make sure required info is valid
+			if (startCoord != null && endCoord != null) {
+				
+				// Debug information
+				System.out.println("Starting coordinate for pathfinding: (" + startCoord.getCol() + "," + startCoord.getRow() + ")");
+				System.out.println("Ending coordinate for pathfinding: (" + endCoord.getCol() + "," + endCoord.getRow() + ")");
+
+				// Define (and initialise) working variables
+				boolean isPathPossible = true;
+				AStarCell currentCell = null;
+				AStarCell tempHoldCell = null;
+				ArrayList<AStarCell> neighbourCells = new ArrayList<AStarCell>();
+
+				// Declare working cell list, processed cell list, and unprocessed cell list
+				ArrayList<AStarCell> processedCells = new ArrayList<AStarCell>();
+				ArrayList<AStarCell> cellsToProcess = new ArrayList<AStarCell>();
+				ArrayList<AStarCell> unprocessedCells = new ArrayList<AStarCell>();
+
+				// Populate unprocessed cell list, removing the starting cell at the end (may not be present)
+				Coordinate currentCoord = null;
+				for (int row = 0; row < this.staticMapRef.getHeight(); row ++) {
+					for (int col = 0; col < this.staticMapRef.getWidth(); col ++) {
+						if (!this.staticMapRef.isCellObstructed(col, row) &&
+							!this.dynamicMapRef.isCellObstructed(col, row)) {
+							currentCoord = new Coordinate(col, row);
+							tempHoldCell = new AStarCell(null, currentCoord, 99999, this.mCostToCell(currentCoord, endCoord));
+							if (tempHoldCell.coord.getCol() == startCoord.getCol() && tempHoldCell.coord.getRow() == startCoord.getRow()) {
+								currentCell = tempHoldCell;
+								cellsToProcess.add(currentCell);
+							} else {
+								unprocessedCells.add(tempHoldCell);
+							}
+						}
+					}
+				}
+				
+				// Main A Star search loop
+				while (isPathPossible &&										// Check path is still possible
+						currentCell != null && cellsToProcess != null			// Check objects are assigned
+						&& !currentCell.isCoord(endCoord)) {					// Check there are still cells to process
+					
+					// Select next current cell from list
+					currentCell = cellsToProcess.get(0);
+					for (int index = 1; index < cellsToProcess.size(); index ++) {
+						if (currentCell.score() > cellsToProcess.get(index).score()) {
+							currentCell = cellsToProcess.get(index);
+						}
+					}
+					
+					// Search for neighbouring cells for future processing
+					neighbourCells.clear();
+					for (int index = 0; index < unprocessedCells.size(); index ++) {
+						if (currentCell.isNeighbour(unprocessedCells.get(index))) {
+							tempHoldCell = unprocessedCells.get(index);
+							tempHoldCell.moveToCost = currentCell.moveToCost;
+							neighbourCells.add(tempHoldCell);
+						}
+					}
+					
+					// Remove all cells which have been added to neighbours
+					cellsToProcess.addAll(neighbourCells);
+					for (int index = 0; index < neighbourCells.size(); index ++) {
+						tempHoldCell = neighbourCells.get(index);
+						unprocessedCells.remove(tempHoldCell);
+						tempHoldCell.parentCell = currentCell;
+					}
+					
+					// Add to processed cell list and remove from working cell list
+					processedCells.add(currentCell);
+					cellsToProcess.remove(currentCell);
+				}
+
+				// Generate final path
+				if (currentCell != null) {
+					
+					// Calculate path
+					ArrayList<AStarCell> path = currentCell.getPathToSource();
+					
+					// Return path if final cell was target
+					if (currentCell.isCoord(endCoord)) {
+						ArrayList<Coordinate> formattedResult = new ArrayList<Coordinate>();
+						for (AStarCell cell : path) {
+							formattedResult.add(0, cell.coord);
+						}
+						return formattedResult;
+					}
+				}
+
+			}
+			
+			// Return failed value
+			return null;
+		}
+		private double mCostToCell(Coordinate fromCoord, Coordinate toCoord) {
+			double deltaX = toCoord.getCol() - fromCoord.getCol();
+			double deltaY = toCoord.getRow() - fromCoord.getRow();
+			return Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+		}
+		
+	}
 
 	// Engine state variables
 	private boolean isRunning = false;
@@ -29,6 +180,9 @@ public class Engine extends Thread {
 	// In-game object lists
 	private ArrayList<DynGameBuilding> buildings;
 	private ArrayList<DynGameUnit> units;
+	
+	// Path finding object
+	private AStarPathFinder aStarPathFinder;
 	
 	
 	// Constructors
@@ -48,6 +202,9 @@ public class Engine extends Thread {
 		// Initialise in-game object lists
 		this.buildings = new ArrayList<DynGameBuilding>();
 		this.units = new ArrayList<DynGameUnit>();
+		
+		// Initialise pathfinder object
+		this.aStarPathFinder = new AStarPathFinder(this.staticMap, this.dynamicMap);
 		
 	}
 	
@@ -134,7 +291,7 @@ public class Engine extends Thread {
 		// Return calculated result
 		return response;
 	}
-	
+
 	private GameplayResponse processDefenceAttackRequest(Player player, DynGameDefence[] sourceDefences, int col, int row) {
 
 		// Set default result
@@ -152,6 +309,64 @@ public class Engine extends Thread {
 			for (DynGameDefence sourceDefence : sourceDefences) {
 				response.addCoord(col, row);
 				response.addSource(sourceDefence);
+			}
+		}
+
+		// Return calculated result
+		return response;
+	}
+	
+	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate coordinate) {
+
+		// Set default result
+		GameplayResponse response = null;
+		boolean validConstruction = true;
+		ArrayList<Coordinate> path = null;
+		Coordinate unitCoordinate = null;		
+
+		// Check each object in turn
+		for (DynGameUnit sourceUnit : sourceUnits) {
+			
+			// Run pathfinding search
+			path = this.aStarPathFinder.calculatePath(sourceUnit.getCoordinate(), coordinate);
+			
+			// Only run this loop once for now
+			break;
+			
+		}
+
+		// Construct valid response
+		if (validConstruction) {
+			response = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
+			for (DynGameUnit sourceUnit : sourceUnits) {
+				if (path != null) {
+					for (Coordinate coord : path) {
+						response.addCoord(coord);
+						response.addSource(sourceUnit);
+					}
+				}
+			}
+		}
+
+		// Return calculated result
+		return response;
+	}
+	
+	private GameplayResponse processDebugPlacementRequest(Player player, GameUnit[] sourceUnits, int col, int row) {
+
+		// Set default result
+		GameplayResponse response = null;
+		boolean validConstruction = true;
+		
+		// Construct result object
+		DynGameUnit newUnit = new DynGameUnit(this.generateInstanceId(player), (GameUnit)sourceUnits[0], player, col, row);
+		if (newUnit != null) {
+			if (validConstruction) {
+				response = new GameplayResponse(E_GameplayResponseCode.DEBUG_PLACEMENT);
+				response.addCoord(col, row);
+				response.addSource(newUnit);
+				response.addMisc(player.getPlayerName());
+				if (newUnit != null) { this.units.add(newUnit); }
 			}
 		}
 
@@ -181,22 +396,33 @@ public class Engine extends Thread {
 
 			// Determine which request was sent 
 			switch (gameplayRequest.getRequestCode()) {
-	        case NEW_BUILDING:  
-	        	gameplayResponse = this.processBuildingPlaceRequest(sender, 
-	        			Const.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
-	        			gameplayRequest.getTargetCellX(), 
-	        			gameplayRequest.getTargetCellY());
-	        	break;
-	        case DEFENCE_ATTACK_XY:
-	        	gameplayResponse = this.processDefenceAttackRequest(sender, 
-	        			this.getGameDefencesFromInstanceIds(gameplayRequest.getSourceString(), false), 
-	        			gameplayRequest.getTargetCellX(), 
-	        			gameplayRequest.getTargetCellY());
-	        	break;
-		    default:
-		    	gameplayResponse = new GameplayResponse();
-		        break;
-		    }
+		        case NEW_BUILDING:  
+		        	gameplayResponse = this.processBuildingPlaceRequest(sender, 
+		        			Const.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
+		        			gameplayRequest.getTargetCellX(), 
+		        			gameplayRequest.getTargetCellY());
+		        	break;
+		        case DEFENCE_ATTACK_XY:
+		        	gameplayResponse = this.processDefenceAttackRequest(sender, 
+		        			this.getGameDefencesFromInstanceIds(gameplayRequest.getSourceString(), false), 
+		        			gameplayRequest.getTargetCellX(), 
+		        			gameplayRequest.getTargetCellY());
+		        	break;
+		        case WAYPOINT_PATH_COORDS:
+		        	gameplayResponse = this.processWaypointPathCoordsRequest(sender, 
+		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false), 
+		        			new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY()));
+		        	break;
+		        case DEBUG_PLACEMENT:
+		        	gameplayResponse = this.processDebugPlacementRequest(sender, 
+		        			Const.getGameUnitArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
+		        			gameplayRequest.getTargetCellX(), 
+		        			gameplayRequest.getTargetCellY());
+		        	break;
+			    default:
+			    	gameplayResponse = new GameplayResponse();
+			        break;
+			}
 			
 		}
 
@@ -245,7 +471,7 @@ public class Engine extends Thread {
 		return null;
 	}
 
-	private DynGameUnit[] getGameUnitFromInstanceIds(String[] instanceIds, boolean keepErroneous) {
+	private DynGameUnit[] getGameUnitsFromInstanceIds(String[] instanceIds, boolean keepErroneous) {
 		if (instanceIds == null) {
 			return new DynGameUnit[0];
 		} else {

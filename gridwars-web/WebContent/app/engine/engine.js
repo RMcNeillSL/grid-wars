@@ -124,17 +124,34 @@ Engine.prototype.onMouseClick = function(pointer, x, y) {
 	// Save self reference
 	var self = this;
 	
-	// Render placement overlay
+	// Check for key press
+	var ctrlDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
+	
+	// Positional values for cell and xy
+	var point = new Point(this.mouse.x, this.mouse.y);
+	var cell = point.toCell();
+	
+	// Perform checks for type of click
 	if (this.phaserGame.newBuilding.active) {
-		var point = new Point(this.mouse.x, this.mouse.y);
-		var cell = point.toCell();
-		var canPlace = this.isSquareEmpty(cell.col, cell.row);
-		if (canPlace) {
+		
+		// Render placement overlay
+		if (this.isSquareEmpty(cell.col, cell.row)) {
 			self.phaserGame.newBuilding.target.setPosition(cell);
 			this.serverAPI.requestBuildingPlacement(this.phaserGame.newBuilding);
 			self.phaserGame.newBuilding.active = false;
 			self.mapRender.clearPlacementHover();
 		}
+		
+	} else if (ctrlDown) {
+		
+		// Check if square is empty
+		if (this.isSquareEmpty(cell.col, cell.row)) {
+			var targetUnit = this.units[0];
+			if (targetUnit) {
+				this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+			}
+		}
+		
 	} else {
 		
 		// Generate list of defences for attack
@@ -173,14 +190,14 @@ Engine.prototype.onKeyPressed = function(char) {
 		// Set active building object
 		if (char == '1') { this.createNewBuildingObject(gameCore); }
 
-//		// Set active building object -phaserRef, -mapGroup, -tankGroup, -xy, width, height, func_explosionRequest
-//		if (char == '2') {
-//			this.phaserGame.newBuilding.active = true;
-//			this.phaserGame.newBuilding.target = new Tank(this.phaserGame, this.mapGroup, this.tankGroup,
-//	                this.mapRender.toPoint(0, 0),
-//	                0, 0, 100, 100,
-//	                this.explosionManager.requestExplosion, true);
-//		}
+		// Set active building object -phaserRef, -mapGroup, -tankGroup, -xy, width, height, func_explosionRequest
+		if (char == '2') {
+			var gameCore = new GameCore("TANK", cell);
+			this.phaserGame.newBuilding.active = true;
+			this.phaserGame.newBuilding.target = new Tank(this.phaserGame, gameCore, this.mapGroup, this.tankGroup,
+					cell.toPoint(), cell.col, cell.row, 100, 100,
+	                this.explosionManager.requestExplosion, true);
+		}
 
 	}
 	
@@ -203,8 +220,7 @@ Engine.prototype.createNewBuildingObject = function(gameCore) {
 	// Create new object and return
 	this.phaserGame.newBuilding.active = true;
 	this.phaserGame.newBuilding.target = new Turret(this.phaserGame, gameCore, this.mapGroup, this.turretGroup,
-			gameCore.cell.toPoint(),
-            0, 0, 100, 100,
+			gameCore.cell.toPoint(), gameCore.cell.col, gameCore.cell.row, 100, 100,
             this.explosionManager.requestExplosion, true);
 }
 
@@ -287,6 +303,36 @@ Engine.prototype.processDefenceAttackXY = function(responseData) {
 	
 }
 
+Engine.prototype.processDebugPlacement = function(responseData) {
+
+	// Iterate through all buildings
+	for (var index = 0; index < responseData.source.length; index ++) {
+		
+		// Create quick reference object
+		var refObject = {
+				instanceId: responseData.target[index],
+				identifier: responseData.source[index], 
+				cell: responseData.coords[index],
+				playerId: responseData.misc[index]
+			};
+		
+		// Create XY position from col/row
+		refObject.xy = refObject.cell.toPoint();
+
+		// Create GameCore object
+		var gameCore = new GameCore("TANK", refObject.cell);
+		gameCore.setInstanceId(refObject.instanceId);
+		gameCore.setPlayerId(refObject.playerId);
+		
+		// Construct object for positioning
+		var newTank = new Tank(this.phaserGame, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.col, refObject.row, 100, 100, this.explosionManager.requestExplosion, false);
+		
+		// Add object to unit array
+		this.units.push(newTank);
+	}
+	
+}
+
 
 // Process any server messages and call appropriate functions
 
@@ -299,6 +345,9 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 	    case "DEFENCE_ATTACK_XY":
 	        this.processDefenceAttackXY(responseData);
 	        break;
+	    case "DEBUG_PLACEMENT":
+	    	this.processDebugPlacement(responseData);
+	    	break;
 	    default:
 	        // Do nothing
 	}

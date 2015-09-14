@@ -85,6 +85,7 @@ public class GameplayRequest {
 		
 		// Generate request specific values
 		if (this.requestCode == E_GameplayRequestCode.NEW_BUILDING) { this.source = generateGameObjectArrayFromString(this.sourceString, true); }
+		if (this.requestCode == E_GameplayRequestCode.DEBUG_PLACEMENT) { this.source = generateGameObjectArrayFromString(this.sourceString, true); }
 		
 	}
 

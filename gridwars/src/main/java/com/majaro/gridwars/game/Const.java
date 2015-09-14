@@ -8,16 +8,17 @@ import com.majaro.gridwars.game.Const.GameObject;
 public final class Const {
 	
 	// Gameplay request codes
-	public enum E_GameplayRequestCode { 
+	public enum E_GameplayRequestCode {
 		
 		// Common request codes
-		UNKNOWN("UNKNOWN"),
+		UNKNOWN("UNKNOWN"), DEBUG_PLACEMENT("DEBUG_PLACEMENT"),
 		
 		// Purchasing request codes
 		NEW_BUILDING("NEW_BUILDING"), NEW_UNIT("NEW_UNIT"),
 		
 		// Unit attacking request codes
 		UNIT_ATTACK_XY("UNIT_ATTACK_XY"), UNIT_ATTACK_UNIT("UNIT_ATTACK_UNIT"), UNIT_ATTACK_BUILDING("UNIT_ATTACK_BUILDING"),
+		WAYPOINT_PATH_COORDS("WAYPOINT_PATH_COORDS"),
 		
 		// Defence attacking request codes
 		DEFENCE_ATTACK_XY("DEFENCE_ATTACK_XY"), DEFENCE_ATTACK_UNIT("DEFENCE_ATTACK_UNIT"), DEFENCE_ATTACK_BUILDING("DEFENCE_ATTACK_BUILDING");
@@ -34,7 +35,7 @@ public final class Const {
 	public enum E_GameplayResponseCode { 
 		
 		// Common response codes
-		GENERIC_UNKNOWN_ERROR("GENERIC_UNKNOWN_ERROR"), MISSING_REQUIRED_PARAMS("MISSING_REQUIRED_PARAMS"), SERVER_ERROR("SERVER_ERROR"),
+		DEBUG_PLACEMENT("DEBUG_PLACEMENT"), GENERIC_UNKNOWN_ERROR("GENERIC_UNKNOWN_ERROR"), MISSING_REQUIRED_PARAMS("MISSING_REQUIRED_PARAMS"), SERVER_ERROR("SERVER_ERROR"),
 		
 		// Purchasing attempt errors
 		INSUFFICIENT_TECH_LEVEL("INSUFFICIENT_TECH_LEVEL"), INSUFFICIENT_FUNDS("INSUFFICIENT_FUNDS"),
@@ -44,7 +45,7 @@ public final class Const {
 		DEFENCE_ATTACK_XY("DEFENCE_ATTACK_XY"),
 		
 		// Unit response codes
-		WAYPOINT_PATH_COORDS("WAYPOINT_PATH_COORDS"), UNIT_ATTACK_XY("UNIT_ATTACK_XY");
+		NEW_UNIT("NEW_UNIT"), WAYPOINT_PATH_COORDS("WAYPOINT_PATH_COORDS"), UNIT_ATTACK_XY("UNIT_ATTACK_XY");
 		
 		// Object methods and fields
 		private String altName = "";
@@ -222,6 +223,15 @@ public final class Const {
 			}
 		}
 		return result.toArray(new GameDefence[result.size()]);
+	}
+	public static GameUnit[] getGameUnitArrayFromGameObjectArrayList(ArrayList<GameObject> sourceArray) {
+		ArrayList<GameUnit> result = new ArrayList<GameUnit>();
+		for (GameObject gameObject : sourceArray) {
+			if (gameObject instanceof GameUnit) {
+				result.add((GameUnit) gameObject);
+			}
+		}
+		return result.toArray(new GameUnit[result.size()]);
 	}
 	public static String[] getIdentifierArrayFromGameObjectList(ArrayList<GameObject> source, boolean keepErroneous) {
 		ArrayList<String> resultList = new ArrayList<String>();
