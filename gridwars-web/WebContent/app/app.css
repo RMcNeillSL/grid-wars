@@ -86,7 +86,7 @@ html, body {
 
 .mainWrapper {
 	padding:20px;
-	width:70%;
+	width:auto;
 	min-height:200px;
 	border:3px solid #111;
 	background-color: rgba(0,0,0,0.7);
@@ -116,7 +116,7 @@ html, body {
 
 .gwa-form {
 	display:block;
-	
+	min-width:1000px;
 	margin:auto;
 }
 
@@ -165,8 +165,14 @@ html, body {
 	margin-left:10px;
 }
 
-.gwa-server h1 {
-	color:#fff;
+.gwa-servers {
+	display:block;
+	min-width:1000px;
+}
+
+.gwa-lobby {
+	display:block;
+	min-width:1000px;	
 }
 
 .filter {
