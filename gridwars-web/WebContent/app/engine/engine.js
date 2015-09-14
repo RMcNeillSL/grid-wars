@@ -116,10 +116,9 @@ Engine.prototype.update = function() {
 		this.mapRender.placementHover(cell.col, cell.row, canPlace);
 	}
 
-	// Render test turrets
-	for (var index = 0; index < this.buildings.length; index++) {
-		this.buildings[index].update();
-	}
+	// Update all buildings and units
+	for (var index = 0; index < this.buildings.length; index++) { this.buildings[index].update(); }
+	for (var index = 0; index < this.units.length; index++) { this.units[index].update(); }
 
 }
 
@@ -327,6 +326,46 @@ Engine.prototype.processDefenceAttackXY = function(responseData) {
 	}
 }
 
+Engine.prototype.processWaypoints = function(responseData) {
+
+	// Set waypoints to empty
+	var waypoints = [];
+
+	// Process all items of request
+	for (var reqIndex = 0; reqIndex < responseData.source.length; reqIndex++) {
+
+		// Create reference object
+		var refObject = {
+			instanceId : responseData.source[reqIndex],
+			targetX : responseData.coords[reqIndex].col,
+			targetY : responseData.coords[reqIndex].row
+		};
+		
+		// Check if item already exists in waypoints
+		var itemExists = false;
+		for (var index = 0; index < waypoints.length; index++) {
+			if (waypoints[index].instanceId == refObject.instanceId) {
+				itemExists = true;
+				waypoints[index].path.push((new Cell(refObject.targetX, refObject.targetY).toCenterPoint()));
+				break;
+			}
+		}
+		
+		// Add new item to waypoints
+		if (!itemExists) {
+			waypoints.push({ instanceId: refObject.instanceId, path: [(new Cell(refObject.targetX, refObject.targetY)).toCenterPoint()] });
+		}
+		
+	}
+	
+	// Iterate through waypoints assigning them to objects
+	var targetUnit = null;
+	for (var index = 0; index < waypoints.length; index ++) {
+		targetUnit = this.getObjectFromInstanceId(waypoints[index].instanceId);
+		if (targetUnit) { targetUnit.updateWaypoints(waypoints[index].path); }
+	}
+}
+
 Engine.prototype.processDebugPlacement = function(responseData) {
 
 	// Iterate through all buildings
@@ -357,7 +396,6 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 		// Add object to unit array
 		this.units.push(newTank);
 	}
-	
 }
 
 // Process any server messages and call appropriate functions
@@ -371,6 +409,9 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 	    case "DEFENCE_ATTACK_XY":
 	        this.processDefenceAttackXY(responseData);
 	        break;
+	    case "WAYPOINT_PATH_COORDS":
+	        this.processWaypoints(responseData);
+	    	break;
 	    case "DEBUG_PLACEMENT":
 	    	this.processDebugPlacement(responseData);
 	    	break;

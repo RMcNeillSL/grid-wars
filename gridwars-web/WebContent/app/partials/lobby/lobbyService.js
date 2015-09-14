@@ -12,6 +12,7 @@
 
 	LobbyService.prototype = {
 		socketSetup: function () {
+			self = this;
 			console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
 			this.lobbySocket = io.connect(CONSTANTS.SOCKET_SERVER, {
 				"force new connection": true

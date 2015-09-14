@@ -107,6 +107,9 @@ public class GameplayResponse {
 			case DEFENCE_ATTACK_XY:
 				result = this.getInstanceArrayFromDynGameBuildingList(this.source, false);
 				break;
+			case WAYPOINT_PATH_COORDS:
+				result = this.getInstanceArrayFromDynGameUnitList(this.source, false);
+				break;
 			case DEBUG_PLACEMENT:
 				result = Const.getIdentifierArrayFromGameObjectList(this.source, false);
 				break;

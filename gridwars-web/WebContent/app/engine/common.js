@@ -59,3 +59,7 @@ function Cell(col, row) {
 Cell.prototype.toPoint = function() {
 	return new Point(this.col * CONSTANTS.TILE_WIDTH, this.row * CONSTANTS.TILE_HEIGHT);
 }
+
+Cell.prototype.toCenterPoint = function() {
+	return new Point(this.col * CONSTANTS.TILE_WIDTH + CONSTANTS.TILE_WIDTH / 2, this.row * CONSTANTS.TILE_HEIGHT + CONSTANTS.TILE_HEIGHT / 2);
+}
