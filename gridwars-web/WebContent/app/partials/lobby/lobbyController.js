@@ -32,14 +32,31 @@
 		this.lobbyService.socketSetup();
 
 		// Get information from server
-		setTimeout(function () {
-			_this.lobbyService.getMaps();
-			_this.lobbyService.getConfig();
-			_this.lobbyService.getUsers();
-			_this.$rootScope.gameLobbyLoaded = true;
-			_this.$rootScope.$apply();
-		}, 2000);
+		function getAllData () {
+			setTimeout(function () {
+				console.log("Haven't received all the data yet....");
+				if (_this.$rootScope.mapList.length === 0) {
+					_this.lobbyService.getMaps();
+				}
+				if (!_this.$rootScope.gameConfig) {
+					_this.lobbyService.getConfig();
+				}
+				if (_this.$rootScope.lobbyUserList.length === 0) {
+					_this.lobbyService.getUsers();
+				}
 
+				if (_this.$rootScope.mapList.length === 0 || !_this.$rootScope.gameConfig || _this.$rootScope.lobbyUserList.length === 0) {
+					getAllData();
+				}
+
+				if (_this.$rootScope.mapList.length > 0 && _this.$rootScope.gameConfig && _this.$rootScope.lobbyUserList.length > 0) {
+					_this.$rootScope.gameLobbyLoaded = true;
+					_this.$rootScope.$apply();
+				}
+			}, 500);
+		}
+
+		getAllData();
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
 			if(next !== "http://" + window.location.host + "/#/game") {
