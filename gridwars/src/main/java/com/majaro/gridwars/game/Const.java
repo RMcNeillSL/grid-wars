@@ -56,7 +56,7 @@ public final class Const {
 	}
 
 	// Player colours
-	public static final String[] COLOURS = {"blue", "red", "yellow", "orange", "green", "pink"};	
+	public static final String[] COLOURS = {"blue", "red", "purple", "green", "red", "cyan"};	
 
 	// Static enumerands
 	public static enum E_GameType { UNDEFINED, FREE_FOR_ALL, TEAM_ALLIANCE }
