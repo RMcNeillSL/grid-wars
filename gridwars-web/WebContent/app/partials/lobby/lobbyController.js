@@ -17,8 +17,10 @@
 		$rootScope.mapList = [];
 		$rootScope.lobbyUserList = [];
 		$rootScope.colourList = ["blue", "red", "yellow", "orange", "green", "pink"];
-		this.$rootScope.pageName = "Game Lobby";
+		$rootScope.pageName = "Game Lobby";
 		$rootScope.deleteSelected = false;
+		$rootScope.currentlyInLobby = false;
+		$rootScope.gameLobbyLoaded = false;
 
 		if ($window.sessionStorage.gameLeader == "true") {
 			$rootScope.gameLeader = true;
@@ -30,17 +32,20 @@
 		this.lobbyService.socketSetup();
 
 		// Get information from server
-		this.lobbyService.getMaps();
-		this.lobbyService.getConfig();
-		this.lobbyService.getUsers();
+		setTimeout(function () {
+			_this.lobbyService.getMaps();
+			_this.lobbyService.getConfig();
+			_this.lobbyService.getUsers();
+			_this.$rootScope.gameLobbyLoaded = true;
+			_this.$rootScope.$apply();
+		}, 2000);
+
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
 			if(next !== "http://" + window.location.host + "/#/game") {
 				_this.lobbyService.leaveGame();
 			}
 		});
-
-		console.log(window.location.host);
 	}
 
 	LobbyController.prototype = {

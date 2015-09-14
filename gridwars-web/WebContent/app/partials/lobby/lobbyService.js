@@ -14,13 +14,18 @@
 		socketSetup: function () {
 			console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
 			this.lobbySocket = io.connect(CONSTANTS.SOCKET_SERVER, {
-				"force new connection": true
+				"force new connection": true,
+				"timeout": 5000 
 			});
 
 			this.lobbySocket.on("connect", function () {
-				self.lobbySocket.emit("joinGameLobby", {
-					"user" : self.$rootScope.currentUser
-				});
+				if(self.$rootScope.currentlyInLobby === false) {
+					self.lobbySocket.emit("joinGameLobby", {
+						"user" : self.$rootScope.currentUser
+					});
+					self.$rootScope.currentlyInLobby = true;
+				}
+
 			});
 
 			this.lobbySocket.on("gameLobbyMessage", function(data) {
@@ -180,7 +185,6 @@
 				self.$location.path("/servers");
 				self.$rootScope.$apply();
 			});
-
 		},
 		getMaps: function () {
 			this.$http.get("/gridwars/rest/game/maps").then(function(response) {
@@ -232,6 +236,7 @@
 			this.lobbySocket.emit("leaveLobby");
 			self.$rootScope.gameLeader = false;
 			self.$window.sessionStorage.gameLeader = false;
+			self.$rootScope.currentlyInLobby = false;
 		}
 	}
 

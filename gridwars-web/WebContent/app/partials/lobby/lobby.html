@@ -1,7 +1,11 @@
 <div class="gwa-lobby">
 	<h2 class="title">Game Lobby <a ng-click="controller.logOut()">Logout</a></h2>
 
-	<section ng-if="$root.gameLeader===true">      <!-- CREATOR VIEW -->
+	<section ng-if="$root.gameLobbyLoaded===false">
+	   <h2 class="title">Loading game lobby....</h2>
+	</section>
+
+	<section ng-if="$root.gameLeader===true && $root.gameLobbyLoaded===true">      <!-- CREATOR VIEW -->
         <div class="col-md-6">
         <h2 class="title">Game Options</h2>
 	        <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
@@ -132,7 +136,7 @@
         </div>
 	</section>
 
-    <section ng-if="$root.gameLeader===false">      <!-- JOINER VIEW -->
+    <section ng-if="$root.gameLeader===false  && $root.gameLobbyLoaded===true">      <!-- JOINER VIEW -->
         <div class="col-md-6">
         <h2 class="title">Game Configuration</h2>
 	        <section class="col-md-6 rulesColumn">
@@ -166,7 +170,7 @@
         </div>
     </section>
 
-	<section class="col-md-6">
+	<section class="col-md-6" ng-if="$root.gameLobbyLoaded===true">
         <h2 class="title">Lobby Chat</h2>
         <div class="container-fluid chat-container">
             <div ng-repeat="message in $root.lobbyMessages" class="whiteText">
@@ -178,7 +182,7 @@
 	    </form>
     </section>
 
-    <section class="col-md-12 player-table">
+    <section class="col-md-12 player-table" ng-if="$root.gameLobbyLoaded===true">
         <h2 class="title">Player Options</h2>
         <table class="table table-striped" id="game-player-list">
             <tr>
@@ -266,7 +270,7 @@
             </tr>
         </table>
     </section>
-    <div class="col-md-12">
+    <div class="col-md-12" ng-if="$root.gameLobbyLoaded===true">
     	<button ng-click="controller.callLeaveGame()" class="btn btn-default btn-sm" style="float: right"><span class="glyphicon glyphicon-euro"></span> Leave Lobby</button>
     </div>
 
