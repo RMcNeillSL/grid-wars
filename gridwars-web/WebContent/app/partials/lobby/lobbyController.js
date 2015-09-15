@@ -21,6 +21,7 @@
 		$rootScope.deleteSelected = false;
 		$rootScope.currentlyInLobby = false;
 		$rootScope.gameLobbyLoaded = false;
+		$rootScope.loggedOut = false;
 
 		if ($window.sessionStorage.gameLeader == "true") {
 			$rootScope.gameLeader = true;

@@ -26,15 +26,15 @@ import com.majaro.gridwars.entities.User;
 @Path("/")
 public class REST {
 	private final static RequestProcessor requestProcessor = new RequestProcessor();
-	
+
 	@Context private HttpServletRequest request;
-	
+
 	@POST
 	@Path("/auth")
 	@Produces({ MediaType.TEXT_PLAIN })
 	public Response Authenticate(AuthRequest authRequest) {
 		String sessionId = request.getSession(true).getId();
-		
+
 		if(!requestProcessor.isSessionAuthenticated(sessionId)) {
 			boolean authenticated = requestProcessor.authenticate(sessionId, authRequest);
 			if (authenticated) {
@@ -46,19 +46,19 @@ public class REST {
 			return Response.ok(sessionId).build();
 		}
 	}
-	
+
 	@POST
 	@Path("/register")
 	public Response Register(RegRequest regRequest) {
 		int response = requestProcessor.register(regRequest);
 		return Response.status(response).build();
 	}
-	
+
 	private boolean checkAuth() {
 		String sessionId = request.getSession(true).getId();
 		return requestProcessor.isSessionAuthenticated(sessionId);
 	}
-	
+
 	@GET
 	@Path("/game/new")
 	@Produces({ MediaType.TEXT_PLAIN })

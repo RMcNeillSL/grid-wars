@@ -16,7 +16,9 @@
 			console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
 			this.lobbySocket = io.connect(CONSTANTS.SOCKET_SERVER, {
 				"force new connection": true,
-				"timeout": 5000 
+				"connect timeout": 1000,
+				"reconnect": true,
+				"reconnection delay": 300
 			});
 
 			this.lobbySocket.on("connect", function () {
