@@ -32,6 +32,11 @@ html, body {
 	width:15%;
 }
 
+.dropdown-menu {
+	overflow-y: scroll;
+	height: 70px;
+}
+
 .chat-container {
     height: 30vh;
     overflow: auto;

@@ -200,7 +200,7 @@
                     <button type="button" ng-if="$root.gameLeader===true && (lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)" class="btn btn-default btn-sm" style="float: right" ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make Leader</button>
                 </td>
                 <td class="tdInfo" ng-if="lobbyUser.linkedUser.id==-1 && $root.gameLeader===true">
-                    <div class="btn-group fullWidth" ng-if="$root.gameLeader===true">
+                    <div class="btn-group fullWidth dropup" ng-if="$root.gameLeader===true">
                         <button type="button" class="btn btn-default btn-sm dropdownBtn">{{lobbyUser.linkedUser.username}}</button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle dropdownArrow" data-toggle="dropdown">
                             <span class="caret"></span>
@@ -218,7 +218,7 @@
                 <td class="tdInfo" ng-if="lobbyUser.factionId==3">Empire of the Rising Sun</td>
                 <td class="tdInfo textCentral">
                     <!-- Split button -->
-                    <div class="btn-group" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
+                    <div class="btn-group dropup" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
                         <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
                         <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam==0">-</button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
@@ -238,7 +238,7 @@
                 </td>
                 <td class="tdInfo textCentral">
                     <!-- Split button -->
-					<div class="btn-group" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
+					<div class="btn-group dropup" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
 					    <button type="button" class="btn btn-default btn-sm">{{lobbyUser.playerColour}}</button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
 					    <ul class="dropdown-menu">
