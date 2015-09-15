@@ -1,5 +1,10 @@
 package com.majaro.gridwars.api;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
 import javax.websocket.server.ServerEndpoint;
 
 import com.corundumstudio.socketio.AckRequest;
@@ -17,6 +22,9 @@ import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.GameStaticMap;
+
+import io.netty.channel.ChannelConfig;
+
 import com.majaro.gridwars.apiobjects.BindSocketRequest;
 import com.majaro.gridwars.apiobjects.GameInitRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
@@ -36,7 +44,6 @@ public class SocketService {
 	private static final String SERVER_LOBBY_CHANNEL = "ServerLobby";
 
 	public SocketService (RequestProcessor reqProcessor) {
-
 		// Save passed variables
 		requestProcessor = reqProcessor;
 
@@ -92,16 +99,14 @@ public class SocketService {
 			
 		}
 	}
-	
+
 	@OnEvent("joinGameLobby")
 	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
 		String username = data.getUser();
 		String sessionId = client.getSessionId().toString();
 		requestProcessor.bindSocketSessionId(username, sessionId);
-//		User user = requestProcessor.getUserFromSocketSessionId(sessionId);
-//		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
-		
+
 		if (gameAndUserInfo != null) {
 			String lobbyId = gameAndUserInfo.getLobbyId();
 			socketServer.addNamespace(lobbyId);
@@ -220,16 +225,26 @@ public class SocketService {
 	public void onLeaveLobby (SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
+		boolean leaderDisconnect = false;
 
 		if (gameAndUserInfo != null) {
+			if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
+				leaderDisconnect = true;
+			}
+
 			requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+			broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
 			client.leaveRoom(gameAndUserInfo.getLobbyId());
 			client.sendEvent("leftLobby");
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 			broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
 			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
-			broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+
+			if (leaderDisconnect) {
+				broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+			}
 		}
 
 	}
@@ -302,11 +317,43 @@ public class SocketService {
 
 	@OnConnect
 	public void onConnectHandler(SocketIOClient client) {
-		System.out.println("A user has connected.");
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(client.getSessionId().toString());
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Date date = new Date();
+		System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + " has connected");
 	}
 
 	@OnDisconnect
 	public void onDisconnectHandler(SocketIOClient client) {
-		System.out.println("A user has disconnected.");
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		boolean leaderDisconnect = false;
+
+		if (client.isChannelOpen()) {
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = new Date();
+			System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + "'s socket timed-out, but they are still active");
+		} else {
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = new Date();
+			System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + " has disconnected");
+			if(gameAndUserInfo.getLobbyId() != null) {
+				if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
+					leaderDisconnect = true;
+				}
+				requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+				BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
+				broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
+				client.leaveRoom(gameAndUserInfo.getLobbyId());
+				client.sendEvent("leftLobby");
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+				requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
+				broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+				if (leaderDisconnect) {
+					broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+				}
+			}
+		}
 	}
 }

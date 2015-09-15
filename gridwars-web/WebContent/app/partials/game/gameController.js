@@ -56,7 +56,7 @@
 		this.$scope.gameEngine = CONSTANTS.GAME_NAME;
 		this.$rootScope.pageName = "Game";
 		this.$rootScope.socketsReady = false;
-
+		this.$rootScope.gameLoaded = false;
 		// Save this reference for anonymous methods
 		var self = this;
 

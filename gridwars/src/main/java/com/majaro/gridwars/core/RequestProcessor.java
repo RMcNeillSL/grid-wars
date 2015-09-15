@@ -323,14 +323,16 @@ public class RequestProcessor {
 		gameLobby.setAllNotReady();
 	}
 
-	public void removeLobbyUserAndDeleteLobbyIfEmpty (String sessionId) {
+	public boolean removeLobbyUserAndDeleteLobbyIfEmpty (String sessionId) {
 		GameLobby gameLobby = getGameLobbyFromSocketSessionId(sessionId);
 		int userId = getUserFromSocketSessionId(sessionId).getId();
 		gameLobby.removeLobbyUser(userId);
 
 		if (gameLobby.getConnectedLobbyUsers().size() == 0) {
 			this.deleteGameLobby(gameLobby.getLobbyId());
+			return true;
 		}
+		return false;
 	}
 
 	public void toggleUserReady (String sessionId) {
@@ -378,7 +380,7 @@ public class RequestProcessor {
 
 	public void bindSocketSessionId(String username, String socketSessionId) {
 		for (Session session : this.activeSessions) {
-			if (session.getUser().getUsername().equals(username)) {
+			if (session.getUser().getUsername().toUpperCase().equals(username.toUpperCase())) {
 				session.bindSocketSessionId(socketSessionId);
 			}
 		}

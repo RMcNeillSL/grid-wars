@@ -7,7 +7,6 @@
 		// Save passed variables
 		this.$http = $http;
 		this.$rootScope = $rootScope;
-		
 	}
 	GameService.prototype = {
 			
@@ -47,6 +46,8 @@
 
 				// Listen for game start message from server
 				this.socket.on("gameStart", function() {
+					self.$rootScope.gameLoaded = true;
+					self.$rootScope.$apply();
 					console.log("REC: Game has started over sockets");
 				});
 

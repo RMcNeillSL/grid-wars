@@ -19,6 +19,8 @@
 		$rootScope.colourList = ["blue", "red", "purple", "green", "yellow", "cyan"];
 		this.$rootScope.pageName = "Game Lobby";
 		$rootScope.deleteSelected = false;
+		$rootScope.currentlyInLobby = false;
+		$rootScope.gameLobbyLoaded = false;
 
 		if ($window.sessionStorage.gameLeader == "true") {
 			$rootScope.gameLeader = true;
@@ -30,9 +32,33 @@
 		this.lobbyService.socketSetup();
 
 		// Get information from server
-		this.lobbyService.getMaps();
-		this.lobbyService.getConfig();
-		this.lobbyService.getUsers();
+		function getAllData () {
+			setTimeout(function () {
+				if (_this.$rootScope.mapList.length === 0) {
+					console.log("Haven't received maps yet.");
+					_this.lobbyService.getMaps();
+				}
+				if (!_this.$rootScope.gameConfig) {
+					console.log("Haven't received config yet.");
+					_this.lobbyService.getConfig();
+				}
+				if (_this.$rootScope.lobbyUserList.length === 0) {
+					console.log("Haven't received users yet.");
+					_this.lobbyService.getUsers();
+				}
+
+				if (_this.$rootScope.mapList.length === 0 || !_this.$rootScope.gameConfig || _this.$rootScope.lobbyUserList.length === 0) {
+					getAllData();
+				}
+
+				if (_this.$rootScope.mapList.length > 0 && _this.$rootScope.gameConfig && _this.$rootScope.lobbyUserList.length > 0) {
+					_this.$rootScope.gameLobbyLoaded = true;
+					_this.$rootScope.$apply();
+				}
+			}, 500);
+		}
+
+		getAllData();
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
 			if(next !== "http://" + window.location.host + "/#/game") {
