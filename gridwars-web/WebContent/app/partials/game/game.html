@@ -3,10 +3,13 @@
 		<h2 class="title">Game Loading...</h2>
 	</div>
 	<div id="gridwars-engine" ng-show="gameLoaded"></div>
-	<div style="clear: both;"></div>
+	<div style="clear: both;" ng-show="gameLoaded"></div>
 	<div class="gameMenu" ng-show="gameLoaded">
 		<h2 class="title">Options</h2>
-		<button type="button" ng-click="controller.purchaseObject('TURRET')">Purchase Turret</button>
-		<button type="button" ng-click="controller.purchaseObject('TANK')">Purchase Tank</button>
+		<div class="menuStore">
+			<h3 class="menuTitle">Store</h3>
+			<button class="btn btn-sm menuBtn" type="button" ng-click="controller.purchaseObject('TURRET')">Purchase Turret</button>
+			<button class="btn btn-sm menuBtn" type="button" ng-click="controller.purchaseObject('TANK')">Purchase Tank</button>
+		</div>
 	</div>
 </div>

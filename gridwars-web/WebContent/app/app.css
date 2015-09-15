@@ -120,10 +120,6 @@ html, body {
 	margin:auto;
 }
 
-.gwa-game {
-	padding:10px;
-}
-
 .title {
 	display:block;
 	width:100%;
@@ -144,6 +140,25 @@ html, body {
 	display:block;
 	width:100%;
 	padding-top:15px;
+	margin-top:0px;
+	color:#fff;
+	font-size:16px;
+	font-weight:bold;
+}
+
+.loadingTitle {
+	display:block;
+	width:100%;
+	padding-bottom:5px;
+	margin-top:0px;
+	color:#fff;
+	font-size:18px;
+	font-weight:bold;
+}
+
+.menuTitle {
+	display:block;
+	width:100%;
 	margin-top:0px;
 	color:#fff;
 	font-size:16px;
@@ -234,13 +249,38 @@ html, body {
 }
 
 .gwa-game {
-	display:inline-block;
+	padding-top:10px;
+	padding-bottom:10px;
+	border-top:3px solid #fff;
+	border-bottom:3px solid #fff;
+}
+
+.gwa-loading {
+	padding-top:10px;
+	padding-bottom:10px;
 }
 
 .gameMenu {
 	display:block;
 	width:100%;
-	height:150px;
-	border:1px solid #fff;
+	overflow:auto;
+}
+
+#gridwars-engine {
+	padding-bottom:10px;
+}
+
+.menuStore {
+	display:block;
+	width:150px;
+	float:left;
+	border-right:1px solid #fff;
+	padding-left:5px;
+	padding-right:5px;
+}
+
+.menuBtn {
+	margin-bottom:5px;
+	width:100%;
 }
 .
