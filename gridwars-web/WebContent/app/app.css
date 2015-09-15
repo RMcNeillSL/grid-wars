@@ -277,7 +277,7 @@ html, body {
 
 .menuStore {
 	display:block;
-	width:150px;
+	width:155px;
 	float:left;
 	border-right:1px solid #fff;
 	padding-left:5px;
@@ -286,6 +286,14 @@ html, body {
 
 .menuBtn {
 	margin-bottom:5px;
-	width:100%;
+	width:70px;
+	height:70px;
+	padding:0;
+}
+
+.menuBtn img {
+	display:block;
+	height:70px;
+	width:70px;
 }
 .
