@@ -233,6 +233,22 @@ Engine.prototype.createNewBuildingObject = function(gameCore) {
             this.explosionManager.requestExplosion, true);
 }
 
+Engine.prototype.purchaseObject = function(item) {
+	var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
+	var gameCore = new GameCore("TURRET", cell);
+	gameCore.setPlayer(this.currentPlayer);
+	
+	if(item === "TURRET") {
+		this.createNewBuildingObject(gameCore);
+	} else if (item === "TANK") {
+		var gameCore = new GameCore("TANK", cell);
+		this.phaserGame.newBuilding.active = true;
+		this.phaserGame.newBuilding.target = new Tank(this.phaserGame, gameCore, this.mapGroup, this.tankGroup,
+				cell.toPoint(), cell.col, cell.row, 100, 100,
+                this.explosionManager.requestExplosion, true);
+	}
+}
+
 Engine.prototype.getObjectFromInstanceId = function(instanceId) {
 
 	// Look through buildings

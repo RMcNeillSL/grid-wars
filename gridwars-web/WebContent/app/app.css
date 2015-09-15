@@ -116,8 +116,11 @@ html, body {
 
 .gwa-form {
 	display:block;
-	
 	margin:auto;
+}
+
+.gwa-game {
+	padding:10px;
 }
 
 .title {
@@ -221,5 +224,16 @@ html, body {
 .rulesBtn {
 	padding-top:5px;
 	text-align:right;
+}
+
+.gwa-game {
+	display:inline-block;
+}
+
+.gameMenu {
+	display:block;
+	width:100%;
+	height:150px;
+	border:1px solid #fff;
 }
 .
