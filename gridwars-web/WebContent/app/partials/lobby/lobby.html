@@ -171,14 +171,14 @@
     </section>
 
 	<section class="col-md-6" ng-if="$root.gameLobbyLoaded===true">
-        <h2 class="title">Lobby Chat</h2>
+        <h2 class="title">Lobby</h2>
         <div class="container-fluid chat-container">
             <div ng-repeat="message in $root.lobbyMessages" class="whiteText">
                 {{message.user}}: {{message.message}}
             </div>
         </div>
-	    <form ng-submit="controller.callSendMessage(newMessage)">
-		        <input type="text" placeholder="What would you like to say?" ng-model="newMessage" id="new-message" class="form-control">
+	    <form name="sendLobbyMessage" ng-submit="controller.callSendMessage($root.newMessage)">
+		    <input type="text" placeholder="What would you like to say?" ng-model="$root.newMessage" id="new-message" class="form-control">
 	    </form>
     </section>
 
@@ -197,10 +197,10 @@
                 <td class="tdInfo" ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===false">{{lobbyUser.linkedUser.username}}</td>
                 <td class="tdInfo" ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===true">
                     {{lobbyUser.linkedUser.username}}
-                    <button type="button" ng-if="$root.gameLeader===true && lobbyUser.linkedUser.username!=$root.currentUser" class="btn btn-default btn-sm" style="float: right" ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make Leader</button>
+                    <button type="button" ng-if="$root.gameLeader===true && (lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)" class="btn btn-default btn-sm" style="float: right" ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make Leader</button>
                 </td>
                 <td class="tdInfo" ng-if="lobbyUser.linkedUser.id==-1 && $root.gameLeader===true">
-                    <div class="btn-group fullWidth" ng-if="$root.gameLeader===true">
+                    <div class="btn-group fullWidth dropup" ng-if="$root.gameLeader===true">
                         <button type="button" class="btn btn-default btn-sm dropdownBtn">{{lobbyUser.linkedUser.username}}</button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle dropdownArrow" data-toggle="dropdown">
                             <span class="caret"></span>
@@ -218,7 +218,7 @@
                 <td class="tdInfo" ng-if="lobbyUser.factionId==3">Empire of the Rising Sun</td>
                 <td class="tdInfo textCentral">
                     <!-- Split button -->
-                    <div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
+                    <div class="btn-group dropup" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
                         <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
                         <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam==0">-</button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
@@ -231,38 +231,38 @@
                             <li><a ng-click="controller.callChangeTeam(2)">2</a></li>
                         </ul>
                     </div>
-                    <div class="btn-group" ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+                    <div class="btn-group" ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
                         <div ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</div>
                         <div ng-if="lobbyUser.playerTeam==0">-</div>
                     </div>
                 </td>
                 <td class="tdInfo textCentral">
                     <!-- Split button -->
-					<div class="btn-group" ng-if="lobbyUser.linkedUser.username==$root.currentUser">
+					<div class="btn-group dropup" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
 					    <button type="button" class="btn btn-default btn-sm">{{lobbyUser.playerColour}}</button>
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
 					    <ul class="dropdown-menu">
 					        <li ng-repeat="colour in $root.colourList"><a ng-click="controller.callChangeColour(colour)">{{colour}}</a></li>
 						</ul>
 					</div>
-					<div class="btn-group" ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+					<div class="btn-group" ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
                         {{lobbyUser.playerColour}}
 					</div>
 				</td>
                 <td class="tdInfo textCentral" ng-if="$root.gameLeader===false">
-                    <input type="button" class="btn btn-success btn-sm" ng-if="lobbyUser.linkedUser.username==$root.currentUser && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
-                    <div ng-if="lobbyUser.linkedUser.username==$root.currentUser && lobbyUser.ready">
+                    <input type="button" class="btn btn-success btn-sm" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
+                    <div ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && lobbyUser.ready">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
                     </div>
-                    <div ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+                    <div ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
                         <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
                     </div>
                 </td>
                 <td class="textCentral" ng-if="$root.gameLeader===true">
-                    <input type="button" class="btn btn-success btn-sm" ng-if="$root.notReadyCount==0 && lobbyUser.linkedUser.username==$root.currentUser && $root.connectedUsers!=1" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
-                    <input type="button" class="btn btn-sm disabled" ng-disabled="$root.notReadyCount!=0 || $root.connectedUsers==1" ng-if="($root.notReadyCount!=0 && lobbyUser.linkedUser.username==$root.currentUser) || ($root.connectedUsers==1 && lobbyUser.linkedUser.username==$root.currentUser)" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
-                    <div ng-if="lobbyUser.linkedUser.username!=$root.currentUser">
+                    <input type="button" class="btn btn-success btn-sm" ng-if="$root.notReadyCount==0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && $root.connectedUsers!=1" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
+                    <input type="button" class="btn btn-sm disabled" ng-disabled="$root.notReadyCount!=0 || $root.connectedUsers==1" ng-if="($root.notReadyCount!=0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)) || ($root.connectedUsers==1 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase))" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
+                    <div ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
                         <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
                         <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
                     </div>

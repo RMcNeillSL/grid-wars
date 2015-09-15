@@ -135,7 +135,7 @@
 			},
 			callSendMessage: function (newMessage) {
 				this.lobbyService.sendMessage(newMessage);
-				this.$scope.newMessage = "";
+				this.$rootScope.newMessage = "";
 			},
 			callJoinGameLobby: function () {
 				this.lobbyService.joinGameLobby();
