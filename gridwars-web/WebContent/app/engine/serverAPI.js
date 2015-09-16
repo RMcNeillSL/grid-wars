@@ -14,6 +14,9 @@ function GameplayRequest(requestCode, params) {
 		if (params.source) { this.source = params.source; }
 		if (params.target) { this.source = params.target; }
 	}
+	
+	// Debug output for console
+	var gameplayRequest = this; console.log(gameplayRequest);
 }
 
 
@@ -61,7 +64,6 @@ ServerAPI.prototype.requestBuildingPlacement = function(newBuilding) {
 		
 		// Submit request if one was constructed
 		if (request) {
-			console.log(request);
 			this.gameService.gameplayRequest(request);
 		}
 		
@@ -90,7 +92,6 @@ ServerAPI.prototype.requestDefenceAttackXY = function(defences, targetX, targetY
 		var request = new GameplayRequest("DEFENCE_ATTACK_XY", params);
 
 		// Submit request
-		console.log(request);
 		this.gameService.gameplayRequest(request);
 	
 	} else {
@@ -101,7 +102,7 @@ ServerAPI.prototype.requestDefenceAttackXY = function(defences, targetX, targetY
 
 ServerAPI.prototype.requestUnitMoveCell = function(units, cell) {
 
-	// Make sure a building object is present
+	// Make sure a required information is present
 	if (units && cell) {
 
 		// Create request params
@@ -115,13 +116,33 @@ ServerAPI.prototype.requestUnitMoveCell = function(units, cell) {
 		var request = new GameplayRequest("WAYPOINT_PATH_COORDS", params);
 	
 		// Submit request
-		console.log(request);
 		this.gameService.gameplayRequest(request);
 	
 	} else {
 		if (!units) { console.log("ERROR: Attempted to move units to cell with missing units."); }
 		else if (!cell) { console.log("ERROR: Attempted to move units to cell with missing cell."); }
 		else { console.log("ERROR: Unable to move units to cell for unknown reason"); }
+	}	
+}
+
+ServerAPI.prototype.requestUpdateUnitCell = function(unit, newCell) {
+	
+	// Make sure required information is present
+	if (unit && newCell) {
+		
+		// Create request params
+		var params = {
+				source: [unit.gameCore.instanceId],
+				targetCellX: newCell.col,
+				targetCellY: newCell.row
+		};
+		
+		// Generate request object
+		var request = new GameplayRequest("WAYPOINT_UPDATE_UNIT_CELL", params);
+		
+		// Submit request
+		this.gameService.gameplayRequest(request);
+		
 	}
 	
 }

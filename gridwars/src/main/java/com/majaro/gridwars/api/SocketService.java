@@ -95,8 +95,6 @@ public class SocketService {
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameLobby.getLobbyId());
 		if (gameLobby != null && gameplayResponse != null) {
 			broadcastRoomState.sendEvent("gameplayResponse", gameplayResponse);
-		} else {
-			
 		}
 	}
 

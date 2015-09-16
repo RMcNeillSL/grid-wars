@@ -352,6 +352,26 @@ public class Engine extends Thread {
 		return response;
 	}
 	
+	private void processWaypointUpdateUnitCellRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] newCoordinates) {
+		
+		// Declare working variables
+		DynGameUnit unitRef = null;
+		Coordinate coordRef = null;
+		
+		// Process each unit update inturn
+		for (int index = 0; index < Math.min(sourceUnits.length, newCoordinates.length); index ++) {
+			
+			// Set new references
+			unitRef = sourceUnits[index];
+			coordRef = newCoordinates[index];
+			
+			// Update cell of unit
+			unitRef.updateCoordinate(coordRef);
+			
+			System.out.println(unitRef.getCoordinate().getCol() + " " + unitRef.getCoordinate().getRow());
+		}
+	}
+	
 	private GameplayResponse processDebugPlacementRequest(Player player, GameUnit[] sourceUnits, int col, int row) {
 
 		// Set default result
@@ -413,6 +433,14 @@ public class Engine extends Thread {
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false), 
 		        			new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY()));
 		        	break;
+		        case WAYPOINT_UPDATE_UNIT_CELL:
+		        	gameplayResponse = null;
+		        	Coordinate[] coordinates = new Coordinate[1];
+		        	coordinates[0] = new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY());
+		        	this.processWaypointUpdateUnitCellRequest(sender, 
+		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false),
+		        			coordinates);
+		        	break;
 		        case DEBUG_PLACEMENT:
 		        	gameplayResponse = this.processDebugPlacementRequest(sender, 
 		        			Const.getGameUnitArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
@@ -425,13 +453,13 @@ public class Engine extends Thread {
 			}
 			
 		}
-
-		// Output response
-		System.out.println(gameplayResponse);
 		
-		// Return failed response
-		if (gameplayResponse == null) { gameplayResponse = new GameplayResponse(); }
+		// Make sure a response is pending before logging
+		if (gameplayResponse != null) { System.out.println(gameplayResponse); }
+		
+		// Return current response
 		return gameplayResponse;
+
 	}
 	
 	

@@ -54,7 +54,7 @@ public class GameDynamicMap {
 		
 	}
 	
-
+	
 	// Check cell has no obstruction
 	public boolean isCellObstructed(int cellX, int cellY) {
 		for (DynamicCell cell : this.cells) {

@@ -227,7 +227,7 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) {
 	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
 
 		// Submit update message to server
-		
+		this.serverAPI.requestUpdateUnitCell(sender, newCell);
 		
 		// Debugging output
 //		console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
