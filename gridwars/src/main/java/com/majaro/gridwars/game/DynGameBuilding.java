@@ -14,8 +14,7 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	protected GameBuilding source = null;
 	
 	// Core building object variables
-	protected int cellX = 0;
-	protected int cellY = 0;
+	protected Coordinate coordinate = null;
 	protected String instanceId = "";
 	
 	// Constructor
@@ -29,8 +28,7 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 		
 		// Save passed values
 		this.playerRef = playerRef;
-		this.cellX = cellX;
-		this.cellY = cellY;		
+		this.coordinate = new Coordinate(cellX, cellY);
 		this.instanceId = instanceId;
 	}
 	
@@ -44,6 +42,7 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 
 	// Unique getters for dynamic values
 	public Player getOwner() { return this.playerRef; }
+	public Coordinate getCoordinate() { return this.coordinate; }
 	
 	// Unique getters for values from super objects
 	public int getMaxHealth() { return super.health; }

@@ -76,6 +76,7 @@ public class Engine extends Thread {
 				// Define (and initialise) working variables
 				boolean isPathPossible = true;
 				AStarCell currentCell = null;
+				AStarCell possibleNeighbourCell = null;
 				AStarCell tempHoldCell = null;
 				ArrayList<AStarCell> neighbourCells = new ArrayList<AStarCell>();
 
@@ -118,7 +119,11 @@ public class Engine extends Thread {
 					// Search for neighbouring cells for future processing
 					neighbourCells.clear();
 					for (int index = 0; index < unprocessedCells.size(); index ++) {
-						if (currentCell.isNeighbour(unprocessedCells.get(index))) {
+						possibleNeighbourCell = unprocessedCells.get(index);
+						if (possibleNeighbourCell != null &&
+								currentCell.isNeighbour(possibleNeighbourCell) &&
+								!this.staticMapRef.isCellObstructed(possibleNeighbourCell.coord) &&
+								!this.dynamicMapRef.isCellObstructed(possibleNeighbourCell.coord)) {
 							tempHoldCell = unprocessedCells.get(index);
 							tempHoldCell.moveToCost = currentCell.moveToCost;
 							neighbourCells.add(tempHoldCell);
@@ -189,10 +194,6 @@ public class Engine extends Thread {
 	
 	public Engine(GameConfig gameConfig, ArrayList<LobbyUser> connectedUsers, GameStaticMap gameMap) {
 		
-		// Construct map objects
-		this.staticMap = gameMap;
-		this.dynamicMap = new GameDynamicMap(staticMap);
-		
 		// Construct user objects
 		this.players = new Player[connectedUsers.size()];
 		for (int index = 0; index < connectedUsers.size(); index ++) {
@@ -202,6 +203,10 @@ public class Engine extends Thread {
 		// Initialise in-game object lists
 		this.buildings = new ArrayList<DynGameBuilding>();
 		this.units = new ArrayList<DynGameUnit>();
+
+		// Construct map objects
+		this.staticMap = gameMap;
+		this.dynamicMap = new GameDynamicMap(staticMap, this.buildings, this.units);
 		
 		// Initialise pathfinder object
 		this.aStarPathFinder = new AStarPathFinder(this.staticMap, this.dynamicMap);
@@ -367,8 +372,6 @@ public class Engine extends Thread {
 			
 			// Update cell of unit
 			unitRef.updateCoordinate(coordRef);
-			
-			System.out.println(unitRef.getCoordinate().getCol() + " " + unitRef.getCoordinate().getRow());
 		}
 	}
 	
