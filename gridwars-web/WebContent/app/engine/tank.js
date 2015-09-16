@@ -1,4 +1,4 @@
-function Tank(phaserRef, gameCore, mapGroup, tankGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
+function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, height, inBuildingMode) {
 
 	// Make sure dependencies has been passed
 	if (tankGroup) {
@@ -6,13 +6,10 @@ function Tank(phaserRef, gameCore, mapGroup, tankGroup, xy, col, row, width, hei
 		// Save core game object
 		this.gameCore = gameCore;
 		
-		// Save phaser references
-		this.phaserRef = phaserRef;
+		// Save engine core
+		this.engineCore = engineCore;
 		this.tankGroup = tankGroup;
 		this.mapGroup = mapGroup;
-		
-		// Save passed functions
-		this.func_explosionRequest = func_explosionRequest;
 		
 		// Save sprite positioning
 		this.width = width;
@@ -29,21 +26,16 @@ function Tank(phaserRef, gameCore, mapGroup, tankGroup, xy, col, row, width, hei
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
 		// Create turret base object
-		this.bodySegment = this.phaserRef.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, 0);
+		this.bodySegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, 0);
 		this.bodySegment.anchor.setTo(0.5, 0.5);
 		this.bodySegment.z = 10;
 		this.tankGroup.add(this.bodySegment);
 		
 		// Create turrent cannon sprite
-		this.turretSegment = this.phaserRef.add.sprite(this.left, this.top + this.height * 0.08, CONSTANTS.SPRITE_TANK, 1);
+		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top + this.height * 0.08, CONSTANTS.SPRITE_TANK, 1);
 		this.turretSegment.anchor.setTo(0.5, 0.8);
 		this.turretSegment.z = 11;
 		
-		// Create fire animation
-//		var fire = this.turretSegment.animations.add('fire', [1,2,3,4,5,1], 20, false);
-//		fire.onComplete.add(function(sprite, animation) {setTimeout(function() {fire.play();}, 2000)});
-//		fire.play();
-
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
 		
@@ -122,7 +114,12 @@ Tank.prototype.progressWaypoints = function() {
 	this.turretSegment.y = this.top;
 	
 	// Check new cell position
-	
+	var newCell = (new Point(this.left, this.top)).toCell();
+	this.gameCore.point = new Point(this.left, this.top);
+	if (newCell.col != currentCell.col || newCell.row != currentCell.row) {
+		this.engineCore.func_UpdateNewUnitCell(this, currentCell, newCell);
+		this.gameCore.cell = this.gameCore.point.toCell();
+	}
 	
 	// Update waypoint list by removing first item is point is hit
 	if (Math.abs(nextWaypoint.x - this.left) < this.moveSpeed / 2 &&
