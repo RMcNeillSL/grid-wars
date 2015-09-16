@@ -187,7 +187,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 Engine.prototype.onKeyPressed = function(char) {
 
 	// Check if creating a new object
-	/*if (char == '1' || char == '2' || char == '3') {
+	if (char == '1' || char == '2' || char == '3') {
 
 		// Game core object
 		var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
@@ -208,9 +208,10 @@ Engine.prototype.onKeyPressed = function(char) {
 					cell.toPoint(), cell.col, cell.row, 100, 100,
 	                this.explosionManager.requestExplosion, true);
 		}
-	}*/
+	}
 
 }
+
 
 // Utility methods
 
@@ -281,6 +282,7 @@ Engine.prototype.getPlayerFromPlayerId = function(playerId) {
 	// Return not found
 	return null;
 }
+
 
 // Specialised methods for dealing with individual responses
 
