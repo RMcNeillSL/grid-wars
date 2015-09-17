@@ -23,7 +23,7 @@ config(['$routeProvider', function($routeProvider) {
 }]);
 
 (function() {
-/*	var nonAuthPages = [ "login", "register" ];
+	var nonAuthPages = [ "login", "register" ];
 	var currPath = window.location.href;
 
 	if (currPath.indexOf("?") > -1) {
@@ -50,5 +50,5 @@ config(['$routeProvider', function($routeProvider) {
 		});
 	}
 
-	checkAuth(redirectToLogin);*/
+	checkAuth(redirectToLogin);
 })();

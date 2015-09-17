@@ -93,7 +93,7 @@ html, body {
 	padding:20px;
 	width:auto;
 	display:block;
-	overflow:auto;
+	overflow:none;
 	border:3px solid #111;
 	background-color: rgba(0,0,0,0.7);
 }
@@ -253,8 +253,6 @@ html, body {
 .gwa-game {
 	padding-top:10px;
 	padding-bottom:10px;
-	border-top:3px solid #fff;
-	border-bottom:3px solid #fff;
 }
 
 .gwa-loading {
@@ -265,11 +263,11 @@ html, body {
 .gameMenu {
 	display:block;
 	width:100%;
-	overflow:auto;
+	overflow:none;
 }
 
 #gridwars-engine {
-	padding-bottom:10px;
+	margin-bottom:10px;
 }
 
 .menuStore {

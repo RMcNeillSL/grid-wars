@@ -41,6 +41,9 @@ public class GameStaticMap {
 		}
 		return true;
 	}
+	public boolean isCellObstructed(Coordinate coordinate) {
+		return this.isCellObstructed(coordinate.getCol(), coordinate.getRow());
+	}
 	
 	// Getters for summary view
 	@JsonView(GameStaticMap.Views.Summary.class)

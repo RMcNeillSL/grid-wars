@@ -28,6 +28,9 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 		this.instanceId = instanceId;		
 	}
 	
+	// Setter methods
+	public void updateCoordinate(Coordinate newCoordinate) { this.coordinate = newCoordinate; }
+	
 	// Getter methods
 	public Coordinate getCoordinate() { return this.coordinate; }
 

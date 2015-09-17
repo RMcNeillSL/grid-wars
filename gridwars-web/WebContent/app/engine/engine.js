@@ -63,6 +63,13 @@ function Engine(gameplayConfig, playerId, serverAPI, callback) {
 	this.mapOverlayGroup = null;
 	this.turretGroup = null;
 	this.tankGroup = null;
+	
+	// Construct engine core values for unit/building/defence construction
+	this.engineCore = {
+			phaserEngine: this.phaserGame,
+			func_RequestExplosion: function(mapGroup, explosionId, x, y) { self.explosionManager.requestExplosion(mapGroup, explosionId, x, y) },
+			func_UpdateNewUnitCell: function(sender, oldCell, newCell) { self.updateNewUnitCell(sender, oldCell, newCell); }
+	};
 
 	// player results
 	this.playerResults = [];
@@ -156,13 +163,23 @@ Engine.prototype.updatePlayerStatus = function() {
 	var self = this;
 	var deadPlayers = [];
 	deadPlayers = self.players.slice();
+	
+	console.log(deadPlayers.length + " " + self.players.length);
 
+	var removeArray = [];
+	
 	for (var index = 0; index < deadPlayers.length; index++) {
 		if (!deadPlayers[index].hasPlacedObject) {
-			deadPlayers.splice(index, 1);
-			break;
+			console.log(index);
+			removeArray.push(index);
 		}
 	}
+	
+	for (var index = (removeArray.length-1); index >= 0; index--) {
+		deadPlayers.splice(removeArray[index], 1);
+	}
+	
+	console.log(deadPlayers.length);
 	
 	self.units.filter(function(unit) {
 		for (var index = 0; index < deadPlayers.length; index++) {
@@ -206,9 +223,8 @@ Engine.prototype.updatePlayerStatus = function() {
 
 	console.log(deadPlayers.length + " " + self.players.length);
 	
-	if (deadPlayers > 0 && deadPlayers.length === self.players.length) {
-		//self.gameFinishedCallback(self.playerResults);
-		console.log("callback");
+	if (deadPlayers > 0 && deadPlayers.length === (self.players.length-1)) {
+		self.gameFinishedCallback(self.playerResults);
 	}
 }
 
@@ -279,24 +295,46 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 Engine.prototype.onKeyPressed = function(char) {
 
 	// Check if creating a new object
-	/*
-	 * if (char == '1' || char == '2' || char == '3') {
-	 *  // Game core object var cell = (new Point(this.mouse.x,
-	 * this.mouse.y)).toCell(); var gameCore = new GameCore("TURRET", cell);
-	 * gameCore.setPlayer(this.currentPlayer);
-	 *  // Set active building object if (char == '1') {
-	 * this.createNewBuildingObject(gameCore); }
-	 *  // Set active building object -phaserRef, -mapGroup, -tankGroup, -xy, //
-	 * width, height, func_explosionRequest if (char == '2') { var gameCore =
-	 * new GameCore("TANK", cell); this.phaserGame.newBuilding.active = true;
-	 * this.phaserGame.newBuilding.target = new Tank(this.phaserGame, gameCore,
-	 * this.mapGroup, this.tankGroup, cell.toPoint(), cell.col, cell.row, 100,
-	 * 100, this.explosionManager.requestExplosion, true); } }
-	 */
+/*	if (char == '1' || char == '2' || char == '3') {
 
+		// Game core object
+		var self = this;
+		var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
+
+		// Set active building object
+		if (char == '1') {
+			var gameCore = new GameCore("TURRET", cell);
+			gameCore.setPlayer(this.currentPlayer);
+			this.createNewBuildingObject(gameCore);
+		}
+
+		// Set active building object -phaserRef, -mapGroup, -tankGroup, -xy,
+		// width, height, func_explosionRequest
+		if (char == '2') {
+			var gameCore = new GameCore("TANK", cell);
+			this.phaserGame.newBuilding.active = true;
+			this.phaserGame.newBuilding.target = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup,
+					cell.toPoint(), cell.col, cell.row, 100, 100, true);
+		}
+	}*/
 }
 
+
 // Utility methods
+
+Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) {
+	
+	// Check if sender is unit owner
+	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
+
+		// Submit update message to server
+		this.serverAPI.requestUpdateUnitCell(sender, newCell);
+		
+		// Debugging output
+//		console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
+	}
+	
+}
 
 Engine.prototype.isSquareEmpty = function(col, row) {
 	for (var index = 0; index < this.buildings.length; index++) {
@@ -328,10 +366,8 @@ Engine.prototype.purchaseObject = function(item) {
 	} else if (item === "TANK") {
 		var gameCore = new GameCore("TANK", cell);
 		this.phaserGame.newBuilding.active = true;
-		this.phaserGame.newBuilding.target = new Tank(this.phaserGame,
-				gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
-				cell.col, cell.row, 100, 100,
-				this.explosionManager.requestExplosion, true);
+		this.phaserGame.newBuilding.target = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup,
+				cell.toPoint(), cell.col, cell.row, 100, 100, true);
 	}
 }
 
@@ -367,6 +403,7 @@ Engine.prototype.getPlayerFromPlayerId = function(playerId) {
 	// Return not found
 	return null;
 }
+
 
 // Specialised methods for dealing with individual responses
 
@@ -506,12 +543,12 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 		var gameCore = new GameCore("TANK", refObject.cell);
 		gameCore.setInstanceId(refObject.instanceId);
 		gameCore.setPlayer(refObject.player);
-
+		
+		// Create self reference
+		var self = this;
+		
 		// Construct object for positioning
-		var newTank = new Tank(this.phaserGame, gameCore, this.mapGroup,
-				this.tankGroup, refObject.xy, refObject.col, refObject.row,
-				100, 100, this.explosionManager.requestExplosion, false);
-
+		var newTank = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.col, refObject.row, 100, 100, false);
 		// Add object to unit array
 		this.units.push(newTank);
 	}
