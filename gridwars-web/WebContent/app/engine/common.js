@@ -16,7 +16,7 @@ function GameCore(identifier, cell) {
 	this.colour = null;
 	
 	// Common game properties
-	this.health = 150;
+	this.health = 100;
 	
 	// FLag properties (not existing in all objects)
 	this.isDefence = false;
@@ -44,8 +44,8 @@ function GameCore(identifier, cell) {
 			}
 		}
 	}
-	this.takeDamage = function(damage) {
-		self.health = Math.max(self.health - damage, 0);
+	this.setHealth = function(newHealth) {
+		self.health = Math.max(newHealth, 0);
 	}
 }
 

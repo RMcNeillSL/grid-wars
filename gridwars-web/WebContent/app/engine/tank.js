@@ -168,6 +168,12 @@ Tank.prototype.getCollisionLayers = function() {
 	return [this.bodySegment, this.turretSegment];
 }
 
+Tank.prototype.destroy = function() {
+	this.bodySegment.animations.destroy();
+	this.bodySegment.destroy();
+	this.turretSegment.animations.destroy();
+	this.turretSegment.destroy();
+}
 
 
 

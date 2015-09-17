@@ -21,6 +21,8 @@ CONSTANTS = {
 	SPRITE_IMPACT_DECALS : "impact_decals",
 	SPRITE_EXPLOSION_A : "sprite_explosion_a",
 	SPRITE_EXPLOSION_B : "sprite_explosion_b",
+	SPRITE_EXPLOSION_C : "sprite_explosion_c",
+	DEBRIS_TANK : "",
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT : "tile_build",

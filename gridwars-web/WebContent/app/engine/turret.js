@@ -313,3 +313,14 @@ Turret.prototype.rotate = function(angle) {
 Turret.prototype.play_anim = function(animId) {
 	
 }
+
+Turret.prototype.destroy = function() {
+	this.baseSegment.animations.destroy();
+	this.baseSegment.destroy();
+	this.topSegment.animations.destroy();
+	this.topSegment.destroy();
+	this.bulletParticle01.animations.destroy();
+	this.bulletParticle01.destroy();
+	this.bulletParticle02.animations.destroy();
+	this.bulletParticle02.destroy();
+}

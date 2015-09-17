@@ -397,8 +397,8 @@ public class Engine extends Thread {
 			response = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
 			for (DynGameUnit targetUnit : sourceUnits) {
 				response.addTarget(targetUnit);
+				response.addMisc(Integer.toString(targetUnit.getHealth()));
 			}
-			response.addMisc(Integer.toString(damageAmount));
 		}
 
 		// Return calculated result

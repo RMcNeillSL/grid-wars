@@ -74,6 +74,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 128, 128, 10);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
 
 	// Load tile images
@@ -304,7 +305,7 @@ Engine.prototype.explosionCollisionCheck = function() {
 			// Test each building with current explosion
 			for (var index = 0; index < this.buildings.length; index ++) {
 				if (!this.buildings[index].isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId) &&
-						this.units[index].gameCore.playerId == this.currentPlayer.playerId &&
+						this.buildings[index].gameCore.playerId != this.currentPlayer.playerId &&
 						explosionHitTest(explosionRegister[explosionIndex], this.buildings[index].getCollisionLayers())) {
 					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
 					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageAmount);
@@ -314,7 +315,7 @@ Engine.prototype.explosionCollisionCheck = function() {
 			// Test each unit with current explosion
 			for (var index = 0; index < this.units.length; index ++) {
 				if (!this.units[index].isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId) &&
-						this.units[index].gameCore.playerId == this.currentPlayer.playerId &&
+						this.units[index].gameCore.playerId != this.currentPlayer.playerId &&
 						explosionHitTest(explosionRegister[explosionIndex], this.units[index].getCollisionLayers())) {
 					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
 					this.serverAPI.requestDamageSubmission([this.units[index]], damageAmount);
@@ -403,6 +404,25 @@ Engine.prototype.getPlayerFromPlayerId = function(playerId) {
 	
 	// Return not found
 	return null;
+}
+
+Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
+	
+	// Define working variables
+	var searchObject = null;
+	
+	// Locate and remove item from units/buildings list
+	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex ++) {
+		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.units[unitIndex];
+			this.units.splice(unitIndex, 1);
+		}
+	}
+
+	// Delete the object
+	if (searchObject) {
+		searchObject.destroy();
+	}
 }
 
 
@@ -508,26 +528,42 @@ Engine.prototype.processWaypoints = function(responseData) {
 
 Engine.prototype.processUnitDamage = function(responseData) {
 
-	// Get damage due
+	// Define working variables
 	var damage = parseInt();
+	var removeList = [];
 	
 	// Iterate over every unit due damage
 	for (var unitIndex = 0; unitIndex < responseData.target.length; unitIndex ++) {
 
 		// Create reference object
 		var refObject = {
-			damageDue : parseInt(responseData.misc[unitIndex]),
+			newHealth : parseInt(responseData.misc[unitIndex]),
 			instanceId : responseData.target[unitIndex]
 		};
 		
 		// Get targeted unit
 		var unit = this.getObjectFromInstanceId(refObject.instanceId);
 		
-		// Submit unit damage
+		// Make sure a unit was found
 		if (unit) {
-			unit.gameCore.takeDamage(refObject.damageDue);
+			
+			// Submit unit damage 
+			unit.gameCore.setHealth(refObject.newHealth);
+			
+			// Determine if unit was destroyed
+			if (unit.gameCore.health == 0) {
+				this.explosionManager.requestDestruction(this.mapGroup, CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C, unit.left, unit.top);
+				removeList.push(refObject.instanceId);
+			}
+			
+			// Log to screen
 			console.log("Tank health: " + unit.gameCore.health);
 		}	
+	}
+	
+	// Delete all items from remove list
+	for (var removeIndex = 0; removeIndex < removeList.length; removeIndex ++) {
+		this.deleteItemWithInstanceId(removeList[removeIndex]);
 	}
 }
 
@@ -565,6 +601,7 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 		this.units.push(newTank);
 	}
 }
+
 
 // Process any server messages and call appropriate functions
 
