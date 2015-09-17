@@ -3,9 +3,37 @@ function ExplosionManager(phaserRef) {
 	// Save reference variables
 	this.phaserRef = phaserRef;
 	
+	// Create registered explosion list
+	this.explosionRegister = [];
+	
 }
 
-ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, x, y) {
+ExplosionManager.prototype.requestDestruction = function(mapGroup, debrisId, explosionId, x, y) {
+
+	// Check phaser ref is assigned
+	if (this.phaserRef) {
+
+		// Save reference to this for local calls
+		var self = this;
+
+		// Create explosion sprite
+		var localExplosion = this.phaserRef.add.sprite(x, y, explosionId, 0);
+		localExplosion.anchor.setTo(0.5, 0.5);
+		localExplosion.z = 100;
+		
+		// Create explode animation
+		var explode = localExplosion.animations.add('localExplode');
+		explode.onComplete.add(function(sprite, animation) {
+			sprite.animations.destroy();
+			sprite.destroy();
+		});
+		
+		// Run explosion animation
+		explode.play(60, false, null);
+	}
+}
+
+ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, ownerId, explosionInstanceId, x, y) {
 	
 	// Check phaser ref is assigned
 	if (this.phaserRef) {
@@ -22,9 +50,13 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, x,
 		
 		// Create explosion sprite
 		var localExplosion = this.phaserRef.add.sprite(x, y, explosionId, 0);
+		this.phaserRef.physics.enable(localExplosion, Phaser.Physics.ARCADE);
+		localExplosion.explosionInstanceId = explosionInstanceId;
+		localExplosion.ownerId = ownerId;
 		localExplosion.anchor.setTo(0.5, 0.5);
 		localExplosion.z = 100;
-
+		this.registerExplosion(localExplosion);
+		
 		// Create fade out animation
 		var fadeOut = localImpact.animations.add('localImpaceFade');
 		fadeOut.onComplete.add(function(sprite, animation) {
@@ -35,6 +67,8 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, x,
 		// Create explode animation
 		var explode = localExplosion.animations.add('localExplode');
 		explode.onComplete.add(function(sprite, animation) {
+			var targetIndex = self.explosionRegister.indexOf(sprite);
+			self.explosionRegister.splice(targetIndex, 1);
 			sprite.animations.destroy();
 			sprite.destroy();
 			fadeOut.play(0.25, false, null);
@@ -42,7 +76,14 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, x,
 		
 		// Run explosion animation
 		explode.play(30, false, null);
-		
 	}
-	
+}
+
+ExplosionManager.prototype.registerExplosion = function(explosionSprite) {
+	this.explosionRegister.push(explosionSprite);
+}
+
+ExplosionManager.prototype.unregisterExplosion = function(sprite) {
+	var targetIndex = this.explosionRegister.indexOf(sprite);
+	this.explosionRegister.splice(targetIndex, 1);
 }

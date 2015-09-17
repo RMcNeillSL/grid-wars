@@ -15,6 +15,9 @@ function GameCore(identifier, cell) {
 	this.playerId = null;
 	this.colour = null;
 	
+	// Common game properties
+	this.health = 100;
+	
 	// FLag properties (not existing in all objects)
 	this.isDefence = false;
 	
@@ -24,6 +27,9 @@ function GameCore(identifier, cell) {
 		this.height = 100;
 		this.isDefence = true;
 	}
+	
+	// Create self reference
+	var self = this;
 	
 	// Declare methods
 	this.setInstanceId = function(instanceId) {
@@ -37,6 +43,9 @@ function GameCore(identifier, cell) {
 				this.colour = CONSTANTS.COLOUR_TURRET[index];
 			}
 		}
+	}
+	this.setHealth = function(newHealth) {
+		self.health = Math.max(newHealth, 0);
 	}
 }
 

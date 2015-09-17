@@ -1,4 +1,4 @@
-function Turret(phaserRef, gameCore, mapGroup, turretGroup, xy, col, row, width, height, func_explosionRequest, inBuildingMode) {
+function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width, height, inBuildingMode) {
 	this.turretFrameInfo = gameCore.colour;
 	
 	// Make sure dependencies has been passed
@@ -7,13 +7,10 @@ function Turret(phaserRef, gameCore, mapGroup, turretGroup, xy, col, row, width,
 		// Save core game object
 		this.gameCore = gameCore;
 		
-		// Save phaser references
-		this.phaserRef = phaserRef;
+		// Save engine core object
+		this.engineCore = engineCore;
 		this.turretGroup = turretGroup;
 		this.mapGroup = mapGroup;
-		
-		// Save passed functions
-		this.func_explosionRequest = func_explosionRequest;
 		
 		// Save sprite positioning
 		this.width = width;
@@ -25,24 +22,29 @@ function Turret(phaserRef, gameCore, mapGroup, turretGroup, xy, col, row, width,
 		
 		// Set default misc values
 		this.rotateSpeed = 3;
+		this.damageExplosions = [];
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
 		// Create turret base object
-		this.baseSegment = this.phaserRef.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, this.turretFrameInfo.BASE);
+		this.baseSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, this.turretFrameInfo.BASE);
 		this.baseSegment.anchor.setTo(0.5, 0.5);
 		this.baseSegment.width = this.width;
 		this.baseSegment.height = this.height;
 		this.baseSegment.z = 10;
 		this.turretGroup.add(this.baseSegment);
+//		this.engineCore.phaserEngine.physics.enable(this.baseSegment, Phaser.Physics.ARCADE);
+//		this.baseSegment.body.enable = true;
 		
 		// Create turrent cannon sprite
-		this.topSegment = this.phaserRef.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, this.turretFrameInfo.TOP);
-		this.topSegment.anchor.setTo(0.5, 0.5);
+		this.topSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, this.turretFrameInfo.TOP);
+		this.topSegment.anchor.setTo(0.5, 0.55);
 		this.topSegment.width = this.width;
 		this.topSegment.height = this.height;
 		this.topSegment.z = 11;
 		this.turretGroup.add(this.topSegment);
+//		this.engineCore.phaserEngine.physics.enable(this.topSegment, Phaser.Physics.ARCADE);
+//		this.topSegment.body.enable = true;
 		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
@@ -65,8 +67,9 @@ function Turret(phaserRef, gameCore, mapGroup, turretGroup, xy, col, row, width,
 		this.fireAndCool.onComplete.add(function(sprite, animation) { });
 		
 		// Particle creation function
+		var self = this;
 		var createParticleEmitter = function(x, y, particleImage) {
-			var result = phaserRef.add.emitter(0, 0, 200);
+			var result = self.engineCore.phaserEngine.add.emitter(0, 0, 200);
 			result.makeParticles(CONSTANTS.PARTICLE_YELLOW_SHOT);
 			result.setRotation(0, 0);
 			result.setAlpha(0.3, 0.8);
@@ -86,6 +89,28 @@ function Turret(phaserRef, gameCore, mapGroup, turretGroup, xy, col, row, width,
 		if (!phaserRef) { console.log("ERROR: Failed to construct turret, missing phaserRef."); }
 	}
 	
+}
+
+Turret.prototype.markDamage = function(explosionInstanceId) {
+	
+	// Add new damage instance to log
+	this.damageExplosions.push(explosionInstanceId);
+	
+	// Add timeout for damage
+	var self = this;
+	setTimeout(function() {
+		var removeIndex = self.damageExplosions.indexOf(explosionInstanceId);
+		self.damageExplosions.splice(removeIndex, 1);
+	}, CONSTANTS.EXPLOSION_DAMAGE_TIMEOUT);
+	
+}
+
+Turret.prototype.isDamageMarkRegistered = function(explosionInstanceId) {
+	return !(this.damageExplosions.indexOf(explosionInstanceId) == -1);
+}
+
+Turret.prototype.getCollisionLayers = function() {
+	return [this.baseSegment, this.topSegment];
 }
 
 Turret.prototype.setBuildingMode = function(inBuildingMode) {
@@ -273,8 +298,8 @@ Turret.prototype.manageFiringBullets = function() {
 			this.bullets.firing = false;
 			this.bulletParticle01.on = false;
 			this.bulletParticle02.on = false;
-			this.func_explosionRequest(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.bulletParticle01.x, this.bulletParticle01.y);
-			this.func_explosionRequest(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.bulletParticle02.x, this.bulletParticle02.y);
+			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.playerId, this.gameCore.instanceId + "_A", this.bulletParticle01.x, this.bulletParticle01.y);
+			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.playerId, this.gameCore.instanceId + "_B", this.bulletParticle02.x, this.bulletParticle02.y);
 		}
 		
 	}
@@ -288,3 +313,22 @@ Turret.prototype.rotate = function(angle) {
 Turret.prototype.play_anim = function(animId) {
 	
 }
+
+Turret.prototype.destroy = function() {
+	this.baseSegment.animations.destroy();
+	this.baseSegment.destroy();
+	this.topSegment.animations.destroy();
+	this.topSegment.destroy();
+	this.bulletParticle01.animations.destroy();
+	this.bulletParticle01.destroy();
+	this.bulletParticle02.animations.destroy();
+	this.bulletParticle02.destroy();
+}
+
+Turret.prototype.getBounds = function() {
+	return this.baseSegment.getBounds();
+}
+
+
+
+
