@@ -163,14 +163,11 @@ Engine.prototype.updatePlayerStatus = function() {
 	var self = this;
 	var deadPlayers = [];
 	deadPlayers = self.players.slice();
-	
-	console.log(deadPlayers.length + " " + self.players.length);
 
 	var removeArray = [];
 	
 	for (var index = 0; index < deadPlayers.length; index++) {
 		if (!deadPlayers[index].hasPlacedObject) {
-			console.log(index);
 			removeArray.push(index);
 		}
 	}
@@ -178,8 +175,6 @@ Engine.prototype.updatePlayerStatus = function() {
 	for (var index = (removeArray.length-1); index >= 0; index--) {
 		deadPlayers.splice(removeArray[index], 1);
 	}
-	
-	console.log(deadPlayers.length);
 	
 	self.units.filter(function(unit) {
 		for (var index = 0; index < deadPlayers.length; index++) {
@@ -220,8 +215,6 @@ Engine.prototype.updatePlayerStatus = function() {
 			}
 		}
 	}
-
-	console.log(deadPlayers.length + " " + self.players.length);
 	
 	if (deadPlayers > 0 && deadPlayers.length === (self.players.length-1)) {
 		self.gameFinishedCallback(self.playerResults);
