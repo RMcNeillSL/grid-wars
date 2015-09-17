@@ -11,6 +11,9 @@
 			console.log("Socket connection established");
 			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_SERVER_LOBBY);
 		},
+		onDisconnect: function () {
+			console.log("The socket has disconnected in severs");
+		},
 		serverLobbyUpdate: function (data) {
 			self.$rootScope.servers = data;
 			self.$rootScope.$apply();

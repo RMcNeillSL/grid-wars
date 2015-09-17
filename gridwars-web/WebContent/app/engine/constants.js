@@ -5,6 +5,7 @@ CONSTANTS = {
 
 	// ******************* SOCKET ON EVENTS ****************** //
 	SOCKET_REC_CONNECT					: "connect",
+	SOCKET_REC_DISCONNECT				: "disconnect",
 
 	// Server lobby socket on events
 	SOCKET_REC_SERVER_LOBBY_UPDATE		: "updateServerLobby",

@@ -5,7 +5,7 @@ function SocketShiz () {
 	// create socket
 	console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
 	this.sockets = io.connect(CONSTANTS.SOCKET_SERVER, {
-		"force new connection": true,
+		"force new connection" : false,
 		"timeout" : 5000
 	});
 
@@ -19,6 +19,10 @@ function SocketShiz () {
 	// Connection established
 	this.sockets.on(CONSTANTS.SOCKET_REC_CONNECT, function (response) {
 		if (self.onConnect) {self.onConnect(response); }
+	});
+	
+	this.sockets.on(CONSTANTS.SOCKET_REC_DISCONNECT, function (response) {
+		if (self.onDisconnect) {self.onDisconnect(response); }
 	});
 
 	// BIND EVENTS - SERVER LOBBY
@@ -92,6 +96,7 @@ SocketShiz.prototype.resetCallbacks = function() {
 
 	// SET DEFAULT CALLBACKS
 	this.onConnect 				= null;
+	this.onDisconnect			= null;
 
 	// SET DEFAULT CALLBACKS - SERVER LOBBY
 	this.onServerLobbyUpdate 	= null;
@@ -116,97 +121,85 @@ SocketShiz.prototype.resetCallbacks = function() {
 SocketShiz.prototype.bindEvent = function(bindingIdentifier, callback) {
 	// Connection established
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_CONNECT) {
-		console.log("Binding set up for connection");
 		this.onConnect = callback;
+	}
+
+	if (bindingIdentifier === CONSTANTS.SOCKET_REC_DISCONNECT) {
+		this.onDisconnect = callback;
 	}
 
 	// SERVER LOBBY: Server lobby Update
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_SERVER_LOBBY_UPDATE) {
-		console.log("Binding set up for server lobby update");
 		this.onServerLobbyUpdate = callback;
 	}
 
 	// SERVER LOBBY: Refresh game lobby (on config update)
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_REFRESH_GAME_LOBBY) {
-		console.log("Binding set up for lobby refresh");
 		this.onRefreshGameLobby = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_CHAT_MESSAGE) {
-		console.log("Binding set up for chat messages");
 		this.onReceiveChatMessage = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_USER_JOINED_GAME_LOBBY) {
-		console.log("Binding set up for joined game lobby");
 		this.onUserJoinedGameLobby = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_GAME_CONFIG) {
-		console.log("Binding set up for game configs");
 		this.onGameConfig = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_LOBBY_USER_LIST) {
-		console.log("Binding set up for user list");
 		this.onLobbyUserList = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_MAP_CHANGE_ERROR) {
-		console.log("Binding set up for map change error");
 		this.onMapChangeError = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_TOGGLE_USER_READY) {
-		console.log("Binding set up for user toggle ready");
 		this.onUserToggleReady = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_CHANGE_USER_COLOUR) {
-		console.log("Binding set up for user change colour");
 		this.onChangeColour = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_CHANGE_USER_TEAM) {
-		console.log("Binding set up for user change team");
 		this.onTeamChange = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_GAME_INIT) {
-		console.log("Binding set up for game init");
 		this.onGameInit = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_LEADER_CHANGED) {
-		console.log("Binding set up for leader changed");
 		this.onLeaderChanged = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_USER_LEFT_GAME_LOBBY) {
-		console.log("Binding set up for user leaving lobby");
 		this.onUserLeftLobby = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_LEFT_LOBBY) {
-		console.log("Binding set up for left lobby");
 		this.onLeftLobby = callback;
 	}
 	
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_ROOM_DELETED) {
-		console.log("Binding set up for room delete");
 		this.onRoomDelete = callback;
 	}
 

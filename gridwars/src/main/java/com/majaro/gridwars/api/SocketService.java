@@ -102,11 +102,11 @@ public class SocketService {
 
 	@OnEvent("joinGameLobby")
 	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
+		System.out.println("User has entered a game lobby");
 		String username = data.getUser();
 		String sessionId = client.getSessionId().toString();
 		requestProcessor.bindSocketSessionId(username, sessionId);
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
-		System.out.println("User has entered a game lobby");
 
 		if (gameAndUserInfo != null) {
 			String lobbyId = gameAndUserInfo.getLobbyId();
@@ -134,6 +134,7 @@ public class SocketService {
 
 	@OnEvent("getNewUserList")
 	public void onGetNewUserList (SocketIOClient client) {
+		System.out.println("RECEIVED REQUEST FOR LOBBY USERS LIST");
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 

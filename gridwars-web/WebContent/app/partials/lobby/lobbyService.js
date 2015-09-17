@@ -12,14 +12,17 @@
 
 	LobbyService.prototype = {
 		onConnect: function () {
-			console.log("Socket connection established");
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME_LOBBY, {
+			console.log("Socket connection established in game lobby");
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME_LOBBY, {
 				"user" : self.$rootScope.currentUser
 			});
-			this.$rootScope.currentlyInLobby = true;
+			self.$rootScope.currentlyInLobby = true;
+		},
+		onDisconnect: function () {
+			console.log("The socket has disconnected in game lobby");
 		},
 		onChatMessage: function (data) {
-			this.$rootScope.lobbyMessages.push(data);
+			self.$rootScope.lobbyMessages.push(data);
 			self.$rootScope.$apply();
 		},
 		userJoinedGameLobby: function (data) {
@@ -27,8 +30,8 @@
 					"user" : data,
 					"message" : "has joined the lobby"
 				};
-			this.$rootScope.lobbyMessages.push(userJoinedMessage);
-			this.$rootScope.$apply();
+			self.$rootScope.lobbyMessages.push(userJoinedMessage);
+			self.$rootScope.$apply();
 		},
 		newGameConfig: function (mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
 				gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
@@ -48,6 +51,7 @@
 				self.$rootScope.$apply();
 		},
 		newUserList: function (lobbyUserList) {
+			console.log("RECEIVED USER LIST");
 			self.$rootScope.lobbyUserList = lobbyUserList;
 			var tempNotReadyCount = 0;
 			self.$rootScope.connectedUsers = 0;
@@ -150,7 +154,6 @@
 			self.$rootScope.$apply();
 		},
 		leftLobby: function () {
-			//self.lobbySocket.emit("forceDisconnect");
 			if (self.$rootScope.loggedOut) {
 				self.$location.path("/login");
 			} else {
@@ -164,7 +167,7 @@
 			self.$rootScope.$apply();
 		},
 		getMaps: function () {
-			this.$http.get("/gridwars/rest/game/maps").then(function(response) {
+			self.$http.get("/gridwars/rest/game/maps").then(function(response) {
 				response.data.forEach(function(map) {
 					self.$rootScope.mapList.push(map);
 				});
@@ -179,38 +182,41 @@
 					"user" : self.$rootScope.currentUser,
 					"message" : newMessage
 				};
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_CHAT_MESSAGE, chatObject);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_CHAT_MESSAGE, chatObject);
 		},
 		getConfig: function () {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GET_NEW_CONFIG);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GET_NEW_CONFIG);
 		},
 		getUsers: function () {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GET_NEW_USER_LIST);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GET_NEW_USER_LIST);
 		},
 		joinGameLobby: function () {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME_LOBBY);
-			this.$rootScope.gameLobbyName = this.$rootScope.gameConfig.lobbyName;
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME_LOBBY, {
+				"user" : self.$rootScope.currentUser
+			});
+			self.$rootScope.currentlyInLobby = true;
+			self.$rootScope.gameLobbyName = self.$rootScope.gameConfig.lobbyName;
 		},
 		updateConfig: function () {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_UPDATE_GAME_CONFIG, this.$rootScope.gameConfig);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_UPDATE_GAME_CONFIG, this.$rootScope.gameConfig);
 		},
 		toggleReady: function () {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_TOGGLE_READY);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_TOGGLE_READY);
 		},
 		changeColour: function (colour) {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_CHANGE_COLOUR, colour);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_CHANGE_COLOUR, colour);
 		},
 		changeTeam: function (team) {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_CHANGE_TEAM, team);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_CHANGE_TEAM, team);
 		},
 		startGame: function () {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GAME_INIT);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GAME_INIT);
 		},
 		changeLeader: function (userId) {
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_CHANGE_LOBBY_LEADER, userId);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_CHANGE_LOBBY_LEADER, userId);
 		},
 		leaveGame: function () {
-			this.$rootScope.sockets.emitEventt(CONSTANTS.SOCKET_SEND_LEAVE_GAME_LOBBY);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_LEAVE_GAME_LOBBY);
 			self.$rootScope.gameLeader = false;
 			self.$window.sessionStorage.gameLeader = false;
 			self.$rootScope.currentlyInLobby = false;
