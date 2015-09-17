@@ -44,11 +44,12 @@
 
 	}
 
-	function GameController($rootScope, $scope, gameService) {
+	function GameController($rootScope, $scope, $location, gameService) {
 
 		// Save passed variables
 		this.$rootScope = $rootScope;
 		this.$scope = $scope;
+		this.$location = $location;
 		this.gameService = gameService;
 
 		// Setup variables for game page
@@ -59,10 +60,15 @@
 		this.$rootScope.gameLoaded = false;
 		// Save this reference for anonymous methods
 		var self = this;
-
+		
 		// Start game method
 		var startGame = function() {
 
+			var gameFinished = function(playerResults) {
+				self.$rootScope.playerResults = playerResults;
+				self.changeView("results");
+			}
+			
 			// Make sure a second engine is not being created
 			if (!self.engineExists) {
 
@@ -73,8 +79,7 @@
 				self.serverAPI = new ServerAPI(gameService);
 
 				// Define core game phaser variable
-				self.phaserGame = new Engine(self.$rootScope.gameplayConfig,
-						self.$rootScope.currentUser, self.serverAPI);
+				self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser, self.serverAPI, gameFinished);
 				self.$rootScope.gameplayResponseManager = function(responseData) {
 					self.phaserGame.processGameplayResponse(responseData);
 				};
@@ -86,8 +91,8 @@
 		}
 
 		// Call connect debug methods
-		//gameService.debugConnect();
-		gameService.initialiseSockets();
+		gameService.debugConnect();
+		//gameService.initialiseSockets();
 
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method
@@ -111,10 +116,13 @@
 	GameController.prototype = {
 		purchaseObject : function(item) {
 			this.phaserGame.purchaseObject(item);
+		},
+		changeView : function(path) {
+			this.$location.path(path);
 		}
 	}
 
-	GameController.$inject = [ '$rootScope', '$scope',
+	GameController.$inject = [ '$rootScope', '$scope', '$location',
 			'gridWarsApp.game.service' ];
 
 	angular.module('gridWarsApp.game.module').controller(

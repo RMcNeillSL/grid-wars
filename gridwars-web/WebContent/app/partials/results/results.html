@@ -1,3 +1,24 @@
 <div class="gwa-results">
-	<h1>RESULTS PAGE</h1>
+	<h2 class="title">
+		Game Results <a ng-click="controller.logOut()">Log out</a>
+	</h2>
+
+	<h2 class="subTitle">Results Summary</h2>
+	<table class="table table-striped">
+		<tr>
+			<th>Position</th>
+			<th>Player</th>
+			<th>Feedback</th>
+		</tr>
+		<tr ng-repeat="result in playerResults">
+			<td class="tdInfo"><p class="position-{{ result.position}}"><span class="glyphicon" ng-class="{'glyphicon-star' : (result.position != playerResults.length),
+			'glyphicon-thumbs-down' : (result.position == playerResults.length)}"></span>
+			{{ positions[result.position-1] }} place</p></td>
+			<td class="tdInfo">{{ result.player }}</td>
+			<td class="tdInfo">{{ result.feedback }}</td>
+		</tr>
+	</table>
+	<button type="button" class="btn btn-sm"
+		ng-click="controller.changeView('servers')">Return to the
+		Server List</button>
 </div>

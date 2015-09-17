@@ -293,4 +293,64 @@ html, body {
 	height:70px;
 	width:70px;
 }
+
+.glyphicon-star {
+	font-size:20px;
+}
+
+.glyphicon-thumbs-down {
+	font-size:20px;
+}
+
+.position-1 {
+	font-size:12px;
+	font-weight:bold;
+}
+
+.position-1 span {
+	position:relative;
+	top:4px;
+	color:#ffd700;
+	font-size:20px;
+	margin-right:2px;
+}
+
+.position-2 {
+	font-size:12px;
+	font-weight:bold;
+}
+
+.position-2 span {
+	position:relative;
+	top:4px;
+	color:#c0c0c0;
+	font-size:20px;
+	margin-right:2px;
+}
+
+.position-3 {
+	font-size:12px;
+	font-weight:bold;
+}
+
+.position-3 span {
+	position:relative;
+	top:4px;
+	color:#cd7f32;
+	font-size:20px;
+	margin-right:2px;
+}
+
+.position-4 {
+	font-size:12px;
+	font-weight:bold;
+}
+
+.position-4 span {
+	position:relative;
+	top:4px;
+	color:#444;
+	font-size:20px;
+	margin-right:2px;
+}
 .
