@@ -228,7 +228,7 @@ Engine.prototype.updatePlayerStatus = function() {
 		}
 	}
 	
-	if (deadPlayers > 0 && deadPlayers.length === (self.players.length-1)) {
+	if (deadPlayers && deadPlayers.length === (self.players.length-1)) {
 		self.gameFinishedCallback(self.playerResults); }
 }
 
@@ -734,7 +734,7 @@ Engine.prototype.processNewBuilding = function(responseData) {
 		
 		//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
 		for(var index = 0; index < this.players.length; index++) {
-			if(!this.players[index].hasPlacedObject && this.players[index].playerId === this.currentPlayer.playerId) {
+			if(!this.players[index].hasPlacedObject && this.players[index].playerId === refObject.playerId) {
 				this.players[index].hasPlacedObject = true;
 				break;
 			}
@@ -891,7 +891,7 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 
 		//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
 		for(var index = 0; index < this.players.length; index++) {
-			if(!this.players[index].hasPlacedObject && this.players[index].playerId === this.currentPlayer.playerId) {
+			if(!this.players[index].hasPlacedObject && this.players[index].playerId === refObject.playerId) {
 				this.players[index].hasPlacedObject = true;
 				break;
 			}

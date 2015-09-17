@@ -81,7 +81,7 @@
 
 			var gameFinished = function(playerResults) {
 				self.$rootScope.playerResults = playerResults;
-				self.changeView("results");
+				self.changeView("/results");
 			}
 			
 			// Make sure a second engine is not being created
@@ -135,6 +135,7 @@
 		},
 		changeView : function(path) {
 			this.$location.path(path);
+			self.$rootScope.$apply();
 		}
 	}
 
