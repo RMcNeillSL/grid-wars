@@ -10,8 +10,6 @@
 		this.$window = $window;
 		this.lobbyService = lobbyService;
 		var _this = this;
-		
-		console.log($rootScope.sockets);
 
 		// Initialise variables
 		$rootScope.currentUser = this.$window.sessionStorage.username;

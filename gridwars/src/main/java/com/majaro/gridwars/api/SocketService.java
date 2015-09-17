@@ -302,7 +302,6 @@ public class SocketService {
 
 	@OnEvent("leaveServerLobby")
 	public void onLeaveServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
-		client.disconnect();
 		System.out.println("User has left the server lobby.");
 	}
 
@@ -319,10 +318,7 @@ public class SocketService {
 
 	@OnConnect
 	public void onConnectHandler(SocketIOClient client) {
-		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(client.getSessionId().toString());
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		Date date = new Date();
-		System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + " has connected");
+		System.out.println("User has connected");
 	}
 
 	@OnDisconnect
@@ -336,9 +332,8 @@ public class SocketService {
 			Date date = new Date();
 			System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + "'s socket timed-out, but they are still active");
 		} else {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date date = new Date();
-			System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + " has disconnected");
+
+			System.out.println("User has disconnected");
 			if(gameAndUserInfo.getLobbyId() != null) {
 				if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
 					leaderDisconnect = true;

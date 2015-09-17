@@ -14,6 +14,7 @@
 
 		// Set up new sockets or reset if they exist
 		if (!this.$rootScope.sockets) {
+			console.log("Creating sockets");
 			this.$rootScope.sockets = new SocketShiz();
 		} else {
 			this.$rootScope.sockets.resetCallbacks();

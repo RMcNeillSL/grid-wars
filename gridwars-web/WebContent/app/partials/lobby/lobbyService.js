@@ -51,7 +51,6 @@
 				self.$rootScope.$apply();
 		},
 		newUserList: function (lobbyUserList) {
-			console.log("RECEIVED USER LIST");
 			self.$rootScope.lobbyUserList = lobbyUserList;
 			var tempNotReadyCount = 0;
 			self.$rootScope.connectedUsers = 0;
