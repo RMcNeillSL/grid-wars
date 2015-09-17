@@ -1,7 +1,23 @@
 CONSTANTS = {
-		
+
 	// Misc constants
 	SOCKET_SERVER : "ws://" + window.location.host + ":8080/",
+
+	// Socket on events
+	SOCKET_REC_TEST_MESSAGE 		: "testMessage",
+	SOCKET_REC_CONNECT				: "connect",
+
+	// Server lobby socket on events
+	SOCKET_REC_SERVER_LOBBY_UPDATE	: "updateServerLobby",
+	SOCKET_REC_REFRESH_GAME_LOBBY	: "refreshGameLobby",
+
+	// Socket emit events
+	SOCKET_SEND_TEST_MESSAGE		: "sendTestMessage",
+
+	// Server lobby socket emit events
+	SOCKET_SEND_JOIN_SERVER_LOBBY 	: "joinServerLobby",
+	SOCKET_SEND_REFRESH_GAME_LOBBY 	: "refreshGameLobby",
+	SOCKET_SEND_LEAVE_SERVER_LOBBY 	: "leaveServerLobby",
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",

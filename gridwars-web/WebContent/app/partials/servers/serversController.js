@@ -11,7 +11,18 @@
 		this.$rootScope.servers = []
 		this.$rootScope.pageName = "Servers";
 		this.loadServers();
-		this.serversService.openSocket();
+
+		// Set up new sockets or reset if they exist
+		if (!this.$rootScope.sockets) {
+			this.$rootScope.sockets = new SocketShiz();
+		} else {
+			this.$rootScope.sockets.resetCallbacks();
+		}
+
+		// Bind the events we need for this page
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_TEST_MESSAGE, this.serversService.onConnect);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_SERVER_LOBBY_UPDATE, this.serversService.serverLobbyUpdate);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_REFRESH_GAME_LOBBY, this.serversService.refreshGameLobby);
 	}
 
 	ServersController.prototype = {
@@ -47,7 +58,6 @@
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
 				self.$window.sessionStorage.gameLeader = false;
-				//self.$rootScope.joinGameResponse = response;
 				self.$location.path("/lobby");
 			};
 

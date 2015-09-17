@@ -73,7 +73,7 @@ public class SocketService {
 			requestProcessor.initGameEngine(lobbyId);
 		}
 	}
-	
+
 	// triggered by all players have finished initialising their game engine
 	@OnEvent("startGame")
 	public void startGame(SocketIOClient client) {
@@ -85,7 +85,7 @@ public class SocketService {
 			broadcastRoomState.sendEvent("gameStart");
 		}
 	}
-	
+
 	// whenever you want to send any information off in game it uses this generic call.
 	@OnEvent("gameplayRequest")
 	public void processGameplayRequest(SocketIOClient client, GameplayRequest gameplayRequest) {
@@ -96,7 +96,7 @@ public class SocketService {
 		if (gameLobby != null && gameplayResponse != null) {
 			broadcastRoomState.sendEvent("gameplayResponse", gameplayResponse);
 		} else {
-			
+
 		}
 	}
 
@@ -303,7 +303,7 @@ public class SocketService {
 		client.disconnect();
 		System.out.println("User has left the server lobby.");
 	}
-	
+
 	@OnEvent("refreshGameLobby")
 	public void onNewGame(SocketIOClient client, RefreshGameLobbyRequest data, AckRequest ackRequest) {
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
