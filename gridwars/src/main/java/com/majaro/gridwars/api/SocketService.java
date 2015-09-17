@@ -60,6 +60,15 @@ public class SocketService {
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
 
+	@OnEvent("joinGame")
+	public void joinGame(SocketIOClient client) {
+		System.out.println("User has entered a game");
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+		broadcastRoomState.sendEvent("gameJoin", gameAndUserInfo.getUsername());
+	}
+	
 	// used to initialise the game engine
 	@OnEvent("initGame")
 	public void initGame(SocketIOClient client, GameInitRequest data, AckRequest ackRequest) {
@@ -73,7 +82,7 @@ public class SocketService {
 			requestProcessor.initGameEngine(lobbyId);
 		}
 	}
-	
+
 	// triggered by all players have finished initialising their game engine
 	@OnEvent("startGame")
 	public void startGame(SocketIOClient client) {
@@ -85,7 +94,7 @@ public class SocketService {
 			broadcastRoomState.sendEvent("gameStart");
 		}
 	}
-	
+
 	// whenever you want to send any information off in game it uses this generic call.
 	@OnEvent("gameplayRequest")
 	public void processGameplayRequest(SocketIOClient client, GameplayRequest gameplayRequest) {
@@ -100,6 +109,7 @@ public class SocketService {
 
 	@OnEvent("joinGameLobby")
 	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {
+		System.out.println("User has entered a game lobby");
 		String username = data.getUser();
 		String sessionId = client.getSessionId().toString();
 		requestProcessor.bindSocketSessionId(username, sessionId);
@@ -131,6 +141,7 @@ public class SocketService {
 
 	@OnEvent("getNewUserList")
 	public void onGetNewUserList (SocketIOClient client) {
+		System.out.println("RECEIVED REQUEST FOR LOBBY USERS LIST");
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 
@@ -298,10 +309,9 @@ public class SocketService {
 
 	@OnEvent("leaveServerLobby")
 	public void onLeaveServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
-		client.disconnect();
 		System.out.println("User has left the server lobby.");
 	}
-	
+
 	@OnEvent("refreshGameLobby")
 	public void onNewGame(SocketIOClient client, RefreshGameLobbyRequest data, AckRequest ackRequest) {
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
@@ -315,10 +325,7 @@ public class SocketService {
 
 	@OnConnect
 	public void onConnectHandler(SocketIOClient client) {
-		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(client.getSessionId().toString());
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		Date date = new Date();
-		System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + " has connected");
+		System.out.println("User has connected");
 	}
 
 	@OnDisconnect
@@ -332,9 +339,8 @@ public class SocketService {
 			Date date = new Date();
 			System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + "'s socket timed-out, but they are still active");
 		} else {
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date date = new Date();
-			System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + " has disconnected");
+
+			System.out.println("User has disconnected");
 			if(gameAndUserInfo.getLobbyId() != null) {
 				if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
 					leaderDisconnect = true;

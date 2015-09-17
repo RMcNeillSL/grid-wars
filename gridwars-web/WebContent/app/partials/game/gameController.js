@@ -60,7 +60,22 @@
 		this.$rootScope.gameLoaded = false;
 		// Save this reference for anonymous methods
 		var self = this;
+
+		if (!this.$rootScope.sockets) {
+			this.$rootScope.sockets = new SocketShiz();
+		} else {
+			this.$rootScope.sockets.resetCallbacks();
+		}
 		
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CONNECT, this.gameService.onConnect);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_DISCONNECT, this.gameService.onDisconnect);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_JOIN, this.gameService.onGameJoin);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_ACTUAL_GAME_INIT, this.gameService.gameInit);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_START, this.gameService.gameStart);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, this.gameService.gameplayResponse);
+		
+		this.gameService.joinGame();
+
 		// Start game method
 		var startGame = function() {
 
@@ -92,14 +107,14 @@
 
 		// Call connect debug methods
 		//gameService.debugConnect();
-		gameService.initialiseSockets();
+		//gameService.initialiseSockets();
 
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method
 		var gameplayConfigWaiter = new Waiter(function() {
 			return self.$rootScope.gameplayConfig;
 		}, startGame, 100); // -- should really change so the server has a list
-							// of acknowleged users
+							// of acknowledged users
 		(new Waiter(function() {
 			return self.$rootScope.socketsReady;
 		}, function() {
