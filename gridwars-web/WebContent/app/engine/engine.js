@@ -888,6 +888,14 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 
 		// Add object to unit array
 		this.units.push(newTank);
+
+		//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
+		for(var index = 0; index < this.players.length; index++) {
+			if(!this.players[index].hasPlacedObject && this.players[index].playerId === this.currentPlayer.playerId) {
+				this.players[index].hasPlacedObject = true;
+				break;
+			}
+		}
 	}
 }
 
