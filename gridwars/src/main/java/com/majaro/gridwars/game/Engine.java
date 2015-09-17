@@ -375,6 +375,36 @@ public class Engine extends Thread {
 		}
 	}
 	
+	private GameplayResponse processDamageUnitRequest(Player player, DynGameUnit[] sourceUnits, int damageAmount) {
+
+		// Set default result
+		GameplayResponse response = null;
+		boolean validConstruction = true;	
+
+		// Check each object in turn
+		for (DynGameUnit sourceUnit : sourceUnits) {
+			
+			// Reduce health of unit by passed amount
+			sourceUnit.takeDamage(damageAmount);
+			
+			// Only run this loop once for now
+			break;
+			
+		}
+
+		// Construct valid response
+		if (validConstruction) {
+			response = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
+			for (DynGameUnit targetUnit : sourceUnits) {
+				response.addTarget(targetUnit);
+			}
+			response.addMisc(Integer.toString(damageAmount));
+		}
+
+		// Return calculated result
+		return response;
+	}
+	
 	private GameplayResponse processDebugPlacementRequest(Player player, GameUnit[] sourceUnits, int col, int row) {
 
 		// Set default result
@@ -443,6 +473,11 @@ public class Engine extends Thread {
 		        	this.processWaypointUpdateUnitCellRequest(sender, 
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false),
 		        			coordinates);
+		        	break;
+		        case DAMAGE_OBJECT:
+		        	gameplayResponse = this.processDamageUnitRequest(sender,
+		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false),
+		        			Integer.parseInt(gameplayRequest.getTargetString()[0]));
 		        	break;
 		        case DEBUG_PLACEMENT:
 		        	gameplayResponse = this.processDebugPlacementRequest(sender, 

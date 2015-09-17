@@ -134,6 +134,9 @@ public class GameplayResponse {
 			case NEW_BUILDING:
 				result = this.getInstanceArrayFromDynGameBuildingList(this.source, false);
 				break;
+			case DAMAGE_OBJECT:
+				result = this.getInstanceArrayFromDynGameUnitList(this.target, false);
+				break;
 			case DEBUG_PLACEMENT:
 				result = this.getInstanceArrayFromDynGameUnitList(this.source, false);
 				break;

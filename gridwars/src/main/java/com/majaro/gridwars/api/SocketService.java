@@ -36,7 +36,7 @@ import com.majaro.gridwars.apiobjects.GameplayResponse;
 public class SocketService {
 
 	// Request processor reference
-	private static RequestProcessor requestProcessor;
+	private RequestProcessor requestProcessor;
 
 	// Socket objects
 	private Configuration socketServerConfig;

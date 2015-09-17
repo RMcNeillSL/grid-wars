@@ -12,7 +12,7 @@ function GameplayRequest(requestCode, params) {
 		if (params.targetCellX) { this.targetCellX = params.targetCellX; }
 		if (params.targetCellY) { this.targetCellY = params.targetCellY; }
 		if (params.source) { this.source = params.source; }
-		if (params.target) { this.source = params.target; }
+		if (params.target) { this.target = params.target; }
 	}
 	
 	// Debug output for console
@@ -139,6 +139,32 @@ ServerAPI.prototype.requestUpdateUnitCell = function(unit, newCell) {
 		
 		// Generate request object
 		var request = new GameplayRequest("WAYPOINT_UPDATE_UNIT_CELL", params);
+		
+		// Submit request
+		this.gameService.gameplayRequest(request);
+		
+	}
+	
+}
+
+ServerAPI.prototype.requestDamageSubmission = function(units, damageAmount) {
+
+	// Make sure required information is present
+	if (units && damageAmount) {
+		
+		// Create request params
+		var params = {
+				source: [],
+				target: [damageAmount]
+		};
+		
+		// Populate damage unit list
+		for (var unitIndex = 0; unitIndex < units.length; unitIndex ++) {
+			params.source.push(units[unitIndex].gameCore.instanceId);
+		}
+		
+		// Generate request object
+		var request = new GameplayRequest("DAMAGE_OBJECT", params);
 		
 		// Submit request
 		this.gameService.gameplayRequest(request);

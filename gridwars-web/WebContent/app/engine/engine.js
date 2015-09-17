@@ -57,7 +57,7 @@ function Engine(gameplayConfig, playerId, serverAPI) {
 	// Construct engine core values for unit/building/defence construction
 	this.engineCore = {
 			phaserEngine: this.phaserGame,
-			func_RequestExplosion: function(mapGroup, explosionId, x, y) { self.explosionManager.requestExplosion(mapGroup, explosionId, x, y) },
+			func_RequestExplosion: function(mapGroup, explosionId, ownerId, explosionInstanceId, x, y) { self.explosionManager.requestExplosion(mapGroup, explosionId, ownerId, explosionInstanceId, x, y) },
 			func_UpdateNewUnitCell: function(sender, oldCell, newCell) { self.updateNewUnitCell(sender, oldCell, newCell); }
 	};
 
@@ -96,7 +96,13 @@ Engine.prototype.create = function() {
 	this.mapOverlayGroup = this.phaserGame.add.group();
 	this.turretGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
+	
+	// 
+//	this.turretGroup.enableBody(true);
 
+	// Start physics engine
+	this.phaserGame.physics.startSystem(Phaser.Physics.ARCADE);
+	
 	// Construct explosion manager
 	this.explosionManager = new ExplosionManager(this.phaserGame);
 
@@ -108,6 +114,9 @@ Engine.prototype.create = function() {
 	this.phaserGame.input.keyboard.addCallbacks(this, null, null, local_onKeyPressed);
 	this.phaserGame.input.addMoveCallback(this.onMouseMove, this);
 
+
+	this.collisionCanvas = self.phaserGame.add.bitmapData(self.phaserGame.width, self.phaserGame.height);
+	this.collisionCanvas.addToWorld();
 }
 
 Engine.prototype.update = function() {
@@ -125,6 +134,9 @@ Engine.prototype.update = function() {
 	// Update all buildings and units
 	for (var index = 0; index < this.buildings.length; index++) { this.buildings[index].update(); }
 	for (var index = 0; index < this.units.length; index++) { this.units[index].update(); }
+
+	// Search for collisions between firable objects
+	this.explosionCollisionCheck();
 
 }
 
@@ -221,6 +233,98 @@ Engine.prototype.onKeyPressed = function(char) {
 
 // Utility methods
 
+Engine.prototype.explosionCollisionCheck = function() {
+
+	// Create self reference
+	var self = this;
+
+	// Define working variables
+	var damageAmount = 0;
+	
+	// Create explosion hit test (calculation) function
+	var explosionHitTest = function(explosionSprite, spriteList) {
+		
+		// Set default result variable
+		var collisionOccured = false;
+		
+		// Perform check with explosion and each sprite in the sprite list
+		for (var index = 0; index < spriteList.length; index ++) {
+
+			// Calculate boundaries for sprites
+			var boundsA = explosionSprite.getBounds();
+			var boundsB = spriteList[index].getBounds();
+			
+			// Calculate intersect rectangle
+			var x_overlap = Math.max(0, Math.min(boundsA.right,boundsB.right) - Math.max(boundsA.left,boundsB.left));
+			var y_overlap = Math.max(0, Math.min(boundsA.bottom,boundsB.bottom) - Math.max(boundsA.top,boundsB.top));
+			var intersectRect = {
+					left: Math.min(boundsA.left,boundsB.left),
+					top: Math.max(boundsA.top,boundsB.top),
+					right: Math.min(boundsA.left,boundsB.left) + x_overlap,
+					bottom: Math.max(boundsA.top,boundsB.top) + y_overlap,
+					width: x_overlap,
+					height: y_overlap
+				};
+			
+			// Check an overlap rectangle exists before more accurate collision detection
+			if (intersectRect.width * intersectRect.height > 0) {
+				
+//				// Output debug info
+//				console.log("A: [" + boundsA.top + "," + boundsA.bottom + "," + boundsA.left + "," + boundsA.right + "]");
+//				console.log("B: [" + boundsB.top + "," + boundsB.bottom + "," + boundsB.left + "," + boundsB.right + "]");
+//				console.log("I: [" + intersectRect.top + "," + intersectRect.bottom + "," + intersectRect.left + "," + intersectRect.right + "]");
+//
+//				// Output for debugging
+//				self.collisionCanvas.draw(explosionSprite, explosionSprite.x, explosionSprite.y);
+//				self.collisionCanvas.draw(spriteB, spriteB.x, spriteB.y);
+//				
+//				// XOR sprite A & B
+//				
+//				// Check for pixels on colcanvas
+				
+				// Process damage calculation
+				damageAmount = 50;
+				
+				// Mark collision as occuring
+				collisionOccured = true;
+
+			}
+		}
+		
+		// Return calculated result
+		return collisionOccured;
+
+	}
+	
+	// Get explosion register
+	var explosionRegister = this.explosionManager.explosionRegister;
+	if (explosionRegister.length > 0) {
+		for (var explosionIndex = 0; explosionIndex < this.explosionManager.explosionRegister.length; explosionIndex ++) {
+
+			// Test each building with current explosion
+			for (var index = 0; index < this.buildings.length; index ++) {
+				if (!this.buildings[index].isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId) &&
+						this.units[index].gameCore.playerId == this.currentPlayer.playerId &&
+						explosionHitTest(explosionRegister[explosionIndex], this.buildings[index].getCollisionLayers())) {
+					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageAmount);
+				}
+			}
+			
+			// Test each unit with current explosion
+			for (var index = 0; index < this.units.length; index ++) {
+				if (!this.units[index].isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId) &&
+						this.units[index].gameCore.playerId == this.currentPlayer.playerId &&
+						explosionHitTest(explosionRegister[explosionIndex], this.units[index].getCollisionLayers())) {
+					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission([this.units[index]], damageAmount);
+				}
+			}
+			
+		}
+	}
+}
+
 Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) {
 	
 	// Check if sender is unit owner
@@ -249,9 +353,8 @@ Engine.prototype.createNewBuildingObject = function(gameCore) {
 
 	// Create new object and return
 	this.phaserGame.newBuilding.active = true;
-	this.phaserGame.newBuilding.target = new Turret(this.phaserGame, gameCore, this.mapGroup, this.turretGroup,
-			gameCore.cell.toPoint(), gameCore.cell.col, gameCore.cell.row, 100, 100,
-            this.explosionManager.requestExplosion, true);
+	this.phaserGame.newBuilding.target = new Turret(this.engineCore, gameCore, this.mapGroup, this.turretGroup,
+			gameCore.cell.toPoint(), gameCore.cell.col, gameCore.cell.row, 100, 100, true);
 }
 
 Engine.prototype.purchaseObject = function(item) {
@@ -330,9 +433,9 @@ Engine.prototype.processNewBuilding = function(responseData) {
 		gameCore.setPlayer(refObject.player);
 
 		// Construct object for positioning
-		var newBuilding = new Turret(this.phaserGame, gameCore, this.mapGroup,
+		var newBuilding = new Turret(this.engineCore, gameCore, this.mapGroup,
 				this.turretGroup, refObject.xy, refObject.col, refObject.row,
-				100, 100, this.explosionManager.requestExplosion, false);
+				100, 100, false);
 
 		// Add object to building array
 		this.buildings.push(newBuilding);
@@ -403,6 +506,31 @@ Engine.prototype.processWaypoints = function(responseData) {
 	}
 }
 
+Engine.prototype.processUnitDamage = function(responseData) {
+
+	// Get damage due
+	var damage = parseInt();
+	
+	// Iterate over every unit due damage
+	for (var unitIndex = 0; unitIndex < responseData.target.length; unitIndex ++) {
+
+		// Create reference object
+		var refObject = {
+			damageDue : parseInt(responseData.misc[unitIndex]),
+			instanceId : responseData.target[unitIndex]
+		};
+		
+		// Get targeted unit
+		var unit = this.getObjectFromInstanceId(refObject.instanceId);
+		
+		// Submit unit damage
+		if (unit) {
+			unit.gameCore.takeDamage(refObject.damageDue);
+			console.log("Tank health: " + unit.gameCore.health);
+		}	
+	}
+}
+
 Engine.prototype.processDebugPlacement = function(responseData) {
 
 	// Iterate through all buildings
@@ -451,6 +579,9 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 	        break;
 	    case "WAYPOINT_PATH_COORDS":
 	        this.processWaypoints(responseData);
+	    	break;
+	    case "DAMAGE_OBJECT":
+	    	this.processUnitDamage(responseData);
 	    	break;
 	    case "DEBUG_PLACEMENT":
 	    	this.processDebugPlacement(responseData);
