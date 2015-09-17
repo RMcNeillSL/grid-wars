@@ -89,6 +89,24 @@ function SocketShiz () {
 	this.sockets.on(CONSTANTS.SOCKET_REC_ROOM_DELETED, function (response) {
 		if (self.onRoomDelete) { self.onRoomDelete(response); }
 	});
+	
+	// BIND EVENTS - GAME
+	
+	this.sockets.on(CONSTANTS.SOCKET_REC_ACTUAL_GAME_INIT, function (response) {
+		if (self.onGameActualInit) { self.onGameActualInit(response); }
+	});
+	
+	this.sockets.on(CONSTANTS.SOCKET_REC_GAME_START, function (response) {
+		if (self.onGameStart) { self.onGameStart(response); }
+	});
+	
+	this.sockets.on(CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, function (response) {
+		if (self.onGameplayResponse) { self.onGameplayResponse(response); }
+	});
+	
+	this.sockets.on(CONSTANTS.SOCKET_REC_GAME_JOIN, function (response) {
+		if (self.onGameJoin) { self.onGameJoin(response); }
+	});
 
 }
 
@@ -116,6 +134,12 @@ SocketShiz.prototype.resetCallbacks = function() {
 	this.onUserLeftLobby		= null;
 	this.onLeftLobby			= null;
 	this.onRoomDelete			= null;
+	
+	// SET DEFAULT CALLBACKS - GAME
+	this.onGameActualInit		= null;
+	this.onGameStart			= null;
+	this.onGameplayResponse		= null;
+	this.onGameJoin				= null;
 }
 
 SocketShiz.prototype.bindEvent = function(bindingIdentifier, callback) {
@@ -201,6 +225,25 @@ SocketShiz.prototype.bindEvent = function(bindingIdentifier, callback) {
 	// GAME LOBBY: 
 	if (bindingIdentifier === CONSTANTS.SOCKET_REC_ROOM_DELETED) {
 		this.onRoomDelete = callback;
+	}
+	
+	// GAME: 
+	if (bindingIdentifier === CONSTANTS.SOCKET_REC_ACTUAL_GAME_INIT) {
+		this.onGameActualInit = callback;
+	}
+	
+	// GAME: 
+	if (bindingIdentifier === CONSTANTS.SOCKET_REC_GAME_START) {
+		this.onGameStart = callback;
+	}
+	
+	// GAME: 
+	if (bindingIdentifier === CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE) {
+		this.onGameplayResponse = callback;
+	}
+	
+	if (bindingIdentifier === CONSTANTS.SOCKET_REC_GAME_JOIN) {
+		this.onGameJoin = callback;
 	}
 
 }

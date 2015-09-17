@@ -25,6 +25,12 @@ CONSTANTS = {
 	SOCKET_REC_USER_LEFT_GAME_LOBBY		: "userLeftLobby",
 	SOCKET_REC_LEFT_LOBBY				: "leftLobby",
 	SOCKET_REC_ROOM_DELETED				: "roomDeleted",
+	
+	// Game socket on events
+	SOCKET_REC_GAME_JOIN				: "gameJoin",
+	SOCKET_REC_ACTUAL_GAME_INIT			: "gameInit",
+	SOCKET_REC_GAME_START				: "gameStart",
+	SOCKET_REC_GAMEPLAY_RESPONSE		: "gameplayResponse",
 
 	// ***************** SOCKET EMIT EVENTS ****************** //
 	SOCKET_SEND_TEST_MESSAGE			: "sendTestMessage",
@@ -34,7 +40,7 @@ CONSTANTS = {
 	SOCKET_SEND_REFRESH_GAME_LOBBY 		: "refreshGameLobby",
 	SOCKET_SEND_LEAVE_SERVER_LOBBY 		: "leaveServerLobby",
 
-	// Game lobby socket on events
+	// Game lobby socket emit events
 	SOCKET_SEND_JOIN_GAME_LOBBY			: "joinGameLobby",
 	SOCKET_SEND_CHAT_MESSAGE			: "sendMessage",
 	SOCKET_SEND_GET_NEW_CONFIG			: "getNewConfig",
@@ -46,7 +52,12 @@ CONSTANTS = {
 	SOCKET_SEND_GAME_INIT				: "startGameInitialisation",
 	SOCKET_SEND_CHANGE_LOBBY_LEADER		: "changeLobbyLeader",
 	SOCKET_SEND_LEAVE_GAME_LOBBY		: "leaveGameLobby",
-
+	
+	// Game socket emit events
+	SOCKET_SEND_JOIN_GAME				: "joinGame",
+	SOCKET_SEND_ACTUAL_GAME_INIT		: "initGame",
+	SOCKET_SEND_START_GAME				: "startGame",
+	SOCKET_SEND_GAMEPLAY_REQUEST		: "gameplayRequest",
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",

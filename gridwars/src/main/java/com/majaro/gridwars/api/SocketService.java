@@ -60,6 +60,15 @@ public class SocketService {
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
 
+	@OnEvent("joinGame")
+	public void joinGame(SocketIOClient client) {
+		System.out.println("User has entered a game");
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+		broadcastRoomState.sendEvent("gameJoin", gameAndUserInfo.getUsername());
+	}
+	
 	// used to initialise the game engine
 	@OnEvent("initGame")
 	public void initGame(SocketIOClient client, GameInitRequest data, AckRequest ackRequest) {
