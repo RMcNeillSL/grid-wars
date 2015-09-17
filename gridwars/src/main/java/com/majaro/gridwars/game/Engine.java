@@ -375,11 +375,14 @@ public class Engine extends Thread {
 		}
 	}
 	
-	private GameplayResponse processDamageUnitRequest(Player player, DynGameUnit[] sourceUnits, int damageAmount) {
+	private GameplayResponse processDamageUnitRequest(Player player, String[] instanceIds, int damageAmount) {
 
 		// Set default result
 		GameplayResponse response = null;
-		boolean validConstruction = true;	
+		boolean validConstruction = true;
+		
+		// Check if id's refer to units
+		DynGameUnit[] sourceUnits = this.getGameUnitsFromInstanceIds(instanceIds, false);
 
 		// Check each object in turn
 		for (DynGameUnit sourceUnit : sourceUnits) {
@@ -439,11 +442,6 @@ public class Engine extends Thread {
 		// Check minimum processing conditions
 		if (sender != null) {
 			
-			// Define and initialise working variables
-			GameBuilding[] sourceBuildings;
-			int cellX;
-			int cellY;
-
 			// Log received request for debugging
 			System.out.println(gameplayRequest.toString());
 
@@ -476,12 +474,12 @@ public class Engine extends Thread {
 		        	break;
 		        case DAMAGE_OBJECT:
 		        	gameplayResponse = this.processDamageUnitRequest(sender,
-		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false),
+		        			gameplayRequest.getSourceString(), 
 		        			Integer.parseInt(gameplayRequest.getTargetString()[0]));
 		        	break;
 		        case DEBUG_PLACEMENT:
 		        	gameplayResponse = this.processDebugPlacementRequest(sender, 
-		        			Const.getGameUnitArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
+		        			Const.getGameUnitArrayFromGameObjectArrayList(gameplayRequest.getSource()),
 		        			gameplayRequest.getTargetCellX(), 
 		        			gameplayRequest.getTargetCellY());
 		        	break;

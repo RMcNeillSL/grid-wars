@@ -38,7 +38,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		
 		// Create turrent cannon sprite
 		this.topSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, this.turretFrameInfo.TOP);
-		this.topSegment.anchor.setTo(0.5, 0.5);
+		this.topSegment.anchor.setTo(0.5, 0.55);
 		this.topSegment.width = this.width;
 		this.topSegment.height = this.height;
 		this.topSegment.z = 11;
@@ -324,3 +324,11 @@ Turret.prototype.destroy = function() {
 	this.bulletParticle02.animations.destroy();
 	this.bulletParticle02.destroy();
 }
+
+Turret.prototype.getBounds = function() {
+	return this.baseSegment.getBounds();
+}
+
+
+
+

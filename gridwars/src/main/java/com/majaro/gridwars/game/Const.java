@@ -182,7 +182,7 @@ public final class Const {
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
-			new GameUnit("TANK", 1000, 400, E_TechLevel.TECH_01, 2)
+			new GameUnit("TANK", 200, 400, E_TechLevel.TECH_01, 2)
 		};
 	
 	

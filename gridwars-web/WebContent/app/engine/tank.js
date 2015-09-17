@@ -36,7 +36,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		
 		// Create turrent cannon sprite
 		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top + this.height * 0.08, CONSTANTS.SPRITE_TANK, 1);
-		this.turretSegment.anchor.setTo(0.5, 0.8);
+		this.turretSegment.anchor.setTo(0.5, 0.78);
 		this.turretSegment.z = 11;
 //		this.engineCore.phaserEngine.physics.enable(this.turretSegment, Phaser.Physics.ARCADE);
 //		this.turretSegment.body.enable = true;
@@ -117,10 +117,10 @@ Tank.prototype.progressWaypoints = function() {
 	this.top = this.top + incY;
 
 	// Update sprite positioning
-	this.bodySegment.x = this.left;
-	this.bodySegment.y = this.top;
-	this.turretSegment.x = this.left;
-	this.turretSegment.y = this.top;
+	this.bodySegment.x = this.bodySegment.x + incX;
+	this.bodySegment.y = this.bodySegment.y + incY;
+	this.turretSegment.x = this.turretSegment.x + incX;
+	this.turretSegment.y = this.turretSegment.y + incY;
 	
 	// Check new cell position
 	var newCell = (new Point(this.left, this.top)).toCell();
@@ -173,6 +173,10 @@ Tank.prototype.destroy = function() {
 	this.bodySegment.destroy();
 	this.turretSegment.animations.destroy();
 	this.turretSegment.destroy();
+}
+
+Tank.prototype.getBounds = function() {
+	return this.bodySegment.getBounds();
 }
 
 
