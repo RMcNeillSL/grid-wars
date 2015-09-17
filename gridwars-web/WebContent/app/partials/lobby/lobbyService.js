@@ -11,41 +11,28 @@
 	}
 
 	LobbyService.prototype = {
-		socketSetup: function () {
-			self = this;
-			console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
-			this.lobbySocket = io.connect(CONSTANTS.SOCKET_SERVER, {
-				"force new connection": true,
-				"timeout" : 5000
+		onConnect: function () {
+			console.log("Socket connection established");
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME_LOBBY, {
+				"user" : self.$rootScope.currentUser
 			});
-
-			this.lobbySocket.on("connect", function () {
-				if(self.$rootScope.currentlyInLobby === false) {
-					self.lobbySocket.emit("joinGameLobby", {
-						"user" : self.$rootScope.currentUser
-					});
-					self.$rootScope.currentlyInLobby = true;
-				}
-
-			});
-
-			this.lobbySocket.on("gameLobbyMessage", function(data) {
-				self.$rootScope.lobbyMessages.push(data);
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("userJoinedGameLobby", function(data) {
-				var userJoinedMessage = {
-						"user" : data,
-						"message" : "has joined the lobby"
-					};
-				self.$rootScope.lobbyMessages.push(userJoinedMessage);
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("gameConfig", function(mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
+			this.$rootScope.currentlyInLobby = true;
+		},
+		onChatMessage: function (data) {
+			this.$rootScope.lobbyMessages.push(data);
+			self.$rootScope.$apply();
+		},
+		userJoinedGameLobby: function (data) {
+			var userJoinedMessage = {
+					"user" : data,
+					"message" : "has joined the lobby"
+				};
+			this.$rootScope.lobbyMessages.push(userJoinedMessage);
+			this.$rootScope.$apply();
+		},
+		newGameConfig: function (mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
 				gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
-				self.$rootScope.gameConfig = {
+			self.$rootScope.gameConfig = {
 					"mapId" : mapId,
 					"maxPlayers" : maxPlayers,
 					"gameType" : gameType,
@@ -59,133 +46,122 @@
 					"redeployableMCV" : redeployableMCV
 				}
 				self.$rootScope.$apply();
-			});
+		},
+		newUserList: function (lobbyUserList) {
+			self.$rootScope.lobbyUserList = lobbyUserList;
+			var tempNotReadyCount = 0;
+			self.$rootScope.connectedUsers = 0;
 
-			this.lobbySocket.on("lobbyUserList", function(lobbyUserList) {
-				self.$rootScope.lobbyUserList = lobbyUserList;
-				var tempNotReadyCount = 0;
-				self.$rootScope.connectedUsers = 0;
+			for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
+				for (var x = 0; x < self.$rootScope.colourList.length; x++) {
+					if (self.$rootScope.lobbyUserList[i].playerColour === self.$rootScope.colourList[x]) {
+						self.$rootScope.colourList.splice(x, 1);
+					}
+				}
+				if (self.$rootScope.lobbyUserList[i].ready == false) {
+					tempNotReadyCount++;
+				}
+				self.$rootScope.connectedUsers++;
+			}
 
-				for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
+			self.$rootScope.notReadyCount = tempNotReadyCount-1;
+
+			self.$rootScope.connectedUserCount = self.$rootScope.lobbyUserList.length;
+
+			if (self.$rootScope.gameConfig) {
+				for (var i = (self.$rootScope.lobbyUserList.length); i < self.$rootScope.gameConfig.mapMaxPlayers; i++) {
+					var emptyPlayer = {
+							factionId : -1,
+							linkedUser : { id : -1, username : "Empty"},
+							playerColour : "N/A",
+							playerTeam : 0,
+							ready : null
+					}
+
+					if (i < self.$rootScope.gameConfig.maxPlayers) {
+						emptyPlayer.linkedUser.username = "Open";
+					} else {
+						emptyPlayer.linkedUser.username = "Closed";
+					}
+					self.$rootScope.lobbyUserList.push(emptyPlayer);
+				}
+			}
+			self.$rootScope.$apply();
+		},
+		mapChangeError: function (message) {
+			self.$rootScope.gameConfig.mapId = self.$rootScope.previousMapId;
+			alert(message);
+			self.$rootScope.$apply();
+		},
+		toggleUserReady: function (userId) {
+			var tempNotReadyCount = 0;
+
+			for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
+				if (userId === self.$rootScope.lobbyUserList[i].linkedUser.id && self.$rootScope.lobbyUserList[i].ready != null) {
+					self.$rootScope.lobbyUserList[i].ready = !self.$rootScope.lobbyUserList[i].ready;
+				}
+				if (self.$rootScope.lobbyUserList[i].ready == false) {
+					tempNotReadyCount++;
+				}
+			}
+			self.$rootScope.notReadyCount = tempNotReadyCount-1;
+			self.$rootScope.$apply();
+		},
+		changeUserColour: function (userId, colour) {
+			for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
+				if (userId === self.$rootScope.lobbyUserList[i].linkedUser.id) {
 					for (var x = 0; x < self.$rootScope.colourList.length; x++) {
-						if (self.$rootScope.lobbyUserList[i].playerColour === self.$rootScope.colourList[x]) {
-							self.$rootScope.colourList.splice(x, 1);
+						if (self.$rootScope.colourList[x] === colour) {
+							self.$rootScope.colourList[x] = self.$rootScope.lobbyUserList[i].playerColour;
 						}
 					}
-					if (self.$rootScope.lobbyUserList[i].ready == false) {
-						tempNotReadyCount++;
-					}
-					self.$rootScope.connectedUsers++;
+					self.$rootScope.lobbyUserList[i].playerColour = colour;
 				}
-
-				self.$rootScope.notReadyCount = tempNotReadyCount-1;
-
-				self.$rootScope.connectedUserCount = self.$rootScope.lobbyUserList.length;
-
-				if (self.$rootScope.gameConfig) {
-					for (var i = (self.$rootScope.lobbyUserList.length); i < self.$rootScope.gameConfig.mapMaxPlayers; i++) {
-						var emptyPlayer = {
-								factionId : -1,
-								linkedUser : { id : -1, username : "Empty"},
-								playerColour : "N/A",
-								playerTeam : 0,
-								ready : null
-						}
-
-						if (i < self.$rootScope.gameConfig.maxPlayers) {
-							emptyPlayer.linkedUser.username = "Open";
-						} else {
-							emptyPlayer.linkedUser.username = "Closed";
-						}
-						self.$rootScope.lobbyUserList.push(emptyPlayer);
-					}
+			}
+			self.$rootScope.$apply();
+		},
+		changeUserTeam: function (userId, team) {
+			for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
+				if (userId === self.$rootScope.lobbyUserList[i].linkedUser.id) {
+					self.$rootScope.lobbyUserList[i].playerTeam = team;
 				}
-				self.$rootScope.$apply();
-			});
+			}
+			self.$rootScope.$apply();
+		},
+		gameInitialising: function () {
+			self.$rootScope.lobbyMessages.push({user: "SERVER", message: "All users ready - initialising game"});
+			self.$location.path("/game");
+			self.$rootScope.$apply();
+		},
+		leaderChanged: function (targetUsername) {
+			if (targetUsername == self.$rootScope.currentUser) {
+				self.$rootScope.gameLeader = true;
+				self.$window.sessionStorage.gameLeader = true;
+			} else {
+				self.$rootScope.gameLeader = false;
+				self.$window.sessionStorage.gameLeader = false;
+			}
 
-			this.lobbySocket.on("mapChangeError", function (message) {
-				self.$rootScope.gameConfig.mapId = self.$rootScope.previousMapId;
-				alert(message);
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("toggleUserReady", function (userId) {
-				var tempNotReadyCount = 0;
-
-				for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
-					if (userId === self.$rootScope.lobbyUserList[i].linkedUser.id && self.$rootScope.lobbyUserList[i].ready != null) {
-						self.$rootScope.lobbyUserList[i].ready = !self.$rootScope.lobbyUserList[i].ready;
-					}
-					if (self.$rootScope.lobbyUserList[i].ready == false) {
-						tempNotReadyCount++;
-					}
-				}
-				self.$rootScope.notReadyCount = tempNotReadyCount-1;
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("changeUserColour", function(userId, colour) {
-				for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
-					if (userId === self.$rootScope.lobbyUserList[i].linkedUser.id) {
-						for (var x = 0; x < self.$rootScope.colourList.length; x++) {
-							if (self.$rootScope.colourList[x] === colour) {
-								self.$rootScope.colourList[x] = self.$rootScope.lobbyUserList[i].playerColour;
-							}
-						}
-						self.$rootScope.lobbyUserList[i].playerColour = colour;
-					}
-				}
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("changeUserTeam", function(userId, team) {
-				for (var i = 0; i < self.$rootScope.lobbyUserList.length; i++) {
-					if (userId === self.$rootScope.lobbyUserList[i].linkedUser.id) {
-						self.$rootScope.lobbyUserList[i].playerTeam = team;
-					}
-				}
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("gameInitialising", function () {
-				self.$rootScope.lobbyMessages.push({user: "SERVER", message: "All users ready - initialising game"});
-				self.$location.path("/game");
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("leaderChanged", function (targetUsername) {
-				if (targetUsername == self.$rootScope.currentUser) {
-					self.$rootScope.gameLeader = true;
-					self.$window.sessionStorage.gameLeader = true;
-				} else {
-					self.$rootScope.gameLeader = false;
-					self.$window.sessionStorage.gameLeader = false;
-				}
-
-				self.$rootScope.lobbyMessages.push({user: "SERVER", message: "Leader has been changed to " + targetUsername});
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("userLeftLobby", function (username) {
-				self.$rootScope.lobbyMessages.push({user: "SERVER", message: username + " has left the lobby"});
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("leftLobby", function () {
-				self.lobbySocket.emit("forceDisconnect");
-				if (self.$rootScope.loggedOut) {
-					self.$location.path("/login");
-				} else {
-					self.$location.path("/servers");
-				}
-				self.$rootScope.$apply();
-			});
-
-			this.lobbySocket.on("roomDeleted", function () {
-				alert("The lobby leader has delete the lobby, returning to the server lobby page");
+			self.$rootScope.lobbyMessages.push({user: "SERVER", message: "Leader has been changed to " + targetUsername});
+			self.$rootScope.$apply();
+		},
+		userLeftLobby: function (username) {
+			self.$rootScope.lobbyMessages.push({user: "SERVER", message: username + " has left the lobby"});
+			self.$rootScope.$apply();
+		},
+		leftLobby: function () {
+			//self.lobbySocket.emit("forceDisconnect");
+			if (self.$rootScope.loggedOut) {
+				self.$location.path("/login");
+			} else {
 				self.$location.path("/servers");
-				self.$rootScope.$apply();
-			});
+			}
+			self.$rootScope.$apply();
+		},
+		roomDeleted: function () {
+			alert("The lobby leader has delete the lobby, returning to the server lobby page");
+			self.$location.path("/servers");
+			self.$rootScope.$apply();
 		},
 		getMaps: function () {
 			this.$http.get("/gridwars/rest/game/maps").then(function(response) {
@@ -199,42 +175,42 @@
 			});
 		},
 		sendMessage: function (newMessage) {
-			var tempObject = {
+			var chatObject = {
 					"user" : self.$rootScope.currentUser,
 					"message" : newMessage
 				};
-			this.lobbySocket.emit("sendMessage", tempObject);
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_CHAT_MESSAGE, chatObject);
 		},
 		getConfig: function () {
-			this.lobbySocket.emit("getNewConfig");
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GET_NEW_CONFIG);
 		},
 		getUsers: function () {
-			this.lobbySocket.emit("getNewUserList");
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GET_NEW_USER_LIST);
 		},
 		joinGameLobby: function () {
-			this.lobbySocket.emit("joinGameLobby");
-			this.$rootScope.gameLobbyName = self.$rootScope.gameConfig.lobbyName;
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME_LOBBY);
+			this.$rootScope.gameLobbyName = this.$rootScope.gameConfig.lobbyName;
 		},
 		updateConfig: function () {
-			this.lobbySocket.emit("updateGameConfig", self.$rootScope.gameConfig);
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_UPDATE_GAME_CONFIG, this.$rootScope.gameConfig);
 		},
 		toggleReady: function () {
-			this.lobbySocket.emit("userToggleReady");
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_TOGGLE_READY);
 		},
 		changeColour: function (colour) {
-			this.lobbySocket.emit("userChangeColour", colour);
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_CHANGE_COLOUR, colour);
 		},
 		changeTeam: function (team) {
-			this.lobbySocket.emit("userChangeTeam", team);
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_USER_CHANGE_TEAM, team);
 		},
 		startGame: function () {
-			this.lobbySocket.emit("startGameInitialisation");
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GAME_INIT);
 		},
 		changeLeader: function (userId) {
-			this.lobbySocket.emit("changeLobbyLeader", userId);
+			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_CHANGE_LOBBY_LEADER, userId);
 		},
 		leaveGame: function () {
-			this.lobbySocket.emit("leaveLobby");
+			this.$rootScope.sockets.emitEventt(CONSTANTS.SOCKET_SEND_LEAVE_GAME_LOBBY);
 			self.$rootScope.gameLeader = false;
 			self.$window.sessionStorage.gameLeader = false;
 			self.$rootScope.currentlyInLobby = false;

@@ -30,7 +30,30 @@
 		}
 
 		// Setup the socket
-		this.lobbyService.socketSetup();
+//		this.lobbyService.socketSetup();
+
+		// Set up new sockets or reset if they exist
+		if (!this.$rootScope.sockets) {
+			this.$rootScope.sockets = new SocketShiz();
+		} else {
+			this.$rootScope.sockets.resetCallbacks();
+		}
+
+		// Bind the events we need for this page
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CONNECT, this.lobbyService.onConnect);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CHAT_MESSAGE, this.lobbyService.onChatMessage);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_USER_JOINED_GAME_LOBBY, this.lobbyService.userJoinedGameLobby);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_CONFIG, this.lobbyService.newGameConfig);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_LOBBY_USER_LIST, this.lobbyService.newUserList);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_MAP_CHANGE_ERROR, this.lobbyService.mapChangeError);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_TOGGLE_USER_READY, this.lobbyService.toggleUserReady);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CHANGE_USER_COLOUR, this.lobbyService.changeUserColour);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CHANGE_USER_TEAM, this.lobbyService.changeUserTeam);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_INIT, this.lobbyService.gameInitialising);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_LEADER_CHANGED, this.lobbyService.leaderChanged);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_USER_LEFT_GAME_LOBBY, this.lobbyService.userLeftLobby);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_LEFT_LOBBY, this.lobbyService.leftLobby);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_ROOM_DELETED, this.lobbyService.roomDeleted);
 
 		// Get information from server
 		function getAllData () {

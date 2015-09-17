@@ -9,7 +9,7 @@
 	ServersService.prototype = {
 		onConnect: function () {
 			console.log("Socket connection established");
-			this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_SERVER_LOBBY);
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_SERVER_LOBBY);
 		},
 		serverLobbyUpdate: function (data) {
 			self.$rootScope.servers = data;

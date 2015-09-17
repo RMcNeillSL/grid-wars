@@ -106,6 +106,7 @@ public class SocketService {
 		String sessionId = client.getSessionId().toString();
 		requestProcessor.bindSocketSessionId(username, sessionId);
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		System.out.println("User has entered a game lobby");
 
 		if (gameAndUserInfo != null) {
 			String lobbyId = gameAndUserInfo.getLobbyId();

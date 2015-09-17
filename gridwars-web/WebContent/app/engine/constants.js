@@ -3,21 +3,49 @@ CONSTANTS = {
 	// Misc constants
 	SOCKET_SERVER : "ws://" + window.location.host + ":8080/",
 
-	// SOCKET ON EVENTS
-	SOCKET_REC_TEST_MESSAGE 		: "testMessage",
-	SOCKET_REC_CONNECT				: "connect",
+	// ******************* SOCKET ON EVENTS ****************** //
+	SOCKET_REC_CONNECT					: "connect",
 
 	// Server lobby socket on events
-	SOCKET_REC_SERVER_LOBBY_UPDATE	: "updateServerLobby",
-	SOCKET_REC_REFRESH_GAME_LOBBY	: "refreshGameLobby",
+	SOCKET_REC_SERVER_LOBBY_UPDATE		: "updateServerLobby",
+	SOCKET_REC_REFRESH_GAME_LOBBY		: "refreshGameLobby",
 
-	// SOCKET EMIT EVENTS
-	SOCKET_SEND_TEST_MESSAGE		: "sendTestMessage",
+	// Game lobby socket on events
+	SOCKET_REC_CHAT_MESSAGE				: "gameLobbyMessage",
+	SOCKET_REC_USER_JOINED_GAME_LOBBY	: "userJoinedGameLobby",
+	SOCKET_REC_GAME_CONFIG				: "gameConfig",
+	SOCKET_REC_LOBBY_USER_LIST			: "lobbyUserList",
+	SOCKET_REC_MAP_CHANGE_ERROR			: "mapChangeError",
+	SOCKET_REC_TOGGLE_USER_READY		: "toggleUserReady",
+	SOCKET_REC_CHANGE_USER_COLOUR		: "changeUserColour",
+	SOCKET_REC_CHANGE_USER_TEAM			: "changeUserTeam",
+	SOCKET_REC_GAME_INIT				: "gameInitialising",
+	SOCKET_REC_LEADER_CHANGED			: "leaderChanged",
+	SOCKET_REC_USER_LEFT_GAME_LOBBY		: "userLeftLobby",
+	SOCKET_REC_LEFT_LOBBY				: "leftLobby",
+	SOCKET_REC_ROOM_DELETED				: "roomDeleted",
+
+	// ***************** SOCKET EMIT EVENTS ****************** //
+	SOCKET_SEND_TEST_MESSAGE			: "sendTestMessage",
 
 	// Server lobby socket emit events
-	SOCKET_SEND_JOIN_SERVER_LOBBY 	: "joinServerLobby",
-	SOCKET_SEND_REFRESH_GAME_LOBBY 	: "refreshGameLobby",
-	SOCKET_SEND_LEAVE_SERVER_LOBBY 	: "leaveServerLobby",
+	SOCKET_SEND_JOIN_SERVER_LOBBY 		: "joinServerLobby",
+	SOCKET_SEND_REFRESH_GAME_LOBBY 		: "refreshGameLobby",
+	SOCKET_SEND_LEAVE_SERVER_LOBBY 		: "leaveServerLobby",
+
+	// Game lobby socket on events
+	SOCKET_SEND_JOIN_GAME_LOBBY			: "joinGameLobby",
+	SOCKET_SEND_CHAT_MESSAGE			: "sendMessage",
+	SOCKET_SEND_GET_NEW_CONFIG			: "getNewConfig",
+	SOCKET_SEND_GET_NEW_USER_LIST		: "getNewUserList",
+	SOCKET_SEND_UPDATE_GAME_CONFIG		: "updateGameConfig",
+	SOCKET_SEND_USER_TOGGLE_READY		: "userToggleReady",
+	SOCKET_SEND_USER_CHANGE_COLOUR		: "userChangeColour",
+	SOCKET_SEND_USER_CHANGE_TEAM		: "userChangeTeam",
+	SOCKET_SEND_GAME_INIT				: "startGameInitialisation",
+	SOCKET_SEND_CHANGE_LOBBY_LEADER		: "changeLobbyLeader",
+	SOCKET_SEND_LEAVE_GAME_LOBBY		: "leaveGameLobby",
+
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",

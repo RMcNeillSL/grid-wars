@@ -20,7 +20,7 @@
 		}
 
 		// Bind the events we need for this page
-		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_TEST_MESSAGE, this.serversService.onConnect);
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CONNECT, this.serversService.onConnect);
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_SERVER_LOBBY_UPDATE, this.serversService.serverLobbyUpdate);
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_REFRESH_GAME_LOBBY, this.serversService.refreshGameLobby);
 	}
