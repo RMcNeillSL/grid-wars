@@ -1,6 +1,5 @@
 package com.majaro.gridwars.game;
 
-import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameUnit;
 
 public class DynGameUnit extends GameUnit implements DynGameObject {
@@ -28,8 +27,12 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 		this.instanceId = instanceId;		
 	}
 	
+	// State methods
+	public boolean isDead() { return (this.health < 0); }
+	
 	// Setter methods
 	public void updateCoordinate(Coordinate newCoordinate) { this.coordinate = newCoordinate; }
+	public void takeDamage(int damageAmount) { this.health = this.health - damageAmount; }
 	
 	// Getter methods
 	public Coordinate getCoordinate() { return this.coordinate; }

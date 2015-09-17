@@ -109,6 +109,7 @@
 		//gameService.debugConnect();
 		//gameService.initialiseSockets();
 
+
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method
 		var gameplayConfigWaiter = new Waiter(function() {

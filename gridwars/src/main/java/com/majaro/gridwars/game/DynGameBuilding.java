@@ -31,6 +31,13 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 		this.coordinate = new Coordinate(cellX, cellY);
 		this.instanceId = instanceId;
 	}
+
+	// State methods
+	public boolean isDead() { return (this.health < 0); }
+	
+	// Setter methods
+	public void updateCoordinate(Coordinate newCoordinate) { this.coordinate = newCoordinate; }
+	public void takeDamage(int damageAmount) { this.health = this.health - damageAmount; }
 	
 	// Overriden getters
 	@Override

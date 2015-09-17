@@ -21,7 +21,8 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		
 		// Set default misc values
 		this.waypoints = [];
-		this.moveSpeed = 2; // MUST BE A MULTIPLE OF 100(size of a square)!
+		this.damageExplosions = [];
+		this.moveSpeed = 1; // MUST BE A MULTIPLE OF 100(size of a square)!
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
@@ -30,11 +31,15 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.bodySegment.anchor.setTo(0.5, 0.5);
 		this.bodySegment.z = 10;
 		this.tankGroup.add(this.bodySegment);
+//		this.engineCore.phaserEngine.physics.enable(this.bodySegment, Phaser.Physics.ARCADE);
+//		this.bodySegment.body.enable = true;
 		
 		// Create turrent cannon sprite
 		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top + this.height * 0.08, CONSTANTS.SPRITE_TANK, 1);
-		this.turretSegment.anchor.setTo(0.5, 0.8);
+		this.turretSegment.anchor.setTo(0.5, 0.78);
 		this.turretSegment.z = 11;
+//		this.engineCore.phaserEngine.physics.enable(this.turretSegment, Phaser.Physics.ARCADE);
+//		this.turretSegment.body.enable = true;
 		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
@@ -43,6 +48,10 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		if (!phaserRef) { console.log("ERROR: Failed to construct tank, missing phaserRef."); }
 	}
 	
+}
+
+Tank.prototype.getCollisionLayers = function() {
+	return [this.bodySegment, this.turretSegment];
 }
 
 Tank.prototype.setBuildingMode = function(inBuildingMode) {
@@ -108,10 +117,10 @@ Tank.prototype.progressWaypoints = function() {
 	this.top = this.top + incY;
 
 	// Update sprite positioning
-	this.bodySegment.x = this.left;
-	this.bodySegment.y = this.top;
-	this.turretSegment.x = this.left;
-	this.turretSegment.y = this.top;
+	this.bodySegment.x = this.bodySegment.x + incX;
+	this.bodySegment.y = this.bodySegment.y + incY;
+	this.turretSegment.x = this.turretSegment.x + incX;
+	this.turretSegment.y = this.turretSegment.y + incY;
 	
 	// Check new cell position
 	var newCell = (new Point(this.left, this.top)).toCell();
@@ -136,3 +145,43 @@ Tank.prototype.update = function() {
 	}
 	
 }
+
+Tank.prototype.markDamage = function(explosionInstanceId) {
+	
+	// Add new damage instance to log
+	this.damageExplosions.push(explosionInstanceId);
+	
+	// Add timeout for damage
+	var self = this;
+	setTimeout(function() {
+		var removeIndex = self.damageExplosions.indexOf(explosionInstanceId);
+		self.damageExplosions.splice(removeIndex, 1);
+	}, CONSTANTS.EXPLOSION_DAMAGE_TIMEOUT);
+	
+}
+
+Tank.prototype.isDamageMarkRegistered = function(explosionInstanceId) {
+	return !(this.damageExplosions.indexOf(explosionInstanceId) == -1);
+}
+
+Tank.prototype.getCollisionLayers = function() {
+	return [this.bodySegment, this.turretSegment];
+}
+
+Tank.prototype.destroy = function() {
+	this.bodySegment.animations.destroy();
+	this.bodySegment.destroy();
+	this.turretSegment.animations.destroy();
+	this.turretSegment.destroy();
+}
+
+Tank.prototype.getBounds = function() {
+	return this.bodySegment.getBounds();
+}
+
+
+
+
+
+
+

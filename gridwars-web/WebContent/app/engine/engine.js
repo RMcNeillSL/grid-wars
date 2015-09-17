@@ -3,22 +3,18 @@
 function Engine(gameplayConfig, playerId, serverAPI, callback) {
 
 	var self = this;
-	var local_preload = function() {
-		self.preload();
-	}
-	var local_create = function() {
-		self.create();
-	}
-	var local_update = function() {
-		self.update();
-	}
+	var local_preload = function() { self.preload(); }
+	var local_create = function() { self.create(); }
+	var local_update = function() { self.update(); }
+	var local_render = function() { self.render(); }
 
 	// Create phaser game object
-	this.phaserGame = new Phaser.Game(800, 600, Phaser.AUTO, 'gridwars-engine',
-			{
+	this.phaserGame = new Phaser.Game(800, 600, Phaser.CANVAS,
+			'gridwars-engine', {
 				preload : local_preload,
 				create : local_create,
-				update : local_update
+				update : local_update,
+				render : local_render
 			});
 
 	// Introduce dynamic pointer objects
@@ -54,21 +50,37 @@ function Engine(gameplayConfig, playerId, serverAPI, callback) {
 		y : 0
 	};
 
-	// Define core phaser object arrays
+	// Define game arrays
 	this.units = [];
 	this.buildings = [];
+	this.selected = [];
+	this.selectedJustSet = false;
+
+	// Define various variables
+	this.selectionRectangle = {
+		selectActive : false,
+		rect : null,
+		originX : 0,
+		originY : 0
+	};
 
 	// Define sprite groups
 	this.mapGroup = null;
 	this.mapOverlayGroup = null;
 	this.turretGroup = null;
 	this.tankGroup = null;
-	
+
 	// Construct engine core values for unit/building/defence construction
 	this.engineCore = {
-			phaserEngine: this.phaserGame,
-			func_RequestExplosion: function(mapGroup, explosionId, x, y) { self.explosionManager.requestExplosion(mapGroup, explosionId, x, y) },
-			func_UpdateNewUnitCell: function(sender, oldCell, newCell) { self.updateNewUnitCell(sender, oldCell, newCell); }
+		phaserEngine : this.phaserGame,
+		func_RequestExplosion : function(mapGroup, explosionId, ownerId,
+				explosionInstanceId, x, y) {
+			self.explosionManager.requestExplosion(mapGroup, explosionId,
+					ownerId, explosionInstanceId, x, y)
+		},
+		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
+			self.updateNewUnitCell(sender, oldCell, newCell);
+		}
 	};
 
 	// player results
@@ -81,28 +93,20 @@ Engine.prototype.preload = function() {
 	this.phaserGame.stage.disableVisibilityChange = true;
 
 	// Load sprite sheets
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET,
-			CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK,
-			CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 7);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS,
-			CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A,
-			CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 128, 128, 10);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B,
-			CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
-	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT,
-			CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 7);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 128, 128, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
 
 	// Load tile images
-	this.phaserGame.load.image(CONSTANTS.MAP_TILE_A, CONSTANTS.ROOT_SPRITES_LOC
-			+ 'mapTileA.png');
-	this.phaserGame.load.image(CONSTANTS.MAP_TILE_B, CONSTANTS.ROOT_SPRITES_LOC
-			+ 'mapTileB.png');
+	this.phaserGame.load.image(CONSTANTS.MAP_TILE_A, CONSTANTS.ROOT_SPRITES_LOC + 'mapTileA.png');
+	this.phaserGame.load.image(CONSTANTS.MAP_TILE_B, CONSTANTS.ROOT_SPRITES_LOC + 'mapTileB.png');
 
 	// Load particles
-	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT,
-			CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
+	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
 
 }
 
@@ -120,6 +124,12 @@ Engine.prototype.create = function() {
 	this.turretGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
 
+	// Start physics engine and disable mouse right event
+	this.phaserGame.physics.startSystem(Phaser.Physics.ARCADE);
+	this.phaserGame.canvas.oncontextmenu = function(e) {
+		e.preventDefault();
+	}
+
 	// Construct explosion manager
 	this.explosionManager = new ExplosionManager(this.phaserGame);
 
@@ -129,11 +139,13 @@ Engine.prototype.create = function() {
 			this.gameplayConfig.height, this.gameplayConfig.cells);
 
 	// Construct event listeners
-	this.phaserGame.input.onDown.add(this.onMouseClick, this);
-	this.phaserGame.input.keyboard.addCallbacks(this, null, null,
-			local_onKeyPressed);
+	this.phaserGame.input.onUp.add(this.onMouseUp, this);
+	this.phaserGame.input.onDown.add(this.onMouseDown, this);
+	this.phaserGame.input.keyboard.addCallbacks(this, null, null, local_onKeyPressed);
 	this.phaserGame.input.addMoveCallback(this.onMouseMove, this);
 
+	// Construct selection rectangle
+	this.selectionRectangle.rect = new Phaser.Rectangle(0, 0, 100, 100);
 }
 
 Engine.prototype.update = function() {
@@ -149,13 +161,13 @@ Engine.prototype.update = function() {
 	}
 
 	// Update all buildings and units
-	for (var index = 0; index < this.buildings.length; index++) {
-		this.buildings[index].update();
-	}
-	for (var index = 0; index < this.units.length; index++) {
-		this.units[index].update();
-	}
+	for (var index = 0; index < this.buildings.length; index++) { this.buildings[index].update(); }
+	for (var index = 0; index < this.units.length; index++) { this.units[index].update(); }
 
+	// Search for collisions between firable objects
+	this.explosionCollisionCheck();
+	
+	// Get state of players in game
 	this.updatePlayerStatus();
 }
 
@@ -217,62 +229,109 @@ Engine.prototype.updatePlayerStatus = function() {
 	}
 	
 	if (deadPlayers > 0 && deadPlayers.length === (self.players.length-1)) {
-		self.gameFinishedCallback(self.playerResults);
+		self.gameFinishedCallback(self.playerResults); }
+}
+
+Engine.prototype.render = function() {
+
+	// Render selection rectanlge to scene
+	if (this.selectionRectangle.selectActive) {
+		this.phaserGame.debug.geom(this.selectionRectangle.rect, 'rgba(0,100,0,0.3)');
 	}
 }
 
+
 // Input event methods
 
-Engine.prototype.onMouseClick = function(pointer, x, y) {
+Engine.prototype.onMouseDown = function(pointer) {
+	
+	// Search for potential under mouse selection
+	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true);
+	
+	// Set new selection if one does not already exist
+	if (itemAtPoint) {
+		this.selected = [itemAtPoint];
+		this.selectedJustSet = true;
+	}
+	
+}
+
+Engine.prototype.onMouseUp = function(pointer) {
+	
+	// Break if new unit has just been selected
+	if (this.selectedJustSet) {
+		this.selectedJustSet = false;
+		return;
+	}
 
 	// Save self reference
 	var self = this;
 
 	// Check for key press
-	var ctrlDown = this.phaserGame.input.keyboard
-			.isDown(Phaser.Keyboard.CONTROL);
+	var ctrlDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
+	var shiftDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.SHIFT);
 
 	// Positional values for cell and xy
 	var point = new Point(this.mouse.x, this.mouse.y);
 	var cell = point.toCell();
 
-	// Perform checks for type of click
-	if (this.phaserGame.newBuilding.active) {
+	// Perform checks for left click
+	if (pointer.leftButton.isDown) {
 
-		// Render placement overlay
-		if (this.isSquareEmpty(cell.col, cell.row)) {
-			self.phaserGame.newBuilding.target.setPosition(cell);
-			this.serverAPI
-					.requestBuildingPlacement(this.phaserGame.newBuilding);
-			self.phaserGame.newBuilding.active = false;
-			self.mapRender.clearPlacementHover();
-		}
+		// Create new building
+		if (this.phaserGame.newBuilding.active) {
 
-	} else if (ctrlDown) {
-
-		// Check if square is empty
-		if (this.isSquareEmpty(cell.col, cell.row)) {
-			var targetUnit = this.units[0];
-			if (targetUnit) {
-				this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+			// Render placement overlay
+			if (this.isSquareEmpty(cell.col, cell.row)) {
+				self.phaserGame.newBuilding.target.setPosition(cell);
+				this.serverAPI.requestBuildingPlacement(this.phaserGame.newBuilding);
+				self.phaserGame.newBuilding.active = false;
+				self.mapRender.clearPlacementHover();
 			}
-		}
 
-	} else {
+		// Manage selected units
+		} else if (this.selected.length > 0) {
 
-		// Generate list of defences for attack
-		var defences = [];
-		for (var index = 0; index < this.buildings.length; index++) {
-			if (this.buildings[index].gameCore.isDefence
-					&& this.currentPlayer.playerId == this.buildings[index].gameCore.playerId) {
-				defences.push(this.buildings[index]);
+			// Process selected items
+			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
+
+				// Process selected tank
+				if (this.selected[selectedIndex].gameCore.identifier == "TANK") {
+					if (this.isSquareEmpty(cell.col, cell.row)) {
+						var targetUnit = this.selected[0];
+						if (targetUnit) {
+							this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+						}
+					}
+				}
+
+				// Process selected turret
+				if (this.selected[selectedIndex].gameCore.identifier == "TURRET") {
+					this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.x,this.mouse.y);
+				}
 			}
+
+		// Select units/buildings under mouseXY
+		} else {
+			
+			// Determine item at point
+			var itemAtPoint = this.getItemAtPoint(point, true);
+
+			// Add to reset select list
+			if (itemAtPoint) {
+				if (shiftDown) {
+					this.selected.push(itemAtPoint);
+				} else {
+					this.selected = [itemAtPoint];
+				}
+			}
+			
 		}
+	}
 
-		// Submit request to fire all turrets
-		this.serverAPI.requestDefenceAttackXY(defences, this.mouse.x,
-				this.mouse.y);
-
+	// Perform checks for right click
+	if (pointer.rightButton.isDown) {
+		this.selected = [];
 	}
 
 }
@@ -283,12 +342,44 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	this.mouse.x = x;
 	this.mouse.y = y;
 
+	// Process updates for selection rectangle
+	if (pointer.isDown) {
+
+		// Reset selected items
+		if (this.selectionRectangle.selectActive
+				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height != 0) {
+			this.selected = [];
+		}
+
+		// Set new rectangle selection coordiantes
+		this.selectionRectangle.selectActive = true;
+		this.selectionRectangle.rect.width = (x - this.selectionRectangle.originX);
+		this.selectionRectangle.rect.height = (y - this.selectionRectangle.originY);
+
+	} else {
+
+		// Run search for any selected units
+		if (this.selectionRectangle.selectActive
+				&& this.selectionRectangle.rect.width
+						* this.selectionRectangle.rect.height != 0) {
+			this.selected = this.getSelectionArray();
+		}
+
+		// Mark selection as not active and reset
+		this.selectionRectangle.selectActive = false;
+		this.selectionRectangle.rect.x = x;
+		this.selectionRectangle.rect.y = y;
+		this.selectionRectangle.originX = x;
+		this.selectionRectangle.originY = y;
+		this.selectionRectangle.rect.width = 0;
+		this.selectionRectangle.rect.height = 0;
+	}
 }
 
 Engine.prototype.onKeyPressed = function(char) {
 
 	// Check if creating a new object
-/*	if (char == '1' || char == '2' || char == '3') {
+	if (char == '1' || char == '2' || char == '3') {
 
 		// Game core object
 		var self = this;
@@ -306,27 +397,218 @@ Engine.prototype.onKeyPressed = function(char) {
 		if (char == '2') {
 			var gameCore = new GameCore("TANK", cell);
 			this.phaserGame.newBuilding.active = true;
-			this.phaserGame.newBuilding.target = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup,
-					cell.toPoint(), cell.col, cell.row, 100, 100, true);
+			this.phaserGame.newBuilding.target = new Tank(this.engineCore,
+					gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
+					cell.col, cell.row, 100, 100, true);
 		}
-	}*/
+	}
 }
-
 
 // Utility methods
 
+Engine.prototype.getItemAtPoint = function(point, playerOwned) {
+
+	// Declare worker variables
+	var itemUnderMouse = null;
+	var tempBounds = null;
+	var checkBounds = null;
+
+	// Search for unit at XY
+	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
+		tempBounds = this.units[unitIndex].getBounds();
+		checkBounds = {
+			left : Math.min(tempBounds.x, tempBounds.x + tempBounds.width),
+			top : Math.min(tempBounds.y, tempBounds.y + tempBounds.height),
+			right : Math.max(tempBounds.x, tempBounds.x + tempBounds.width),
+			bottom : Math.max(tempBounds.y, tempBounds.y + tempBounds.height),
+		};
+		if (checkBounds.left < point.x && checkBounds.right > point.x
+				&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
+				(this.units[unitIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {
+			itemUnderMouse = this.units[unitIndex];
+		}
+	}
+
+	// Search for building at XY
+	if (itemUnderMouse == null) {
+		for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
+			tempBounds = this.buildings[buildingIndex].getBounds();
+			checkBounds = {
+				left : Math.min(tempBounds.x, tempBounds.x + tempBounds.width),
+				top : Math.min(tempBounds.y, tempBounds.y + tempBounds.height),
+				right : Math.max(tempBounds.x, tempBounds.x + tempBounds.width),
+				bottom : Math.max(tempBounds.y, tempBounds.y + tempBounds.height),
+			};
+			if (checkBounds.left < point.x && checkBounds.right > point.x
+					&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
+					(this.buildings[buildingIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {
+				itemUnderMouse = this.buildings[buildingIndex];
+			}
+		}
+	}
+
+	// Return found item
+	return itemUnderMouse;
+
+}
+
+Engine.prototype.getSelectionArray = function() {
+
+	// Define empty result
+	var result = [];
+
+	// Calculate selected rectangle
+	var selRect = {
+		left : Math.min(this.selectionRectangle.rect.left,
+				this.selectionRectangle.rect.right),
+		top : Math.min(this.selectionRectangle.rect.top,
+				this.selectionRectangle.rect.bottom),
+		right : Math.max(this.selectionRectangle.rect.left,
+				this.selectionRectangle.rect.right),
+		bottom : Math.max(this.selectionRectangle.rect.top,
+				this.selectionRectangle.rect.bottom),
+		width : this.selectionRectangle.rect.width,
+		height : this.selectionRectangle.rect.height
+	};
+
+	// Search for all units which fall under selection
+	for (var tankIndex = 0; tankIndex < this.units.length; tankIndex++) {
+		if (this.units[tankIndex].left > selRect.left
+				&& this.units[tankIndex].left < selRect.right
+				&& this.units[tankIndex].top > selRect.top
+				&& this.units[tankIndex].top < selRect.bottom) {
+			result.push(this.units[tankIndex]);
+		}
+	}
+
+	console.log(result);
+
+	// Return calculated result
+	return result;
+
+}
+
+Engine.prototype.explosionCollisionCheck = function() {
+
+	// Create self reference
+	var self = this;
+
+	// Define working variables
+	var damageAmount = 0;
+
+	// Create explosion hit test (calculation) function
+	var explosionHitTest = function(explosionSprite, spriteList) {
+
+		// Set default result variable
+		var collisionOccured = false;
+
+		// Perform check with explosion and each sprite in the sprite list
+		for (var index = 0; index < spriteList.length; index++) {
+
+			// Calculate boundaries for sprites
+			var boundsA = explosionSprite.getBounds();
+			var boundsB = spriteList[index].getBounds();
+
+			// Calculate intersect rectangle
+			var x_overlap = Math.max(0, Math.min(boundsA.right, boundsB.right)
+					- Math.max(boundsA.left, boundsB.left));
+			var y_overlap = Math.max(0, Math
+					.min(boundsA.bottom, boundsB.bottom)
+					- Math.max(boundsA.top, boundsB.top));
+			var intersectRect = {
+				left : Math.min(boundsA.left, boundsB.left),
+				top : Math.max(boundsA.top, boundsB.top),
+				right : Math.min(boundsA.left, boundsB.left) + x_overlap,
+				bottom : Math.max(boundsA.top, boundsB.top) + y_overlap,
+				width : x_overlap,
+				height : y_overlap
+			};
+
+			// Check an overlap rectangle exists before more accurate collision
+			// detection
+			if (intersectRect.width * intersectRect.height > 0) {
+
+				// // Output debug info
+				// console.log("A: [" + boundsA.top + "," + boundsA.bottom + ","
+				// + boundsA.left + "," + boundsA.right + "]");
+				// console.log("B: [" + boundsB.top + "," + boundsB.bottom + ","
+				// + boundsB.left + "," + boundsB.right + "]");
+				// console.log("I: [" + intersectRect.top + "," +
+				// intersectRect.bottom + "," + intersectRect.left + "," +
+				// intersectRect.right + "]");
+				//
+				// // Output for debugging
+				// self.collisionCanvas.draw(explosionSprite, explosionSprite.x,
+				// explosionSprite.y);
+				// self.collisionCanvas.draw(spriteB, spriteB.x, spriteB.y);
+				//				
+				// // XOR sprite A & B
+				//				
+				// // Check for pixels on colcanvas
+
+				// Process damage calculation
+				damageAmount = 50;
+
+				// Mark collision as occuring
+				collisionOccured = true;
+
+			}
+		}
+
+		// Return calculated result
+		return collisionOccured;
+
+	}
+
+	// Get explosion register
+	var explosionRegister = this.explosionManager.explosionRegister;
+	if (explosionRegister.length > 0) {
+		for (var explosionIndex = 0; explosionIndex < this.explosionManager.explosionRegister.length; explosionIndex++) {
+
+			// Test each building with current explosion
+			for (var index = 0; index < this.buildings.length; index++) {
+				if (!this.buildings[index]
+						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
+						&& this.buildings[index].gameCore.playerId != this.currentPlayer.playerId
+						&& explosionHitTest(explosionRegister[explosionIndex],
+								this.buildings[index].getCollisionLayers())) {
+					this.buildings[index]
+							.markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission(
+							[ this.buildings[index] ], damageAmount);
+				}
+			}
+
+			// Test each unit with current explosion
+			for (var index = 0; index < this.units.length; index++) {
+				if (!this.units[index]
+						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
+						&& this.units[index].gameCore.playerId != this.currentPlayer.playerId
+						&& explosionHitTest(explosionRegister[explosionIndex],
+								this.units[index].getCollisionLayers())) {
+					this.units[index]
+							.markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission(
+							[ this.units[index] ], damageAmount);
+				}
+			}
+
+		}
+	}
+}
+
 Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) {
-	
+
 	// Check if sender is unit owner
 	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
 
 		// Submit update message to server
 		this.serverAPI.requestUpdateUnitCell(sender, newCell);
-		
+
 		// Debugging output
-//		console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
+		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
 	}
-	
+
 }
 
 Engine.prototype.isSquareEmpty = function(col, row) {
@@ -343,10 +625,9 @@ Engine.prototype.createNewBuildingObject = function(gameCore) {
 
 	// Create new object and return
 	this.phaserGame.newBuilding.active = true;
-	this.phaserGame.newBuilding.target = new Turret(this.phaserGame, gameCore,
+	this.phaserGame.newBuilding.target = new Turret(this.engineCore, gameCore,
 			this.mapGroup, this.turretGroup, gameCore.cell.toPoint(),
-			gameCore.cell.col, gameCore.cell.row, 100, 100,
-			this.explosionManager.requestExplosion, true);
+			gameCore.cell.col, gameCore.cell.row, 100, 100, true);
 }
 
 Engine.prototype.purchaseObject = function(item) {
@@ -359,8 +640,9 @@ Engine.prototype.purchaseObject = function(item) {
 	} else if (item === "TANK") {
 		var gameCore = new GameCore("TANK", cell);
 		this.phaserGame.newBuilding.active = true;
-		this.phaserGame.newBuilding.target = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup,
-				cell.toPoint(), cell.col, cell.row, 100, 100, true);
+		this.phaserGame.newBuilding.target = new Tank(this.engineCore,
+				gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
+				cell.col, cell.row, 100, 100, true);
 	}
 }
 
@@ -397,6 +679,24 @@ Engine.prototype.getPlayerFromPlayerId = function(playerId) {
 	return null;
 }
 
+Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
+
+	// Define working variables
+	var searchObject = null;
+
+	// Locate and remove item from units/buildings list
+	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
+		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.units[unitIndex];
+			this.units.splice(unitIndex, 1);
+		}
+	}
+
+	// Delete the object
+	if (searchObject) {
+		searchObject.destroy();
+	}
+}
 
 // Specialised methods for dealing with individual responses
 
@@ -425,9 +725,9 @@ Engine.prototype.processNewBuilding = function(responseData) {
 		gameCore.setPlayer(refObject.player);
 
 		// Construct object for positioning
-		var newBuilding = new Turret(this.phaserGame, gameCore, this.mapGroup,
+		var newBuilding = new Turret(this.engineCore, gameCore, this.mapGroup,
 				this.turretGroup, refObject.xy, refObject.col, refObject.row,
-				100, 100, this.explosionManager.requestExplosion, false);
+				100, 100, false);
 
 		// Add object to building array
 		this.buildings.push(newBuilding);
@@ -513,6 +813,49 @@ Engine.prototype.processWaypoints = function(responseData) {
 	}
 }
 
+Engine.prototype.processUnitDamage = function(responseData) {
+
+	// Define working variables
+	var damage = parseInt();
+	var removeList = [];
+
+	// Iterate over every unit due damage
+	for (var unitIndex = 0; unitIndex < responseData.target.length; unitIndex++) {
+
+		// Create reference object
+		var refObject = {
+			newHealth : parseInt(responseData.misc[unitIndex]),
+			instanceId : responseData.target[unitIndex]
+		};
+
+		// Get targeted unit
+		var unit = this.getObjectFromInstanceId(refObject.instanceId);
+
+		// Make sure a unit was found
+		if (unit) {
+
+			// Submit unit damage
+			unit.gameCore.setHealth(refObject.newHealth);
+
+			// Determine if unit was destroyed
+			if (unit.gameCore.health == 0) {
+				this.explosionManager.requestDestruction(this.mapGroup,
+						CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C,
+						unit.left, unit.top);
+				removeList.push(refObject.instanceId);
+			}
+
+			// Log to screen
+			console.log("Tank health: " + unit.gameCore.health);
+		}
+	}
+
+	// Delete all items from remove list
+	for (var removeIndex = 0; removeIndex < removeList.length; removeIndex++) {
+		this.deleteItemWithInstanceId(removeList[removeIndex]);
+	}
+}
+
 Engine.prototype.processDebugPlacement = function(responseData) {
 
 	// Iterate through all buildings
@@ -536,12 +879,13 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 		var gameCore = new GameCore("TANK", refObject.cell);
 		gameCore.setInstanceId(refObject.instanceId);
 		gameCore.setPlayer(refObject.player);
-		
+
 		// Create self reference
 		var self = this;
-		
+
 		// Construct object for positioning
 		var newTank = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.col, refObject.row, 100, 100, false);
+
 		// Add object to unit array
 		this.units.push(newTank);
 	}
@@ -560,6 +904,9 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 		break;
 	case "WAYPOINT_PATH_COORDS":
 		this.processWaypoints(responseData);
+		break;
+	case "DAMAGE_OBJECT":
+		this.processUnitDamage(responseData);
 		break;
 	case "DEBUG_PLACEMENT":
 		this.processDebugPlacement(responseData);

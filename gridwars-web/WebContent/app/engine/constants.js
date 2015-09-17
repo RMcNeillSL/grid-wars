@@ -73,9 +73,12 @@ CONSTANTS = {
 	PARTICLE_YELLOW_SHOT : "particle_yellow_shot",
 
 	// Explosion and impact decal images
+	EXPLOSION_DAMAGE_TIMEOUT : 500,
 	SPRITE_IMPACT_DECALS : "impact_decals",
 	SPRITE_EXPLOSION_A : "sprite_explosion_a",
 	SPRITE_EXPLOSION_B : "sprite_explosion_b",
+	SPRITE_EXPLOSION_C : "sprite_explosion_c",
+	DEBRIS_TANK : "",
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT : "tile_build",

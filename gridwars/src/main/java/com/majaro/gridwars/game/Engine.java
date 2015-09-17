@@ -375,6 +375,39 @@ public class Engine extends Thread {
 		}
 	}
 	
+	private GameplayResponse processDamageUnitRequest(Player player, String[] instanceIds, int damageAmount) {
+
+		// Set default result
+		GameplayResponse response = null;
+		boolean validConstruction = true;
+		
+		// Check if id's refer to units
+		DynGameUnit[] sourceUnits = this.getGameUnitsFromInstanceIds(instanceIds, false);
+
+		// Check each object in turn
+		for (DynGameUnit sourceUnit : sourceUnits) {
+			
+			// Reduce health of unit by passed amount
+			sourceUnit.takeDamage(damageAmount);
+			
+			// Only run this loop once for now
+			break;
+			
+		}
+
+		// Construct valid response
+		if (validConstruction) {
+			response = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
+			for (DynGameUnit targetUnit : sourceUnits) {
+				response.addTarget(targetUnit);
+				response.addMisc(Integer.toString(targetUnit.getHealth()));
+			}
+		}
+
+		// Return calculated result
+		return response;
+	}
+	
 	private GameplayResponse processDebugPlacementRequest(Player player, GameUnit[] sourceUnits, int col, int row) {
 
 		// Set default result
@@ -409,11 +442,6 @@ public class Engine extends Thread {
 		// Check minimum processing conditions
 		if (sender != null) {
 			
-			// Define and initialise working variables
-			GameBuilding[] sourceBuildings;
-			int cellX;
-			int cellY;
-
 			// Log received request for debugging
 			System.out.println(gameplayRequest.toString());
 
@@ -444,9 +472,14 @@ public class Engine extends Thread {
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false),
 		        			coordinates);
 		        	break;
+		        case DAMAGE_OBJECT:
+		        	gameplayResponse = this.processDamageUnitRequest(sender,
+		        			gameplayRequest.getSourceString(), 
+		        			Integer.parseInt(gameplayRequest.getTargetString()[0]));
+		        	break;
 		        case DEBUG_PLACEMENT:
 		        	gameplayResponse = this.processDebugPlacementRequest(sender, 
-		        			Const.getGameUnitArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
+		        			Const.getGameUnitArrayFromGameObjectArrayList(gameplayRequest.getSource()),
 		        			gameplayRequest.getTargetCellX(), 
 		        			gameplayRequest.getTargetCellY());
 		        	break;

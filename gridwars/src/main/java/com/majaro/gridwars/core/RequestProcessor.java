@@ -19,6 +19,8 @@ import com.majaro.gridwars.entities.User;
 import com.majaro.gridwars.game.GameStaticMap;
 
 public class RequestProcessor {
+	
+	// TODO: Look for threadsafe lists
 
 	// Game array objects
 	private ArrayList<GameLobby> activeGameLobbys;
@@ -62,7 +64,7 @@ public class RequestProcessor {
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
 
 		// Setup sessions and sockets
-		initialiseSessionCleanUp();
+//		initialiseSessionCleanUp();
 		this.socketService = new SocketService(this);
 	}
 

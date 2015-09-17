@@ -30,6 +30,7 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells)
 			tileSprite = self.phaserRef.add.sprite(CONSTANTS.TILE_WIDTH * col, CONSTANTS.TILE_HEIGHT * row, self.tileMapping[cellId], 0);
 			tileSprite.width = CONSTANTS.TILE_WIDTH;
 			tileSprite.height = CONSTANTS.TILE_HEIGHT;
+//			tileSprite.visible = false;
 			mapGroup.add(tileSprite);
 		}
 		

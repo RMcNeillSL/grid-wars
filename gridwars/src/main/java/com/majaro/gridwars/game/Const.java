@@ -11,7 +11,7 @@ public final class Const {
 	public enum E_GameplayRequestCode {
 		
 		// Common request codes
-		UNKNOWN("UNKNOWN"), DEBUG_PLACEMENT("DEBUG_PLACEMENT"),
+		UNKNOWN("UNKNOWN"), DAMAGE_OBJECT("DAMAGE_OBJECT"), DEBUG_PLACEMENT("DEBUG_PLACEMENT"),
 		
 		// Purchasing request codes
 		NEW_BUILDING("NEW_BUILDING"), NEW_UNIT("NEW_UNIT"),
@@ -35,7 +35,8 @@ public final class Const {
 	public enum E_GameplayResponseCode { 
 		
 		// Common response codes
-		DEBUG_PLACEMENT("DEBUG_PLACEMENT"), GENERIC_UNKNOWN_ERROR("GENERIC_UNKNOWN_ERROR"), MISSING_REQUIRED_PARAMS("MISSING_REQUIRED_PARAMS"), SERVER_ERROR("SERVER_ERROR"),
+		DEBUG_PLACEMENT("DEBUG_PLACEMENT"),  DAMAGE_OBJECT("DAMAGE_OBJECT"), GENERIC_UNKNOWN_ERROR("GENERIC_UNKNOWN_ERROR"),
+		MISSING_REQUIRED_PARAMS("MISSING_REQUIRED_PARAMS"), SERVER_ERROR("SERVER_ERROR"),
 		
 		// Purchasing attempt errors
 		INSUFFICIENT_TECH_LEVEL("INSUFFICIENT_TECH_LEVEL"), INSUFFICIENT_FUNDS("INSUFFICIENT_FUNDS"),
@@ -181,7 +182,7 @@ public final class Const {
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
-			new GameUnit("TANK", 1000, 400, E_TechLevel.TECH_01, 2)
+			new GameUnit("TANK", 200, 400, E_TechLevel.TECH_01, 2)
 		};
 	
 	
