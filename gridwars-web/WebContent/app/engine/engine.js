@@ -16,6 +16,8 @@ function Engine(gameplayConfig, playerId, serverAPI, callback) {
 				update : local_update,
 				render : local_render
 			});
+	
+	this.phaserGame.finished = false;
 
 	// Introduce dynamic pointer objects
 	this.phaserGame.newBuilding = {
@@ -168,13 +170,12 @@ Engine.prototype.update = function() {
 	this.explosionCollisionCheck();
 	
 	// Get state of players in game
-	this.updatePlayerStatus();
+	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.updatePlayerStatus = function() {
 	var self = this;
-	var deadPlayers = [];
-	deadPlayers = self.players.slice();
+	var deadPlayers = self.players.slice();
 
 	var removeArray = [];
 	
@@ -219,17 +220,37 @@ Engine.prototype.updatePlayerStatus = function() {
 
 			if (!playerAlreadyDead) {
 				self.playerResults.push({
-					position : self.playerResults.length + 1,
+					position : self.players.length - self.playerResults.length,
 					player : deadPlayers[i1].playerId,
-					feedback : "You have finished in place: "
-							+ (self.playerResults.length + 1) + "."
+					feedback : deadPlayers[i1].playerId + " finished in place: "
+							+ (self.players.length - self.playerResults.length) + "."
 				});
 			}
 		}
 	}
 	
 	if (deadPlayers && deadPlayers.length === (self.players.length-1)) {
-		self.gameFinishedCallback(self.playerResults); }
+		for (var index = 0; index < self.players.length; index ++) {
+			var isDead = false;
+			for (var index2 = 0; index2 < self.playerResults.length; index2 ++) {
+				if (self.playerResults[index2].playerId == self.players[index].playerId) {
+					isDead = true;
+					break;
+				}
+			}
+			if (!isDead) {
+				self.playerResults.push({
+					position : 1,
+					player : self.players[index].playerId,
+					feedback : self.players[index].playerId + " finished in place: 1."
+				});
+				break;
+			}
+		}
+		self.gameFinishedCallback(self.playerResults);
+		this.phaserGame.finished = true;
+		this.phaserGame.disableStep();
+	}
 }
 
 Engine.prototype.render = function() {
