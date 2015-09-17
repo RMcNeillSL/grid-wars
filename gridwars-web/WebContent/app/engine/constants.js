@@ -3,7 +3,7 @@ CONSTANTS = {
 	// Misc constants
 	SOCKET_SERVER : "ws://" + window.location.host + ":8080/",
 
-	// Socket on events
+	// SOCKET ON EVENTS
 	SOCKET_REC_TEST_MESSAGE 		: "testMessage",
 	SOCKET_REC_CONNECT				: "connect",
 
@@ -11,7 +11,7 @@ CONSTANTS = {
 	SOCKET_REC_SERVER_LOBBY_UPDATE	: "updateServerLobby",
 	SOCKET_REC_REFRESH_GAME_LOBBY	: "refreshGameLobby",
 
-	// Socket emit events
+	// SOCKET EMIT EVENTS
 	SOCKET_SEND_TEST_MESSAGE		: "sendTestMessage",
 
 	// Server lobby socket emit events
@@ -23,7 +23,7 @@ CONSTANTS = {
 	GAME_NAME : "gridwars-engine",
 	TILE_WIDTH : 100,
 	TILE_HEIGHT : 100,
-	
+
 	// Directory locations
 	ROOT_SPRITES_LOC : "app/assets/",
 
@@ -41,7 +41,7 @@ CONSTANTS = {
 	MAP_TILE_PLACEMENT : "tile_build",
 	MAP_TILE_A : "map_tile_a",
 	MAP_TILE_B : "map_tile_b",
-	
+
 	// Turret sprite arrays
 	COLOUR_TURRET : [{ COLOUR : "blue", BASE : 0, TOP : 1, CHARGE : [1,2,3,4,5], COOL : [5,4,3,2,1], FIREANDCOOL : [6,7,8,9,10,11,12,1] },
 	                 { COLOUR : "red", BASE : 13, TOP : 14, CHARGE : [14,15,16,17,18], COOL : [18,17,16,15,14], FIREANDCOOL : [19,20,21,22,23,24,25,14] },
