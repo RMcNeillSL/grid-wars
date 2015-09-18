@@ -249,5 +249,9 @@ SocketShiz.prototype.bindEvent = function(bindingIdentifier, callback) {
 }
 
 SocketShiz.prototype.emitEvent = function (emitIdentifier, data) {
-	this.sockets.emit(emitIdentifier, data);
+	if (data) {
+		this.sockets.emit(emitIdentifier, data);
+	} else {
+		this.sockets.emit(emitIdentifier);
+	}
 }

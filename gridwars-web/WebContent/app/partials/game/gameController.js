@@ -58,21 +58,24 @@
 		this.$rootScope.pageName = "Game";
 		this.$rootScope.socketsReady = false;
 		this.$rootScope.gameLoaded = false;
+		
 		// Save this reference for anonymous methods
 		var self = this;
 
+		// Create/clean socket system
 		if (!this.$rootScope.sockets) {
 			this.$rootScope.sockets = new SocketShiz();
 		} else {
 			this.$rootScope.sockets.resetCallbacks();
 		}
 		
-		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CONNECT, this.gameService.onConnect);
-		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_DISCONNECT, this.gameService.onDisconnect);
-		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_JOIN, this.gameService.onGameJoin);
-		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_ACTUAL_GAME_INIT, this.gameService.gameInit);
-		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_START, this.gameService.gameStart);
-		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, this.gameService.gameplayResponse);
+		// Bind new socket events for game controller
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_CONNECT, 			function(response) { self.gameService.onConnect(response); });
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_DISCONNECT, 		function(response) { self.gameService.onDisconnect(response); });
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_JOIN, 			function(response) { self.gameService.onGameJoin(response); });
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_ACTUAL_GAME_INIT, 	function(response) { self.gameService.gameInit(response); });
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_START, 		function(response) { self.gameService.gameStart(response); });
+		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, 	function(response) { self.gameService.gameplayResponse(response); });
 		
 		this.gameService.joinGame();
 
@@ -106,19 +109,16 @@
 		}
 
 		// Call connect debug methods
-		//gameService.debugConnect();
-		//gameService.initialiseSockets();
+		gameService.debugConnect();
+//		gameService.initialiseSockets();
 
 
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method
 		var gameplayConfigWaiter = new Waiter(function() {
 			return self.$rootScope.gameplayConfig;
-		}, startGame, 100); // -- should really change so the server has a list
-							// of acknowledged users
-		(new Waiter(function() {
-			return self.$rootScope.socketsReady;
-		}, function() {
+		}, startGame, 100); // -- should really change so the server has a list of acknowledged users
+		(new Waiter(function() { return self.$rootScope.socketsReady; }, function() {
 			if (self.$rootScope.gameLeader) {
 				setTimeout(function() {
 					gameService.gameInitRequest(gameplayConfigWaiter);
@@ -135,7 +135,7 @@
 		},
 		changeView : function(path) {
 			this.$location.path(path);
-			self.$rootScope.$apply();
+			this.$rootScope.$apply();
 		}
 	}
 

@@ -39,6 +39,9 @@ public class RequestProcessor {
 	@SuppressWarnings("unused")
 	private SocketService socketService;
 	
+	// GUI server application
+	private ServerGUI serverGUI = null;
+	
 	// Constants
 	private static final String DEFAULT_LOBBY_NAME = "Europe Server #";
 
@@ -63,6 +66,9 @@ public class RequestProcessor {
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
 
+		// Setup GUI for the server
+//		this.serverGUI = new ServerGUI();
+		
 		// Setup sessions and sockets
 //		initialiseSessionCleanUp();
 		this.socketService = new SocketService(this);
@@ -390,10 +396,9 @@ public class RequestProcessor {
 
 	public User getUserFromSocketSessionId(String sessionId) {
 		for (Session session : activeSessions) {
-			if (session.getSocketSessionId() != null) {
-				if (session.getSocketSessionId().equals(sessionId)) {
-					return session.getUser();
-				}
+			if (session.getSocketSessionId() != null &&
+					session.getSocketSessionId().equals(sessionId)) {
+				return session.getUser();
 			}
 		}
 		return null;
