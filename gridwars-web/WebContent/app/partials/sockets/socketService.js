@@ -6,7 +6,7 @@ function SocketShiz () {
 	console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
 	this.sockets = io.connect(CONSTANTS.SOCKET_SERVER, {
 		"force new connection" : false,
-		"timeout" : 5000
+		"timeout" : 10000
 	});
 
 	// Define default callbacks

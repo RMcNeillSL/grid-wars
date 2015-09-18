@@ -50,6 +50,8 @@ public class SocketService {
 		// Generate config for socket server
 		socketServerConfig = new Configuration();
 		socketServerConfig.setPort(8080);
+		socketServerConfig.setUpgradeTimeout(1000000);
+		socketServerConfig.setPingInterval(0);
 
 		// Construct socket server
 		socketServer = new SocketIOServer(socketServerConfig);
