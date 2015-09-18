@@ -18,8 +18,8 @@ public class GameplayResponse {
 	// Response variables
 	private E_GameplayResponseCode responseCode;
 	private ArrayList<Coordinate> coords;
-	private ArrayList<GameObject> source;
-	private ArrayList<GameObject> target;
+	private ArrayList<String> sourceString;
+	private ArrayList<String> targetString;
 	private ArrayList<String> misc;
 		
 	// Constructors
@@ -27,8 +27,8 @@ public class GameplayResponse {
 
 		// Construct arrays
 		this.coords = new ArrayList<Coordinate>();
-		this.source = new ArrayList<GameObject>();
-		this.target = new ArrayList<GameObject>();
+		this.sourceString = new ArrayList<String>();
+		this.targetString = new ArrayList<String>();
 		this.misc = new ArrayList<String>();
 		
 		// Set default values
@@ -59,11 +59,11 @@ public class GameplayResponse {
 	public void addCoord(Coordinate coord) {
 		this.coords.add(coord);
 	}
-	public void addSource(GameObject gameObject) {
-		this.source.add(gameObject);
+	public void addSource(String sourceString) {
+		this.sourceString.add(sourceString);
 	}
-	public void addTarget(GameObject gameObject) {
-		this.target.add(gameObject);
+	public void addTarget(String targetString) {
+		this.targetString.add(targetString);
 	}
 	public void addMisc(String miscString) {
 		this.misc.add(miscString);
@@ -91,63 +91,10 @@ public class GameplayResponse {
 		}
 		return result;
 	}
-	
-	// Customise view for source response
 	@JsonView(GameplayResponse.Views.Summary.class)
-	public String[] getSource() {
-		
-		// Declare/Initialise variables
-		String[] result = null;
-		
-		// Determine response type
-		switch (this.responseCode) {
-			case NEW_BUILDING:
-				result = Const.getIdentifierArrayFromGameObjectList(this.source, false);
-				break;
-			case DEFENCE_ATTACK_XY:
-				result = this.getInstanceArrayFromDynGameBuildingList(this.source, false);
-				break;
-			case WAYPOINT_PATH_COORDS:
-				result = this.getInstanceArrayFromDynGameUnitList(this.source, false);
-				break;
-			case DEBUG_PLACEMENT:
-				result = Const.getIdentifierArrayFromGameObjectList(this.source, false);
-				break;
-			default:
-				break;
-		}
-		
-		// Return generated array
-		return result;
-		
-	}
-	
-	// Customise view for target response
+	public String[] getSource() { return this.sourceString.toArray(new String[this.sourceString.size()]); }
 	@JsonView(GameplayResponse.Views.Summary.class)
-	public String[] getTarget() {
-
-		// Declare/Initialise variables
-		String[] result = null;
-		
-		// Determine response type
-		switch (this.responseCode) {
-			case NEW_BUILDING:
-				result = this.getInstanceArrayFromDynGameBuildingList(this.source, false);
-				break;
-			case DAMAGE_OBJECT:
-				result = this.getInstanceArrayFromDynGameUnitList(this.target, false);
-				break;
-			case DEBUG_PLACEMENT:
-				result = this.getInstanceArrayFromDynGameUnitList(this.source, false);
-				break;
-			default:
-				break;
-		}
-		
-		// Return generated array
-		return result;
-		
-	}
+	public String[] getTarget() { return this.targetString.toArray(new String[this.targetString.size()]); }
 	
 	// Utility methods
 	private String[] getInstanceArrayFromDynGameBuildingList(ArrayList<GameObject> dynGameBuildings, boolean keepErroneous) {

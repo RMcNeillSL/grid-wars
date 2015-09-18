@@ -53,13 +53,14 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		y : 0
 	};
 
-	// Define game arrays
+	// Define game object arrays
 	this.units = [];
 	this.buildings = [];
+	
+	// Define selection variables
 	this.selected = [];
 	this.selectedJustSet = false;
-
-	// Define various variables
+	this.selectedLines = [];
 	this.selectionRectangle = {
 		selectActive : false,
 		rect : null,
@@ -149,6 +150,9 @@ Engine.prototype.create = function() {
 
 	// Construct selection rectangle
 	this.selectionRectangle.rect = new Phaser.Rectangle(0, 0, 100, 100);
+	
+	// Populate selection lines
+	for (var count = 0; count < 4; count ++) { this.selectedLines.push(new Phaser.Line(0, 0, 0, 0)); }
 }
 
 Engine.prototype.update = function() {
@@ -179,6 +183,32 @@ Engine.prototype.render = function() {
 	// Render selection rectanlge to scene
 	if (this.selectionRectangle.selectActive) {
 		this.phaserGame.debug.geom(this.selectionRectangle.rect, 'rgba(0,100,0,0.3)');
+	}
+	
+	// Render selection boxes around units to scene
+	if (this.selected.length > 0) {
+		
+		// Define variables
+		var checkBounds = null;
+		
+		// Process all selection items
+		for (var index = 0; index < this.selected.length; index ++) {
+			
+			// Generate health drawing bounds
+			checkBounds = this.selected[index].getHealthRenderBounds();
+			
+			// Update line positions
+			this.selectedLines[0].setTo(checkBounds.left, 	checkBounds.top, 	checkBounds.right, 	checkBounds.top);
+			this.selectedLines[1].setTo(checkBounds.left, 	checkBounds.bottom, checkBounds.right, 	checkBounds.bottom);
+			this.selectedLines[2].setTo(checkBounds.left,  	checkBounds.top, 	checkBounds.left, 	checkBounds.bottom);
+			this.selectedLines[3].setTo(checkBounds.right, 	checkBounds.top, 	checkBounds.right, 	checkBounds.bottom);
+			
+			// Output lines to screen
+			this.phaserGame.debug.geom(this.selectedLines[0], 'rgba(255,255,255,0.5)');
+			this.phaserGame.debug.geom(this.selectedLines[1], 'rgba(255,255,255,0.5)');
+			this.phaserGame.debug.geom(this.selectedLines[2], 'rgba(255,255,255,0.5)');
+			this.phaserGame.debug.geom(this.selectedLines[3], 'rgba(255,255,255,0.5)');
+		}
 	}
 }
 
@@ -592,13 +622,11 @@ Engine.prototype.explosionCollisionCheck = function() {
 			for (var index = 0; index < this.buildings.length; index++) {
 				if (!this.buildings[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-						&& this.buildings[index].gameCore.playerId != this.currentPlayer.playerId
+//						&& this.buildings[index].gameCore.playerId != this.currentPlayer.playerId
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.buildings[index].getCollisionLayers())) {
-					this.buildings[index]
-							.markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission(
-							[ this.buildings[index] ], damageAmount);
+					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageAmount);
 				}
 			}
 
@@ -606,13 +634,11 @@ Engine.prototype.explosionCollisionCheck = function() {
 			for (var index = 0; index < this.units.length; index++) {
 				if (!this.units[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-						&& this.units[index].gameCore.playerId != this.currentPlayer.playerId
+//						&& this.units[index].gameCore.playerId != this.currentPlayer.playerId
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.units[index].getCollisionLayers())) {
-					this.units[index]
-							.markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission(
-							[ this.units[index] ], damageAmount);
+					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission([this.units[index]], damageAmount);
 				}
 			}
 
@@ -854,8 +880,8 @@ Engine.prototype.processUnitDamage = function(responseData) {
 
 		// Create reference object
 		var refObject = {
-			newHealth : parseInt(responseData.misc[unitIndex]),
-			instanceId : responseData.target[unitIndex]
+			newHealth : parseInt(responseData.target[unitIndex]),
+			instanceId : responseData.source[unitIndex]
 		};
 
 		// Get targeted unit
@@ -875,8 +901,8 @@ Engine.prototype.processUnitDamage = function(responseData) {
 				removeList.push(refObject.instanceId);
 			}
 
-			// Log to screen
-			console.log(gameObject.gameCore.identifier + " health: " + gameObject.gameCore.health);
+//			// Log to screen
+//			console.log(gameObject.gameCore.identifier + " health: " + gameObject.gameCore.health);
 		}
 	}
 
