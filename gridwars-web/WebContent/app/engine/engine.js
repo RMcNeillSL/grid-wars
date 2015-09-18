@@ -67,6 +67,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originX : 0,
 		originY : 0
 	};
+	this.hoverItem = null;
 
 	// Define sprite groups
 	this.mapGroup = null;
@@ -179,49 +180,59 @@ Engine.prototype.update = function() {
 }
 
 Engine.prototype.render = function() {
+	
+	// Create self reference
+	var self = this;
 
 	// Render selection rectanlge to scene
 	if (this.selectionRectangle.selectActive) {
 		this.phaserGame.debug.geom(this.selectionRectangle.rect, 'rgba(0,100,0,0.3)');
 	}
 	
-	// Render selection boxes around units to scene
-	if (this.selected.length > 0) {
+	// Function to generate/display health for game objects
+	var outputUnitHealth = function(targetUnit, healthColour, remainingColour, healthOutline, healthIntervalColour) {
+
+		// Generate health drawing bounds
+		var healthBounds = targetUnit.getHealthRenderBounds();
+		var healthPercent = (targetUnit.gameCore.health * 1.0) / (targetUnit.gameCore.maxHealth * 1.0);
 		
-		// Define variables
-		var healthBounds = null;
+		// Output health measure
+		var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
+		self.phaserGame.debug.geom(healthRect, healthColour);
+		var remainingRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * (1-healthPercent), healthBounds.height);
+		self.phaserGame.debug.geom(healthRect, remainingColour);
+		
+		// Output health interval lines
+		for (var lineX = healthBounds.left; lineX < healthBounds.left + healthBounds.width * healthPercent; lineX += 5) {
+			var healthLine = new Phaser.Line(lineX, healthBounds.top, lineX, healthBounds.bottom);
+			self.phaserGame.debug.geom(healthLine, healthIntervalColour);
+		}
+		
+		// Update line positions
+		self.selectedLines[0].setTo(healthBounds.left, 	healthBounds.top, 		healthBounds.right, 	healthBounds.top);
+		self.selectedLines[1].setTo(healthBounds.left, 	healthBounds.bottom, 	healthBounds.right, 	healthBounds.bottom);
+		self.selectedLines[2].setTo(healthBounds.left,  healthBounds.top, 		healthBounds.left, 		healthBounds.bottom);
+		self.selectedLines[3].setTo(healthBounds.right, healthBounds.top, 		healthBounds.right, 	healthBounds.bottom);
+		
+		// Output lines to screen
+		self.phaserGame.debug.geom(self.selectedLines[0], healthOutline);
+		self.phaserGame.debug.geom(self.selectedLines[1], healthOutline);
+		self.phaserGame.debug.geom(self.selectedLines[2], healthOutline);
+		self.phaserGame.debug.geom(self.selectedLines[3], healthOutline);
+	}
+	
+	// Render selection boxes around units to scene
+	if (this.selected && this.selected.length > 0) {
 		
 		// Process all selection items
-		for (var index = 0; index < this.selected.length; index ++) {
-			
-			// Generate health drawing bounds
-			healthBounds = this.selected[index].getHealthRenderBounds();
-			
-			// Output health measure
-			var healthPercent = (this.selected[index].gameCore.health * 1.0) / (this.selected[index].gameCore.maxHealth * 1.0);
-			var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
-			this.phaserGame.debug.geom(healthRect, 'rgba(0,255,0,0.5)');
-			var remainingRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * (1-healthPercent), healthBounds.height);
-			this.phaserGame.debug.geom(healthRect, 'rgba(0,0,0,0.5)');
-			
-			// Output health interval lines
-			for (var lineX = healthBounds.left; lineX < healthBounds.left + healthBounds.width * healthPercent; lineX += 5) {
-				var healthLine = new Phaser.Line(lineX, healthBounds.top, lineX, healthBounds.bottom);
-				this.phaserGame.debug.geom(healthLine, 'rgba(200,255,200,0.5)');
-			}
-			
-			// Update line positions
-			this.selectedLines[0].setTo(healthBounds.left, 	healthBounds.top, 		healthBounds.right, 	healthBounds.top);
-			this.selectedLines[1].setTo(healthBounds.left, 	healthBounds.bottom, 	healthBounds.right, 	healthBounds.bottom);
-			this.selectedLines[2].setTo(healthBounds.left,  healthBounds.top, 		healthBounds.left, 		healthBounds.bottom);
-			this.selectedLines[3].setTo(healthBounds.right, healthBounds.top, 		healthBounds.right, 	healthBounds.bottom);
-			
-			// Output lines to screen
-			this.phaserGame.debug.geom(this.selectedLines[0], 'rgba(255,255,255,0.5)');
-			this.phaserGame.debug.geom(this.selectedLines[1], 'rgba(255,255,255,0.5)');
-			this.phaserGame.debug.geom(this.selectedLines[2], 'rgba(255,255,255,0.5)');
-			this.phaserGame.debug.geom(this.selectedLines[3], 'rgba(255,255,255,0.5)');
+		for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
+			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,255,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(255,255,255,0.5)', 'rgba(200,255,200,0.5)');
 		}
+	}
+	
+	// Render hover object healthbox
+	if (this.hoverItem) {
+		outputUnitHealth(this.hoverItem, 'rgba(0,255,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)');
 	}
 }
 
@@ -329,11 +340,12 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 	// Process updates for selection rectangle
 	if (pointer.isDown) {
-
+		
 		// Reset selected items
 		if (this.selectionRectangle.selectActive
-				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height != 0) {
+				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 10) {
 			this.selected = [];
+			this.hoverItem = null;
 		}
 
 		// Set new rectangle selection coordiantes
@@ -346,7 +358,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
 				&& this.selectionRectangle.rect.width
-						* this.selectionRectangle.rect.height != 0) {
+						* this.selectionRectangle.rect.height > 10) {
 			this.selected = this.getSelectionArray();
 		}
 
@@ -358,6 +370,17 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		this.selectionRectangle.originY = y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
+
+		// Select hover items
+		this.hoverItem = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true);
+		if (this.hoverItem) {
+			for (var index = 0; index < this.selected.length; index ++) {
+				if (this.selected[index].gameCore.instanceId == this.hoverItem.gameCore.instanceId) {
+					this.hoverItem = null;
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -745,18 +768,34 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 
 	// Define working variables
 	var searchObject = null;
+	
+	// Search through selected items
+	for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
+		if (this.selected[selectedIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.selected[selectedIndex];
+			this.selected.splice(selectedIndex, 1);
+			break;
+		}
+	}
+	
+	// Check hover item
+	if (this.hoverItem && this.hoverItem.gameCore.instanceId == instanceId) {
+		this.this.hoverItem = null;
+	}
 
 	// Locate and remove item from units/buildings list
 	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
 		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
 			searchObject = this.units[unitIndex];
 			this.units.splice(unitIndex, 1);
+			break;
 		}
 	}
 	for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
 		if (this.buildings[buildingIndex].gameCore.instanceId == instanceId) {
 			searchObject = this.buildings[buildingIndex];
 			this.buildings.splice(buildingIndex, 1);
+			break;
 		}
 	}
 
