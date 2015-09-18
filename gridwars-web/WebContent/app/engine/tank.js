@@ -28,7 +28,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
 		// Create turret base object
-		this.bodySegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, 0);
+		this.bodySegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.BODY);
 		this.bodySegment.anchor.setTo(0.5, 0.5);
 		this.bodySegment.z = 10;
 		this.tankGroup.add(this.bodySegment);
@@ -36,7 +36,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 //		this.bodySegment.body.enable = true;
 		
 		// Create turrent cannon sprite
-		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top + this.height * 0.08, CONSTANTS.SPRITE_TANK, 1);
+		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top + this.height * 0.08, CONSTANTS.SPRITE_TANK, this.gameCore.colour.TURRET);
 		this.turretSegment.anchor.setTo(0.5, 0.78);
 		this.turretSegment.z = 11;
 //		this.engineCore.phaserEngine.physics.enable(this.turretSegment, Phaser.Physics.ARCADE);

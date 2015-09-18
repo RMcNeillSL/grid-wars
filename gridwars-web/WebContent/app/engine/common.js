@@ -54,13 +54,20 @@ GameCore.prototype.setInstanceId = function(instanceId) {
 }
 
 GameCore.prototype.setPlayer = function(player) {
+
+	// Link playerId to passed param
 	this.playerId = player.playerId;
-	this.colour = CONSTANTS.COLOUR_TURRET[0];
-	for (var index = 1; index < CONSTANTS.COLOUR_TURRET.length; index ++) {
-		if (player.colour === CONSTANTS.COLOUR_TURRET[index].COLOUR) {
-			this.colour = CONSTANTS.COLOUR_TURRET[index];
+
+	// Set up colours
+	console.log(CONSTANTS.COLOUR_[this.identifier]);
+	console.log(this.identifier);
+	this.colour = CONSTANTS.COLOUR_[this.identifier][0];
+	for (var index = 1; index < CONSTANTS.COLOUR_[this.identifier].length; index ++) {
+		if (player.colour === CONSTANTS.COLOUR_[this.identifier][index].COLOUR) {
+			this.colour = CONSTANTS.COLOUR_[this.identifier][index];
 		}
 	}
+
 }
 
 GameCore.prototype.setHealth = function(newHealth) {

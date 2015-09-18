@@ -404,6 +404,7 @@ Engine.prototype.onKeyPressed = function(char) {
 		// width, height, func_explosionRequest
 		if (char == '2') {
 			var gameCore = new GameCore("TANK", cell);
+			gameCore.setPlayer(this.currentPlayer);
 			this.phaserGame.newBuilding.active = true;
 			this.phaserGame.newBuilding.target = new Tank(this.engineCore,
 					gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
