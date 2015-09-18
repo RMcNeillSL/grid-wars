@@ -88,8 +88,10 @@
 		getAllData();
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
-			if(next !== "http://" + window.location.host + "/#/game") {
-				_this.lobbyService.leaveGame();
+			if(self.$rootScope.currentlyInLobby) {
+				if(next !== "http://" + window.location.host + "/#/game") {
+					_this.lobbyService.leaveGame();
+				}
 			}
 		});
 	}

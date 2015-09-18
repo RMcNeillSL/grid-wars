@@ -36,19 +36,19 @@
 		newGameConfig: function (mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
 				gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
 			self.$rootScope.gameConfig = {
-					"mapId" : mapId,
-					"maxPlayers" : maxPlayers,
-					"gameType" : gameType,
-					"mapMaxPlayers": mapMaxPlayers,
-					"startingCash" : startingCash,
-					"gameSpeed" : gameSpeed,
-					"unitHealth" : unitHealth,
-					"buildingHealth" : buildingHealth,
-					"turretHealth" : turretHealth,
-					"randomCrates" : randomCrates,
-					"redeployableMCV" : redeployableMCV
+					"mapId" 			: mapId,
+					"maxPlayers" 		: maxPlayers,
+					"gameType" 			: gameType,
+					"mapMaxPlayers"		: mapMaxPlayers,
+					"startingCash" 		: startingCash,
+					"gameSpeed" 		: gameSpeed,
+					"unitHealth" 		: unitHealth,
+					"buildingHealth" 	: buildingHealth,
+					"turretHealth" 		: turretHealth,
+					"randomCrates" 		: randomCrates,
+					"redeployableMCV" 	: redeployableMCV
 				}
-				self.$rootScope.$apply();
+			self.$rootScope.$apply();
 		},
 		newUserList: function (lobbyUserList) {
 			self.$rootScope.lobbyUserList = lobbyUserList;

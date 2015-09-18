@@ -131,6 +131,7 @@ public class SocketService {
 	public void onGetNewConfig (SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		System.out.println("GET NEW CONFIG");
 
 		if (gameAndUserInfo != null) {
 			GameJoinResponse gameconfig = requestProcessor.getAllGAmeConfigBySocketId(sessionId);
@@ -184,6 +185,7 @@ public class SocketService {
 
 				if (updateComplete) {
 					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+
 					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(),
 							mapMaxPlayers, data.getStartingCash(), data.getGameSpeed(), data.getUnitHealth(), 
 							data.getBuildingHealth(), data.getTurretHealth(), data.isRandomCrates(), data.isRedeployableMCV());
@@ -248,10 +250,9 @@ public class SocketService {
 
 			client.sendEvent("leftLobby");
 			lobbyDeleted = requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
-
-			broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
 			client.leaveRoom(gameAndUserInfo.getLobbyId());
 			client.joinRoom(SERVER_LOBBY_CHANNEL);
+			broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
 
 			if (!lobbyDeleted) {
 				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
@@ -330,6 +331,11 @@ public class SocketService {
 	@OnEvent("forceDisconnect")
 	public void onForceDisconnet(SocketIOClient client) {
 		client.disconnect();
+	}
+	
+	@OnEvent("getServerList")
+	public void onGetServerList(SocketIOClient client) {
+		client.sendEvent("updateServerLobby", requestProcessor.listGames());
 	}
 
 	@OnConnect

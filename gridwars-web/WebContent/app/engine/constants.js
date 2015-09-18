@@ -39,6 +39,7 @@ CONSTANTS = {
 	SOCKET_SEND_JOIN_SERVER_LOBBY 		: "joinServerLobby",
 	SOCKET_SEND_REFRESH_GAME_LOBBY 		: "refreshGameLobby",
 	SOCKET_SEND_LEAVE_SERVER_LOBBY 		: "leaveServerLobby",
+	SOCKET_SEND_GET_SERVERS				: "getServerList",
 
 	// Game lobby socket emit events
 	SOCKET_SEND_JOIN_GAME_LOBBY			: "joinGameLobby",

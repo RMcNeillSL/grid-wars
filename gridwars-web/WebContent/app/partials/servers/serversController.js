@@ -11,6 +11,7 @@
 		this.$rootScope.servers = []
 		this.$rootScope.pageName = "Servers";
 		this.loadServers();
+		var self = this
 
 		// Set up new sockets or reset if they exist
 		if (!this.$rootScope.sockets) {
@@ -25,6 +26,9 @@
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_DISCONNECT, this.serversService.onDisconnect);
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_SERVER_LOBBY_UPDATE, this.serversService.serverLobbyUpdate);
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_REFRESH_GAME_LOBBY, this.serversService.refreshGameLobby);
+
+		this.refresh = setInterval(function() {self.serversService.refreshServerList(); }, 1000);
+		this.serversService.joinServerLobby();
 	}
 
 	ServersController.prototype = {
@@ -51,7 +55,7 @@
 				self.$window.sessionStorage.gameLeader = true;
 				self.$location.path("/lobby");
 			};
-
+			clearInterval(this.refresh);
 			this.serversService.createGame(updateNewGameResponse);
 		},
 		joinGame : function(lobbyId) {
@@ -62,7 +66,7 @@
 				self.$window.sessionStorage.gameLeader = false;
 				self.$location.path("/lobby");
 			};
-
+			clearInterval(this.refresh);
 			this.serversService.joinGame(lobbyId, updateJoinGameResponse);
 		},
 		formatGameType : function(gameType) {
