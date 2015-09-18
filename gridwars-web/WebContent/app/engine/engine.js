@@ -199,8 +199,8 @@ Engine.prototype.render = function() {
 		// Output health measure
 		var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
 		self.phaserGame.debug.geom(healthRect, healthColour);
-		var remainingRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * (1-healthPercent), healthBounds.height);
-		self.phaserGame.debug.geom(healthRect, remainingColour);
+		var remainingRect = new Phaser.Rectangle(healthBounds.left + healthBounds.width * healthPercent, healthBounds.top, healthBounds.width * (1-healthPercent), healthBounds.height);
+		self.phaserGame.debug.geom(remainingRect, remainingColour);
 		
 		// Output health interval lines
 		for (var lineX = healthBounds.left; lineX < healthBounds.left + healthBounds.width * healthPercent; lineX += 5) {
@@ -226,13 +226,13 @@ Engine.prototype.render = function() {
 		
 		// Process all selection items
 		for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
-			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,255,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(255,255,255,0.5)', 'rgba(200,255,200,0.5)');
+			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,100,0,1)', 'rgba(0,0,0,1)', 'rgba(150,150,150,1)', 'rgba(200,255,200,1)');
 		}
 	}
 	
 	// Render hover object healthbox
 	if (this.hoverItem) {
-		outputUnitHealth(this.hoverItem, 'rgba(0,255,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
+		outputUnitHealth(this.hoverItem, 'rgba(0,100,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
 	}
 }
 

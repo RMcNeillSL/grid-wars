@@ -162,8 +162,8 @@ Turret.prototype.rotateAndShoot = function(targetX, targetY) {
 	if (targetX && targetY) {
 
 		// Check X&Y deltas
-		deltaX = targetX - this.left;
-		deltaY = targetY - this.top;
+		var deltaX = targetX - this.left;
+		var deltaY = targetY - this.top;
 		
 		// Calculate target angle
 		var targetAngle = 0;
@@ -335,9 +335,9 @@ Turret.prototype.getHealthRenderBounds = function() {
 	var absoluteBounds = this.getBounds();
 	var healthBounds = {
 		left : Math.min(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) + 15,
-		top : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) - 7,
+		top : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height),
 		right : Math.max(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) - 15,
-		bottom : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) - 2,
+		bottom : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) + 5,
 	};
 
 	// Add width and height

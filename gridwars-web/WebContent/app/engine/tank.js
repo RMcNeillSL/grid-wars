@@ -23,6 +23,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.waypoints = [];
 		this.damageExplosions = [];
 		this.moveSpeed = 1; // MUST BE A MULTIPLE OF 100(size of a square)!
+		this.rotateSpeed = 1;
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
@@ -86,8 +87,17 @@ Tank.prototype.setPosition = function(cell) {
 	
 }
 
-Tank.prototype.rotate = function(angle) {
-	this.turretSegment.angle += angle;
+Tank.prototype.rotate = function(angle, rotateBody, rotateTurret) {
+	if (rotateBody && rotateTurret) {
+		this.bodySegment.angle += angle;
+		this.turretSegment.angle += angle;
+	} else if (rotateBody) {
+		this.bodySegment.angle += angle;
+	} else if (rotateTurret) {
+		this.turretSegment.angle += angle;
+	} else {
+		this.turretSegment.angle += angle;
+	}
 }
 
 Tank.prototype.updateWaypoints = function(newWaypoints) {
@@ -112,6 +122,46 @@ Tank.prototype.progressWaypoints = function() {
 	
 //	console.log("Moving: (" + this.left + "," + this.top + ") to (" + (this.left + incX) + "," + (this.top + incY) + ") with target (" + nextWaypoint.x + "," + nextWaypoint.y + ")");
 
+//	this.moveSpeed = 1; // MUST BE A MULTIPLE OF 100(size of a square)!
+//	this.rotateSpeed = 1;
+	
+	var direction = this.bodySegment.angle;
+	
+	// Check X&Y deltas
+	var deltaX = nextWaypoint.x - this.left;
+	var deltaY = nextWaypoint.y - this.top;
+	
+	// Calculate target angle
+	var targetAngle = 0;
+	var calcAngle = Math.atan((deltaX*1.0)/deltaY) * 180/Math.PI;
+	if (deltaX >= 0 && deltaY <= 0) { targetAngle = 0 - calcAngle; }
+	if (deltaX >= 0 && deltaY >= 0) { targetAngle = 180 - calcAngle; }
+	if (deltaX <= 0 && deltaY >= 0) { targetAngle = -180 - calcAngle; }
+	if (deltaX <= 0 && deltaY <= 0) { targetAngle = 0 - calcAngle; }
+
+	// Adjust angles to 0-360 values
+	var angleIncrement = this.rotateSpeed;
+	var target360Angle = targetAngle;
+	var current360Angle = direction;
+	if (target360Angle < 0) { target360Angle += 360; }
+	if (current360Angle < 0) { current360Angle += 360; }
+	
+	// Determine move increment direction based on angle size
+	var angleAbsDif = Math.max(target360Angle, current360Angle) - Math.min(target360Angle, current360Angle);
+	if (current360Angle < target360Angle && angleAbsDif <= 180) { angleIncrement = this.rotateSpeed; }
+	if (current360Angle < target360Angle && angleAbsDif > 180) { angleIncrement = -this.rotateSpeed; }
+	if (current360Angle > target360Angle && angleAbsDif <= 180) { angleIncrement = -this.rotateSpeed; }
+	if (current360Angle > target360Angle && angleAbsDif > 180) { angleIncrement = this.rotateSpeed; }
+	
+	// Perform total rotation
+	this.rotate(angleIncrement, true, true);
+	
+//	// Save target angle data
+//	this.target.angle = targetAngle;
+//	this.target.x = targetX;
+//	this.target.y = targetY;
+//	this.target.active = true;
+	
 	// Process XY move to target
 	this.left = this.left + incX;
 	this.top = this.top + incY;
@@ -185,9 +235,9 @@ Tank.prototype.getHealthRenderBounds = function() {
 	var absoluteBounds = this.getBounds();
 	var healthBounds = {
 		left : Math.min(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) + 15,
-		top : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) - 7,
+		top : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height),
 		right : Math.max(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) - 15,
-		bottom : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) - 2,
+		bottom : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) + 5,
 	};
 	
 	// Add width and height
