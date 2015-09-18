@@ -106,6 +106,17 @@ public class SocketService {
 			broadcastRoomState.sendEvent("gameplayResponse", gameplayResponse);
 		}
 	}
+	
+	@OnEvent("gameCompleted")
+	public void removeConnectedUsersOnGameCompleted(SocketIOClient client) {
+		String sessionId = client.getSessionId().toString();
+		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		
+		if(requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId()
+				== gameAndUserInfo.getUserId()) {
+			requestProcessor.deleteGameLobby(gameAndUserInfo.getLobbyId());
+		}
+	}
 
 	@OnEvent("joinGameLobby")
 	public void onBindSocket(SocketIOClient client, BindSocketRequest data) {

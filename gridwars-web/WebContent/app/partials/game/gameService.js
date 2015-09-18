@@ -58,6 +58,10 @@
 					self.$rootScope.gameplayResponseManager(gameplayResponse);
 				}
 			},
+			gameComplete: function(callback) {
+				this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GAME_COMPLETE);
+				callback();
+			},
 			
 			// Socket initialisation method
 //			initialiseSockets: function() {

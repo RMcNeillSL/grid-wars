@@ -80,8 +80,12 @@
 		var startGame = function() {
 
 			var gameFinished = function(playerResults) {
+				var callback = function() {
+					self.changeView("/results");
+				}
+				
 				self.$rootScope.playerResults = playerResults;
-				self.changeView("/results");
+				self.gameService.gameComplete(callback);
 			}
 			
 			// Make sure a second engine is not being created

@@ -58,6 +58,7 @@ CONSTANTS = {
 	SOCKET_SEND_ACTUAL_GAME_INIT		: "initGame",
 	SOCKET_SEND_START_GAME				: "startGame",
 	SOCKET_SEND_GAMEPLAY_REQUEST		: "gameplayRequest",
+	SOCKET_SEND_GAME_COMPLETE			: "gameCompleted",
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",
