@@ -1,5 +1,8 @@
 Turret Colour Changes:
 
-1 - H: , S: , V:
-2 - H:0, S: 80, V: 0
-
+Blue	- standard values
+Red	- H:0, S:80, V:0
+Purple	- H:294, S:40, V:0
+Green	- H:118, S:90, V:-30
+Orange	- H:40, S:90, V:5
+Cyan	- H:180, S:70, V:-10

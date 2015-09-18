@@ -375,7 +375,7 @@ public class Engine extends Thread {
 		}
 	}
 	
-	private GameplayResponse processDamageUnitRequest(Player player, String[] instanceIds, int damageAmount) {
+	private GameplayResponse processDamageRequest(Player player, String[] instanceIds, int damageAmount) {
 
 		// Set default result
 		GameplayResponse response = null;
@@ -383,24 +383,48 @@ public class Engine extends Thread {
 		
 		// Check if id's refer to units
 		DynGameUnit[] sourceUnits = this.getGameUnitsFromInstanceIds(instanceIds, false);
+		DynGameBuilding[] sourceBuildings = this.getGameBuildingsFromInstanceIds(instanceIds, false);
 
 		// Check each object in turn
-		for (DynGameUnit sourceUnit : sourceUnits) {
-			
-			// Reduce health of unit by passed amount
-			sourceUnit.takeDamage(damageAmount);
-			
-			// Only run this loop once for now
-			break;
-			
+		if (sourceUnits.length > 0) {
+			for (DynGameUnit sourceUnit : sourceUnits) {
+				
+				// Reduce health of unit by passed amount
+				sourceUnit.takeDamage(damageAmount);
+				
+				// Only run this loop once for now
+				break;
+				
+			}
+		}
+		
+		// Check each building in turn
+		if (sourceBuildings.length > 0) {
+			for (DynGameBuilding sourceBuilding : sourceBuildings) {
+				
+				// Reduce health of unit by passed amount
+				sourceBuilding.takeDamage(damageAmount);
+				
+				// Only run this loop once for now
+				break;
+				
+			}
 		}
 
 		// Construct valid response
 		if (validConstruction) {
 			response = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
-			for (DynGameUnit targetUnit : sourceUnits) {
-				response.addTarget(targetUnit);
-				response.addMisc(Integer.toString(targetUnit.getHealth()));
+			if (sourceUnits.length > 0) {
+				for (DynGameUnit targetUnit : sourceUnits) {
+					response.addTarget(targetUnit);
+					response.addMisc(Integer.toString(targetUnit.getHealth()));
+				}
+			}
+			if (sourceBuildings.length > 0) {
+				for (DynGameBuilding sourceBuilding : sourceBuildings) {
+					response.addTarget(sourceBuilding);
+					response.addMisc(Integer.toString(sourceBuilding.getHealth()));
+				}
 			}
 		}
 
@@ -473,7 +497,7 @@ public class Engine extends Thread {
 		        			coordinates);
 		        	break;
 		        case DAMAGE_OBJECT:
-		        	gameplayResponse = this.processDamageUnitRequest(sender,
+		        	gameplayResponse = this.processDamageRequest(sender,
 		        			gameplayRequest.getSourceString(), 
 		        			Integer.parseInt(gameplayRequest.getTargetString()[0]));
 		        	break;
