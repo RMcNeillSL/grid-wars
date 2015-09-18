@@ -6,7 +6,7 @@ function SocketShiz () {
 	console.log("Socket connection to: " + CONSTANTS.SOCKET_SERVER);
 	this.sockets = io.connect(CONSTANTS.SOCKET_SERVER, {
 		"force new connection" : false,
-		"timeout" : 5000
+		"timeout" : 10000
 	});
 
 	// Define default callbacks
@@ -46,8 +46,10 @@ function SocketShiz () {
 		if (self.onUserJoinedGameLobby) { self.onUserJoinedGameLobby(response); }
 	});
 
-	this.sockets.on(CONSTANTS.SOCKET_REC_GAME_CONFIG, function (response) {
-		if (self.onGameConfig) { self.onGameConfig(response); }
+	this.sockets.on(CONSTANTS.SOCKET_REC_GAME_CONFIG, function (mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
+			gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
+		if (self.onGameConfig) { self.onGameConfig(mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
+				gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV); }
 	});
 
 	this.sockets.on(CONSTANTS.SOCKET_REC_LOBBY_USER_LIST, function (response) {
@@ -62,12 +64,12 @@ function SocketShiz () {
 		if (self.onUserToggleReady) { self.onUserToggleReady(response); }
 	});
 
-	this.sockets.on(CONSTANTS.SOCKET_REC_CHANGE_USER_COLOUR, function (response) {
-		if (self.onChangeColour) { self.onChangeColour(response); }
+	this.sockets.on(CONSTANTS.SOCKET_REC_CHANGE_USER_COLOUR, function (userId, colour) {
+		if (self.onChangeColour) { self.onChangeColour(userId, colour); }
 	});
 
-	this.sockets.on(CONSTANTS.SOCKET_REC_CHANGE_USER_TEAM, function (response) {
-		if (self.onTeamChange) { self.onTeamChange(response); }
+	this.sockets.on(CONSTANTS.SOCKET_REC_CHANGE_USER_TEAM, function (userId, team) {
+		if (self.onTeamChange) { self.onTeamChange(userId, team); }
 	});
 
 	this.sockets.on(CONSTANTS.SOCKET_REC_GAME_INIT, function (response) {
@@ -249,5 +251,9 @@ SocketShiz.prototype.bindEvent = function(bindingIdentifier, callback) {
 }
 
 SocketShiz.prototype.emitEvent = function (emitIdentifier, data) {
-	this.sockets.emit(emitIdentifier, data);
+	if (data) {
+		this.sockets.emit(emitIdentifier, data);
+	} else {
+		this.sockets.emit(emitIdentifier);
+	}
 }

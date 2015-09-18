@@ -1,6 +1,6 @@
 // Constructor
 
-function Engine(gameplayConfig, playerId, serverAPI, callback) {
+function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 
 	var self = this;
 	var local_preload = function() { self.preload(); }
@@ -17,15 +17,16 @@ function Engine(gameplayConfig, playerId, serverAPI, callback) {
 				render : local_render
 			});
 	
+	// Game finishing variables
 	this.phaserGame.finished = false;
+	this.gameFinishedCallback = func_GameFinished;
 
 	// Introduce dynamic pointer objects
 	this.phaserGame.newBuilding = {
 		active : false,
 		target : null
 	};
-
-	this.gameFinishedCallback = callback;
+	
 	// Create user objects
 	this.currentPlayer = null;
 	this.players = [];
@@ -52,13 +53,14 @@ function Engine(gameplayConfig, playerId, serverAPI, callback) {
 		y : 0
 	};
 
-	// Define game arrays
+	// Define game object arrays
 	this.units = [];
 	this.buildings = [];
+	
+	// Define selection variables
 	this.selected = [];
 	this.selectedJustSet = false;
-
-	// Define various variables
+	this.selectedLines = [];
 	this.selectionRectangle = {
 		selectActive : false,
 		rect : null,
@@ -148,6 +150,9 @@ Engine.prototype.create = function() {
 
 	// Construct selection rectangle
 	this.selectionRectangle.rect = new Phaser.Rectangle(0, 0, 100, 100);
+	
+	// Populate selection lines
+	for (var count = 0; count < 4; count ++) { this.selectedLines.push(new Phaser.Line(0, 0, 0, 0)); }
 }
 
 Engine.prototype.update = function() {
@@ -260,10 +265,36 @@ Engine.prototype.render = function() {
 	if (this.selectionRectangle.selectActive) {
 		this.phaserGame.debug.geom(this.selectionRectangle.rect, 'rgba(0,100,0,0.3)');
 	}
+	
+	// Render selection boxes around units to scene
+	if (this.selected.length > 0) {
+		
+		// Define variables
+		var checkBounds = null;
+		
+		// Process all selection items
+		for (var index = 0; index < this.selected.length; index ++) {
+			
+			// Generate health drawing bounds
+			checkBounds = this.selected[index].getHealthRenderBounds();
+			
+			// Update line positions
+			this.selectedLines[0].setTo(checkBounds.left, 	checkBounds.top, 	checkBounds.right, 	checkBounds.top);
+			this.selectedLines[1].setTo(checkBounds.left, 	checkBounds.bottom, checkBounds.right, 	checkBounds.bottom);
+			this.selectedLines[2].setTo(checkBounds.left,  	checkBounds.top, 	checkBounds.left, 	checkBounds.bottom);
+			this.selectedLines[3].setTo(checkBounds.right, 	checkBounds.top, 	checkBounds.right, 	checkBounds.bottom);
+			
+			// Output lines to screen
+			this.phaserGame.debug.geom(this.selectedLines[0], 'rgba(255,255,255,0.5)');
+			this.phaserGame.debug.geom(this.selectedLines[1], 'rgba(255,255,255,0.5)');
+			this.phaserGame.debug.geom(this.selectedLines[2], 'rgba(255,255,255,0.5)');
+			this.phaserGame.debug.geom(this.selectedLines[3], 'rgba(255,255,255,0.5)');
+		}
+	}
 }
 
 
-// Input event methods
+// ------------------------------ INPUT EVENT METHODS ------------------------------ //
 
 Engine.prototype.onMouseDown = function(pointer) {
 	
@@ -426,7 +457,88 @@ Engine.prototype.onKeyPressed = function(char) {
 	}
 }
 
-// Utility methods
+
+// ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.updatePlayerStatus = function() {
+	var self = this;
+	var deadPlayers = self.players.slice();
+
+	var removeArray = [];
+	
+	for (var index = 0; index < deadPlayers.length; index++) {
+		if (!deadPlayers[index].hasPlacedObject) {
+			removeArray.push(index);
+		}
+	}
+	
+	for (var index = (removeArray.length-1); index >= 0; index--) {
+		deadPlayers.splice(removeArray[index], 1);
+	}
+	
+	self.units.filter(function(unit) {
+		for (var index = 0; index < deadPlayers.length; index++) {
+			if (unit.gameCore.playerId === deadPlayers[index].playerId) {
+				deadPlayers.splice(index, 1);
+				break;
+			}
+		}
+	});
+
+	self.buildings.filter(function(building) {
+		for (var index = 0; index < deadPlayers.length; index++) {
+			if (building.gameCore.playerId === deadPlayers[index].playerId) {
+				deadPlayers.splice(index, 1);
+				break;
+			}
+		}
+	});
+
+	if (deadPlayers.length > 0) {
+		for (var i1 = 0; i1 < deadPlayers.length; i1++) {
+			var playerAlreadyDead = false;
+
+			for (var i2 = 0; i2 < self.playerResults.length; i2++) {
+				if (self.playerResults[i2].player === deadPlayers[i1].playerId) {
+					playerAlreadyDead = true;
+					break;
+				}
+			}
+
+			if (!playerAlreadyDead) {
+				self.playerResults.push({
+					position : self.players.length - self.playerResults.length,
+					playerId : deadPlayers[i1].playerId,
+					feedback : deadPlayers[i1].playerId + " finished in place: "
+							+ (self.players.length - self.playerResults.length) + "."
+				});
+			}
+		}
+	}
+	
+	if (deadPlayers && deadPlayers.length === (self.players.length-1)) {
+		for (var index = 0; index < self.players.length; index ++) {
+			var isDead = false;
+			for (var index2 = 0; index2 < self.playerResults.length; index2 ++) {
+				if (self.playerResults[index2].playerId == self.players[index].playerId) {
+					isDead = true;
+					break;
+				}
+			}
+			if (!isDead) {
+				self.playerResults.push({
+					position : 1,
+					playerId : self.players[index].playerId,
+					feedback : self.players[index].playerId + " finished in place: 1."
+				});
+				break;
+			}
+		}
+		self.gameFinishedCallback(self.playerResults);
+		this.phaserGame.finished = true;
+		this.phaserGame.disableStep();
+	}
+}
 
 Engine.prototype.getItemAtPoint = function(point, playerOwned) {
 
@@ -591,13 +703,11 @@ Engine.prototype.explosionCollisionCheck = function() {
 			for (var index = 0; index < this.buildings.length; index++) {
 				if (!this.buildings[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-						&& this.buildings[index].gameCore.playerId != this.currentPlayer.playerId
+//						&& this.buildings[index].gameCore.playerId != this.currentPlayer.playerId
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.buildings[index].getCollisionLayers())) {
-					this.buildings[index]
-							.markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission(
-							[ this.buildings[index] ], damageAmount);
+					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageAmount);
 				}
 			}
 
@@ -605,13 +715,11 @@ Engine.prototype.explosionCollisionCheck = function() {
 			for (var index = 0; index < this.units.length; index++) {
 				if (!this.units[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-						&& this.units[index].gameCore.playerId != this.currentPlayer.playerId
+//						&& this.units[index].gameCore.playerId != this.currentPlayer.playerId
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.units[index].getCollisionLayers())) {
-					this.units[index]
-							.markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission(
-							[ this.units[index] ], damageAmount);
+					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+					this.serverAPI.requestDamageSubmission([this.units[index]], damageAmount);
 				}
 			}
 
@@ -713,6 +821,12 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 			this.units.splice(unitIndex, 1);
 		}
 	}
+	for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
+		if (this.buildings[buildingIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.buildings[buildingIndex];
+			this.buildings.splice(buildingIndex, 1);
+		}
+	}
 
 	// Delete the object
 	if (searchObject) {
@@ -720,7 +834,8 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 	}
 }
 
-// Specialised methods for dealing with individual responses
+
+// ------------------------------ SPECIALISED METHODS FOR DEALING WITH RESPONSES ------------------------------//
 
 Engine.prototype.processNewBuilding = function(responseData) {
 
@@ -846,29 +961,29 @@ Engine.prototype.processUnitDamage = function(responseData) {
 
 		// Create reference object
 		var refObject = {
-			newHealth : parseInt(responseData.misc[unitIndex]),
-			instanceId : responseData.target[unitIndex]
+			newHealth : parseInt(responseData.target[unitIndex]),
+			instanceId : responseData.source[unitIndex]
 		};
 
 		// Get targeted unit
-		var unit = this.getObjectFromInstanceId(refObject.instanceId);
+		var gameObject = this.getObjectFromInstanceId(refObject.instanceId);
 
 		// Make sure a unit was found
-		if (unit) {
+		if (gameObject) {
 
 			// Submit unit damage
-			unit.gameCore.setHealth(refObject.newHealth);
+			gameObject.gameCore.setHealth(refObject.newHealth);
 
 			// Determine if unit was destroyed
-			if (unit.gameCore.health == 0) {
+			if (gameObject.gameCore.health == 0) {
 				this.explosionManager.requestDestruction(this.mapGroup,
 						CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C,
-						unit.left, unit.top);
+						gameObject.left, gameObject.top);
 				removeList.push(refObject.instanceId);
 			}
 
-			// Log to screen
-			console.log("Tank health: " + unit.gameCore.health);
+//			// Log to screen
+//			console.log(gameObject.gameCore.identifier + " health: " + gameObject.gameCore.health);
 		}
 	}
 
@@ -921,7 +1036,8 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 	}
 }
 
-// Process any server messages and call appropriate functions
+
+// ------------------------------ SERVER GAMEPLAYRESPONSE SWITCH METHOD ------------------------------
 
 Engine.prototype.processGameplayResponse = function(responseData) {
 

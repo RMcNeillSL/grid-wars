@@ -286,7 +286,8 @@ public class Engine extends Thread {
 				response = new GameplayResponse(E_GameplayResponseCode.NEW_BUILDING);
 				for (GameBuilding sourceBuilding : sourceBuildings) {
 					response.addCoord(col, row); // -- need to calculate for multiBuilding structures later e.g. walls
-					response.addSource(newBuilding);
+					response.addSource(newBuilding.getIdentifier());
+					response.addTarget(newBuilding.getInstanceId());
 					response.addMisc(player.getPlayerName());
 				}
 			}
@@ -313,7 +314,7 @@ public class Engine extends Thread {
 			response = new GameplayResponse(E_GameplayResponseCode.DEFENCE_ATTACK_XY);
 			for (DynGameDefence sourceDefence : sourceDefences) {
 				response.addCoord(col, row);
-				response.addSource(sourceDefence);
+				response.addSource(sourceDefence.getInstanceId());
 			}
 		}
 
@@ -347,7 +348,7 @@ public class Engine extends Thread {
 				if (path != null) {
 					for (Coordinate coord : path) {
 						response.addCoord(coord);
-						response.addSource(sourceUnit);
+						response.addSource(sourceUnit.getInstanceId());
 					}
 				}
 			}
@@ -375,7 +376,7 @@ public class Engine extends Thread {
 		}
 	}
 	
-	private GameplayResponse processDamageUnitRequest(Player player, String[] instanceIds, int damageAmount) {
+	private GameplayResponse processDamageRequest(Player player, String[] instanceIds, int damageAmount) {
 
 		// Set default result
 		GameplayResponse response = null;
@@ -383,31 +384,59 @@ public class Engine extends Thread {
 		
 		// Check if id's refer to units
 		DynGameUnit[] sourceUnits = this.getGameUnitsFromInstanceIds(instanceIds, false);
+		DynGameBuilding[] sourceBuildings = this.getGameBuildingsFromInstanceIds(instanceIds, false);
 
 		// Check each object in turn
-		for (DynGameUnit sourceUnit : sourceUnits) {
-			
-			// Reduce health of unit by passed amount
-			sourceUnit.takeDamage(damageAmount);
-			
-			// Only run this loop once for now
-			break;
-			
+		if (sourceUnits.length > 0) {
+			for (DynGameUnit sourceUnit : sourceUnits) {
+				
+				// Reduce health of unit by passed amount
+				sourceUnit.takeDamage(damageAmount);
+				
+				// Only run this loop once for now
+				break;
+				
+			}
+		}
+		
+		// Check each building in turn
+		if (sourceBuildings.length > 0) {
+			for (DynGameBuilding sourceBuilding : sourceBuildings) {
+				
+				// Reduce health of unit by passed amount
+				sourceBuilding.takeDamage(damageAmount);
+				
+				// Only run this loop once for now
+				break;
+				
+			}
 		}
 
 		// Construct valid response
 		if (validConstruction) {
 			response = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
-			for (DynGameUnit targetUnit : sourceUnits) {
-				response.addTarget(targetUnit);
-				response.addMisc(Integer.toString(targetUnit.getHealth()));
+			if (sourceUnits.length > 0) {
+				for (DynGameUnit targetUnit : sourceUnits) {
+					response.addSource(targetUnit.getInstanceId());
+					response.addTarget(Integer.toString(targetUnit.getHealth()));
+				}
+			}
+			if (sourceBuildings.length > 0) {
+				for (DynGameBuilding sourceBuilding : sourceBuildings) {
+					response.addSource(sourceBuilding.getInstanceId());
+					response.addTarget(Integer.toString(sourceBuilding.getHealth()));
+				}
 			}
 		}
+		
+		// Clean up all units and buildings which have now been destroyed
+		for (DynGameUnit targetUnit : sourceUnits) { if (targetUnit.getHealth() == 0) { this.destroyGameObject(targetUnit); } }
+		for (DynGameBuilding targetBuilding : sourceBuildings) { if (targetBuilding.getHealth() == 0) { this.destroyGameObject(targetBuilding); } }
 
 		// Return calculated result
 		return response;
 	}
-	
+
 	private GameplayResponse processDebugPlacementRequest(Player player, GameUnit[] sourceUnits, int col, int row) {
 
 		// Set default result
@@ -420,7 +449,8 @@ public class Engine extends Thread {
 			if (validConstruction) {
 				response = new GameplayResponse(E_GameplayResponseCode.DEBUG_PLACEMENT);
 				response.addCoord(col, row);
-				response.addSource(newUnit);
+				response.addSource(newUnit.getIdentifier());
+				response.addTarget(newUnit.getInstanceId());
 				response.addMisc(player.getPlayerName());
 				if (newUnit != null) { this.units.add(newUnit); }
 			}
@@ -473,7 +503,7 @@ public class Engine extends Thread {
 		        			coordinates);
 		        	break;
 		        case DAMAGE_OBJECT:
-		        	gameplayResponse = this.processDamageUnitRequest(sender,
+		        	gameplayResponse = this.processDamageRequest(sender,
 		        			gameplayRequest.getSourceString(), 
 		        			Integer.parseInt(gameplayRequest.getTargetString()[0]));
 		        	break;
@@ -500,7 +530,21 @@ public class Engine extends Thread {
 	
 	
 	// Utility methods
-	
+
+	private void destroyGameObject(GameObject targetGameObject) {
+
+		// Check and process unit type
+		if (targetGameObject instanceof DynGameUnit) {
+			this.units.remove(targetGameObject);
+		}
+
+		// Check and process unit type
+		if (targetGameObject instanceof DynGameBuilding) {
+			this.buildings.remove(targetGameObject);
+		}
+		
+	}
+
 	private DynGameBuilding getGameBuildingFromInstanceId(String instanceId) {
 		for (DynGameBuilding dynGameBuilding : this.buildings) {
 			if (dynGameBuilding.getInstanceId().equals(instanceId)) {

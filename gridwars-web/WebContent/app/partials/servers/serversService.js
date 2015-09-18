@@ -9,10 +9,16 @@
 	ServersService.prototype = {
 		onConnect: function () {
 			console.log("Socket connection established");
-			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_SERVER_LOBBY);
 		},
 		onDisconnect: function () {
 			console.log("The socket has disconnected in severs");
+		},
+		joinServerLobby: function () {
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_SERVER_LOBBY);
+		},
+		refreshServerList: function () {
+			console.log("Sending refresh server list request");
+			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GET_SERVERS);
 		},
 		serverLobbyUpdate: function (data) {
 			self.$rootScope.servers = data;
