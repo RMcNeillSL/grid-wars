@@ -390,8 +390,10 @@ public class RequestProcessor {
 
 	public User getUserFromSocketSessionId(String sessionId) {
 		for (Session session : activeSessions) {
-			if (session.getSocketSessionId().equals(sessionId)) {
-				return session.getUser();
+			if (session.getSocketSessionId() != null) {
+				if (session.getSocketSessionId().equals(sessionId)) {
+					return session.getUser();
+				}
 			}
 		}
 		return null;

@@ -311,6 +311,7 @@ public class SocketService {
 
 	@OnEvent("leaveServerLobby")
 	public void onLeaveServerLobby(SocketIOClient client, String data, AckRequest ackRequest) {
+		client.leaveRoom(SERVER_LOBBY_CHANNEL);
 		System.out.println("User has left the server lobby.");
 	}
 
@@ -341,23 +342,24 @@ public class SocketService {
 			Date date = new Date();
 			System.out.println(dateFormat.format(date) + ": " + gameAndUserInfo.getUsername() + "'s socket timed-out, but they are still active");
 		} else {
-
-			System.out.println("User has disconnected");
-			if(gameAndUserInfo.getLobbyId() != null) {
-				if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
-					leaderDisconnect = true;
-				}
-				requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
-				BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
-				broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
-				client.leaveRoom(gameAndUserInfo.getLobbyId());
-				client.sendEvent("leftLobby");
-				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
-				requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
-				broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
-				broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
-				if (leaderDisconnect) {
-					broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+			if (gameAndUserInfo != null) {
+				System.out.println("User has disconnected");
+				if(gameAndUserInfo.getLobbyId() != null) {
+					if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
+						leaderDisconnect = true;
+					}
+					requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+					BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
+					broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
+					client.leaveRoom(gameAndUserInfo.getLobbyId());
+					client.sendEvent("leftLobby");
+					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+					requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+					broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
+					broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+					if (leaderDisconnect) {
+						broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+					}
 				}
 			}
 		}
