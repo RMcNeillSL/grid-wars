@@ -232,7 +232,7 @@ Engine.prototype.render = function() {
 	
 	// Render hover object healthbox
 	if (this.hoverItem) {
-		outputUnitHealth(this.hoverItem, 'rgba(0,255,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)');
+		outputUnitHealth(this.hoverItem, 'rgba(0,255,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
 	}
 }
 
@@ -780,7 +780,7 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 	
 	// Check hover item
 	if (this.hoverItem && this.hoverItem.gameCore.instanceId == instanceId) {
-		this.this.hoverItem = null;
+		this.hoverItem = null;
 	}
 
 	// Locate and remove item from units/buildings list
