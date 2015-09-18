@@ -238,16 +238,19 @@ public class SocketService {
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 		BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
 		boolean leaderDisconnect = false;
+		System.out.println("User is leaving the game lobby");
 
 		if (gameAndUserInfo != null) {
 			if (requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
 				leaderDisconnect = true;
 			}
 
+			client.sendEvent("leftLobby");
 			requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
 			broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
 			client.leaveRoom(gameAndUserInfo.getLobbyId());
-			client.sendEvent("leftLobby");
+			client.joinRoom(SERVER_LOBBY_CHANNEL);
+
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
 			broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());

@@ -51,7 +51,7 @@ CONSTANTS = {
 	SOCKET_SEND_USER_CHANGE_TEAM		: "userChangeTeam",
 	SOCKET_SEND_GAME_INIT				: "startGameInitialisation",
 	SOCKET_SEND_CHANGE_LOBBY_LEADER		: "changeLobbyLeader",
-	SOCKET_SEND_LEAVE_GAME_LOBBY		: "leaveGameLobby",
+	SOCKET_SEND_LEAVE_GAME_LOBBY		: "leaveLobby",
 	
 	// Game socket emit events
 	SOCKET_SEND_JOIN_GAME				: "joinGame",
