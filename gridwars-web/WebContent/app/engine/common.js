@@ -15,9 +15,6 @@ function GameCore(identifier, cell) {
 	this.playerId = null;
 	this.colour = null;
 	
-	// Common game properties
-	this.health = 100;
-	
 	// FLag properties (not existing in all objects)
 	this.isDefence = false;
 	
@@ -26,6 +23,14 @@ function GameCore(identifier, cell) {
 		this.width = 100;
 		this.height = 100;
 		this.isDefence = true;
+		this.health = 100;
+		this.maxHealth = 100;
+	}
+	if (this.identifier == "TANK") {
+		this.width = 100;
+		this.height = 100;
+		this.health = 150;
+		this.maxHealth = 150;
 	}
 	
 	// Create self reference

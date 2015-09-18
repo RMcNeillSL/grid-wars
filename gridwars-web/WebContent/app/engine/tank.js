@@ -190,6 +190,10 @@ Tank.prototype.getHealthRenderBounds = function() {
 		bottom : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) - 2,
 	};
 	
+	// Add width and height
+	healthBounds.width = healthBounds.right - healthBounds.left;
+	healthBounds.height = healthBounds.bottom - healthBounds.top;
+	
 	// Return calculated bounds
 	return healthBounds;
 }

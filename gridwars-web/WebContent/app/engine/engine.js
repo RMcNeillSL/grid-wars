@@ -189,19 +189,32 @@ Engine.prototype.render = function() {
 	if (this.selected.length > 0) {
 		
 		// Define variables
-		var checkBounds = null;
+		var healthBounds = null;
 		
 		// Process all selection items
 		for (var index = 0; index < this.selected.length; index ++) {
 			
 			// Generate health drawing bounds
-			checkBounds = this.selected[index].getHealthRenderBounds();
+			healthBounds = this.selected[index].getHealthRenderBounds();
+			
+			// Output health measure
+			var healthPercent = (this.selected[index].gameCore.health * 1.0) / (this.selected[index].gameCore.maxHealth * 1.0);
+			var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
+			this.phaserGame.debug.geom(healthRect, 'rgba(0,255,0,0.5)');
+			var remainingRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * (1-healthPercent), healthBounds.height);
+			this.phaserGame.debug.geom(healthRect, 'rgba(0,0,0,0.5)');
+			
+			// Output health interval lines
+			for (var lineX = healthBounds.left; lineX < healthBounds.left + healthBounds.width * healthPercent; lineX += 5) {
+				var healthLine = new Phaser.Line(lineX, healthBounds.top, lineX, healthBounds.bottom);
+				this.phaserGame.debug.geom(healthLine, 'rgba(200,255,200,0.5)');
+			}
 			
 			// Update line positions
-			this.selectedLines[0].setTo(checkBounds.left, 	checkBounds.top, 	checkBounds.right, 	checkBounds.top);
-			this.selectedLines[1].setTo(checkBounds.left, 	checkBounds.bottom, checkBounds.right, 	checkBounds.bottom);
-			this.selectedLines[2].setTo(checkBounds.left,  	checkBounds.top, 	checkBounds.left, 	checkBounds.bottom);
-			this.selectedLines[3].setTo(checkBounds.right, 	checkBounds.top, 	checkBounds.right, 	checkBounds.bottom);
+			this.selectedLines[0].setTo(healthBounds.left, 	healthBounds.top, 		healthBounds.right, 	healthBounds.top);
+			this.selectedLines[1].setTo(healthBounds.left, 	healthBounds.bottom, 	healthBounds.right, 	healthBounds.bottom);
+			this.selectedLines[2].setTo(healthBounds.left,  healthBounds.top, 		healthBounds.left, 		healthBounds.bottom);
+			this.selectedLines[3].setTo(healthBounds.right, healthBounds.top, 		healthBounds.right, 	healthBounds.bottom);
 			
 			// Output lines to screen
 			this.phaserGame.debug.geom(this.selectedLines[0], 'rgba(255,255,255,0.5)');
