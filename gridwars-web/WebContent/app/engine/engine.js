@@ -221,19 +221,20 @@ Engine.prototype.updatePlayerStatus = function() {
 			if (!playerAlreadyDead) {
 				self.playerResults.push({
 					position : self.players.length - self.playerResults.length,
-					player : deadPlayers[i1].playerId,
+					playerId : deadPlayers[i1].playerId,
 					feedback : deadPlayers[i1].playerId + " finished in place: "
 							+ (self.players.length - self.playerResults.length) + "."
 				});
 			}
 		}
 	}
-	
+
 	if (deadPlayers && deadPlayers.length === (self.players.length-1)) {
-		for (var index = 0; index < self.players.length; index ++) {
+		for (var i1 = 0; i1 < self.players.length; i1++) {
 			var isDead = false;
-			for (var index2 = 0; index2 < self.playerResults.length; index2 ++) {
-				if (self.playerResults[index2].playerId == self.players[index].playerId) {
+			for (var i2 = 0; i2 < self.playerResults.length; i2++) {
+				console.log(self.playerResults[i2].playerId);
+				if (self.playerResults[i2].playerId == self.players[i1].playerId) {
 					isDead = true;
 					break;
 				}
@@ -241,8 +242,8 @@ Engine.prototype.updatePlayerStatus = function() {
 			if (!isDead) {
 				self.playerResults.push({
 					position : 1,
-					player : self.players[index].playerId,
-					feedback : self.players[index].playerId + " finished in place: 1."
+					playerId : self.players[i1].playerId,
+					feedback : self.players[i1].playerId + " finished in place: 1."
 				});
 				break;
 			}
@@ -255,7 +256,7 @@ Engine.prototype.updatePlayerStatus = function() {
 
 Engine.prototype.render = function() {
 
-	// Render selection rectanlge to scene
+	// Render selection rectangle to scene
 	if (this.selectionRectangle.selectActive) {
 		this.phaserGame.debug.geom(this.selectionRectangle.rect, 'rgba(0,100,0,0.3)');
 	}
