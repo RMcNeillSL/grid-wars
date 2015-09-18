@@ -329,6 +329,21 @@ Turret.prototype.getBounds = function() {
 	return this.baseSegment.getBounds();
 }
 
+Turret.prototype.getHealthRenderBounds = function() {
+
+	// Calculate rectangle area for health to be displayed
+	var absoluteBounds = this.getBounds();
+	var healthBounds = {
+		left : Math.min(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) + 15,
+		top : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) - 7,
+		right : Math.max(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) - 15,
+		bottom : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) - 2,
+	};
+	
+	// Return calculated bounds
+	return healthBounds;
+}
+
 
 
 
