@@ -238,6 +238,7 @@ public class SocketService {
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 		BroadcastOperations broadcastServerRoomState = socketServer.getRoomOperations(SERVER_LOBBY_CHANNEL);
 		boolean leaderDisconnect = false;
+		boolean lobbyDeleted = false;
 		System.out.println("User is leaving the game lobby");
 
 		if (gameAndUserInfo != null) {
@@ -246,21 +247,23 @@ public class SocketService {
 			}
 
 			client.sendEvent("leftLobby");
-			requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+			lobbyDeleted = requestProcessor.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+
 			broadcastServerRoomState.sendEvent("updateServerLobby", requestProcessor.listGames());
 			client.leaveRoom(gameAndUserInfo.getLobbyId());
 			client.joinRoom(SERVER_LOBBY_CHANNEL);
 
-			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
-			requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
-			broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
-			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+			if (!lobbyDeleted) {
+				BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+				requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
+				broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
 
-			if (leaderDisconnect) {
-				broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+				if (leaderDisconnect) {
+					broadcastRoomState.sendEvent("leaderChanged", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername());
+				}
 			}
 		}
-
 	}
 
 	@OnEvent("userToggleReady")
