@@ -296,6 +296,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 					if (this.isSquareEmpty(cell.col, cell.row)) {
 						var targetUnit = this.selected[0];
 						if (targetUnit) {
+//							targetUnit.rotateToPoint(point);
 							this.serverAPI.requestUnitMoveCell(targetUnit, cell);
 						}
 					}
@@ -717,14 +718,16 @@ Engine.prototype.createNewBuildingObject = function(gameCore) {
 }
 
 Engine.prototype.purchaseObject = function(item) {
+	
 	var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
-	var gameCore = new GameCore("TURRET", cell);
-	gameCore.setPlayer(this.currentPlayer);
 
 	if (item === "TURRET") {
+		var gameCore = new GameCore("TURRET", cell);
+		gameCore.setPlayer(this.currentPlayer);
 		this.createNewBuildingObject(gameCore);
 	} else if (item === "TANK") {
 		var gameCore = new GameCore("TANK", cell);
+		gameCore.setPlayer(this.currentPlayer);
 		this.phaserGame.newBuilding.active = true;
 		this.phaserGame.newBuilding.target = new Tank(this.engineCore,
 				gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),

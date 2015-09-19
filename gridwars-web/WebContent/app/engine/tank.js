@@ -23,21 +23,21 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.waypoints = [];
 		this.damageExplosions = [];
 		this.moveSpeed = 1; // MUST BE A MULTIPLE OF 100(size of a square)!
-		this.rotateSpeed = 1;
+		this.rotateSpeed = 2;
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
 		// Create turret base object
 		this.bodySegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.BODY);
-		this.bodySegment.anchor.setTo(0.5, 0.5);
+		this.bodySegment.anchor.setTo(0.48, 0.5);
 		this.bodySegment.z = 10;
 		this.tankGroup.add(this.bodySegment);
 //		this.engineCore.phaserEngine.physics.enable(this.bodySegment, Phaser.Physics.ARCADE);
 //		this.bodySegment.body.enable = true;
 		
 		// Create turrent cannon sprite
-		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top + this.height * 0.08, CONSTANTS.SPRITE_TANK, this.gameCore.colour.TURRET);
-		this.turretSegment.anchor.setTo(0.5, 0.78);
+		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.TURRET);
+		this.turretSegment.anchor.setTo(0.49, 0.82);
 		this.turretSegment.z = 11;
 //		this.engineCore.phaserEngine.physics.enable(this.turretSegment, Phaser.Physics.ARCADE);
 //		this.turretSegment.body.enable = true;
@@ -49,6 +49,60 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		if (!phaserRef) { console.log("ERROR: Failed to construct tank, missing phaserRef."); }
 	}
 	
+}
+
+Tank.prototype.update = function() {
+	
+	// Process waypoints if they exist
+	if (this.waypoints.length > 0) {
+		this.progressWaypoints();
+	}
+}
+
+Tank.prototype.calculateRotateToPointData = function(currentAngle, currentPoint, targetPoint) {
+
+	var current360Angle = currentAngle;
+
+	// Check X&Y deltas
+	var deltaX = targetPoint.x - currentPoint.x;
+	var deltaY = targetPoint.y - currentPoint.y;
+	
+	// Calculate target angle
+	var targetAngle = 0;
+	var calcAngle = Math.atan((deltaX*1.0)/deltaY) * 180/Math.PI;
+	if (deltaX >= 0 && deltaY >= 0) { targetAngle = 180 - calcAngle; }
+	if (deltaX >= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
+	if (deltaX <= 0 && deltaY >= 0) { targetAngle = -180 - calcAngle; }
+	if (deltaX <= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
+
+	// Adjust angles to 0-360 values
+	var target360Angle = targetAngle;
+	if (target360Angle < 0) { target360Angle += 360; }
+	if (current360Angle < 0) { current360Angle += 360; }
+
+	// Determine move increment direction based on angle size
+	var angleIncrement = 0;
+	var angleAbsDif = Math.max(target360Angle, current360Angle) - Math.min(target360Angle, current360Angle);
+	console.log("Angle difference: " + angleAbsDif);
+	if (current360Angle < target360Angle && angleAbsDif <= 180) { angleIncrement = this.rotateSpeed; }
+	if (current360Angle < target360Angle && angleAbsDif > 180) { angleIncrement = -this.rotateSpeed; }
+	if (current360Angle > target360Angle && angleAbsDif <= 180) { angleIncrement = -this.rotateSpeed; }
+	if (current360Angle > target360Angle && angleAbsDif > 180) { angleIncrement = this.rotateSpeed; }
+
+	// Return calculated object
+	return {
+		current360Angle: current360Angle,
+		target360Angle: target360Angle,
+		currentPoint: currentPoint,
+		targetPoint: targetPoint,
+		angleIncrement: angleIncrement
+	};
+	
+}
+
+Tank.prototype.rotateToPoint = function(point) {
+	if (!this.rotateTest) { this.rotateTest = {}; }
+	this.rotateTest.point = point;
 }
 
 Tank.prototype.getCollisionLayers = function() {
@@ -93,8 +147,8 @@ Tank.prototype.rotate = function(angle, rotateBody, rotateTurret) {
 		this.turretSegment.angle += angle;
 	} else if (rotateBody) {
 		this.bodySegment.angle += angle;
-	} else if (rotateTurret) {
-		this.turretSegment.angle += angle;
+//	} else if (rotateTurret) {
+//		this.turretSegment.angle += angle;
 	} else {
 		this.turretSegment.angle += angle;
 	}
@@ -119,58 +173,46 @@ Tank.prototype.progressWaypoints = function() {
 	if (nextWaypoint.x - this.left < 0) { incX = -this.moveSpeed; }
 	if (nextWaypoint.y - this.top > 0) { incY = this.moveSpeed; }
 	if (nextWaypoint.y - this.top < 0) { incY = -this.moveSpeed; }
-	
-//	console.log("Moving: (" + this.left + "," + this.top + ") to (" + (this.left + incX) + "," + (this.top + incY) + ") with target (" + nextWaypoint.x + "," + nextWaypoint.y + ")");
 
-//	this.moveSpeed = 1; // MUST BE A MULTIPLE OF 100(size of a square)!
-//	this.rotateSpeed = 1;
+	// Calculate rotate to point data
+	var rotationData = this.calculateRotateToPointData(this.bodySegment.angle, new Point(this.left, this.top), nextWaypoint);
+//	console.log(rotationData);
 	
-	var direction = this.bodySegment.angle;
-	
-	// Check X&Y deltas
-	var deltaX = nextWaypoint.x - this.left;
-	var deltaY = nextWaypoint.y - this.top;
-	
-	// Calculate target angle
-	var targetAngle = 0;
-	var calcAngle = Math.atan((deltaX*1.0)/deltaY) * 180/Math.PI;
-	if (deltaX >= 0 && deltaY <= 0) { targetAngle = 0 - calcAngle; }
-	if (deltaX >= 0 && deltaY >= 0) { targetAngle = 180 - calcAngle; }
-	if (deltaX <= 0 && deltaY >= 0) { targetAngle = -180 - calcAngle; }
-	if (deltaX <= 0 && deltaY <= 0) { targetAngle = 0 - calcAngle; }
+	// Rotation needed
+	var rotationNeeded = 
+		(rotationData.target360Angle - this.rotateSpeed / 2) % 360 > rotationData.current360Angle  ||
+		(rotationData.target360Angle + this.rotateSpeed / 2) % 360 < rotationData.current360Angle;
 
-	// Adjust angles to 0-360 values
-	var angleIncrement = this.rotateSpeed;
-	var target360Angle = targetAngle;
-	var current360Angle = direction;
-	if (target360Angle < 0) { target360Angle += 360; }
-	if (current360Angle < 0) { current360Angle += 360; }
-	
-	// Determine move increment direction based on angle size
-	var angleAbsDif = Math.max(target360Angle, current360Angle) - Math.min(target360Angle, current360Angle);
-	if (current360Angle < target360Angle && angleAbsDif <= 180) { angleIncrement = this.rotateSpeed; }
-	if (current360Angle < target360Angle && angleAbsDif > 180) { angleIncrement = -this.rotateSpeed; }
-	if (current360Angle > target360Angle && angleAbsDif <= 180) { angleIncrement = -this.rotateSpeed; }
-	if (current360Angle > target360Angle && angleAbsDif > 180) { angleIncrement = this.rotateSpeed; }
-	
-	// Perform total rotation
-	this.rotate(angleIncrement, true, true);
-	
-//	// Save target angle data
-//	this.target.angle = targetAngle;
-//	this.target.x = targetX;
-//	this.target.y = targetY;
-//	this.target.active = true;
-	
-	// Process XY move to target
-	this.left = this.left + incX;
-	this.top = this.top + incY;
+	// Perform rotation
+	if (rotationNeeded) {
 
-	// Update sprite positioning
-	this.bodySegment.x = this.bodySegment.x + incX;
-	this.bodySegment.y = this.bodySegment.y + incY;
-	this.turretSegment.x = this.turretSegment.x + incX;
-	this.turretSegment.y = this.turretSegment.y + incY;
+		// Output debug information
+//		console.log("x(" + rotationData.currentPoint.x + "->" + rotationData.targetPoint.x + "), y(" + rotationData.currentPoint.y + "->" + rotationData.targetPoint.y + "), angle(" + rotationData.current360Angle + "->" + rotationData.target360Angle + ")");
+
+//		// Save target angle data
+//		this.target.angle = targetAngle;
+//		this.target.x = targetX;
+//		this.target.y = targetY;
+//		this.target.active = true;
+		
+		// Perform total rotation
+		this.rotate(rotationData.angleIncrement, true, true);
+		
+	} else {
+
+//		console.log("Moving: (" + this.left + "," + this.top + ") to (" + (this.left + incX) + "," + (this.top + incY) + ") with target (" + nextWaypoint.x + "," + nextWaypoint.y + ")");
+
+		// Process XY move to target
+		this.left = this.left + incX;
+		this.top = this.top + incY;
+	
+		// Update sprite positioning
+		this.bodySegment.x = this.bodySegment.x + incX;
+		this.bodySegment.y = this.bodySegment.y + incY;
+		this.turretSegment.x = this.turretSegment.x + incX;
+		this.turretSegment.y = this.turretSegment.y + incY;
+		
+	}
 	
 	// Check new cell position
 	var newCell = (new Point(this.left, this.top)).toCell();
@@ -185,15 +227,6 @@ Tank.prototype.progressWaypoints = function() {
 			Math.abs(nextWaypoint.y - this.top) < this.moveSpeed / 2) {
 		this.waypoints.splice(0, 1);
 	}
-}
-
-Tank.prototype.update = function() {
-	
-	// Process waypoints if they exist
-	if (this.waypoints.length > 0) {
-		this.progressWaypoints();
-	}
-	
 }
 
 Tank.prototype.markDamage = function(explosionInstanceId) {
