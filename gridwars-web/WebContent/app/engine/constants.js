@@ -96,10 +96,10 @@ CONSTANTS = {
 	                { COLOUR : "yellow", BASE : 52, TOP : 53, CHARGE : [53,54,55,56,57], COOL : [57,56,55,54,53], FIREANDCOOL : [58,59,60,61,62,63,64,53] },
 	                { COLOUR : "cyan", BASE : 65, TOP : 66, CHARGE : [66,67,68,69,70], COOL : [70,69,68,67,66], FIREANDCOOL : [71,72,73,74,75,76,77,66] } ],
 	    "TANK" :   [{ COLOUR : "blue", BODY : 0, TURRET : 1, FIRE : [2,3,4,5,1] },
-	              	{ COLOUR : "red", BODY : 0, TURRET : 1, FIRE : [2,3,4,5,1] },
-	              	{ COLOUR : "purple", BODY : 0, TURRET : 1, FIRE : [2,3,4,5,1] },
-	              	{ COLOUR : "green", BODY : 0, TURRET : 1, FIRE : [2,3,4,5,1] },
-	              	{ COLOUR : "yellow", BODY : 0, TURRET : 1, FIRE : [2,3,4,5,1] },
-	              	{ COLOUR : "cyan", BODY : 0, TURRET : 1, FIRE : [2,3,4,5,1] } ],
+	              	{ COLOUR : "red", BODY : 6, TURRET : 7, FIRE : [8,9,10,11,7] },
+	              	{ COLOUR : "purple", BODY : 12, TURRET : 13, FIRE : [14,15,16,17,13] },
+	              	{ COLOUR : "green", BODY : 18, TURRET : 19, FIRE : [20,21,22,23,19] },
+	              	{ COLOUR : "yellow", BODY : 24, TURRET : 25, FIRE : [26,27,28,29,25] },
+	              	{ COLOUR : "cyan", BODY : 30, TURRET : 31, FIRE : [32,33,34,35,31] } ],
 	}
 }
