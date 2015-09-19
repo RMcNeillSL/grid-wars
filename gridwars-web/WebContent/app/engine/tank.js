@@ -83,7 +83,7 @@ Tank.prototype.calculateRotateToPointData = function(currentAngle, currentPoint,
 	// Determine move increment direction based on angle size
 	var angleIncrement = 0;
 	var angleAbsDif = Math.max(target360Angle, current360Angle) - Math.min(target360Angle, current360Angle);
-	console.log("Angle difference: " + angleAbsDif);
+//	console.log("Angle difference: " + angleAbsDif);
 	if (current360Angle < target360Angle && angleAbsDif <= 180) { angleIncrement = this.rotateSpeed; }
 	if (current360Angle < target360Angle && angleAbsDif > 180) { angleIncrement = -this.rotateSpeed; }
 	if (current360Angle > target360Angle && angleAbsDif <= 180) { angleIncrement = -this.rotateSpeed; }
@@ -91,13 +91,43 @@ Tank.prototype.calculateRotateToPointData = function(currentAngle, currentPoint,
 
 	// Return calculated object
 	return {
-		current360Angle: current360Angle,
-		target360Angle: target360Angle,
+		current360Angle: Math.round(current360Angle),
+		target360Angle: Math.round(target360Angle),
 		currentPoint: currentPoint,
 		targetPoint: targetPoint,
 		angleIncrement: angleIncrement
 	};
 	
+}
+
+Tank.prototype.angleInErrorMargin = function(currentAngle, targetAngle, errorMargin) {
+
+	// Create checking variables
+	var current = {
+			angle: currentAngle,
+			upper: currentAngle + errorMargin,
+			lower: currentAngle - errorMargin
+	}
+	var target = {
+			angle: targetAngle,
+			upper: targetAngle + errorMargin,
+			lower: targetAngle - errorMargin
+	}
+	
+	// Rotation needed
+	var rotationNeeded = 
+		!( (target.lower < current.angle && target.upper > current.angle) ||
+		   (current.upper > 360 && target.lower < 0) ||
+		   (current.lower < 0 && target.upper > 360) );
+		
+//	// Check values
+//	console.log("Normal: " + (target.lower < current.angle && target.upper > current.angle) +
+//			", BigCurrent: " + (current.upper > 360 && target.lower < 0) +
+//			", SmallCurrent: " + (current.lower < 0 && target.upper > 360));
+	
+	// Return calculated rotation needed
+	return rotationNeeded;
+
 }
 
 Tank.prototype.rotateToPoint = function(point) {
@@ -177,14 +207,9 @@ Tank.prototype.progressWaypoints = function() {
 	// Calculate rotate to point data
 	var rotationData = this.calculateRotateToPointData(this.bodySegment.angle, new Point(this.left, this.top), nextWaypoint);
 //	console.log(rotationData);
-	
-	// Rotation needed
-	var rotationNeeded = 
-		(rotationData.target360Angle - this.rotateSpeed / 2) % 360 > rotationData.current360Angle  ||
-		(rotationData.target360Angle + this.rotateSpeed / 2) % 360 < rotationData.current360Angle;
 
 	// Perform rotation
-	if (rotationNeeded) {
+	if (this.angleInErrorMargin(rotationData.current360Angle, rotationData.target360Angle, this.rotateSpeed/2)) {
 
 		// Output debug information
 //		console.log("x(" + rotationData.currentPoint.x + "->" + rotationData.targetPoint.x + "), y(" + rotationData.currentPoint.y + "->" + rotationData.targetPoint.y + "), angle(" + rotationData.current360Angle + "->" + rotationData.target360Angle + ")");
@@ -200,6 +225,7 @@ Tank.prototype.progressWaypoints = function() {
 		
 	} else {
 
+		// Output for debugging in console
 //		console.log("Moving: (" + this.left + "," + this.top + ") to (" + (this.left + incX) + "," + (this.top + incY) + ") with target (" + nextWaypoint.x + "," + nextWaypoint.y + ")");
 
 		// Process XY move to target
