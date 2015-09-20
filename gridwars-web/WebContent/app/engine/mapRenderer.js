@@ -109,7 +109,33 @@ MapRenderer.prototype.clearPlacementHover = function() {
 			if (hoverTile) { hoverTile.placementSprite.visible = false; }
 		}
 	}
-	
+}
+
+MapRenderer.prototype.placeTankTrack = function(mapGroup, sender, point, angle) {
+
+	// Check phaser ref is assigned
+	if (this.phaserRef) {
+
+		// Save reference to this for local calls
+		var self = this;
+
+		// Create tank track sprite
+		var tankTracks = this.phaserRef.add.sprite(point.x, point.y, CONSTANTS.SPRITE_TANK_TRACKS, 0);
+		tankTracks.z = 0;
+		tankTracks.angle = angle;
+		tankTracks.anchor.setTo(0.5, 0.5);
+		mapGroup.add(tankTracks);
+		
+		// Set animation completed event
+		var fadeOut = tankTracks.animations.add('localTankTracks');
+		fadeOut.onComplete.add(function(sprite, animation) {
+			sprite.animations.destroy();
+			sprite.destroy();
+		});
+		
+		// Play fade out animation
+		fadeOut.play(0.25, false, null);
+	}
 }
 
 MapRenderer.prototype.renderMap = function() {

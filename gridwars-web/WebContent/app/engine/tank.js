@@ -27,6 +27,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.turretRotateSpeed = 2;
 		this.shootTarget = { instanceId: "", point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
+		this.waypointControl = { trackPlacementFrequency: 30, moveStepCount: 0 };
 		
 		// Create turret base object
 		this.bodySegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.BODY);
@@ -287,32 +288,33 @@ Tank.prototype.progressWaypoints = function() {
 	// Calculate rotate to point data
 	var rotationData = this.calculateRotateToPointData(this.bodySegment.angle, new Point(this.left, this.top), nextWaypoint, this.rotateSpeed);
 
-	// Perform rotation
+	// Perform rotation if tank angle is not within error margins
 	if (!this.angleInErrorMargin(rotationData.current360Angle, rotationData.target360Angle, this.rotateSpeed/2)) {
-
-		// Output debug information
-//		console.log("x(" + rotationData.currentPoint.x + "->" + rotationData.targetPoint.x + "), y(" + rotationData.currentPoint.y + "->" + rotationData.targetPoint.y + "), angle(" + rotationData.current360Angle + "->" + rotationData.target360Angle + ")");
-
-		// Perform total rotation
 		this.rotate(rotationData.angleIncrement, true, true);
-		
 	} else {
-
-		// Output for debugging in console
-//		console.log("Moving: (" + this.left + "," + this.top + ") to (" + (this.left + incX) + "," + (this.top + incY) + ") with target (" + nextWaypoint.x + "," + nextWaypoint.y + ")");
 
 		// Process XY move to target
 		this.left = this.left + incX;
 		this.top = this.top + incY;
-	
+		
 		// Update sprite positioning
 		this.bodySegment.x = this.bodySegment.x + incX;
 		this.bodySegment.y = this.bodySegment.y + incY;
 		this.turretSegment.x = this.turretSegment.x + incX;
 		this.turretSegment.y = this.turretSegment.y + incY;
-
 	}
 
+	// Check if track image needs to be placed
+	if (this.waypointControl.moveStepCount == 0) {
+		this.engineCore.func_PlaceTankTrack(this, new Point(this.left, this.top), this.bodySegment.angle);
+	}
+	
+	// Increment tank track count making sure it doesnt exceed placement frequency
+	this.waypointControl.moveStepCount += 1;
+	if (this.waypointControl.moveStepCount >= this.waypointControl.trackPlacementFrequency) {
+		this.waypointControl.moveStepCount = 0;
+	}
+	
 	// Check if turret rotation needs recalculating
 	if (this.shootTarget && this.shootTarget.point) {
 		this.shootAtXY(this.shootTarget.point);

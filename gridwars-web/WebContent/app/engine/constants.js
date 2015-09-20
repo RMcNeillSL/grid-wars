@@ -72,6 +72,7 @@ CONSTANTS = {
 	// Loaded image(.png) names
 	SPRITE_TURRET : "sprite_turret_anim",
 	SPRITE_TANK : "sprite_tank_anim",
+	SPRITE_TANK_TRACKS : "sprite_tank_tracks",
 	PARTICLE_YELLOW_SHOT : "particle_yellow_shot",
 
 	// Explosion and impact decal images
