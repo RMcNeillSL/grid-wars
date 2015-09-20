@@ -53,6 +53,10 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		y : 0
 	};
 
+	// Define game camera variables
+	this.cursors = null;
+	
+	
 	// Define game object arrays
 	this.units = [];
 	this.buildings = [];
@@ -128,9 +132,15 @@ Engine.prototype.create = function() {
 	this.mapOverlayGroup = this.phaserGame.add.group();
 	this.turretGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
-
+	
+	// Set map dimensions
+	this.phaserGame.world.setBounds(0, 0, this.gameplayConfig.width*CONSTANTS.TILE_WIDTH, this.gameplayConfig.height*CONSTANTS.TILE_HEIGHT);
+	
+	// Initialise key strokes for camera movement
+	this.cursors = this.phaserGame.input.keyboard.createCursorKeys();
+	
 	// Start physics engine and disable mouse right event
-	this.phaserGame.physics.startSystem(Phaser.Physics.ARCADE);
+	this.phaserGame.physics.startSystem(Phaser.Physics.P2JS);
 	this.phaserGame.canvas.oncontextmenu = function(e) {
 		e.preventDefault();
 	}
@@ -157,7 +167,25 @@ Engine.prototype.create = function() {
 }
 
 Engine.prototype.update = function() {
+	// Records cursor movement for panning the camera
+	if (this.cursors.up.isDown)
+    {
+        this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
+    }
+    else if (this.cursors.down.isDown)
+    {
+    	this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
+    }
 
+    if (this.cursors.left.isDown)
+    {
+    	this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
+    }
+    else if (this.cursors.right.isDown)
+    {
+    	this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY;
+    }
+	
 	// Render map
 	this.mapRender.renderMap();
 
@@ -336,8 +364,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 	// Save position information
-	this.mouse.x = x;
-	this.mouse.y = y;
+	this.mouse.x = this.phaserGame.camera.x + x;
+	this.mouse.y = this.phaserGame.camera.y + y;
 
 	// Process updates for selection rectangle
 	if (pointer.isDown) {

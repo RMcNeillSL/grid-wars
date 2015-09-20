@@ -81,6 +81,10 @@ CONSTANTS = {
 	SPRITE_EXPLOSION_B : "sprite_explosion_b",
 	SPRITE_EXPLOSION_C : "sprite_explosion_c",
 	DEBRIS_TANK : "",
+	
+	// Camera constants
+	CAMERA_SPRITE : "camera",
+	CAMERA_VELOCITY : 5,
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT : "tile_build",

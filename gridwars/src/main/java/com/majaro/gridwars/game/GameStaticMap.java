@@ -41,6 +41,9 @@ public class GameStaticMap {
 		}
 		return true;
 	}
+	public boolean isCellInBounds(Coordinate coordinate) {
+		return (coordinate.getRow() >= 0 && coordinate.getRow() < this.width) && (coordinate.getCol() >= 0 && coordinate.getCol() < this.height);
+	}
 	public boolean isCellObstructed(Coordinate coordinate) {
 		return this.isCellObstructed(coordinate.getCol(), coordinate.getRow());
 	}

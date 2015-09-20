@@ -248,6 +248,12 @@ public class Engine extends Thread {
 				validConstruction = false;
 				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.STATIC_MAP_OBSTRUCTION);
 			}
+			
+			// Check all cells required for building are free in the static map -- currently a single cell
+			if (validConstruction && !this.staticMap.isCellInBounds(coord)) {
+				validConstruction = false;
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.OUT_OF_MAP_BOUNDS);
+			}
 
 			// Check all cells required for building are free in the dynamic map -- currently a single cell
 			if (validConstruction && this.dynamicMap.isCellObstructed(coord)) {
