@@ -72,6 +72,7 @@ CONSTANTS = {
 	// Loaded image(.png) names
 	SPRITE_TURRET : "sprite_turret_anim",
 	SPRITE_TANK : "sprite_tank_anim",
+	SPRITE_TANK_TRACKS : "sprite_tank_tracks",
 	PARTICLE_YELLOW_SHOT : "particle_yellow_shot",
 
 	// Explosion and impact decal images
@@ -80,6 +81,7 @@ CONSTANTS = {
 	SPRITE_EXPLOSION_A : "sprite_explosion_a",
 	SPRITE_EXPLOSION_B : "sprite_explosion_b",
 	SPRITE_EXPLOSION_C : "sprite_explosion_c",
+	SPRITE_EXPLOSION_D : "sprite_explosion_d",
 	DEBRIS_TANK : "",
 	
 	// Camera constants

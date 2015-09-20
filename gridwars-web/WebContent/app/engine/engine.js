@@ -45,6 +45,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.serverAPI = serverAPI;
 
 	// Define core phaser objects
+	this.engineCore = null;
 	this.mapRender = null;
 	this.explosionManager = null;
 	this.gameplayConfig = gameplayConfig;
@@ -79,19 +80,6 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.turretGroup = null;
 	this.tankGroup = null;
 
-	// Construct engine core values for unit/building/defence construction
-	this.engineCore = {
-		phaserEngine : this.phaserGame,
-		func_RequestExplosion : function(mapGroup, explosionId, ownerId,
-				explosionInstanceId, x, y) {
-			self.explosionManager.requestExplosion(mapGroup, explosionId,
-					ownerId, explosionInstanceId, x, y)
-		},
-		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
-			self.updateNewUnitCell(sender, oldCell, newCell);
-		}
-	};
-
 	// player results
 	this.playerResults = [];
 }
@@ -104,10 +92,12 @@ Engine.prototype.preload = function() {
 	// Load sprite sheets
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 128, 128, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 50, 50, 10);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
 
 	// Load tile images
@@ -164,6 +154,22 @@ Engine.prototype.create = function() {
 	
 	// Populate selection lines
 	for (var count = 0; count < 4; count ++) { this.selectedLines.push(new Phaser.Line(0, 0, 0, 0)); }
+	
+	// Construct engine core values for unit/building/defence construction
+	this.engineCore = {
+		phaserEngine : this.phaserGame,
+		func_RequestExplosion : function(mapGroup, explosionId, ownerId,
+				explosionInstanceId, x, y) {
+			self.explosionManager.requestExplosion(mapGroup, explosionId,
+					ownerId, explosionInstanceId, x, y)
+		},
+		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
+			self.updateNewUnitCell(sender, oldCell, newCell);
+		},
+		func_PlaceTankTrack : function(sender, point, angle) {
+			self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
+		}
+	};
 }
 
 Engine.prototype.update = function() {
@@ -324,8 +330,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 					if (this.isSquareEmpty(cell.col, cell.row)) {
 						var targetUnit = this.selected[0];
 						if (targetUnit) {
-//							targetUnit.rotateToPoint(point);
-							this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+							if (ctrlDown) {
+								targetUnit.shootAtXY(point);
+							} else {
+								this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+							}
 						}
 					}
 				}

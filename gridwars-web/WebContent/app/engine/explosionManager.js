@@ -29,7 +29,7 @@ ExplosionManager.prototype.requestDestruction = function(mapGroup, debrisId, exp
 		});
 		
 		// Run explosion animation
-		explode.play(60, false, null);
+		explode.play(100, false, null);
 	}
 }
 
