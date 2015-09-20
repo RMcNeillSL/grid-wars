@@ -186,6 +186,19 @@ Tank.prototype.rotate = function(angle, rotateBody, rotateTurret) {
 
 Tank.prototype.updateWaypoints = function(newWaypoints) {
 	
+	// Check if unit is currently moving to the second location in waypoints
+	if (newWaypoints.length > 1 &&
+			this.waypoints.length > 0 &&
+			newWaypoints[1].x == this.waypoints[0].x &&
+			newWaypoints[1].y == this.waypoints[0].y) {
+		
+		// Drop first waypoint from new waypoints
+		newWaypoints.splice(0, 1);
+	}
+
+	console.log(newWaypoints);
+	console.log(this.waypoints);
+	
 	// Copy over waypoints completely for now
 	this.waypoints = newWaypoints;
 }
