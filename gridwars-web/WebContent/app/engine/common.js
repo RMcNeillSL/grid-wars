@@ -59,8 +59,6 @@ GameCore.prototype.setPlayer = function(player) {
 	this.playerId = player.playerId;
 
 	// Set up colours
-	console.log(CONSTANTS.COLOUR_[this.identifier]);
-	console.log(this.identifier);
 	this.colour = CONSTANTS.COLOUR_[this.identifier][0];
 	for (var index = 1; index < CONSTANTS.COLOUR_[this.identifier].length; index ++) {
 		if (player.colour === CONSTANTS.COLOUR_[this.identifier][index].COLOUR) {

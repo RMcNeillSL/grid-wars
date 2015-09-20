@@ -120,14 +120,13 @@ public class RequestProcessor {
 		return false;
 	}
 	
-	public GameplayResponse processGameplayRequest(GameplayRequest gameplayRequest, String sessionId) {
+	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, String sessionId) {
 		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
 		User user = this.getUserFromSocketSessionId(sessionId);
 		if (gameLobby != null && user != null) {
-			GameplayResponse gameplayResponse = gameLobby.processGameplayRequest(gameplayRequest, user.getId());
-			return gameplayResponse;
+			return gameLobby.processGameplayRequest(gameplayRequest, user.getId());
 		}
-		return new GameplayResponse();
+		return new GameplayResponse[0];
 	}
 	
 	

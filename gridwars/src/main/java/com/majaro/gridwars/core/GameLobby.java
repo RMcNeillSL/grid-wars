@@ -52,9 +52,8 @@ public class GameLobby {
 	public boolean started() {
 		return this.engine != null;
 	}
-	public GameplayResponse processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
-		GameplayResponse gameplayResponse = this.engine.processGameplayRequest(gameplayRequest, userId);
-		return gameplayResponse;
+	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
+		return this.engine.processGameplayRequest(gameplayRequest, userId);
 	}
 	
 	// User management methods

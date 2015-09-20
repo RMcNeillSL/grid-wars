@@ -115,7 +115,7 @@
 		}
 
 		// Call connect debug methods
-//		gameService.debugConnect();
+		gameService.debugConnect();
 //		gameService.initialiseSockets();
 
 

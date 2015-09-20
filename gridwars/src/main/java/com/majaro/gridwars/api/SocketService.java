@@ -102,10 +102,12 @@ public class SocketService {
 	public void processGameplayRequest(SocketIOClient client, GameplayRequest gameplayRequest) {
 		String sessionId = client.getSessionId().toString();
 		GameLobby gameLobby = requestProcessor.getGameLobbyFromSocketSessionId(sessionId);
-		GameplayResponse gameplayResponse = requestProcessor.processGameplayRequest(gameplayRequest, sessionId);
+		GameplayResponse[] gameplayResponses = requestProcessor.processGameplayRequest(gameplayRequest, sessionId);
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameLobby.getLobbyId());
-		if (gameLobby != null && gameplayResponse != null) {
-			broadcastRoomState.sendEvent("gameplayResponse", gameplayResponse);
+		if (gameLobby != null && gameplayResponses != null) {
+			for (int index = 0; index < gameplayResponses.length; index ++) {
+				broadcastRoomState.sendEvent("gameplayResponse", gameplayResponses[index]);
+			}
 		}
 	}
 

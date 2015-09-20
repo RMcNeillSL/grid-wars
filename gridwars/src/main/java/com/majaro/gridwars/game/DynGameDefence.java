@@ -11,20 +11,14 @@ public class DynGameDefence extends DynGameBuilding {
 	// Player link
 	private Player playerRef = null;
 	
-	// Core building object variables
-	private int cellX = 0;
-	private int cellY = 0;
-	
 	// Constructor
-	public DynGameDefence(String instanceId, GameDefence sourceDefence, Player playerRef, int cellX, int cellY) {
+	public DynGameDefence(String instanceId, GameDefence sourceDefence, Player playerRef, Coordinate coordinate) {
 		
 		// Call super
-		super(instanceId, sourceDefence, playerRef, cellX, cellY);
+		super(instanceId, sourceDefence, playerRef, coordinate);
 		
 		// Save passed values
 		this.playerRef = playerRef;
-		this.cellX = cellX;
-		this.cellY = cellY;
 		
 		// Inherited variables
 		this.range = sourceDefence.getRange();
