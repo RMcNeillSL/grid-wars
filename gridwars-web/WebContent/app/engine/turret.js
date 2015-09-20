@@ -68,6 +68,46 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		this.bulletParticle01.start(false, 50, 10); this.bulletParticle01.on = false;
 		this.bulletParticle02.start(false, 50, 10); this.bulletParticle02.on = false;
 
+		// Charge onComplete function
+		this.charge.onComplete.add(function(sprite, animation) {
+			
+			// Setup default bullet particle information
+			self.bullets.firing = true;
+			self.bullets.elapsed = 0;
+			
+			// Save target location for bullets
+			self.bullets.targetX = self.target.x;
+			self.bullets.targetY = self.target.y;
+			
+			// Calculate angles for firing
+			self.bulletParticle01.fireAngleX = Math.sin((360-self.topSegment.angle+14) * (Math.PI/180));
+			self.bulletParticle01.fireAngleY = Math.cos((self.topSegment.angle-14) * (Math.PI/180));
+			self.bulletParticle02.fireAngleX = Math.sin((360-self.topSegment.angle-14) * (Math.PI/180));
+			self.bulletParticle02.fireAngleY = Math.cos((self.topSegment.angle+14) * (Math.PI/180));
+			
+			// Position fire sprites at end of turret
+			self.bulletParticle01.x = (-self.width/2) * self.bulletParticle01.fireAngleX + self.left;
+			self.bulletParticle01.y = (-self.height/2) * self.bulletParticle01.fireAngleY + self.top;
+			self.bulletParticle02.x = (-self.width/2) * self.bulletParticle02.fireAngleX + self.left;
+			self.bulletParticle02.y = (-self.height/2) * self.bulletParticle02.fireAngleY + self.top;
+
+			self.bullets.incUnitX = -self.bullets.speed * Math.sin((360-self.topSegment.angle) * (Math.PI/180));
+			self.bullets.incUnitY = -self.bullets.speed * Math.cos((self.topSegment.angle) * (Math.PI/180));
+			
+			// Call firing animation
+			self.topSegment.animations.stop('fireAndCool', true);
+			self.topSegment.animations.frame = 1;
+			sprite.animations.play('fireAndCool');
+			
+			// Show particle emitters
+			self.bulletParticle01.on = true;
+			self.bulletParticle02.on = true;
+			
+			// Set movement update interval
+			self.bullets.interval = setInterval(function() { self.bullets.elapsed += 1; }, 3);
+			
+		});
+		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
 
@@ -196,56 +236,8 @@ Turret.prototype.rotateAndShoot = function(targetX, targetY) {
 				this.topSegment.angle + (this.rotateSpeed / 2) < this.target.angle) {
 			this.rotate(this.target.increment);
 		} else {
-
-			// Stop movement of turret
 			this.target.active = false;
-			
-			// Save reference to self
-			var self = this;
-			
-			// Charge complete function
-			this.charge.onComplete.add(function(sprite, animation) {
-				
-				// Setup default bullet particle information
-				self.bullets.firing = true;
-				self.bullets.elapsed = 0;
-				
-				// Save target location for bullets
-				self.bullets.targetX = self.target.x;
-				self.bullets.targetY = self.target.y;
-				
-				// Calculate angles for firing
-				self.bulletParticle01.fireAngleX = Math.sin((360-self.topSegment.angle+14) * (Math.PI/180));
-				self.bulletParticle01.fireAngleY = Math.cos((self.topSegment.angle-14) * (Math.PI/180));
-				self.bulletParticle02.fireAngleX = Math.sin((360-self.topSegment.angle-14) * (Math.PI/180));
-				self.bulletParticle02.fireAngleY = Math.cos((self.topSegment.angle+14) * (Math.PI/180));
-				
-				// Position fire sprites at end of turret
-				self.bulletParticle01.x = (-self.width/2) * self.bulletParticle01.fireAngleX + self.left;
-				self.bulletParticle01.y = (-self.height/2) * self.bulletParticle01.fireAngleY + self.top;
-				self.bulletParticle02.x = (-self.width/2) * self.bulletParticle02.fireAngleX + self.left;
-				self.bulletParticle02.y = (-self.height/2) * self.bulletParticle02.fireAngleY + self.top;
-
-				self.bullets.incUnitX = -self.bullets.speed * Math.sin((360-self.topSegment.angle) * (Math.PI/180));
-				self.bullets.incUnitY = -self.bullets.speed * Math.cos((self.topSegment.angle) * (Math.PI/180));
-				
-				// Call firing animation
-				self.topSegment.animations.stop('fireAndCool', true);
-				self.topSegment.animations.frame = 1;
-				sprite.animations.play('fireAndCool');
-				
-				// Show particle emitters
-				self.bulletParticle01.on = true;
-				self.bulletParticle02.on = true;
-				
-				// Set movement update interval
-				self.bullets.interval = setInterval(function() { self.bullets.elapsed += 1; }, 3);
-				
-			});
-			
-			// Play charging animation
 			this.charge.play();
-
 		}
 		
 	}
@@ -305,9 +297,7 @@ Turret.prototype.destroy = function() {
 	this.baseSegment.destroy();
 	this.topSegment.animations.destroy();
 	this.topSegment.destroy();
-	this.bulletParticle01.animations.destroy();
 	this.bulletParticle01.destroy();
-	this.bulletParticle02.animations.destroy();
 	this.bulletParticle02.destroy();
 }
 
