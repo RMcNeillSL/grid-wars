@@ -14,6 +14,7 @@ public class GameStaticMap {
 	private int width = 0;
 	private int height = 0;
 	private int[] cells;
+	private Coordinate[] spawnCoords;
 	
 	// Cell values
 	// 
@@ -22,13 +23,14 @@ public class GameStaticMap {
 	// 
 	
 	// Constructor	
-	public GameStaticMap(String mapId, String mapName, int maxPlayers, int width, int height, int[] cells) {
+	public GameStaticMap(String mapId, String mapName, int maxPlayers, int width, int height, int[] cells, Coordinate[] spawnCoords) {
 		this.mapId = mapId;
 		this.mapName = mapName;
 		this.maxPlayers = maxPlayers;
 		this.width = width;
 		this.height = height;
 		this.cells = cells;
+		this.spawnCoords = spawnCoords;
 	}
 
 	// Check cell has no obstruction
@@ -60,6 +62,10 @@ public class GameStaticMap {
 	@JsonView(GameStaticMap.Views.Summary.class)
 	public int getMaxPlayers() {
 		return this.maxPlayers;
+	}
+	@JsonView(GameStaticMap.Views.Summary.class)
+	public Coordinate[] getSpawnCoords() {
+		return spawnCoords;
 	}
 	public int getWidth() {
 		return width;
