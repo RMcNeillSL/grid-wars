@@ -7,6 +7,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.LobbyUser;
 import com.majaro.gridwars.game.Const;
+import com.majaro.gridwars.game.Coordinate;
 import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameUnit;
 import com.majaro.gridwars.game.GameStaticMap;
@@ -18,6 +19,7 @@ public class GameplayConfig {
 	private int width = 0;
 	private int height = 0;
 	private int[] cells = null;
+	private Coordinate[] spawnCoordinates;
 	
 	// Player related variables
 	private ArrayList<String> userName;
@@ -38,6 +40,7 @@ public class GameplayConfig {
 		this.width = gameStaticMap.getWidth();
 		this.height = gameStaticMap.getHeight();
 		this.cells = gameStaticMap.getCells();
+		this.spawnCoordinates = gameStaticMap.getSpawnCoordinates();
 		
 		// Save user listing variables
 		this.userName = new ArrayList<String>();
@@ -97,6 +100,10 @@ public class GameplayConfig {
 	@JsonView(GameplayConfig.Views.Summary.class)
 	public GameUnit[] getGameUnits() {
 		return this.gameUnits;
+	}
+	@JsonView(GameplayConfig.Views.Summary.class)
+	public Coordinate[] getSpawnCoordinates() {
+		return this.spawnCoordinates;
 	}
 	
 

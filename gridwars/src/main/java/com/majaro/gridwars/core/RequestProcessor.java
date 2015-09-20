@@ -16,6 +16,7 @@ import com.majaro.gridwars.apiobjects.RefreshGameLobbyRequest;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.dao.EntityManager;
 import com.majaro.gridwars.entities.User;
+import com.majaro.gridwars.game.Coordinate;
 import com.majaro.gridwars.game.GameStaticMap;
 
 public class RequestProcessor {
@@ -56,28 +57,36 @@ public class RequestProcessor {
 		this.gameMaps = new ArrayList<GameStaticMap>();
 
 		// Create game maps
-		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 2, 8, 6,
+		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 8, 6,
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 
 						   0, 0, 0, 0, 0, 0, 0, 0, 
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0}));
-		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 2, 8, 6,
+						   0, 0, 0, 0, 0, 0, 0, 0},
+				new Coordinate[] { new Coordinate(1, 1),
+						           new Coordinate(6, 4) }));
+		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 8, 6,
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0}));
-		this.gameMaps.add(new GameStaticMap("3", "Pacific Heights", 4, 8, 6,
+						   0, 0, 0, 0, 0, 0, 0, 0},
+				new Coordinate[] { new Coordinate(1, 1),
+								   new Coordinate(6, 4) }));
+		this.gameMaps.add(new GameStaticMap("3", "Pacific Heights", 8, 6,
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0}));
-		this.gameMaps.add(new GameStaticMap("4", "TEST MAP", 4, 16, 12,
+						   0, 0, 0, 0, 0, 0, 0, 0},
+				new Coordinate[] { new Coordinate(1, 1),
+								   new Coordinate(1, 4),
+								   new Coordinate(6, 1),
+						           new Coordinate(6, 4) }));
+		this.gameMaps.add(new GameStaticMap("4", "TEST MAP", 16, 12,
 				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -89,7 +98,11 @@ public class RequestProcessor {
 						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+				new Coordinate[] { new Coordinate(1, 1),
+								   new Coordinate(1, 4),
+						           new Coordinate(6, 1),
+				                   new Coordinate(6, 4) }));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);

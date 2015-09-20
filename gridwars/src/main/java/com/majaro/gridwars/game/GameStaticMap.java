@@ -10,11 +10,10 @@ public class GameStaticMap {
 	// Core static-map variables
 	private String mapId = "";
 	private String mapName = "";
-	private int maxPlayers = 0;
 	private int width = 0;
 	private int height = 0;
 	private int[] cells;
-	private Coordinate[] spawnCoords;
+	private Coordinate[] spawnCoordinates;
 	
 	// Cell values
 	// 
@@ -23,14 +22,13 @@ public class GameStaticMap {
 	// 
 	
 	// Constructor	
-	public GameStaticMap(String mapId, String mapName, int maxPlayers, int width, int height, int[] cells, Coordinate[] spawnCoords) {
+	public GameStaticMap(String mapId, String mapName, int width, int height, int[] cells, Coordinate[] spawnCoordinates) {
 		this.mapId = mapId;
 		this.mapName = mapName;
-		this.maxPlayers = maxPlayers;
 		this.width = width;
 		this.height = height;
 		this.cells = cells;
-		this.spawnCoords = spawnCoords;
+		this.spawnCoordinates = spawnCoordinates;
 	}
 
 	// Check cell has no obstruction
@@ -61,20 +59,19 @@ public class GameStaticMap {
 	}
 	@JsonView(GameStaticMap.Views.Summary.class)
 	public int getMaxPlayers() {
-		return this.maxPlayers;
+		return this.spawnCoordinates.length;
 	}
-	@JsonView(GameStaticMap.Views.Summary.class)
-	public Coordinate[] getSpawnCoords() {
-		return spawnCoords;
+	public Coordinate[] getSpawnCoordinates() {
+		return this.spawnCoordinates;
 	}
 	public int getWidth() {
-		return width;
+		return this.width;
 	}
 	public int getHeight() {
-		return height;
+		return this.height;
 	}
 	public int[] getCells() {
-		return cells;
+		return this.cells;
 	}
 
 	// Class views
