@@ -80,6 +80,7 @@ CONSTANTS = {
 	SPRITE_EXPLOSION_A : "sprite_explosion_a",
 	SPRITE_EXPLOSION_B : "sprite_explosion_b",
 	SPRITE_EXPLOSION_C : "sprite_explosion_c",
+	SPRITE_EXPLOSION_D : "sprite_explosion_d",
 	DEBRIS_TANK : "",
 
 	// Map tile image references
