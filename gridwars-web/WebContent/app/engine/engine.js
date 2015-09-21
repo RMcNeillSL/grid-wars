@@ -296,12 +296,6 @@ Engine.prototype.render = function() {
 		var healthBounds = targetUnit.getHealthRenderBounds();
 		var healthPercent = (targetUnit.gameCore.health * 1.0) / (targetUnit.gameCore.maxHealth * 1.0);
 		
-		// Scale health bounds for screen rendering
-		healthBounds.left = healthBounds.left + self.phaserGame.camera.x;
-		healthBounds.right = healthBounds.right + self.phaserGame.camera.x;
-		healthBounds.top = healthBounds.top + self.phaserGame.camera.y;
-		healthBounds.bottom = healthBounds.bottom + self.phaserGame.camera.y;
-		
 		// Output health measure
 		var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
 		self.phaserGame.debug.geom(healthRect, healthColour);
@@ -456,10 +450,10 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.hoverItem = null;
 		}
 
-		// Set new rectangle selection coordiantes
+		// Set new rectangle selection coordinates
 		this.selectionRectangle.selectActive = true;
-		this.selectionRectangle.rect.width = (x - this.selectionRectangle.originX);
-		this.selectionRectangle.rect.height = (y - this.selectionRectangle.originY);
+		this.selectionRectangle.rect.width = (this.mouse.x - this.selectionRectangle.originX);
+		this.selectionRectangle.rect.height = (this.mouse.y - this.selectionRectangle.originY);
 
 	} else {
 
@@ -472,10 +466,10 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Mark selection as not active and reset
 		this.selectionRectangle.selectActive = false;
-		this.selectionRectangle.rect.x = x;
-		this.selectionRectangle.rect.y = y;
-		this.selectionRectangle.originX = x;
-		this.selectionRectangle.originY = y;
+		this.selectionRectangle.rect.x = this.mouse.x;
+		this.selectionRectangle.rect.y = this.mouse.y;
+		this.selectionRectangle.originX = this.mouse.x;
+		this.selectionRectangle.originY = this.mouse.y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
 
@@ -635,13 +629,9 @@ Engine.prototype.getItemAtPoint = function(point, playerOwned) {
 
 	// Search for unit at XY
 	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
-		tempBounds = this.units[unitIndex].getBounds();
-		checkBounds = {
-			left : Math.min(tempBounds.x, tempBounds.x + tempBounds.width),
-			top : Math.min(tempBounds.y, tempBounds.y + tempBounds.height),
-			right : Math.max(tempBounds.x, tempBounds.x + tempBounds.width),
-			bottom : Math.max(tempBounds.y, tempBounds.y + tempBounds.height),
-		};
+		checkBounds = this.units[unitIndex].getBounds();
+
+		console.log(this.units[unitIndex].left + " , " + this.units[unitIndex].top);
 		if (checkBounds.left < point.x && checkBounds.right > point.x
 				&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
 				(this.units[unitIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {
@@ -652,13 +642,7 @@ Engine.prototype.getItemAtPoint = function(point, playerOwned) {
 	// Search for building at XY
 	if (itemUnderMouse == null) {
 		for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
-			tempBounds = this.buildings[buildingIndex].getBounds();
-			checkBounds = {
-				left : Math.min(tempBounds.x, tempBounds.x + tempBounds.width),
-				top : Math.min(tempBounds.y, tempBounds.y + tempBounds.height),
-				right : Math.max(tempBounds.x, tempBounds.x + tempBounds.width),
-				bottom : Math.max(tempBounds.y, tempBounds.y + tempBounds.height),
-			};
+			checkBounds = this.buildings[buildingIndex].getBounds();
 			if (checkBounds.left < point.x && checkBounds.right > point.x
 					&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
 					(this.buildings[buildingIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {

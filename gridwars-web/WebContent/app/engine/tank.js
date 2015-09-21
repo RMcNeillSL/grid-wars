@@ -365,7 +365,17 @@ Tank.prototype.destroy = function() {
 }
 
 Tank.prototype.getBounds = function() {
-	return this.bodySegment.getBounds();
+	var tempBounds = this.bodySegment.getBounds();
+	var tempLeft = this.left - (this.width/2);
+	var tempTop = this.top - (this.height/2);
+	return {
+		left : Math.min(tempLeft, tempLeft + tempBounds.width),
+		top : Math.min(tempTop, tempTop + tempBounds.height),
+		right : Math.max(tempLeft, tempLeft + tempBounds.width),
+		bottom : Math.max(tempTop, tempTop + tempBounds.height),
+		width : tempBounds.width,
+		height : tempBounds.height
+	};
 }
 
 Tank.prototype.getHealthRenderBounds = function() {
@@ -373,10 +383,10 @@ Tank.prototype.getHealthRenderBounds = function() {
 	// Calculate rectangle area for health to be displayed
 	var absoluteBounds = this.getBounds();
 	var healthBounds = {
-		left : Math.min(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) + 15,
-		top : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height),
-		right : Math.max(absoluteBounds.x, absoluteBounds.x + absoluteBounds.width) - 15,
-		bottom : Math.min(absoluteBounds.y, absoluteBounds.y + absoluteBounds.height) + 5,
+		left : Math.min(absoluteBounds.left, absoluteBounds.left + absoluteBounds.width) + 15,
+		top : Math.min(absoluteBounds.top, absoluteBounds.top + absoluteBounds.height),
+		right : Math.max(absoluteBounds.left, absoluteBounds.left + absoluteBounds.width) - 15,
+		bottom : Math.min(absoluteBounds.top, absoluteBounds.top + absoluteBounds.height) + 5,
 		healthWidth : this.width
 	};
 	
