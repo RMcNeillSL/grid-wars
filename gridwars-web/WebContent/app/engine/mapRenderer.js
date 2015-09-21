@@ -15,7 +15,16 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	// Create tile-map mapping
 	this.tileMapping = {};
 	this.tileMapping[0] = CONSTANTS.MAP_TILE_A;
-	this.tileMapping[1] = CONSTANTS.MAP_TILE_B;
+	this.tileMapping[1] = CONSTANTS.ROCK_TILE_A;
+	this.tileMapping[2] = CONSTANTS.ROCK_TILE_B;
+	this.tileMapping[3] = CONSTANTS.EDGE_ROCKS_TOP;
+	this.tileMapping[4] = CONSTANTS.EDGE_ROCKS_RIGHT;
+	this.tileMapping[5] = CONSTANTS.EDGE_ROCKS_BOTTOM;
+	this.tileMapping[6] = CONSTANTS.EDGE_ROCKS_LEFT;
+	this.tileMapping[7] = CONSTANTS.CORNER_ROCKS_TOP_LEFT;
+	this.tileMapping[8] = CONSTANTS.CORNER_ROCKS_TOP_RIGHT;
+	this.tileMapping[9] = CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT;
+	this.tileMapping[10] = CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT;
 	
 	// Create map images
 	this.mapTiles = [];

@@ -107,7 +107,16 @@ Engine.prototype.preload = function() {
 
 	// Load tile images
 	this.phaserGame.load.image(CONSTANTS.MAP_TILE_A, CONSTANTS.ROOT_SPRITES_LOC + 'mapTileA.png');
-	this.phaserGame.load.image(CONSTANTS.MAP_TILE_B, CONSTANTS.ROOT_SPRITES_LOC + 'mapTileB.png');
+	this.phaserGame.load.image(CONSTANTS.ROCK_TILE_A, CONSTANTS.ROOT_SPRITES_LOC + 'rockTileA.png');
+	this.phaserGame.load.image(CONSTANTS.ROCK_TILE_B, CONSTANTS.ROOT_SPRITES_LOC + 'rockTileB.png');
+	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_TOP, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksTop.png');
+	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_RIGHT, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksRight.png');
+	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_BOTTOM, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksBottom.png');
+	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_LEFT, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksLeft.png');
+	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_TOP_LEFT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksTL.png');
+	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_TOP_RIGHT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksTR.png');
+	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksBL.png');
+	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksBR.png');
 
 	// Load particles
 	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
