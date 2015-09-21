@@ -45,6 +45,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.serverAPI = serverAPI;
 
 	// Define core phaser objects
+	this.engineCore = null;
 	this.mapRender = null;
 	this.explosionManager = null;
 	this.gameplayConfig = gameplayConfig;
@@ -53,6 +54,10 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		y : 0
 	};
 
+	// Define game camera variables
+	this.cursors = null;
+	
+	
 	// Define game object arrays
 	this.units = [];
 	this.buildings = [];
@@ -67,25 +72,13 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originX : 0,
 		originY : 0
 	};
+	this.hoverItem = null;
 
 	// Define sprite groups
 	this.mapGroup = null;
 	this.mapOverlayGroup = null;
 	this.turretGroup = null;
 	this.tankGroup = null;
-
-	// Construct engine core values for unit/building/defence construction
-	this.engineCore = {
-		phaserEngine : this.phaserGame,
-		func_RequestExplosion : function(mapGroup, explosionId, ownerId,
-				explosionInstanceId, x, y) {
-			self.explosionManager.requestExplosion(mapGroup, explosionId,
-					ownerId, explosionInstanceId, x, y)
-		},
-		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
-			self.updateNewUnitCell(sender, oldCell, newCell);
-		}
-	};
 
 	// player results
 	this.playerResults = [];
@@ -98,11 +91,13 @@ Engine.prototype.preload = function() {
 
 	// Load sprite sheets
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 7);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 128, 128, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 50, 50, 10);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
 
 	// Load tile images
@@ -127,9 +122,15 @@ Engine.prototype.create = function() {
 	this.mapOverlayGroup = this.phaserGame.add.group();
 	this.turretGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
-
+	
+	// Set map dimensions
+	this.phaserGame.world.setBounds(0, 0, this.gameplayConfig.width*CONSTANTS.TILE_WIDTH, this.gameplayConfig.height*CONSTANTS.TILE_HEIGHT);
+	
+	// Initialise key strokes for camera movement
+	this.cursors = this.phaserGame.input.keyboard.createCursorKeys();
+	
 	// Start physics engine and disable mouse right event
-	this.phaserGame.physics.startSystem(Phaser.Physics.ARCADE);
+	this.phaserGame.physics.startSystem(Phaser.Physics.P2JS);
 	this.phaserGame.canvas.oncontextmenu = function(e) {
 		e.preventDefault();
 	}
@@ -153,10 +154,29 @@ Engine.prototype.create = function() {
 	
 	// Populate selection lines
 	for (var count = 0; count < 4; count ++) { this.selectedLines.push(new Phaser.Line(0, 0, 0, 0)); }
+	
+	// Construct engine core values for unit/building/defence construction
+	this.engineCore = {
+		phaserEngine : this.phaserGame,
+		func_RequestExplosion : function(mapGroup, explosionId, ownerId,
+				explosionInstanceId, x, y) {
+			self.explosionManager.requestExplosion(mapGroup, explosionId,
+					ownerId, explosionInstanceId, x, y)
+		},
+		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
+			self.updateNewUnitCell(sender, oldCell, newCell);
+		},
+		func_PlaceTankTrack : function(sender, point, angle) {
+			self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
+		}
+	};
 }
 
 Engine.prototype.update = function() {
-
+	
+    // Manage scrolling of the map
+    this.manageMapMovement();
+	
 	// Render map
 	this.mapRender.renderMap();
 
@@ -260,36 +280,63 @@ Engine.prototype.updatePlayerStatus = function() {
 }
 
 Engine.prototype.render = function() {
+	
+	// Create self reference
+	var self = this;
 
 	// Render selection rectangle to scene
 	if (this.selectionRectangle.selectActive) {
 		this.phaserGame.debug.geom(this.selectionRectangle.rect, 'rgba(0,100,0,0.3)');
 	}
 	
-	// Render selection boxes around units to scene
-	if (this.selected.length > 0) {
+	// Function to generate/display health for game objects
+	var outputUnitHealth = function(targetUnit, healthColour, remainingColour, healthOutline, healthIntervalColour) {
+
+		// Generate health drawing bounds
+		var healthBounds = targetUnit.getHealthRenderBounds();
+		var healthPercent = (targetUnit.gameCore.health * 1.0) / (targetUnit.gameCore.maxHealth * 1.0);
 		
-		// Define variables
-		var checkBounds = null;
+		// Scale health bounds for screen rendering
+		healthBounds.left = healthBounds.left + self.phaserGame.camera.x;
+		healthBounds.right = healthBounds.right + self.phaserGame.camera.x;
+		healthBounds.top = healthBounds.top + self.phaserGame.camera.y;
+		healthBounds.bottom = healthBounds.bottom + self.phaserGame.camera.y;
 		
-		// Process all selection items
-		for (var index = 0; index < this.selected.length; index ++) {
-			
-			// Generate health drawing bounds
-			checkBounds = this.selected[index].getHealthRenderBounds();
-			
-			// Update line positions
-			this.selectedLines[0].setTo(checkBounds.left, 	checkBounds.top, 	checkBounds.right, 	checkBounds.top);
-			this.selectedLines[1].setTo(checkBounds.left, 	checkBounds.bottom, checkBounds.right, 	checkBounds.bottom);
-			this.selectedLines[2].setTo(checkBounds.left,  	checkBounds.top, 	checkBounds.left, 	checkBounds.bottom);
-			this.selectedLines[3].setTo(checkBounds.right, 	checkBounds.top, 	checkBounds.right, 	checkBounds.bottom);
-			
-			// Output lines to screen
-			this.phaserGame.debug.geom(this.selectedLines[0], 'rgba(255,255,255,0.5)');
-			this.phaserGame.debug.geom(this.selectedLines[1], 'rgba(255,255,255,0.5)');
-			this.phaserGame.debug.geom(this.selectedLines[2], 'rgba(255,255,255,0.5)');
-			this.phaserGame.debug.geom(this.selectedLines[3], 'rgba(255,255,255,0.5)');
+		// Output health measure
+		var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
+		self.phaserGame.debug.geom(healthRect, healthColour);
+		var remainingRect = new Phaser.Rectangle(healthBounds.left + healthBounds.width * healthPercent, healthBounds.top, healthBounds.width * (1-healthPercent), healthBounds.height);
+		self.phaserGame.debug.geom(remainingRect, remainingColour);
+		
+		// Output health interval lines
+		for (var lineX = healthBounds.left; lineX < healthBounds.left + healthBounds.width * healthPercent; lineX += 5) {
+			var healthLine = new Phaser.Line(lineX, healthBounds.top, lineX, healthBounds.bottom);
+			self.phaserGame.debug.geom(healthLine, healthIntervalColour);
 		}
+		
+		// Update line positions
+		self.selectedLines[0].setTo(healthBounds.left, 	healthBounds.top, 		healthBounds.right, 	healthBounds.top);
+		self.selectedLines[1].setTo(healthBounds.left, 	healthBounds.bottom, 	healthBounds.right, 	healthBounds.bottom);
+		self.selectedLines[2].setTo(healthBounds.left,  healthBounds.top, 		healthBounds.left, 		healthBounds.bottom);
+		self.selectedLines[3].setTo(healthBounds.right, healthBounds.top, 		healthBounds.right, 	healthBounds.bottom);
+		
+		// Output lines to screen
+		self.phaserGame.debug.geom(self.selectedLines[0], healthOutline);
+		self.phaserGame.debug.geom(self.selectedLines[1], healthOutline);
+		self.phaserGame.debug.geom(self.selectedLines[2], healthOutline);
+		self.phaserGame.debug.geom(self.selectedLines[3], healthOutline);
+	}
+	
+	// Render selection boxes around selected units to scene
+	if (this.selected && this.selected.length > 0) {
+		for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
+			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,100,0,1)', 'rgba(0,0,0,1)', 'rgba(150,150,150,1)', 'rgba(200,255,200,1)');
+		}
+	}
+	
+	// Render hover object healthbox
+	if (this.hoverItem) {
+		outputUnitHealth(this.hoverItem, 'rgba(0,100,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
 	}
 }
 
@@ -353,7 +400,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 					if (this.isSquareEmpty(cell.col, cell.row)) {
 						var targetUnit = this.selected[0];
 						if (targetUnit) {
-							this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+							if (ctrlDown) {
+								targetUnit.shootAtXY(point);
+							} else {
+								this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+							}
 						}
 					}
 				}
@@ -392,16 +443,17 @@ Engine.prototype.onMouseUp = function(pointer) {
 Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 	// Save position information
-	this.mouse.x = x;
-	this.mouse.y = y;
+	this.mouse.x = this.phaserGame.camera.x + x;
+	this.mouse.y = this.phaserGame.camera.y + y;
 
 	// Process updates for selection rectangle
 	if (pointer.isDown) {
-
+		
 		// Reset selected items
 		if (this.selectionRectangle.selectActive
-				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height != 0) {
+				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 10) {
 			this.selected = [];
+			this.hoverItem = null;
 		}
 
 		// Set new rectangle selection coordiantes
@@ -414,7 +466,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
 				&& this.selectionRectangle.rect.width
-						* this.selectionRectangle.rect.height != 0) {
+						* this.selectionRectangle.rect.height > 10) {
 			this.selected = this.getSelectionArray();
 		}
 
@@ -426,6 +478,17 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		this.selectionRectangle.originY = y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
+
+		// Select hover items
+		this.hoverItem = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true);
+		if (this.hoverItem) {
+			for (var index = 0; index < this.selected.length; index ++) {
+				if (this.selected[index].gameCore.instanceId == this.hoverItem.gameCore.instanceId) {
+					this.hoverItem = null;
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -449,6 +512,7 @@ Engine.prototype.onKeyPressed = function(char) {
 		// width, height, func_explosionRequest
 		if (char == '2') {
 			var gameCore = new GameCore("TANK", cell);
+			gameCore.setPlayer(this.currentPlayer);
 			this.phaserGame.newBuilding.active = true;
 			this.phaserGame.newBuilding.target = new Tank(this.engineCore,
 					gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
@@ -459,6 +523,28 @@ Engine.prototype.onKeyPressed = function(char) {
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.manageMapMovement = function() {
+
+	// Records cursor movement for panning the camera
+	if (this.cursors.up.isDown)
+    {
+        this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
+    }
+    else if (this.cursors.down.isDown)
+    {
+    	this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
+    }
+
+    if (this.cursors.left.isDown)
+    {
+    	this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
+    }
+    else if (this.cursors.right.isDown)
+    {
+    	this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY;
+    }
+}
 
 Engine.prototype.updatePlayerStatus = function() {
 	var self = this;
@@ -761,14 +847,16 @@ Engine.prototype.createNewBuildingObject = function(gameCore) {
 }
 
 Engine.prototype.purchaseObject = function(item) {
+	
 	var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
-	var gameCore = new GameCore("TURRET", cell);
-	gameCore.setPlayer(this.currentPlayer);
 
 	if (item === "TURRET") {
+		var gameCore = new GameCore("TURRET", cell);
+		gameCore.setPlayer(this.currentPlayer);
 		this.createNewBuildingObject(gameCore);
 	} else if (item === "TANK") {
 		var gameCore = new GameCore("TANK", cell);
+		gameCore.setPlayer(this.currentPlayer);
 		this.phaserGame.newBuilding.active = true;
 		this.phaserGame.newBuilding.target = new Tank(this.engineCore,
 				gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
@@ -813,18 +901,34 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 
 	// Define working variables
 	var searchObject = null;
+	
+	// Search through selected items
+	for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
+		if (this.selected[selectedIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.selected[selectedIndex];
+			this.selected.splice(selectedIndex, 1);
+			break;
+		}
+	}
+	
+	// Check hover item
+	if (this.hoverItem && this.hoverItem.gameCore.instanceId == instanceId) {
+		this.hoverItem = null;
+	}
 
 	// Locate and remove item from units/buildings list
 	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
 		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
 			searchObject = this.units[unitIndex];
 			this.units.splice(unitIndex, 1);
+			break;
 		}
 	}
 	for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
 		if (this.buildings[buildingIndex].gameCore.instanceId == instanceId) {
 			searchObject = this.buildings[buildingIndex];
 			this.buildings.splice(buildingIndex, 1);
+			break;
 		}
 	}
 

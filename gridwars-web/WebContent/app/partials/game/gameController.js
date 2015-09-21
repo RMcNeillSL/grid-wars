@@ -77,11 +77,13 @@
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_START, 		function(response) { self.gameService.gameStart(response); });
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, 	function(response) { self.gameService.gameplayResponse(response); });
 		
+		// Join current game
 		this.gameService.joinGame();
 
 		// Start game method
 		var startGame = function() {
 
+			// Finished game callback
 			var gameFinished = function(playerResults) {
 				var callback = function() {
 					self.changeView("/results");
@@ -90,6 +92,10 @@
 				self.$rootScope.playerResults = playerResults;
 				self.gameService.gameComplete(callback);
 			}
+			
+			// Setup game 'constants' for buildings and units
+			CONSTANTS.GAME_BUILDINGS = self.$rootScope.gameplayConfig.gameBuildings;
+			CONSTANTS.GAME_UNITS = self.$rootScope.gameplayConfig.gameUnits;
 			
 			// Make sure a second engine is not being created
 			if (!self.engineExists) {

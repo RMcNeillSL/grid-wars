@@ -6,6 +6,10 @@ import org.codehaus.jackson.map.annotate.JsonView;
 
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.LobbyUser;
+import com.majaro.gridwars.game.Const;
+import com.majaro.gridwars.game.Coordinate;
+import com.majaro.gridwars.game.Const.GameBuilding;
+import com.majaro.gridwars.game.Const.GameUnit;
 import com.majaro.gridwars.game.GameStaticMap;
 
 public class GameplayConfig {
@@ -15,6 +19,7 @@ public class GameplayConfig {
 	private int width = 0;
 	private int height = 0;
 	private int[] cells = null;
+	private Coordinate[] spawnCoordinates;
 	
 	// Player related variables
 	private ArrayList<String> userName;
@@ -23,6 +28,9 @@ public class GameplayConfig {
 	
 	// Game setup preferences
 	
+	// Game object variables
+	private GameBuilding[] gameBuildings;
+	private GameUnit[] gameUnits;
 	
 	// Constructor
 	public GameplayConfig(GameLobby gameLobby, GameStaticMap gameStaticMap) {
@@ -32,6 +40,7 @@ public class GameplayConfig {
 		this.width = gameStaticMap.getWidth();
 		this.height = gameStaticMap.getHeight();
 		this.cells = gameStaticMap.getCells();
+		this.spawnCoordinates = gameStaticMap.getSpawnCoordinates();
 		
 		// Save user listing variables
 		this.userName = new ArrayList<String>();
@@ -46,6 +55,11 @@ public class GameplayConfig {
 		}
 		
 		// Save game setup preferences
+		
+		
+		// Save constants for buildings and units
+		this.gameBuildings = Const.BUILDINGS;
+		this.gameUnits = Const.UNITS;
 		
 	}
 
@@ -78,6 +92,18 @@ public class GameplayConfig {
 	@JsonView(GameplayConfig.Views.Summary.class)
 	public ArrayList<Integer> getUserTeam() {
 		return this.userTeam;
+	}
+	@JsonView(GameplayConfig.Views.Summary.class)
+	public GameBuilding[] getGameBuildings() {
+		return this.gameBuildings;
+	}
+	@JsonView(GameplayConfig.Views.Summary.class)
+	public GameUnit[] getGameUnits() {
+		return this.gameUnits;
+	}
+	@JsonView(GameplayConfig.Views.Summary.class)
+	public Coordinate[] getSpawnCoordinates() {
+		return this.spawnCoordinates;
 	}
 	
 

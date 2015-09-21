@@ -227,38 +227,55 @@ public class Engine extends Thread {
 	// Game request methods (more specific functionality for each request type)
 	
 	@SuppressWarnings("unused")
-	private GameplayResponse processBuildingPlaceRequest(Player player, GameBuilding[] sourceBuildings, int col, int row) {
+	private GameplayResponse[] processBuildingPlaceRequest(Player player, GameBuilding[] sourceBuildings, Coordinate coord) {
 
-		// Set default result
-		GameplayResponse response = null;
+		// Declare response variables
+		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
+		GameplayResponse newBuildingResponse = null;
+		GameplayResponse waypointUpdateResponse = null;
 		boolean validConstruction = true;
+		
+		// Declare waypoint ammending variables
+		ArrayList<DynGameUnit> waypointInterruptedUnits = new ArrayList<DynGameUnit>();
+		ArrayList<DynGameUnit> newWaypointInterruptedUnits = null;
+		Coordinate unitWaypointEnd = null;
 		
 		// Check each object in turn
 		for (GameBuilding sourceBuilding : sourceBuildings) {
 
 			// Check all cells required for building are free in the static map -- currently a single cell
-			if (validConstruction && this.staticMap.isCellObstructed(col, row)) {
+			if (validConstruction && this.staticMap.isCellObstructed(coord)) {
 				validConstruction = false;
-				response = new GameplayResponse(E_GameplayResponseCode.STATIC_MAP_OBSTRUCTION);
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.STATIC_MAP_OBSTRUCTION);
+			}
+			
+			// Check all cells required for building are free in the static map -- currently a single cell
+			if (validConstruction && !this.staticMap.isCellInBounds(coord)) {
+				validConstruction = false;
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.OUT_OF_MAP_BOUNDS);
 			}
 
 			// Check all cells required for building are free in the dynamic map -- currently a single cell
-			if (validConstruction && this.dynamicMap.isCellObstructed(col, row)) {
+			if (validConstruction && this.dynamicMap.isCellObstructed(coord)) {
 				validConstruction = false;
-				response = new GameplayResponse(E_GameplayResponseCode.DYNAMIC_MAP_OBSTRUCTION);
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.DYNAMIC_MAP_OBSTRUCTION);
 			}
 
 			// Check user is at appropriate technology level
 			if (validConstruction && !player.playerHasTechLevel(sourceBuildings[0])) {
 				validConstruction = false;
-				response = new GameplayResponse(E_GameplayResponseCode.DYNAMIC_MAP_OBSTRUCTION);
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.DYNAMIC_MAP_OBSTRUCTION);
 			}
 
 			// Check user has appropriate funds
 			if (validConstruction && !player.playerHasCash(sourceBuildings[0])) {
 				validConstruction = false;
-				response = new GameplayResponse(E_GameplayResponseCode.INSUFFICIENT_FUNDS);
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.INSUFFICIENT_FUNDS);
 			}
+			
+			// Search for units which may need waypoint paths updating with new building placement
+			newWaypointInterruptedUnits = this.getInterruptedWaypointUnits(coord);
+			waypointInterruptedUnits.addAll(newWaypointInterruptedUnits);
 			
 		}
 
@@ -272,30 +289,46 @@ public class Engine extends Thread {
 			for (GameBuilding sourceBuilding : sourceBuildings) {
 				newBuilding = null;
 				if (sourceBuilding instanceof GameDefence) {
-					newBuilding = new DynGameDefence(this.generateInstanceId(player), (GameDefence)sourceBuilding, player, col, row); // -- need to calculate for multiBuilding structures later e.g. walls
+					newBuilding = new DynGameDefence(this.generateInstanceId(player), (GameDefence)sourceBuilding, player, coord); // -- need to calculate for multiBuilding structures later e.g. walls
 				} else if (sourceBuilding instanceof GameBuilding) {
-					newBuilding = new DynGameBuilding(this.generateInstanceId(player), sourceBuilding, player, col, row); // -- need to calculate for multiBuilding structures later e.g. walls
+					newBuilding = new DynGameBuilding(this.generateInstanceId(player), sourceBuilding, player, coord); // -- need to calculate for multiBuilding structures later e.g. walls
 				} 
 				if (newBuilding != null) { this.buildings.add(newBuilding); }
 			}
 			
-			// Generate response object
+			// Update effected unit waypoint paths
+			for (DynGameUnit effectedUnit : waypointInterruptedUnits) {
+				unitWaypointEnd = effectedUnit.getWaypointEndCoordinate();
+				if (unitWaypointEnd != null) {
+					waypointUpdateResponse = this.processWaypointPathCoordsRequest(player, effectedUnit, unitWaypointEnd);
+					if (waypointUpdateResponse != null) {
+						responseList.add(waypointUpdateResponse);
+					}
+				}
+			}
+			
+			// Generate response object for new buildings
 			if (newBuilding == null) {
-				response = new GameplayResponse(E_GameplayResponseCode.SERVER_ERROR);
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.SERVER_ERROR);
 			} else {
-				response = new GameplayResponse(E_GameplayResponseCode.NEW_BUILDING);
+				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.NEW_BUILDING);
 				for (GameBuilding sourceBuilding : sourceBuildings) {
-					response.addCoord(col, row); // -- need to calculate for multiBuilding structures later e.g. walls
-					response.addSource(newBuilding.getIdentifier());
-					response.addTarget(newBuilding.getInstanceId());
-					response.addMisc(player.getPlayerName());
+					newBuildingResponse.addCoord(coord); // -- need to calculate for multiBuilding structures later e.g. walls
+					newBuildingResponse.addSource(newBuilding.getIdentifier());
+					newBuildingResponse.addTarget(newBuilding.getInstanceId());
+					newBuildingResponse.addMisc(player.getPlayerName());
 				}
 			}
 			
 		}
+		
+		// Add newBuildingResponse to result list
+		if (newBuildingResponse != null) {
+			responseList.add(newBuildingResponse);
+		}
 
 		// Return calculated result
-		return response;
+		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
 	private GameplayResponse processDefenceAttackRequest(Player player, DynGameDefence[] sourceDefences, int col, int row) {
@@ -304,10 +337,10 @@ public class Engine extends Thread {
 		GameplayResponse response = null;
 		boolean validConstruction = true;
 		
-		// Check each object in turn
-		for (DynGameDefence sourceDefence : sourceDefences) {
-			
-		}
+//		// Check each object in turn
+//		for (DynGameDefence sourceDefence : sourceDefences) {
+//			
+//		}
 
 		// Construct valid response
 		if (validConstruction) {
@@ -327,8 +360,7 @@ public class Engine extends Thread {
 		// Set default result
 		GameplayResponse response = null;
 		boolean validConstruction = true;
-		ArrayList<Coordinate> path = null;
-		Coordinate unitCoordinate = null;		
+		ArrayList<Coordinate> path = null;	
 
 		// Check each object in turn
 		for (DynGameUnit sourceUnit : sourceUnits) {
@@ -336,9 +368,11 @@ public class Engine extends Thread {
 			// Run pathfinding search
 			path = this.aStarPathFinder.calculatePath(sourceUnit.getCoordinate(), coordinate);
 			
+			// Link path to unit
+			sourceUnit.setWaypoints(path);
+			
 			// Only run this loop once for now
 			break;
-			
 		}
 
 		// Construct valid response
@@ -356,6 +390,12 @@ public class Engine extends Thread {
 
 		// Return calculated result
 		return response;
+	}
+	
+	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit sourceUnit, Coordinate coordinate) {
+		DynGameUnit[] unitsArray = new DynGameUnit[1];
+		unitsArray[0] = sourceUnit;
+		return this.processWaypointPathCoordsRequest(player, unitsArray, coordinate);
 	}
 	
 	private void processWaypointUpdateUnitCellRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] newCoordinates) {
@@ -462,12 +502,14 @@ public class Engine extends Thread {
 	
 	
 	// Game request method
-	
-	public GameplayResponse processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
+
+	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
 
 		// Declare (and initialise) variables
-		GameplayResponse gameplayResponse = null;
 		Player sender = this.getPlayerFromUserId(userId);
+		GameplayResponse gameplayResponse = null;
+		GameplayResponse[] gameplayResponseArray = null;
+		ArrayList<GameplayResponse> gameplayResponseList = new ArrayList<GameplayResponse>();
 
 		// Check minimum processing conditions
 		if (sender != null) {
@@ -478,10 +520,10 @@ public class Engine extends Thread {
 			// Determine which request was sent 
 			switch (gameplayRequest.getRequestCode()) {
 		        case NEW_BUILDING:  
-		        	gameplayResponse = this.processBuildingPlaceRequest(sender, 
+		        	gameplayResponseArray = this.processBuildingPlaceRequest(sender, 
 		        			Const.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
-		        			gameplayRequest.getTargetCellX(), 
-		        			gameplayRequest.getTargetCellY());
+		        			new Coordinate(gameplayRequest.getTargetCellX(), 
+		        					gameplayRequest.getTargetCellY()));
 		        	break;
 		        case DEFENCE_ATTACK_XY:
 		        	gameplayResponse = this.processDefenceAttackRequest(sender, 
@@ -520,17 +562,48 @@ public class Engine extends Thread {
 			
 		}
 		
-		// Make sure a response is pending before logging
-		if (gameplayResponse != null) { System.out.println(gameplayResponse); }
+		// Add single response object to output list
+		if (gameplayResponse != null) {
+			gameplayResponseList.add(gameplayResponse);
+		}
+		
+		// Add array response objects to output list
+		if (gameplayResponseArray != null && gameplayResponseArray.length > 0) {
+			for (int index = 0; index < gameplayResponseArray.length; index ++) {
+				gameplayResponseList.add(gameplayResponseArray[index]);
+			}
+		}
+		
+		// Log result array to the screen
+		for (GameplayResponse response : gameplayResponseList) {
+			System.out.println(response);
+		}
 		
 		// Return current response
-		return gameplayResponse;
+		return gameplayResponseList.toArray(new GameplayResponse[gameplayResponseList.size()]);
 
 	}
 	
 	
 	// Utility methods
 
+	private ArrayList<DynGameUnit> getInterruptedWaypointUnits(Coordinate coord) {
+		
+		// Declare/Initialise variables
+		ArrayList<DynGameUnit> resultUnits = new ArrayList<DynGameUnit>();
+		
+		// Search for units which enter this coordinate
+		for (DynGameUnit gameUnit : this.units) {
+			if (gameUnit.doesUnitWaypointEnterCoord(coord)) {
+				resultUnits.add(gameUnit);
+			}
+		}
+		
+		// Return calculated list
+		return resultUnits;
+		
+	}
+	
 	private void destroyGameObject(GameObject targetGameObject) {
 
 		// Check and process unit type

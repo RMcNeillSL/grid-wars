@@ -18,7 +18,7 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	protected String instanceId = "";
 	
 	// Constructor
-	public DynGameBuilding(String instanceId, GameBuilding sourceBuilding, Player playerRef, int cellX, int cellY) {
+	public DynGameBuilding(String instanceId, GameBuilding sourceBuilding, Player playerRef, Coordinate coordinate) {
 		
 		// Call super
 		super(sourceBuilding);
@@ -28,7 +28,7 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 		
 		// Save passed values
 		this.playerRef = playerRef;
-		this.coordinate = new Coordinate(cellX, cellY);
+		this.coordinate = coordinate;
 		this.instanceId = instanceId;
 	}
 

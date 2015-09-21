@@ -8,45 +8,68 @@ function GameCore(identifier, cell) {
 	this.cell = cell;
 	
 	// Set default values
-	this.point = new Point(0, 0);
-	this.width = 0;
-	this.height = 0;
+	this.point = cell.toPoint();
+	this.width = 100;
+	this.height = 100;
 	this.instanceId = null;
 	this.playerId = null;
 	this.colour = null;
 	
-	// Common game properties
-	this.health = 100;
-	
 	// FLag properties (not existing in all objects)
 	this.isDefence = false;
-	
-	// Populate values from identifier
-	if (this.identifier == "TURRET") {
-		this.width = 100;
-		this.height = 100;
-		this.isDefence = true;
-	}
-	
+
 	// Create self reference
 	var self = this;
 	
-	// Declare methods
-	this.setInstanceId = function(instanceId) {
-		this.instanceId = instanceId;
+	// Field population from server source object
+	var populateProperties = function(sourceObject, isUnit) {
+		self.isUnit = isUnit;
+		self.isDefence = (!isUnit && sourceObject.damage && sourceObject.damage > 0);
+		if (sourceObject.cost) { self.cost = sourceObject.cost; }
+		if (sourceObject.damage) { self.damage = sourceObject.damage; }
+		if (sourceObject.health) { self.health = sourceObject.health; self.maxHealth = sourceObject.health; }
+		if (sourceObject.power) { self.power = sourceObject.power; }
+		if (sourceObject.range) { self.range = sourceObject.range; }
+		if (sourceObject.techLv) { self.techLv = sourceObject.techLv; }
+		if (sourceObject.speed) { self.speed = sourceObject.speed; }
 	}
-	this.setPlayer = function(player) {
-		this.playerId = player.playerId;
-		this.colour = CONSTANTS.COLOUR_TURRET[0];
-		for (var index = 1; index < CONSTANTS.COLOUR_TURRET.length; index ++) {
-			if (player.colour === CONSTANTS.COLOUR_TURRET[index].COLOUR) {
-				this.colour = CONSTANTS.COLOUR_TURRET[index];
-			}
+
+	// Locate 'building object' to transfer data from server buildings object
+	for (var buildingIndex = 0; buildingIndex < CONSTANTS.GAME_BUILDINGS.length; buildingIndex++) {
+		if (CONSTANTS.GAME_BUILDINGS[buildingIndex].identifier == identifier) {
+			populateProperties(CONSTANTS.GAME_BUILDINGS[buildingIndex], false);
 		}
 	}
-	this.setHealth = function(newHealth) {
-		self.health = Math.max(newHealth, 0);
+
+	// Locate 'unit object' to transfer data from server buildings object
+	for (var unitIndex = 0; unitIndex < CONSTANTS.GAME_BUILDINGS.length; unitIndex++) {
+		if (CONSTANTS.GAME_UNITS[unitIndex].identifier == identifier) {
+			populateProperties(CONSTANTS.GAME_UNITS[unitIndex], true);
+		}
 	}
+}
+
+GameCore.prototype.setInstanceId = function(instanceId) {
+	this.instanceId = instanceId;
+}
+
+GameCore.prototype.setPlayer = function(player) {
+
+	// Link playerId to passed param
+	this.playerId = player.playerId;
+
+	// Set up colours
+	this.colour = CONSTANTS.COLOUR_[this.identifier][0];
+	for (var index = 1; index < CONSTANTS.COLOUR_[this.identifier].length; index ++) {
+		if (player.colour === CONSTANTS.COLOUR_[this.identifier][index].COLOUR) {
+			this.colour = CONSTANTS.COLOUR_[this.identifier][index];
+		}
+	}
+
+}
+
+GameCore.prototype.setHealth = function(newHealth) {
+	this.health = Math.max(newHealth, 0);
 }
 
 
