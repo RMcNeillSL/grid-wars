@@ -2,7 +2,10 @@
 	<div id="gridwars-loading" ng-show="!gameLoaded">
 		<h2 class="title">Game Loading...</h2>
 	</div>
-	<div id="gridwars-engine" style="cursor: none" ng-show="gameLoaded"></div>
+	<div id="gridwars-engine" ng-show="gameLoaded">
+		<img src="app/assets/mini_map.png" style="position: absolute; top: 0px; right: 0px;"></img>
+		<img src="app/assets/unit_details.png" style="position: absolute; bottom: 0px; right: 0px;"></img>
+	</div> <!--style="cursor: none"-->
 	<div style="clear: both;" ng-show="gameLoaded"></div>
 	<div class="gameMenu" ng-show="gameLoaded">
 		<!--<h2 class="title" style="">Options</h2>

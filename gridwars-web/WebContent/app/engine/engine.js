@@ -14,7 +14,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	var local_render = function() { self.render(); }
 
 	// Create phaser game object
-	this.phaserGame = new Phaser.Game(800, 600, Phaser.CANVAS,
+	this.phaserGame = new Phaser.Game(1600, 1000, Phaser.CANVAS,
 			'gridwars-engine', {
 				preload : local_preload,
 				create : local_create,
@@ -94,7 +94,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.stage.disableVisibilityChange = true;
 
 	// Load sprite sheets
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 28);
+//	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 28);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
@@ -188,18 +188,18 @@ Engine.prototype.create = function() {
 		}
 	};
 
-	// Create cursor object
-	this.pointer = { sprite : null, point : new Point(0, 0) };
-	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
-	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
-	this.highestGroup.add(this.pointer.sprite);
+//	// Create cursor object
+//	this.pointer = { sprite : null, point : new Point(0, 0) };
+//	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
+//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
+//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
+//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
+//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
+//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
+//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
+//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
+//	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
+//	this.highestGroup.add(this.pointer.sprite);
 
 	// Position camera over spawn point
 	for (var index = 0; index < this.players.length; index++) {
@@ -242,8 +242,8 @@ Engine.prototype.update = function() {
 	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
 
-	// Update pointer position
-	this.updatePointerPosition();
+//	// Update pointer position
+//	this.updatePointerPosition();
 
 	// Get state of players in game
 //	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
@@ -263,26 +263,43 @@ Engine.prototype.render = function() {
 	var outputUnitHealth = function(targetUnit, healthColour, remainingColour, healthOutline, healthIntervalColour) {
 
 		// Generate health drawing bounds
-		var healthBounds = targetUnit.getHealthRenderBounds();
+		var workingHealthBounds = targetUnit.getHealthRenderBounds();
 		var healthPercent = (targetUnit.gameCore.health * 1.0) / (targetUnit.gameCore.maxHealth * 1.0);
+
+		// Setup health width effected variables
+		var healthBarBounds = {
+			top : workingHealthBounds.top,
+			bottom : workingHealthBounds.bottom,
+			left : targetUnit.left - workingHealthBounds.healthWidth / 2,
+			right : targetUnit.left + workingHealthBounds.healthWidth / 2,
+			width : workingHealthBounds.healthWidth,
+			height : workingHealthBounds.height
+		};
 		
 		// Output health measure
-		var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
+		var healthRect = new Phaser.Rectangle(healthBarBounds.left,
+				healthBarBounds.top,
+				healthBarBounds.width * healthPercent,
+				healthBarBounds.height);
 		self.phaserGame.debug.geom(healthRect, healthColour);
-		var remainingRect = new Phaser.Rectangle(healthBounds.left + healthBounds.width * healthPercent, healthBounds.top, healthBounds.width * (1-healthPercent), healthBounds.height);
+		var remainingRect = new Phaser.Rectangle(
+				healthBarBounds.left + healthBarBounds.width * healthPercent,
+				healthBarBounds.top,
+				healthBarBounds.width * (1-healthPercent),
+				healthBarBounds.height);
 		self.phaserGame.debug.geom(remainingRect, remainingColour);
-		
+
 		// Output health interval lines
-		for (var lineX = healthBounds.left; lineX < healthBounds.left + healthBounds.width * healthPercent; lineX += 5) {
-			var healthLine = new Phaser.Line(lineX, healthBounds.top, lineX, healthBounds.bottom);
+		for (var lineX = healthBarBounds.left; lineX < healthBarBounds.left + healthBarBounds.width * healthPercent; lineX += 5) {
+			var healthLine = new Phaser.Line(lineX, healthBarBounds.top, lineX, healthBarBounds.bottom);
 			self.phaserGame.debug.geom(healthLine, healthIntervalColour);
 		}
 		
 		// Update line positions
-		self.selectedLines[0].setTo(healthBounds.left, 	healthBounds.top, 		healthBounds.right, 	healthBounds.top);
-		self.selectedLines[1].setTo(healthBounds.left, 	healthBounds.bottom, 	healthBounds.right, 	healthBounds.bottom);
-		self.selectedLines[2].setTo(healthBounds.left,  healthBounds.top, 		healthBounds.left, 		healthBounds.bottom);
-		self.selectedLines[3].setTo(healthBounds.right, healthBounds.top, 		healthBounds.right, 	healthBounds.bottom);
+		self.selectedLines[0].setTo(healthBarBounds.left,  healthBarBounds.top, 	healthBarBounds.right, 	healthBarBounds.top);
+		self.selectedLines[1].setTo(healthBarBounds.left,  healthBarBounds.bottom, 	healthBarBounds.right, 	healthBarBounds.bottom);
+		self.selectedLines[2].setTo(healthBarBounds.left,  healthBarBounds.top, 	healthBarBounds.left, 	healthBarBounds.bottom);
+		self.selectedLines[3].setTo(healthBarBounds.right, healthBarBounds.top, 	healthBarBounds.right, 	healthBarBounds.bottom);
 		
 		// Output lines to screen
 		self.phaserGame.debug.geom(self.selectedLines[0], healthOutline);
@@ -495,20 +512,22 @@ Engine.prototype.onKeyPressed = function(char) {
 
 Engine.prototype.onKeyDown = function() {
 	
-	// Process mouse form update
-	this.processMouseFormUpdates();
+//	// Process mouse form update
+//	this.processMouseFormUpdates();
 }
 
 Engine.prototype.onKeyUp = function() {
 	
-	// Process mouse form update
-	this.processMouseFormUpdates();
+//	// Process mouse form update
+//	this.processMouseFormUpdates();
 }
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
 
 Engine.prototype.processMouseFormUpdates = function() {
+	
+	return;
 	
 	// Selected flags
 	var nothingSelected = false;
@@ -578,6 +597,8 @@ Engine.prototype.processMouseFormUpdates = function() {
 
 Engine.prototype.updatePointerPosition = function(point) {
 	
+	return;
+	
 	// Check if point was passed (default to cursor)
 	if (!point) { point = new Point(this.mouse.x, this.mouse.y); }
 	
@@ -587,6 +608,8 @@ Engine.prototype.updatePointerPosition = function(point) {
 }
 
 Engine.prototype.updatePointerForm = function(formId) {
+	
+	return;
 	
 	// Check for special case forms
 	

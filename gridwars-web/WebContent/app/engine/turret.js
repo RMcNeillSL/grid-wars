@@ -324,6 +324,7 @@ Turret.prototype.getHealthRenderBounds = function() {
 		top : Math.min(absoluteBounds.top, absoluteBounds.top + absoluteBounds.height),
 		right : Math.max(absoluteBounds.left, absoluteBounds.left + absoluteBounds.width) - 15,
 		bottom : Math.min(absoluteBounds.top, absoluteBounds.top + absoluteBounds.height) + 5,
+		healthWidth : this.width
 	};
 
 	// Add width and height

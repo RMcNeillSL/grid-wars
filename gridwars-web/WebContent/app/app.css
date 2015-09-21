@@ -266,10 +266,6 @@ html, body {
 	overflow:none;
 }
 
-#gridwars-engine {
-	margin-bottom:10px;
-}
-
 .menuStore {
 	display:block;
 	width:155px;
@@ -351,4 +347,15 @@ html, body {
 	font-size:20px;
 	margin-right:2px;
 }
-.
+
+#gridwars-engine {
+	margin-bottom:10px;
+	position: relative;
+}
+
+
+
+
+
+
+
