@@ -94,6 +94,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.stage.disableVisibilityChange = true;
 
 	// Load sprite sheets
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 28);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
@@ -117,22 +118,23 @@ Engine.prototype.create = function() {
 
 	// Create self reference
 	var self = this;
-	var local_onKeyPressed = function(char) {
-		self.onKeyPressed(char);
-	}
-
+	var local_onKeyPressed = 	function(char) 	{ self.onKeyPressed(char); }
+	var local_onKeyDown = 		function() 		{ self.onKeyDown(); }
+	var local_onKeyUp = 		function() 		{ self.onKeyUp(); }
+	
 	// Create sprite groups
 	this.mapGroup = this.phaserGame.add.group();
 	this.mapOverlayGroup = this.phaserGame.add.group();
 	this.turretGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
+	this.highestGroup = this.phaserGame.add.group();
 	
 	// Set map dimensions
 	this.phaserGame.world.setBounds(0, 0, this.gameplayConfig.width*CONSTANTS.TILE_WIDTH, this.gameplayConfig.height*CONSTANTS.TILE_HEIGHT);
 	
 	// Initialise key strokes for camera movement
 	this.cursors = this.phaserGame.input.keyboard.createCursorKeys();
-	
+
 	// Start physics engine and disable mouse right event
 	this.phaserGame.physics.startSystem(Phaser.Physics.P2JS);
 	this.phaserGame.canvas.oncontextmenu = function(e) {
@@ -152,9 +154,9 @@ Engine.prototype.create = function() {
 	// Construct event listeners
 	this.phaserGame.input.onUp.add(this.onMouseUp, this);
 	this.phaserGame.input.onDown.add(this.onMouseDown, this);
-	this.phaserGame.input.keyboard.addCallbacks(this, null, null, local_onKeyPressed);
+	this.phaserGame.input.keyboard.addCallbacks(this, local_onKeyDown, local_onKeyUp, local_onKeyPressed);
 	this.phaserGame.input.addMoveCallback(this.onMouseMove, this);
-
+	
 	// Construct selection rectangle
 	this.selectionRectangle.rect = new Phaser.Rectangle(0, 0, 100, 100);
 	
@@ -176,7 +178,20 @@ Engine.prototype.create = function() {
 			self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
 		}
 	};
-	
+
+	// Create cursor object
+	this.pointer = { sprite : null, point : new Point(0, 0) };
+	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
+	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
+	this.highestGroup.add(this.pointer.sprite);
+
 	// Position camera over spawn point
 	for (var index = 0; index < this.players.length; index++) {
 		if (this.players[index].playerId == this.currentPlayer.playerId) {
@@ -217,7 +232,10 @@ Engine.prototype.update = function() {
 
 	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
-	
+
+	// Update pointer position
+	this.updatePointerPosition();
+
 	// Get state of players in game
 //	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
@@ -366,7 +384,6 @@ Engine.prototype.onMouseUp = function(pointer) {
 					this.selected = [itemAtPoint];
 				}
 			}
-			
 		}
 	}
 
@@ -382,6 +399,9 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	// Save position information
 	this.mouse.x = this.phaserGame.camera.x + x;
 	this.mouse.y = this.phaserGame.camera.y + y;
+
+	// Update pointer position
+	this.updatePointerPosition();
 
 	// Process updates for selection rectangle
 	if (pointer.isDown) {
@@ -427,6 +447,9 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			}
 		}
 	}
+	
+	// Process updates for mouse
+	this.processMouseFormUpdates();
 }
 
 Engine.prototype.onKeyPressed = function(char) {
@@ -456,10 +479,121 @@ Engine.prototype.onKeyPressed = function(char) {
 					cell.col, cell.row, 100, 100, true);
 		}
 	}
+	
+	// Process mouse form updates
+	this.processMouseFormUpdates();
+}
+
+Engine.prototype.onKeyDown = function() {
+	
+	// Process mouse form update
+	this.processMouseFormUpdates();
+}
+
+Engine.prototype.onKeyUp = function() {
+	
+	// Process mouse form update
+	this.processMouseFormUpdates();
 }
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.processMouseFormUpdates = function() {
+	
+	// Selected flags
+	var nothingSelected = false;
+	var unitSelected = false;
+	var defenceSelected = false;
+	var buildingSelected = false;
+	
+	// Check type of selection occuring
+	if (this.selected.length == 0) {
+		nothingSelected = true;
+	} else if (this.selected.length == 1) {
+		if (this.selected[0].gameCore.isUnit) {
+			unitSelected = true;
+		} else {
+			if (this.selected[0].gameCore.isDefence) {
+				defenceSelected = true;
+			} else {
+				buildingSelected = true;
+			}
+		}
+	} else if (this.selected.length > 1) {
+		unitSelected = true;
+	}
+	
+	// Gather information about item under mouse
+	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), false);
+	
+	// Get ctrl state
+	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
+	
+	// Process selection for nothing
+	if (nothingSelected) {
+		if (!itemAtPoint || itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
+			this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+		} else {
+			this.updatePointerForm(CONSTANTS.CURSOR_NORMAL_ENEMY);
+		}
+	}
+	
+	// Process selection for unit
+	if (unitSelected) {
+		
+	}
+
+	// Process selection for defence
+	if (defenceSelected) {
+		if (itemAtPoint) {
+			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
+				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+			} else {
+				this.updatePointerForm(CONSTANTS.CURSOR_ATTACK);
+			}
+		} else {
+			if (ctrlState) {
+				this.updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
+			} else {
+				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+			}
+		}
+	}
+	
+	// Process selection for building
+	if (buildingSelected) {
+		
+	}
+}
+
+Engine.prototype.updatePointerPosition = function(point) {
+	
+	// Check if point was passed (default to cursor)
+	if (!point) { point = new Point(this.mouse.x, this.mouse.y); }
+	
+	// Position sprite at mouse point
+	this.pointer.sprite.x = point.x;
+	this.pointer.sprite.y = point.y;
+}
+
+Engine.prototype.updatePointerForm = function(formId) {
+	
+	// Check for special case forms
+	
+	// Run standard conversion straight to passed form
+	this.pointer.sprite.animations.play(formId);
+
+//	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
+//	this.turretSegment.animations.add(, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
+//	this.turretSegment.animations.add(, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
+//	this.turretSegment.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
+//	this.turretSegment.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
+//	this.turretSegment.animations.add(CONSTANTS., CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
+//	this.turretSegment.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
+//	this.turretSegment.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
+//	this.turretSegment.animations.play(CONSTANTS.CURSOR_NORMAL);
+}
 
 Engine.prototype.positionCameraOverCell = function(cell) {
 	
@@ -483,24 +617,13 @@ Engine.prototype.positionCameraOverCell = function(cell) {
 
 Engine.prototype.manageMapMovement = function() {
 
-	// Records cursor movement for panning the camera
-	if (this.cursors.up.isDown)
-    {
-        this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
-    }
-    else if (this.cursors.down.isDown)
-    {
-    	this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
-    }
+	// Update camera with up and down keys
+	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
+    else if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
 
-    if (this.cursors.left.isDown)
-    {
-    	this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
-    }
-    else if (this.cursors.right.isDown)
-    {
-    	this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY;
-    }
+	// Update camera with left and right keys
+    if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
+    else if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
 }
 
 Engine.prototype.updatePlayerStatus = function() {
@@ -593,8 +716,6 @@ Engine.prototype.getItemAtPoint = function(point, playerOwned) {
 	// Search for unit at XY
 	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
 		checkBounds = this.units[unitIndex].getBounds();
-
-		console.log(this.units[unitIndex].left + " , " + this.units[unitIndex].top);
 		if (checkBounds.left < point.x && checkBounds.right > point.x
 				&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
 				(this.units[unitIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {
@@ -647,8 +768,6 @@ Engine.prototype.getSelectionArray = function() {
 			result.push(this.units[tankIndex]);
 		}
 	}
-
-	console.log(result);
 
 	// Return calculated result
 	return result;

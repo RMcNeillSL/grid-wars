@@ -248,6 +248,7 @@ public class Engine extends Thread {
 			gameplayResponse.addSource(newBuilding.getIdentifier());
 			gameplayResponse.addTarget(newBuilding.getInstanceId());
 			gameplayResponse.addMisc(player.getPlayerName());
+			this.buildings.add(newBuilding);
 		}
 		
 		// Return constructed response object
