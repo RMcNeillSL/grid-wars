@@ -1,7 +1,12 @@
 // Constructor
 
 function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
+	
+	// Mark engine as loading
+	this.engineLoading = true;
+	this.responseBuffer = [];
 
+	// Create redirecting functions
 	var self = this;
 	var local_preload = function() { self.preload(); }
 	var local_create = function() { self.create(); }
@@ -56,7 +61,6 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 
 	// Define game camera variables
 	this.cursors = null;
-	
 	
 	// Define game object arrays
 	this.units = [];
@@ -141,7 +145,9 @@ Engine.prototype.create = function() {
 	// Construct map renderer
 	this.mapRender = new MapRenderer(this.phaserGame, this.mapGroup,
 			this.mapOverlayGroup, this.gameplayConfig.width,
-			this.gameplayConfig.height, this.gameplayConfig.cells);
+			this.gameplayConfig.height, this.gameplayConfig.cells,
+			this.phaserGame.width / CONSTANTS.TILE_WIDTH,
+			this.phaserGame.height / CONSTANTS.TILE_EIGHT);
 
 	// Construct event listeners
 	this.phaserGame.input.onUp.add(this.onMouseUp, this);
@@ -170,9 +176,27 @@ Engine.prototype.create = function() {
 			self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
 		}
 	};
+	
+	// Position camera over spawn point
+	for (var index = 0; index < this.players.length; index++) {
+		if (this.players[index].playerId == this.currentPlayer.playerId) {
+			var spawnPoint = new Cell(this.gameplayConfig.spawnCoordinates[index].col,
+					this.gameplayConfig.spawnCoordinates[index].row);
+			this.positionCameraOverCell(spawnPoint);
+			break;
+		}
+	}
+
+	// Mark engine as loaded
+	this.engineLoading = false;
 }
 
 Engine.prototype.update = function() {
+	
+	// Process any responses in buffer
+	if (!this.engineLoading && this.responseBuffer && this.responseBuffer.length > 0) {
+		this.processGameplayResponse(this.responseBuffer.splice(0, 1)[0]);
+	}
 	
     // Manage scrolling of the map
     this.manageMapMovement();
@@ -191,92 +215,11 @@ Engine.prototype.update = function() {
 	for (var index = 0; index < this.buildings.length; index++) { this.buildings[index].update(); }
 	for (var index = 0; index < this.units.length; index++) { this.units[index].update(); }
 
-	// Search for collisions between firable objects
+	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
 	
 	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
-}
-
-Engine.prototype.updatePlayerStatus = function() {
-	var self = this;
-	var deadPlayers = self.players.slice();
-
-	var removeArray = [];
-	
-	for (var index = 0; index < deadPlayers.length; index++) {
-		if (!deadPlayers[index].hasPlacedObject) {
-			removeArray.push(index);
-		}
-	}
-	
-	for (var index = (removeArray.length-1); index >= 0; index--) {
-		deadPlayers.splice(removeArray[index], 1);
-	}
-	
-	self.units.filter(function(unit) {
-		for (var index = 0; index < deadPlayers.length; index++) {
-			if (unit.gameCore.playerId === deadPlayers[index].playerId) {
-				deadPlayers.splice(index, 1);
-				break;
-			}
-		}
-	});
-
-	self.buildings.filter(function(building) {
-		for (var index = 0; index < deadPlayers.length; index++) {
-			if (building.gameCore.playerId === deadPlayers[index].playerId) {
-				deadPlayers.splice(index, 1);
-				break;
-			}
-		}
-	});
-
-	if (deadPlayers.length > 0) {
-		for (var i1 = 0; i1 < deadPlayers.length; i1++) {
-			var playerAlreadyDead = false;
-
-			for (var i2 = 0; i2 < self.playerResults.length; i2++) {
-				if (self.playerResults[i2].player === deadPlayers[i1].playerId) {
-					playerAlreadyDead = true;
-					break;
-				}
-			}
-
-			if (!playerAlreadyDead) {
-				self.playerResults.push({
-					position : self.players.length - self.playerResults.length,
-					playerId : deadPlayers[i1].playerId,
-					feedback : deadPlayers[i1].playerId + " finished in place: "
-							+ (self.players.length - self.playerResults.length) + "."
-				});
-			}
-		}
-	}
-
-	if (deadPlayers && deadPlayers.length === (self.players.length-1)) {
-		for (var i1 = 0; i1 < self.players.length; i1++) {
-			var isDead = false;
-			for (var i2 = 0; i2 < self.playerResults.length; i2++) {
-				console.log(self.playerResults[i2].playerId);
-				if (self.playerResults[i2].playerId == self.players[i1].playerId) {
-					isDead = true;
-					break;
-				}
-			}
-			if (!isDead) {
-				self.playerResults.push({
-					position : 1,
-					playerId : self.players[i1].playerId,
-					feedback : self.players[i1].playerId + " finished in place: 1."
-				});
-				break;
-			}
-		}
-		self.gameFinishedCallback(self.playerResults);
-		this.phaserGame.finished = true;
-		this.phaserGame.disableStep();
-	}
+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -523,6 +466,26 @@ Engine.prototype.onKeyPressed = function(char) {
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.positionCameraOverCell = function(cell) {
+	
+	// Calculate map bounds
+	var mapBound = Math.ceil(this.mapRender.screenCellWidth / 2);
+	var mapBounds = {
+		left: mapBound,
+		right: this.mapRender.width,
+		top: mapBound,
+		bottom: this.mapRender.height,
+	}
+	
+	// Calculate centre cell
+	cell.col = Math.min(mapBounds.right, Math.max(cell.col, mapBounds.left));
+	cell.row = Math.min(mapBounds.bottom, Math.max(cell.row, mapBounds.top));
+	
+	// Move camera to centralise cell
+	this.phaserGame.camera.x = (cell.col - mapBounds.left) * CONSTANTS.TILE_WIDTH;
+	this.phaserGame.camera.y = (cell.row - mapBounds.top) * CONSTANTS.TILE_HEIGHT;
+}
 
 Engine.prototype.manageMapMovement = function() {
 
@@ -941,7 +904,57 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 
 // ------------------------------ SPECIALISED METHODS FOR DEALING WITH RESPONSES ------------------------------//
 
-Engine.prototype.processNewBuilding = function(responseData) {
+Engine.prototype.processSetupSpawnObjects = function(responseData) {
+	
+	// Function to determine type of object being placed
+	var getObjectType = function(identifier) {
+		for (var buildingIndex = 0; buildingIndex < CONSTANTS.GAME_BUILDINGS.length; buildingIndex ++) {
+			if (identifier == CONSTANTS.GAME_BUILDINGS[buildingIndex].identifier) {
+				return "BUILDING";
+			}
+		}
+		for (var unitIndex = 0; unitIndex < CONSTANTS.GAME_UNITS.length; unitIndex ++) {
+			if (identifier == CONSTANTS.GAME_UNITS[unitIndex].identifier) {
+				return "UNIT";
+			}
+		}
+		return "UNKNOWN";
+	}
+
+	// Define worker variables
+	var mockUnitResponseData = { responseCode: "DEBUG_PLACEMENT", coords: [], misc: [], source: [], target: [] };
+	var mockBuildingResponseData = { responseCode: "NEW_BUILDING", coords: [], misc: [], source: [], target: [] };
+	var arrayIdentifier = null;
+	
+	// Construct building and unit arrays
+	for (var index = 0; index < responseData.source.length; index ++) {
+		
+		// Add to correct array
+		arrayIdentifier = getObjectType(responseData.source[index]);
+		
+		// Populate unit array
+		if (arrayIdentifier == "UNIT") {
+			mockUnitResponseData.coords.push(responseData.coords[index]);
+			mockUnitResponseData.misc.push(responseData.misc[index]);
+			mockUnitResponseData.source.push(responseData.source[index]);
+			mockUnitResponseData.target.push(responseData.target[index]);
+		}
+		
+		// Populate building array
+		if (arrayIdentifier == "BUILDING") {
+			mockBuildingResponseData.coords.push(responseData.coords[index]);
+			mockBuildingResponseData.misc.push(responseData.misc[index]);
+			mockBuildingResponseData.source.push(responseData.source[index]);
+			mockBuildingResponseData.target.push(responseData.target[index]);			
+		}
+	}
+	
+	// Submit mock request arrays
+	this.processDebugPlacement(mockUnitResponseData, true);
+	this.processNewBuilding(mockBuildingResponseData, true);
+}
+
+Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 
 	// Iterate through all buildings
 	for (var index = 0; index < responseData.source.length; index++) {
@@ -1097,7 +1110,7 @@ Engine.prototype.processUnitDamage = function(responseData) {
 	}
 }
 
-Engine.prototype.processDebugPlacement = function(responseData) {
+Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
 
 	// Iterate through all buildings
 	for (var index = 0; index < responseData.source.length; index++) {
@@ -1145,25 +1158,36 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 
 Engine.prototype.processGameplayResponse = function(responseData) {
 
-	switch (responseData.responseCode) {
-	case "NEW_BUILDING":
-		this.processNewBuilding(responseData);
-		break;
-	case "DEFENCE_ATTACK_XY":
-		this.processDefenceAttackXY(responseData);
-		break;
-	case "WAYPOINT_PATH_COORDS":
-		this.processWaypoints(responseData);
-		break;
-	case "DAMAGE_OBJECT":
-		this.processUnitDamage(responseData);
-		break;
-	case "DEBUG_PLACEMENT":
-		this.processDebugPlacement(responseData);
-		break;
-	default:
-		// Do nothing
-		break;
+	// Store responses for later processing if engine is not yet ready
+	if (this.engineLoading) {
+		this.responseBuffer.push(responseData);
+	} else {
+
+		// Direct response to appropriate handler
+		switch (responseData.responseCode) {
+			case "NEW_BUILDING":
+				this.processNewBuilding(responseData);
+				break;
+			case "DEFENCE_ATTACK_XY":
+				this.processDefenceAttackXY(responseData);
+				break;
+			case "WAYPOINT_PATH_COORDS":
+				this.processWaypoints(responseData);
+				break;
+			case "DAMAGE_OBJECT":
+				this.processUnitDamage(responseData);
+				break;
+			case "DEBUG_PLACEMENT":
+				this.processDebugPlacement(responseData);
+				break;
+			case "SETUP_SPAWN_OBJECTS":
+				this.processSetupSpawnObjects(responseData);
+				break;
+			default:
+				// Do nothing
+				break;
+		}
+
 	}
 
 }

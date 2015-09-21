@@ -112,7 +112,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		this.setBuildingMode(inBuildingMode);
 
 	} else {
-		if (!phaserRef) { console.log("ERROR: Failed to construct turret, missing phaserRef."); }
+		if (!this.engineCore.phaserEngine) { console.log("ERROR: Failed to construct turret, missing phaserRef."); }
 	}
 	
 }

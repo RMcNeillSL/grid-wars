@@ -100,9 +100,9 @@ public class RequestProcessor {
 						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 				new Coordinate[] { new Coordinate(1, 1),
-								   new Coordinate(1, 4),
-						           new Coordinate(6, 1),
-				                   new Coordinate(6, 4) }));
+								   new Coordinate(1, 10),
+						           new Coordinate(14, 1),
+				                   new Coordinate(14, 10) }));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
@@ -168,6 +168,14 @@ public class RequestProcessor {
 			return gameLobby.processGameplayRequest(gameplayRequest, user.getId());
 		}
 		return new GameplayResponse[0];
+	}
+	
+	public GameplayResponse setupGameSpawns(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		if (gameLobby != null) {
+			return gameLobby.setupGameSpawns();
+		}
+		return new GameplayResponse();
 	}
 	
 	

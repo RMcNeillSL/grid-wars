@@ -1,4 +1,4 @@
-function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells) {
+function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells, screenCellWidth, screenCellHeight) {
 	
 	// Save passed phaser reference
 	this.phaserRef = phaserRef;
@@ -7,6 +7,10 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells)
 	this.cells = cells;
 	this.width = width;
 	this.height = height;
+	
+	// Save screen information
+	this.screenCellWidth  = screenCellWidth;
+	this.screenCellHeight = screenCellHeight;
 	
 	// Create tile-map mapping
 	this.tileMapping = {};
@@ -59,6 +63,11 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells)
 		if (colIndex >= this.width-1) { rowIndex ++; colIndex = 0; } else { colIndex ++; }
 	}
 	
+}
+
+MapRenderer.prototype.isCellInMap = function(cell) {
+	return (cell.col >= 0 && cell.col < this.width &&
+			cell.row >= 0 && cell.row < this.height);
 }
 
 MapRenderer.prototype.getTileFromColRow = function(col, row) {

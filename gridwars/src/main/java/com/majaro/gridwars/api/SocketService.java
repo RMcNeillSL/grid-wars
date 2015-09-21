@@ -44,6 +44,7 @@ public class SocketService {
 	private static final String SERVER_LOBBY_CHANNEL = "ServerLobby";
 
 	public SocketService (RequestProcessor reqProcessor) {
+		
 		// Save passed variables
 		requestProcessor = reqProcessor;
 
@@ -94,6 +95,8 @@ public class SocketService {
 			System.out.println("Starting game in lobby #" + lobbyId);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("gameStart");
+			GameplayResponse gameplayResponse = requestProcessor.setupGameSpawns(sessionId);
+			broadcastRoomState.sendEvent("gameplayResponse", gameplayResponse);
 		}
 	}
 

@@ -11,9 +11,10 @@ public class Player {
 	private String playerName = "";
 	private E_TechLevel techLevel = E_TechLevel.TECH_01;
 	private int cash = 0;
+	private Coordinate spawnCoordinate = null;
 	
 	// Constructor
-	public Player(LobbyUser lobbyUser) {
+	public Player(LobbyUser lobbyUser, Coordinate spawnCoordinate) {
 		
 		// Set default variables
 		this.techLevel = E_TechLevel.TECH_01;
@@ -22,6 +23,8 @@ public class Player {
 		this.playerId = lobbyUser.getLinkedUser().getId();
 		this.playerName = lobbyUser.getLinkedUser().getUsername();
 		
+		// Save spawn coordinates
+		this.spawnCoordinate = spawnCoordinate;
 	}
 	
 	// Common checking functions
@@ -36,5 +39,6 @@ public class Player {
 	// Getters
 	public int getPlayerId() { return this.playerId; }
 	public String getPlayerName() { return this.playerName; }
+	public Coordinate getSpawnCoordinate() { return this.spawnCoordinate; }
 	
 }
