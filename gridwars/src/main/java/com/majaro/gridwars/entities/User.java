@@ -55,7 +55,7 @@ public class User {
 	    return builder.toString();
 	}
 	
-	private String SHA512Hash(String input) {
+	private String SHA256Hash(String input) {
 		input += salt;
 		String hashedPassAttempt = null;
 		
