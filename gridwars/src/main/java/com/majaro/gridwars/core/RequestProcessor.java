@@ -58,12 +58,12 @@ public class RequestProcessor {
 
 		// Create game maps
 		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 8, 6,
-				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 
-						   0, 0, 0, 0, 0, 0, 0, 0, 
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0},
+				new int[] {7, 3, 3, 3, 3, 3, 3, 8, 
+						   6, 0, 0, 0, 0, 0, 0, 4, 
+						   6, 0, 1, 0, 0, 2, 0, 4,
+						   6, 0, 0, 0, 0, 0, 0, 4,
+						   6, 0, 0, 0, 0, 0, 1, 4,
+						   9, 5, 5, 5, 5, 5, 5, 10},
 				new Coordinate[] { new Coordinate(1, 1),
 						           new Coordinate(6, 4) }));
 		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 8, 6,

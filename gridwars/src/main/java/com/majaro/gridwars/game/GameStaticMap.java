@@ -17,8 +17,11 @@ public class GameStaticMap {
 	
 	// Cell values
 	// 
-	// 0  - dirt
-	// 1  - grass
+	// 0 - dirt
+	// 1 - centre rocks 1
+	// 2 - centre rocks 2
+	// 3 - edge rocks
+	// 4 - corner rocks
 	// 
 	
 	// Constructor	
@@ -35,7 +38,7 @@ public class GameStaticMap {
 	public boolean isCellObstructed(int cellX, int cellY) {
 		if (cellX + cellY * this.width < cells.length) {
 			int cellValue = this.cells[cellX + cellY * this.width];
-			if (cellValue == 0 || cellValue == 1) {
+			if (cellValue == 0) {
 				return false;
 			}
 		}

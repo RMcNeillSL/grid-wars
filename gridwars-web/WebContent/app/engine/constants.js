@@ -91,9 +91,18 @@ CONSTANTS = {
 	CAMERA_VELOCITY : 5,
 
 	// Map tile image references
-	MAP_TILE_PLACEMENT : "tile_build",
-	MAP_TILE_A : "map_tile_a",
-	MAP_TILE_B : "map_tile_b",
+	MAP_TILE_PLACEMENT 			: "tile_build",
+	MAP_TILE_A 					: "map_tile_a",
+	ROCK_TILE_A 				: "rock_tile_a",
+	ROCK_TILE_B	 				: "rock_tile_b",
+	EDGE_ROCKS_TOP				: "edgeRocksTop",
+	EDGE_ROCKS_RIGHT			: "edgeRocksRight",
+	EDGE_ROCKS_BOTTOM			: "edgeRocksBottom",
+	EDGE_ROCKS_LEFT				: "edgeRocksLeft",
+	CORNER_ROCKS_TOP_LEFT		: "cornerRocksTopLeft",
+	CORNER_ROCKS_TOP_RIGHT 		: "cornerRocksTopRight",
+	CORNER_ROCKS_BOTTOM_LEFT 	: "cornerRocksBottomLeft",
+	CORNER_ROCKS_BOTTOM_RIGHT	: "cornerRocksBottomRight",
 
 	// Colour variation arrays
 	COLOUR_ : {
