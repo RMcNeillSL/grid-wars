@@ -14,7 +14,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	var local_render = function() { self.render(); }
 
 	// Create phaser game object
-	this.phaserGame = new Phaser.Game(800, 600, Phaser.CANVAS,
+	this.phaserGame = new Phaser.Game(1600, 1000, Phaser.CANVAS,
 			'gridwars-engine', {
 				preload : local_preload,
 				create : local_create,
