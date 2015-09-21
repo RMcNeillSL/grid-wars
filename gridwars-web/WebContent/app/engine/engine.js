@@ -173,24 +173,9 @@ Engine.prototype.create = function() {
 }
 
 Engine.prototype.update = function() {
-	// Records cursor movement for panning the camera
-	if (this.cursors.up.isDown)
-    {
-        this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
-    }
-    else if (this.cursors.down.isDown)
-    {
-    	this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
-    }
-
-    if (this.cursors.left.isDown)
-    {
-    	this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
-    }
-    else if (this.cursors.right.isDown)
-    {
-    	this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY;
-    }
+	
+    // Manage scrolling of the map
+    this.manageMapMovement();
 	
 	// Render map
 	this.mapRender.renderMap();
@@ -230,6 +215,12 @@ Engine.prototype.render = function() {
 		var healthBounds = targetUnit.getHealthRenderBounds();
 		var healthPercent = (targetUnit.gameCore.health * 1.0) / (targetUnit.gameCore.maxHealth * 1.0);
 		
+		// Scale health bounds for screen rendering
+		healthBounds.left = healthBounds.left + self.phaserGame.camera.x;
+		healthBounds.right = healthBounds.right + self.phaserGame.camera.x;
+		healthBounds.top = healthBounds.top + self.phaserGame.camera.y;
+		healthBounds.bottom = healthBounds.bottom + self.phaserGame.camera.y;
+		
 		// Output health measure
 		var healthRect = new Phaser.Rectangle(healthBounds.left, healthBounds.top, healthBounds.width * healthPercent, healthBounds.height);
 		self.phaserGame.debug.geom(healthRect, healthColour);
@@ -255,10 +246,8 @@ Engine.prototype.render = function() {
 		self.phaserGame.debug.geom(self.selectedLines[3], healthOutline);
 	}
 	
-	// Render selection boxes around units to scene
+	// Render selection boxes around selected units to scene
 	if (this.selected && this.selected.length > 0) {
-		
-		// Process all selection items
 		for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
 			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,100,0,1)', 'rgba(0,0,0,1)', 'rgba(150,150,150,1)', 'rgba(200,255,200,1)');
 		}
@@ -453,6 +442,28 @@ Engine.prototype.onKeyPressed = function(char) {
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.manageMapMovement = function() {
+
+	// Records cursor movement for panning the camera
+	if (this.cursors.up.isDown)
+    {
+        this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
+    }
+    else if (this.cursors.down.isDown)
+    {
+    	this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
+    }
+
+    if (this.cursors.left.isDown)
+    {
+    	this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
+    }
+    else if (this.cursors.right.isDown)
+    {
+    	this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY;
+    }
+}
 
 Engine.prototype.updatePlayerStatus = function() {
 	var self = this;
