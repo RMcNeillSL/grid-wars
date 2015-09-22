@@ -17,22 +17,26 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 		var newMapTile = {baseSource : baseSource, detailSource : null, angle: 0};
 		if (detailSource) { newMapTile.detailSource = detailSource; }
 		if (angle) { newMapTile.angle = angle; }
-		return result;
+		return newMapTile;
 	}
 	
 	// Create tile-map mapping
 	this.tileMapping = {};
-	this.tileMapping[0] = mapTile(CONSTANTS.MAP_TILE_A);
-	this.tileMapping[1] = mapTile(CONSTANTS.ROCK_TILE_A);
-	this.tileMapping[2] = mapTile(CONSTANTS.ROCK_TILE_B);
-	this.tileMapping[3] = mapTile(CONSTANTS.EDGE_ROCKS_TOP);
-	this.tileMapping[4] = mapTile(CONSTANTS.EDGE_ROCKS_RIGHT);
-	this.tileMapping[5] = mapTile(CONSTANTS.EDGE_ROCKS_BOTTOM);
-	this.tileMapping[6] = mapTile(CONSTANTS.EDGE_ROCKS_LEFT);
-	this.tileMapping[7] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_LEFT);
-	this.tileMapping[8] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_RIGHT);
-	this.tileMapping[9] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT);
-	this.tileMapping[10] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT);
+	this.tileMapping[0] = mapTile(CONSTANTS.MAP_BASE_DIRT);
+	this.tileMapping[1] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 0);			// Rock right
+	this.tileMapping[2] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 90);		// Rock bottom
+	this.tileMapping[3] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 180);		// Rock left
+	this.tileMapping[4] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, -90);		// Rock top
+//	this.tileMapping[1] = mapTile(CONSTANTS.ROCK_TILE_A);
+//	this.tileMapping[2] = mapTile(CONSTANTS.ROCK_TILE_B);
+//	this.tileMapping[3] = mapTile(CONSTANTS.EDGE_ROCKS_TOP);
+//	this.tileMapping[4] = mapTile(CONSTANTS.EDGE_ROCKS_RIGHT);
+//	this.tileMapping[5] = mapTile(CONSTANTS.EDGE_ROCKS_BOTTOM);
+//	this.tileMapping[6] = mapTile(CONSTANTS.EDGE_ROCKS_LEFT);
+//	this.tileMapping[7] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_LEFT);
+//	this.tileMapping[8] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_RIGHT);
+//	this.tileMapping[9] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT);
+//	this.tileMapping[10] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT);
 	
 	// Create map images
 	this.mapTiles = [];
@@ -51,24 +55,24 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 		if (self.tileMapping[cellId]) {
 			
 			// Create base sprite
-			if (self.tileMapping[cellId].baseSource) {
-				baseSprite = self.phaserRef.add.sprite(
-						CONSTANTS.TILE_WIDTH * col, 
-						CONSTANTS.TILE_HEIGHT * row,
-						CONSTANTS.MAP_TILE_SPRITESHEET,
-						self.tileMapping[cellId].baseSource);
-				baseSprite.width = CONSTANTS.TILE_WIDTH;
-				baseSprite.height = CONSTANTS.TILE_HEIGHT;
-				mapGroup.add(baseSprite);
-			}
+			baseSprite = self.phaserRef.add.sprite(
+					CONSTANTS.TILE_WIDTH * col + (CONSTANTS.TILE_WIDTH / 2), 
+					CONSTANTS.TILE_HEIGHT * row + (CONSTANTS.TILE_HEIGHT / 2),
+					CONSTANTS.MAP_TILE_SPRITESHEET,
+					self.tileMapping[cellId].baseSource);
+			baseSprite.anchor.setTo(0.5, 0.5);
+			baseSprite.width = CONSTANTS.TILE_WIDTH;
+			baseSprite.height = CONSTANTS.TILE_HEIGHT;
+			mapGroup.add(baseSprite);
 			
 			// Create detail sprite
 			if (self.tileMapping[cellId].detailSource) {
 				detailSprite = self.phaserRef.add.sprite(
-						CONSTANTS.TILE_WIDTH * col, 
-						CONSTANTS.TILE_HEIGHT * row,
+						CONSTANTS.TILE_WIDTH * col + (CONSTANTS.TILE_WIDTH / 2), 
+						CONSTANTS.TILE_HEIGHT * row + (CONSTANTS.TILE_HEIGHT / 2),
 						CONSTANTS.MAP_TILE_SPRITESHEET,
 						self.tileMapping[cellId].detailSource);
+				detailSprite.anchor.setTo(0.5, 0.5);
 				detailSprite.width = CONSTANTS.TILE_WIDTH;
 				detailSprite.height = CONSTANTS.TILE_HEIGHT;
 				mapGroup.add(detailSprite);

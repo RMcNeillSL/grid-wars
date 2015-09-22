@@ -67,12 +67,12 @@ public class RequestProcessor {
 				new Coordinate[] { new Coordinate(1, 1),
 						           new Coordinate(6, 4) }));
 		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 8, 6,
-				new int[] {0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0},
+				new int[] {0, 4, 4, 4, 4, 4, 4, 0,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   0, 2, 2, 2, 2, 2, 2, 0},
 				new Coordinate[] { new Coordinate(1, 1),
 								   new Coordinate(6, 4) }));
 		this.gameMaps.add(new GameStaticMap("3", "Pacific Heights", 8, 6,
@@ -207,7 +207,7 @@ public class RequestProcessor {
 				// Create new game lobby
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
-					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(3), lobbyName);
+					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(1), lobbyName);
 					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
 					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);
