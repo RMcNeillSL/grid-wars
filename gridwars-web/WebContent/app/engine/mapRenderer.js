@@ -22,22 +22,39 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	
 	// Create tile-map mapping
 	this.tileMapping = {};
-	this.tileMapping[0] = mapTile(CONSTANTS.MAP_BASE_DIRT);
-	this.tileMapping[1] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 0);			// Rock right
-	this.tileMapping[2] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 90);		// Rock bottom
-	this.tileMapping[3] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 180);		// Rock left
-	this.tileMapping[4] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, -90);		// Rock top
-//	this.tileMapping[1] = mapTile(CONSTANTS.ROCK_TILE_A);
-//	this.tileMapping[2] = mapTile(CONSTANTS.ROCK_TILE_B);
-//	this.tileMapping[3] = mapTile(CONSTANTS.EDGE_ROCKS_TOP);
-//	this.tileMapping[4] = mapTile(CONSTANTS.EDGE_ROCKS_RIGHT);
-//	this.tileMapping[5] = mapTile(CONSTANTS.EDGE_ROCKS_BOTTOM);
-//	this.tileMapping[6] = mapTile(CONSTANTS.EDGE_ROCKS_LEFT);
-//	this.tileMapping[7] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_LEFT);
-//	this.tileMapping[8] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_RIGHT);
-//	this.tileMapping[9] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT);
-//	this.tileMapping[10] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT);
-	
+
+	// BASE TILES
+	this.tileMapping[0] = mapTile(CONSTANTS.MAP_BASE_DIRT);												// Base dirt tile
+	this.tileMapping[2] = mapTile(CONSTANTS.MAP_BASE_WATER);											// Base water tile
+
+	// ROCK DETAILS
+	this.tileMapping[8] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 0);			// Rock right
+	this.tileMapping[9] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 90);		// Rock bottom
+	this.tileMapping[10] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 180);		// Rock left
+	this.tileMapping[11] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, -90);		// Rock top
+	this.tileMapping[12] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_A, 0);			// Centre Rock A
+	this.tileMapping[13] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_B, 0);			// Centre Rock B
+
+	// WATER DETAILS
+	this.tileMapping[16] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_BOTTOM, 0);		// Water bottom
+	this.tileMapping[17] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_LEFT, 0);		// Water left
+	this.tileMapping[18] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_TOP, 0);			// Water top
+	this.tileMapping[19] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_RIGHT, 0);		// Water right
+	this.tileMapping[20] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_TL, 0);			// Water top left
+	this.tileMapping[21] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_BL, 0);			// Water bottom left
+	this.tileMapping[22] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_TR, 0);			// Water top right
+	this.tileMapping[23] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_BR, 0);			// Water bottom right
+
+	// SHORE DETAILS
+	this.tileMapping[16] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_BOTTOM, 0);		// Shore bottom
+	this.tileMapping[17] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_LEFT, 0);		// Shore left
+	this.tileMapping[18] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_TOP, 0);			// Shore top
+	this.tileMapping[19] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_RIGHT, 0);		// Shore right
+	this.tileMapping[20] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_BR, 0);			// Shore bottom right
+	this.tileMapping[21] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_TR, 0);			// Shore top right
+	this.tileMapping[22] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_BL, 0);			// Shore bottom left
+	this.tileMapping[23] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_TL, 0);			// Shore top left
+
 	// Create map images
 	this.mapTiles = [];
 	// sprite - tile image sprite
