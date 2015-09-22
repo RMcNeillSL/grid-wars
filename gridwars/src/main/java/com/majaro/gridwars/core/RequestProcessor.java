@@ -75,35 +75,13 @@ public class RequestProcessor {
 						   0, 2, 2, 2, 2, 2, 2, 0},
 				new Coordinate[] { new Coordinate(1, 1),
 								   new Coordinate(6, 4) }));
-		this.gameMaps.add(new GameStaticMap("3", "Pacific Heights", 8, 6,
-				new int[] {0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0},
+		this.gameMaps.add(new GameStaticMap("3", "Test Map", 8, 8,
+				new int[] {0,1,2,0,0,0,0,0,8,9,10,11,12,13,14,15,16,17,18,19,20,0,0,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,0,0,0,0,0,0,0},
 				new Coordinate[] { new Coordinate(1, 1),
 								   new Coordinate(1, 4),
 								   new Coordinate(6, 1),
 						           new Coordinate(6, 4) }));
-		this.gameMaps.add(new GameStaticMap("4", "WATER + DIRT", 16, 12,
-				new int[] {2,  	2,  	2,  	15,  	2,  	2,  	2,  	2,  	2,  	2,  	14,  	2,  	2,  	2,  	15,  	2,
-						   2,  	31,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	29,  	2,
-						   2,  	25,  	0,	  	0,  	12,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	27,  	2,
-						   14,  25,  	0,  	0,  	0,  	0,  	23,  	16,  	16,  	21,  	0,  	13,  	0,  	0,  	27,  	2,
-						   2,  	25,  	0,  	0,  	0,  	0,  	19,  	2,  	2,  	17,  	0,  	0,  	0,  	0,  	27,  	2,
-						   2,  	25,  	0,	  	0,  	0,  	0,  	19,  	14,  	2,  	17,  	0,  	0,  	0,  	13,  	27,  	2,
-						   2,  	25,  	0,	  	13,  	0,  	0,  	19,  	2,  	2,  	17,  	0,  	0,  	0,  	0,  	27,  	15,
-						   15,  25,  	0,	  	0,  	0,  	0,  	19,  	2,  	15,  	17,  	0,  	0,  	0,  	0,  	27,  	2,
-						   2,  	25,  	0,	  	0,  	0,  	0,  	22,  	18,  	18,  	20,  	0,  	0,  	0,  	0,  	27,  	2,
-						   2,  	25,  	0,	  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	27,  	2,
-						   2,  	30,  	24,	  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	28,  	2,
-						   2,  	2,  	2,  	2,  	14,  	2,  	2,  	2,  	2,  	2,  	15,  	15,  	2,  	2,  	2,  	2},
-				new Coordinate[] { new Coordinate(3, 3),
-								   new Coordinate(3, 8),
-						           new Coordinate(12, 3),
-				                   new Coordinate(12, 8) }));
-		this.gameMaps.add(new GameStaticMap("4", "GRASS + ROCKS", 16, 12,
+		this.gameMaps.add(new GameStaticMap("4", "MaJaRo", 32, 32,
 				new int[] {2,  	2,  	2,  	15,  	2,  	2,  	2,  	2,  	2,  	2,  	14,  	2,  	2,  	2,  	15,  	2,
 						   2,  	31,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	29,  	2,
 						   2,  	25,  	0,	  	0,  	12,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	27,  	2,
@@ -224,7 +202,7 @@ public class RequestProcessor {
 				// Create new game lobby
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
-					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(3), lobbyName);
+					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(2), lobbyName);
 					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
 					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);

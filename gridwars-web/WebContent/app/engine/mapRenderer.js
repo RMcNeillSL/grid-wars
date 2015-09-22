@@ -24,14 +24,14 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.tileMapping = {};
 
 	// BASE TILES
-	this.tileMapping[0] = mapTile(CONSTANTS.MAP_BASE_DIRT);												// Base dirt tile
-	this.tileMapping[1] = mapTile(CONSTANTS.MAP_BASE_GRASS);											// Base grass tile
-	this.tileMapping[2] = mapTile(CONSTANTS.MAP_BASE_WATER);											// Base water tile
+	this.tileMapping[0]  = mapTile(CONSTANTS.MAP_BASE_DIRT);											// Base dirt tile
+	this.tileMapping[1]  = mapTile(CONSTANTS.MAP_BASE_GRASS);											// Base grass tile
+	this.tileMapping[2]  = mapTile(CONSTANTS.MAP_BASE_WATER);											// Base water tile
 
 	// ROCK DETAILS
 	// ROCK EDGES
-	this.tileMapping[8] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 0);			// Rock right
-	this.tileMapping[9] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 90);		// Rock bottom
+	this.tileMapping[8]  = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 0);		// Rock right
+	this.tileMapping[9]  = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 90);		// Rock bottom
 	this.tileMapping[10] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, 180);		// Rock left
 	this.tileMapping[11] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_EDGE, -90);		// Rock top
 
@@ -46,7 +46,7 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.tileMapping[17] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_B, 0);			// Rock B - dense  - dirt
 	this.tileMapping[18] = mapTile(CONSTANTS.MAP_BASE_WATER, CONSTANTS.MAP_DETAIL_ROCKS_C, 0);			// Rock C - sparse - water
 	this.tileMapping[19] = mapTile(CONSTANTS.MAP_BASE_WATER, CONSTANTS.MAP_DETAIL_ROCKS_D, 0);			// Rock D - sparse - water
-	this.tileMapping[21] = mapTile(CONSTANTS.MAP_BASE_WATER, CONSTANTS.MAP_DETAIL_ROCKS_E, 0);			// Rock E - sparse - water
+	this.tileMapping[20] = mapTile(CONSTANTS.MAP_BASE_WATER, CONSTANTS.MAP_DETAIL_ROCKS_E, 0);			// Rock E - sparse - water
 
 	// WATER DETAILS
 	// WATER EDGES
@@ -87,13 +87,25 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.tileMapping[45] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_BL, 0);			// Grass bottom left
 	this.tileMapping[46] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_TL, 0);			// Grass top left
 
+	// ROAD ON DIRT
+	this.tileMapping[47] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_VERT, 0);			//
+	this.tileMapping[48] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_HORI, 0);			//
+	this.tileMapping[49] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_VERT_JUNCT, 0);	//
+	this.tileMapping[50] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_VERT_JUNCT, 180);	//
+	this.tileMapping[51] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_HORI_JUNCT, 0);	//
+	this.tileMapping[52] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_HORI_JUNCT, 180);	//
+	this.tileMapping[53] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_VERT_END, 0);		//
+	this.tileMapping[54] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_VERT_END, 180);	//
+	this.tileMapping[55] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_HORI_END, 0);		//
+	this.tileMapping[56] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_HORI_END, 180);	//
+
 	// Create map images
 	this.mapTiles = [];
 	// sprite - tile image sprite
 	// 
 	// building - any building taking up square
 	//
-	
+
 	// Save local reference to this
 	var self = this;
 	var createMapTile = function(cellId, col, row) {
@@ -102,7 +114,7 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 		var baseSprite = null;
 		var detailSprite = null;
 		if (self.tileMapping[cellId]) {
-			
+
 			// Create base sprite
 			baseSprite = self.phaserRef.add.sprite(
 					CONSTANTS.TILE_WIDTH * col + (CONSTANTS.TILE_WIDTH / 2), 
@@ -113,7 +125,7 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 			baseSprite.width = CONSTANTS.TILE_WIDTH;
 			baseSprite.height = CONSTANTS.TILE_HEIGHT;
 			mapGroup.add(baseSprite);
-			
+
 			// Create detail sprite
 			if (self.tileMapping[cellId].detailSource) {
 				detailSprite = self.phaserRef.add.sprite(
