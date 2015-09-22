@@ -189,12 +189,12 @@ public final class Const {
 	
 	// Buildings in game
 	public static final GameBuilding[] BUILDINGS = {
-			new GameDefence("TURRET", 1000, 500, E_TechLevel.TECH_01, 2, 600, 25)
+			new GameDefence("TURRET", 1000, 500, E_TechLevel.TECH_01, 2, 400, 25)
 		};
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
-			new GameUnit("TANK", 200, 400, E_TechLevel.TECH_01, 500, 2)
+			new GameUnit("TANK", 200, 400, E_TechLevel.TECH_01, 300, 2)
 		};
 	
 	
