@@ -21,7 +21,10 @@ import com.majaro.gridwars.game.GameStaticMap;
 
 public class RequestProcessor {
 	
-	// TODO: Look for threadsafe lists
+	private static RequestProcessor instance = null;
+	
+	// Thread safe variables
+	private static Object mutex = new Object();
 
 	// Game array objects
 	private ArrayList<GameLobby> activeGameLobbys;
@@ -29,8 +32,6 @@ public class RequestProcessor {
 
 	// Session management arrays
 	private ArrayList<Session> activeSessions;
-	private Thread sessionCleanUpThread;
-	private Runnable sessionCleanUp;
 
 	// DB interaction objects
 	private static final String PERSISTENCE_UNIT = "gridwars";
@@ -49,7 +50,17 @@ public class RequestProcessor {
 	
 	// Constructors
 	
-	public RequestProcessor() {
+	public static RequestProcessor getInstance() {
+		if(instance == null) {
+			synchronized(mutex) {
+				if(instance == null) instance = new RequestProcessor();
+			}
+		}
+		
+		return instance;
+	}
+	
+	private RequestProcessor() {
 
 		// Set default array values
 		this.activeGameLobbys = new ArrayList<GameLobby>();
@@ -313,12 +324,11 @@ public class RequestProcessor {
 		this.activeSessions.add(session);
 	}
 
-	public boolean isSessionAuthenticated(String sessionId) {
+	public synchronized boolean isSessionAuthenticated(String sessionId) {
 		boolean authenticated = false;
 
-		for (Session s : activeSessions) {
-			if (s.getSessionId() == sessionId) {
-				s.extendSessionExpiry();
+		for(int index = 0; index < activeSessions.size(); index++) {
+			if(activeSessions.get(index).getSessionId().equals(sessionId)) {
 				authenticated = true;
 				break;
 			}
@@ -327,15 +337,16 @@ public class RequestProcessor {
 		return authenticated;
 	}
 
-	public int authenticate(String sessionId, AuthRequest authRequest) {
+	public synchronized int authenticate(String sessionId, AuthRequest authRequest) {
 		int response = 401;
+		
 		User user = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
 
 		if (user != null) {
 			boolean userLoggedIn = false;
 
-			for (Session s : activeSessions) {
-				if (s.getUser().getUsername().equals(user.getUsername())) {
+			for(int index = 0; index < activeSessions.size(); index++) {
+				if(activeSessions.get(index).getUser().getUsername().equals(user.getUsername())) {
 					userLoggedIn = true;
 					break;
 				}

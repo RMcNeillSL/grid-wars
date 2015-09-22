@@ -197,7 +197,7 @@ public class Engine extends Thread {
 		// Construct user objects
 		this.players = new Player[connectedUsers.size()];
 		for (int index = 0; index < connectedUsers.size(); index ++) {
-			this.players[index] = new Player(connectedUsers.get(index), gameMap.getSpawnCoordinates()[index]);
+			this.players[index] = new Player(connectedUsers.get(index), gameConfig.getStartingCash(), gameMap.getSpawnCoordinates()[index]);
 		}
 		
 		// Initialise in-game object lists
@@ -303,12 +303,13 @@ public class Engine extends Thread {
 			if (validConstruction && !player.playerHasCash(sourceBuildings[0])) {
 				validConstruction = false;
 				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.INSUFFICIENT_FUNDS);
+				newBuildingResponse.addTarget(player.getPlayerName());
+				newBuildingResponse.addSource(Integer.toString(player.getPlayerCash()));
 			}
 			
 			// Search for units which may need waypoint paths updating with new building placement
 			newWaypointInterruptedUnits = this.getInterruptedWaypointUnits(coord);
 			waypointInterruptedUnits.addAll(newWaypointInterruptedUnits);
-			
 		}
 
 		// Construct valid response
@@ -387,6 +388,60 @@ public class Engine extends Thread {
 		return response;
 	}
 	
+	private GameplayResponse processObjectAttackObjectRequest(Player player, String[] sourceIds, String[] targetIds) {
+
+		// Set default result
+		GameplayResponse response = null;
+		boolean validConstruction = true;
+		
+////		// Check each object in turn
+////		for (DynGameDefence sourceDefence : sourceDefences) {
+////			
+////		}
+
+//		// Construct valid response
+//		if (validConstruction) {
+//			response = new GameplayResponse(E_GameplayResponseCode.DEFENCE_ATTACK_XY);
+//			for (DynGameDefence sourceDefence : sourceDefences) {
+//				response.addCoord(col, row);
+//				response.addSource(sourceDefence.getInstanceId());
+//			}
+//		}
+		
+		// Declare working variables
+		DynGameUnit sourceUnit = null;
+		DynGameBuilding sourceBuilding = null;
+		DynGameUnit targetUnit = null;
+		DynGameBuilding targetBuilding = null;
+		
+		// Construct gameplay response
+		response = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT);
+		
+		// Run through all attack requests
+		for (int index = 0; index < sourceIds.length; index ++) {
+			
+			// Create reference to source objects
+			sourceUnit = this.getGameUnitFromInstanceId(sourceIds[index]);
+			sourceBuilding = this.getGameBuildingFromInstanceId(sourceIds[index]);
+			
+			// Create reference to target objects
+			targetUnit = this.getGameUnitFromInstanceId(targetIds[index]);
+			targetBuilding = this.getGameBuildingFromInstanceId(targetIds[index]);
+			
+			// Add attack request to response
+			if ( (sourceUnit != null || sourceBuilding != null) &&
+				 (targetUnit != null || targetBuilding != null) ) {
+				if (sourceUnit != null) 	{ response.addSource(sourceUnit.getInstanceId()); }
+				if (sourceBuilding != null) { response.addSource(sourceBuilding.getInstanceId()); }
+				if (targetUnit != null) 	{ response.addTarget(targetUnit.getInstanceId()); }
+				if (targetBuilding != null) { response.addTarget(targetBuilding.getInstanceId()); }
+			}
+		}
+
+		// Return calculated result
+		return response;
+	}
+	
 	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate coordinate) {
 
 		// Set default result
@@ -448,7 +503,7 @@ public class Engine extends Thread {
 		}
 	}
 	
-	private GameplayResponse processDamageRequest(Player player, String[] instanceIds, int damageAmount) {
+	private GameplayResponse processDamageRequest(Player player, String[] instanceIds, int damageAmount, ArrayList<String> miscStrings) {
 
 		// Set default result
 		GameplayResponse response = null;
@@ -456,7 +511,10 @@ public class Engine extends Thread {
 		
 		// Check if id's refer to units
 		DynGameUnit[] sourceUnits = this.getGameUnitsFromInstanceIds(instanceIds, false);
-		DynGameBuilding[] sourceBuildings = this.getGameBuildingsFromInstanceIds(instanceIds, false);
+		DynGameBuilding[] sourceBuildings = this.getGameBuildingsFromInstanceIds(instanceIds, false);		
+
+		// Calculate killer
+		Player killer = this.getPlayerFromPlayerId(miscStrings.get(0));
 
 		// Check each object in turn
 		if (sourceUnits.length > 0) {
@@ -467,7 +525,6 @@ public class Engine extends Thread {
 				
 				// Only run this loop once for now
 				break;
-				
 			}
 		}
 		
@@ -483,7 +540,7 @@ public class Engine extends Thread {
 				
 			}
 		}
-
+		
 		// Construct valid response
 		if (validConstruction) {
 			response = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
@@ -491,19 +548,32 @@ public class Engine extends Thread {
 				for (DynGameUnit targetUnit : sourceUnits) {
 					response.addSource(targetUnit.getInstanceId());
 					response.addTarget(Integer.toString(targetUnit.getHealth()));
+					response.addMisc(killer.getPlayerName());
 				}
 			}
 			if (sourceBuildings.length > 0) {
 				for (DynGameBuilding sourceBuilding : sourceBuildings) {
 					response.addSource(sourceBuilding.getInstanceId());
 					response.addTarget(Integer.toString(sourceBuilding.getHealth()));
+					response.addMisc(killer.getPlayerName());
 				}
 			}
 		}
 		
 		// Clean up all units and buildings which have now been destroyed
-		for (DynGameUnit targetUnit : sourceUnits) { if (targetUnit.getHealth() == 0) { this.destroyGameObject(targetUnit); } }
-		for (DynGameBuilding targetBuilding : sourceBuildings) { if (targetBuilding.getHealth() == 0) { this.destroyGameObject(targetBuilding); } }
+		for (DynGameUnit targetUnit : sourceUnits) {
+			if (targetUnit.getHealth() == 0) {
+				this.destroyGameObject(targetUnit);
+				killer.addPlayerCash((int)Math.floor(targetUnit.getCost() * 1.2));
+			}
+		}
+		
+		for (DynGameBuilding targetBuilding : sourceBuildings) {
+			if (targetBuilding.getHealth() == 0) {
+				this.destroyGameObject(targetBuilding);
+				killer.addPlayerCash((int)Math.floor(targetBuilding.getCost() * 1.2));
+			}
+		}
 
 		// Return calculated result
 		return response;
@@ -517,7 +587,16 @@ public class Engine extends Thread {
 		
 		// Construct result object
 		DynGameUnit newUnit = new DynGameUnit(this.generateInstanceId(player), (GameUnit)sourceUnits[0], player, col, row);
+		
 		if (newUnit != null) {
+			// Check user has appropriate funds
+			if (validConstruction && !player.playerHasCash(newUnit)) {
+				validConstruction = false;
+				response = new GameplayResponse(E_GameplayResponseCode.INSUFFICIENT_FUNDS);
+				response.addTarget(player.getPlayerName());
+				response.addSource(Integer.toString(player.getPlayerCash()));
+			}
+			
 			if (validConstruction) {
 				response = new GameplayResponse(E_GameplayResponseCode.DEBUG_PLACEMENT);
 				response.addCoord(col, row);
@@ -563,6 +642,11 @@ public class Engine extends Thread {
 		        			gameplayRequest.getTargetCellX(), 
 		        			gameplayRequest.getTargetCellY());
 		        	break;
+		        case OBJECT_ATTACK_OBJECT:
+		        	gameplayResponse = this.processObjectAttackObjectRequest(sender,
+		        			gameplayRequest.getSourceString(),
+		        			gameplayRequest.getTargetString());
+		        	break;
 		        case WAYPOINT_PATH_COORDS:
 		        	gameplayResponse = this.processWaypointPathCoordsRequest(sender, 
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false), 
@@ -579,7 +663,8 @@ public class Engine extends Thread {
 		        case DAMAGE_OBJECT:
 		        	gameplayResponse = this.processDamageRequest(sender,
 		        			gameplayRequest.getSourceString(), 
-		        			Integer.parseInt(gameplayRequest.getTargetString()[0]));
+		        			Integer.parseInt(gameplayRequest.getTargetString()[0]),
+		        			gameplayRequest.getMisc());
 		        	break;
 		        case DEBUG_PLACEMENT:
 		        	gameplayResponse = this.processDebugPlacementRequest(sender, 
@@ -757,10 +842,19 @@ public class Engine extends Thread {
 		// Return generated Id
 		return instanceId;
 	}
-	
+
 	private Player getPlayerFromUserId(int userId) {
 		for (Player player : this.players) {
 			if (player.getPlayerId() == userId) {
+				return player;
+			}
+		}
+		return null;
+	}
+	
+	private Player getPlayerFromPlayerId(String playerId) {
+		for (Player player : this.players) {
+			if (player.getPlayerName().equals(playerId)) {
 				return player;
 			}
 		}

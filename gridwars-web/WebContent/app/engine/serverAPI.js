@@ -6,6 +6,7 @@ function GameplayRequest(requestCode, params) {
 	this.targetCellY = 0;
 	this.source = [];
 	this.target = [];
+	this.misc = [];
 	
 	// Populate from params
 	if (params) {
@@ -13,6 +14,7 @@ function GameplayRequest(requestCode, params) {
 		if (params.targetCellY) { this.targetCellY = params.targetCellY; }
 		if (params.source) { this.source = params.source; }
 		if (params.target) { this.target = params.target; }
+		if (params.misc) { this.misc = params.misc; }
 	}
 	
 	// Debug output for console
@@ -97,7 +99,29 @@ ServerAPI.prototype.requestDefenceAttackXY = function(defences, targetX, targetY
 	} else {
 		console.log("ERROR: Attempted to target XY with missing XY.");
 	}
+}
+
+ServerAPI.prototype.requestObjectAttackObject = function(sourceObjectId, targetObjectId) {
+
+	// Make sure target and source objects are present
+	if (sourceObjectId && targetObjectId) {
+
+		// Create request params
+		var params = {
+				source: [sourceObjectId],
+				target: [targetObjectId]
+		};
+		
+		// Generate request object
+		var request = new GameplayRequest("OBJECT_ATTACK_OBJECT", params);
+
+		// Submit request
+		this.gameService.gameplayRequest(request);
 	
+	} else {
+		if (!sourceObjectId) { console.log("ERROR: Attempted to attack target with no source identified."); }
+		if (!targetObjectId) { console.log("ERROR: Attempted to attack target with no target identified."); }
+	}
 }
 
 ServerAPI.prototype.requestUnitMoveCell = function(units, cell) {
@@ -147,7 +171,7 @@ ServerAPI.prototype.requestUpdateUnitCell = function(unit, newCell) {
 	
 }
 
-ServerAPI.prototype.requestDamageSubmission = function(units, damageAmount) {
+ServerAPI.prototype.requestDamageSubmission = function(units, damageAmount, killerId) {
 
 	// Make sure required information is present
 	if (units && damageAmount) {
@@ -155,7 +179,8 @@ ServerAPI.prototype.requestDamageSubmission = function(units, damageAmount) {
 		// Create request params
 		var params = {
 				source: [],
-				target: [damageAmount]
+				target: [damageAmount],
+				misc: [killerId]
 		};
 		
 		// Populate damage unit list

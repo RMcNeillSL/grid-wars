@@ -98,7 +98,7 @@ Tank.prototype.processTurretFire = function() {
 Tank.prototype.processTurretRotation = function() {
 	
 	// Check if rotation is needed
-	if (!this.angleInErrorMargin(this.phaserAngleTo360(this.turretSegment.angle), this.shootTarget.angle, this.shootTarget.increment)) {
+	if (!this.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), this.shootTarget.angle, this.shootTarget.increment)) {
 
 		// Perform total rotation
 		this.rotate(this.shootTarget.increment, false, true);
@@ -125,12 +125,6 @@ Tank.prototype.shootAtXY = function(point) {
 	
 }
 
-Tank.prototype.phaserAngleTo360 = function(phaserAngle) {
-	var outputAngle = phaserAngle;
-	if (outputAngle < 0) { outputAngle += 360; }
-	return outputAngle;
-}
-
 Tank.prototype.calculateRotateToPointData = function(currentAngle, currentPoint, targetPoint, rotateSpeed) {
 
 	// Check X&Y deltas
@@ -146,8 +140,8 @@ Tank.prototype.calculateRotateToPointData = function(currentAngle, currentPoint,
 	if (deltaX <= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
 
 	// Adjust angles to 0-360 values
-	var target360Angle = this.phaserAngleTo360(targetAngle);
-	var current360Angle = this.phaserAngleTo360(currentAngle);
+	var target360Angle = this.gameCore.phaserAngleTo360(targetAngle);
+	var current360Angle = this.gameCore.phaserAngleTo360(currentAngle);
 	
 	// Determine move increment direction based on angle size
 	var angleIncrement = 0;

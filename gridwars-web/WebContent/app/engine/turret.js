@@ -22,6 +22,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		// Set default misc values
 		this.rotateSpeed = 3;
 		this.damageExplosions = [];
+		this.shootTarget = { instanceId: "", point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
@@ -71,13 +72,28 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		// Charge onComplete function
 		this.charge.onComplete.add(function(sprite, animation) {
 			
+			// Define shoot targetXY
+			var targetXY = new Point(0, 0);
+			
+			// Check if using old firing system
+			if (self.shootTarget.isFiring) {
+				var target = self.engineCore.func_GetObjectFromInstanceId(self.shootTarget.instanceId);
+				if (target) {
+					targetXY.x = target.left;
+					targetXY.y = target.top;
+				}
+			} else {
+				targetXY.x = self.target.x;
+				targetXY.y = self.target.y;
+			}
+
 			// Setup default bullet particle information
 			self.bullets.firing = true;
 			self.bullets.elapsed = 0;
 			
 			// Save target location for bullets
-			self.bullets.targetX = self.target.x;
-			self.bullets.targetY = self.target.y;
+			self.bullets.targetX = targetXY.x;
+			self.bullets.targetY = targetXY.y;
 			
 			// Calculate angles for firing
 			self.bulletParticle01.fireAngleX = Math.sin((360-self.topSegment.angle+14) * (Math.PI/180));
@@ -180,6 +196,11 @@ Turret.prototype.update = function() {
 	if (this.bullets.firing) {
 		this.manageFiringBullets();
 	}
+	
+	// Update turret angle when not in firing mode
+	if (!this.shootTarget.isFiring) {
+		this.lockonAndShoot();
+	}
 }
 
 Turret.prototype.rotateAndShoot = function(targetX, targetY) {
@@ -244,11 +265,61 @@ Turret.prototype.rotateAndShoot = function(targetX, targetY) {
 	
 }
 
+Turret.prototype.lockonAndShoot = function(targetObject) {
+	
+	// Check if a target needs assigning
+	if (targetObject) {
+		
+		// Save target information
+		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
+		this.shootTarget.isFiring = false;
+		this.shootTarget.readyToFire = false;
+		
+//		point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
+
+	}
+	
+	// Run calculations if a target object is assigned
+	if (this.shootTarget.instanceId) {
+		
+		// Save reference to target
+		var target = this.engineCore.func_GetObjectFromInstanceId(this.shootTarget.instanceId);
+		
+		// Make sure a target was found
+		if (target) {
+			
+			// Calculate rotation and point data
+			var sourcePoint = new Point(this.left, this.top);
+			var targetPoint = new Point(target.left, target.top);
+			var rotationData = this.gameCore.calculateRotateToPointData(this.topSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
+			
+			// Save data to shoot target object
+			this.shootTarget.increment = rotationData.angleIncrement;
+			
+			// Identify further rotation or begin charging animation (if target is in range)
+			if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.topSegment.angle), rotationData.target360Angle, rotationData.angleIncrement) &&
+					!this.shootTarget.isFiring) {
+				this.rotate(this.shootTarget.increment);
+				this.shootTarget.readyToFire = true;
+			} else {
+//				if (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range) {
+					this.shootTarget.isFiring = true;
+					this.charge.play();
+//				}
+			}
+			
+		} else {
+			this.shootTarget.instanceId = null;
+		}
+	}
+}
+
 Turret.prototype.manageFiringBullets = function() {
 
 	// Proceed to manage movement of firing particles
 	if (this.bullets.firing) {
 
+		// Calculate new elapsed distance
 		var elapsedDistance = this.bullets.elapsed * this.bullets.speed;
 		
 		// Position fire sprites at end of turret
@@ -268,7 +339,8 @@ Turret.prototype.manageFiringBullets = function() {
 		if (centerBulletX - this.bullets.speed - errorMargin < this.bullets.targetX &&
 				centerBulletX + this.bullets.speed + errorMargin > this.bullets.targetX && 
 				centerBulletY - this.bullets.speed - errorMargin < this.bullets.targetY &&
-				centerBulletY + this.bullets.speed + errorMargin > this.bullets.targetY) {
+				centerBulletY + this.bullets.speed + errorMargin > this.bullets.targetY ||
+				elapsedDistance > this.gameCore.range * 1.5) {
 			this.bullets.incUnitX = 0;
 			this.bullets.incUnitY = 0;
 			clearInterval(this.bullets.interval);
@@ -278,6 +350,7 @@ Turret.prototype.manageFiringBullets = function() {
 			this.bulletParticle02.on = false;
 			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.playerId, this.gameCore.instanceId + "_A", this.bulletParticle01.x, this.bulletParticle01.y);
 			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.playerId, this.gameCore.instanceId + "_B", this.bulletParticle02.x, this.bulletParticle02.y);
+			this.shootTarget.isFiring = false;
 		}
 		
 	}
