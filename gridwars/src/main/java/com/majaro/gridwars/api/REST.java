@@ -32,7 +32,7 @@ import com.majaro.gridwars.game.GameStaticMap;
 public class REST {
 	
 	// TODO: Look at injection or inversion of control (inject at startup hook)
-	private final static RequestProcessor requestProcessor = new RequestProcessor();
+	private RequestProcessor requestProcessor = RequestProcessor.getInstance();
 	private final Response unauthResponse = Response.status(401).build();
 
 	@Context
