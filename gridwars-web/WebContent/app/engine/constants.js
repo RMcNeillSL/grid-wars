@@ -3,7 +3,10 @@ CONSTANTS = {
 	// Misc constants
 	SOCKET_SERVER : "ws://" + window.location.host + ":8080/",
 
+	
 	// ******************* SOCKET ON EVENTS ****************** //
+	
+	// Core disconnect and reconnect events
 	SOCKET_REC_CONNECT					: "connect",
 	SOCKET_REC_DISCONNECT				: "disconnect",
 
@@ -32,7 +35,10 @@ CONSTANTS = {
 	SOCKET_REC_GAME_START				: "gameStart",
 	SOCKET_REC_GAMEPLAY_RESPONSE		: "gameplayResponse",
 
+	
 	// ***************** SOCKET EMIT EVENTS ****************** //
+	
+	// Testing emit event
 	SOCKET_SEND_TEST_MESSAGE			: "sendTestMessage",
 
 	// Server lobby socket emit events
@@ -61,6 +67,28 @@ CONSTANTS = {
 	SOCKET_SEND_GAMEPLAY_REQUEST		: "gameplayRequest",
 	SOCKET_SEND_GAME_COMPLETE			: "gameCompleted",
 
+	
+	// ***************** CURSOR SPRITES AND IDS ****************** //
+	
+	// Sprite file and frame squences
+	SPRITE_CURSORS : "sprite_cursors",
+	CURSOR_SPRITE_NORMAL 				: [0],
+	CURSOR_SPRITE_NORMAL_ENEMY 			: [1],
+	CURSOR_SPRITE_INVALID 				: [2],
+	CURSOR_SPRITE_ATTACK 				: [10,11,12,13,14,15,16,15,14,13,12,11],
+	CURSOR_SPRITE_FORCE_ATTACK 			: [3,4,5,6,7,8,9,8,7,6,5,4],
+	CURSOR_SPRITE_MOVE 					: [19,18,17,18,19,20],
+	CURSOR_SPRITE_MOVE_CLICK 			: [22,23,24,25,26,27,21],
+	
+	// Cursor form ids
+	CURSOR_NORMAL 						: "cursor_normal",
+	CURSOR_NORMAL_ENEMY 				: "cursor_normal_enemy",
+	CURSOR_INVALID 						: "cursor_invalid",
+	CURSOR_ATTACK 						: "cursor_attack",
+	CURSOR_FORCE_ATTACK 				: "cursor_force_attack",
+	CURSOR_MOVE 						: "cursor_move",
+	CURSOR_MOVE_CLICK 					: "cursor_move_click",
+
 	// Core properties
 	GAME_NAME : "gridwars-engine",
 	TILE_WIDTH : 100,
@@ -70,7 +98,7 @@ CONSTANTS = {
 
 	// Directory locations
 	ROOT_SPRITES_LOC : "app/assets/",
-
+	
 	// Loaded image(.png) names
 	SPRITE_TURRET : "sprite_turret_anim",
 	SPRITE_TANK : "sprite_tank_anim",
@@ -91,9 +119,32 @@ CONSTANTS = {
 	CAMERA_VELOCITY : 5,
 
 	// Map tile image references
-	MAP_TILE_PLACEMENT : "tile_build",
-	MAP_TILE_A : "map_tile_a",
-	MAP_TILE_B : "map_tile_b",
+	MAP_TILE_PLACEMENT 			: "tile_build",
+	MAP_TILE_SPRITESHEET		: "map_tiles",
+	MAP_BASE_DIRT				: 0,
+	MAP_DETAIL_ROCKS_EDGE		: 4,
+//	ROCK_TILE_A 				: 1,
+//	ROCK_TILE_B	 				: 2,
+//	EDGE_ROCKS_TOP				: 3,
+//	EDGE_ROCKS_RIGHT			: 4,
+//	EDGE_ROCKS_BOTTOM			: 5,
+//	EDGE_ROCKS_LEFT				: 6,
+//	CORNER_ROCKS_TOP_LEFT		: 7,
+//	CORNER_ROCKS_TOP_RIGHT 		: 8,
+//	CORNER_ROCKS_BOTTOM_LEFT 	: 9,
+//	CORNER_ROCKS_BOTTOM_RIGHT	: 10,
+//	MAP_TILE_SPRITESHEET		: "map_tiles",
+//	MAP_TILE_A 					: "map_tile_a",
+//	ROCK_TILE_A 				: "rock_tile_a",
+//	ROCK_TILE_B	 				: "rock_tile_b",
+//	EDGE_ROCKS_TOP				: "edgeRocksTop",
+//	EDGE_ROCKS_RIGHT			: "edgeRocksRight",
+//	EDGE_ROCKS_BOTTOM			: "edgeRocksBottom",
+//	EDGE_ROCKS_LEFT				: "edgeRocksLeft",
+//	CORNER_ROCKS_TOP_LEFT		: "cornerRocksTopLeft",
+//	CORNER_ROCKS_TOP_RIGHT 		: "cornerRocksTopRight",
+//	CORNER_ROCKS_BOTTOM_LEFT 	: "cornerRocksBottomLeft",
+//	CORNER_ROCKS_BOTTOM_RIGHT	: "cornerRocksBottomRight",
 
 	// Colour variation arrays
 	COLOUR_ : {

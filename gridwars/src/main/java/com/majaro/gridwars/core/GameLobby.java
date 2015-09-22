@@ -55,6 +55,9 @@ public class GameLobby {
 	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
 		return this.engine.processGameplayRequest(gameplayRequest, userId);
 	}
+	public GameplayResponse setupGameSpawns() {
+		return this.engine.setupGameSpawns();
+	}
 	
 	// User management methods
 	public LobbyUser addUser(User user) {
@@ -101,7 +104,6 @@ public class GameLobby {
 		}
 		return false;
 	}
-	
 	public boolean isLobbyLeader(User checkUser) {
 		return (checkUser == this.connectedUsers.get(0).getLinkedUser());
 	}
@@ -134,8 +136,6 @@ public class GameLobby {
 			this.connectedUsers.get(index).setReady(false);
 		}
 	}
-
-	
 	public boolean changeLobbyLeader (int userId, int targetUserId) {
 		if(userId == this.connectedUsers.get(0).getLinkedUser().getId()) {
 			LobbyUser currentLeader = this.getLobbyUser(userId);
@@ -150,6 +150,7 @@ public class GameLobby {
 		return false;
 	}
 	
+	// Game lobby setup methods	
 	public boolean checkAllReady () {
 		boolean allReady = true;
 		for (int index = 1; index < this.connectedUsers.size(); index++) {
@@ -177,6 +178,9 @@ public class GameLobby {
 		}
 		return true;
 	}
+	
+	
+	// Getter methods	
 	
 	// Select an unused colour for the player
 	private String getUnusedColour() {

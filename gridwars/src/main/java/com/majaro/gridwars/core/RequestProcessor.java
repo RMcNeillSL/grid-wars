@@ -58,21 +58,21 @@ public class RequestProcessor {
 
 		// Create game maps
 		this.gameMaps.add(new GameStaticMap("1", "Hunting Ground", 8, 6,
-				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 
-						   0, 0, 0, 0, 0, 0, 0, 0, 
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0},
+				new int[] {7, 3, 3, 3, 3, 3, 3, 8, 
+						   6, 0, 0, 0, 0, 0, 0, 4, 
+						   6, 0, 1, 0, 0, 2, 0, 4,
+						   6, 0, 0, 0, 0, 0, 0, 4,
+						   6, 0, 0, 0, 0, 0, 1, 4,
+						   9, 5, 5, 5, 5, 5, 5, 10},
 				new Coordinate[] { new Coordinate(1, 1),
 						           new Coordinate(6, 4) }));
 		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 8, 6,
-				new int[] {0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0},
+				new int[] {0, 4, 4, 4, 4, 4, 4, 0,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   3, 0, 0, 0, 0, 0, 0, 1,
+						   0, 2, 2, 2, 2, 2, 2, 0},
 				new Coordinate[] { new Coordinate(1, 1),
 								   new Coordinate(6, 4) }));
 		this.gameMaps.add(new GameStaticMap("3", "Pacific Heights", 8, 6,
@@ -87,22 +87,22 @@ public class RequestProcessor {
 								   new Coordinate(6, 1),
 						           new Coordinate(6, 4) }));
 		this.gameMaps.add(new GameStaticMap("4", "TEST MAP", 16, 12,
-				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-				new Coordinate[] { new Coordinate(1, 1),
-								   new Coordinate(1, 4),
-						           new Coordinate(6, 1),
-				                   new Coordinate(6, 4) }));
+				new int[] {7,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  8,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
+						   9,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  10},
+				new Coordinate[] { new Coordinate(3, 3),
+								   new Coordinate(3, 8),
+						           new Coordinate(12, 3),
+				                   new Coordinate(12, 8) }));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
@@ -170,6 +170,14 @@ public class RequestProcessor {
 		return new GameplayResponse[0];
 	}
 	
+	public GameplayResponse setupGameSpawns(String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
+		if (gameLobby != null) {
+			return gameLobby.setupGameSpawns();
+		}
+		return new GameplayResponse();
+	}
+	
 	
 	// Managing game lobbies including joining, creating and game info retrieval
 
@@ -199,7 +207,7 @@ public class RequestProcessor {
 				// Create new game lobby
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
-					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(3), lobbyName);
+					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(1), lobbyName);
 					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
 					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);

@@ -197,7 +197,7 @@ public class Engine extends Thread {
 		// Construct user objects
 		this.players = new Player[connectedUsers.size()];
 		for (int index = 0; index < connectedUsers.size(); index ++) {
-			this.players[index] = new Player(connectedUsers.get(index), gameConfig.getStartingCash());
+			this.players[index] = new Player(connectedUsers.get(index), gameConfig.getStartingCash(), gameMap.getSpawnCoordinates()[index]);
 		}
 		
 		// Initialise in-game object lists
@@ -209,8 +209,7 @@ public class Engine extends Thread {
 		this.dynamicMap = new GameDynamicMap(staticMap, this.buildings, this.units);
 		
 		// Initialise pathfinder object
-		this.aStarPathFinder = new AStarPathFinder(this.staticMap, this.dynamicMap);
-		
+		this.aStarPathFinder = new AStarPathFinder(this.staticMap, this.dynamicMap);		
 	}
 	
 	
@@ -221,6 +220,39 @@ public class Engine extends Thread {
 		// Mark engine as running
 		this.isRunning = true;
 		
+	}
+	
+	public GameplayResponse setupGameSpawns() {
+		
+		// Declare response object
+		GameplayResponse gameplayResponse = new GameplayResponse(E_GameplayResponseCode.SETUP_SPAWN_OBJECTS);
+		
+		// Declare working variables
+		Coordinate spawnCoordinate = null;
+		DynGameBuilding newBuilding = null;
+		Coordinate newBuildingCoordinate = null;
+		
+		// Generate source building objects
+		GameBuilding startTankFactory = (GameBuilding)Const.getGameObjectFromString("TURRET");
+		
+		// Move through all player spawns adding buildings and object around spawn
+		for (Player player : this.players) {
+			
+			// Save convenient reference to spawn coordiante
+			spawnCoordinate = player.getSpawnCoordinate();
+			newBuildingCoordinate = new Coordinate(spawnCoordinate.getCol(), spawnCoordinate.getRow());
+			
+			// Generate and add new building to response for player
+			newBuilding = new DynGameDefence(this.generateInstanceId(player), (GameDefence)startTankFactory, player, spawnCoordinate);
+			gameplayResponse.addCoord(spawnCoordinate);
+			gameplayResponse.addSource(newBuilding.getIdentifier());
+			gameplayResponse.addTarget(newBuilding.getInstanceId());
+			gameplayResponse.addMisc(player.getPlayerName());
+			this.buildings.add(newBuilding);
+		}
+		
+		// Return constructed response object
+		return gameplayResponse;
 	}
 	
 	
@@ -235,7 +267,7 @@ public class Engine extends Thread {
 		GameplayResponse waypointUpdateResponse = null;
 		boolean validConstruction = true;
 		
-		// Declare waypoint ammending variables
+		// Declare waypoint amending variables
 		ArrayList<DynGameUnit> waypointInterruptedUnits = new ArrayList<DynGameUnit>();
 		ArrayList<DynGameUnit> newWaypointInterruptedUnits = null;
 		Coordinate unitWaypointEnd = null;
