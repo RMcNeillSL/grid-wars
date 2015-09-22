@@ -983,7 +983,6 @@ Engine.prototype.purchaseObject = function(item) {
 		var gameCore = new GameCore("TURRET", cell);
 		gameCore.setPlayer(this.currentPlayer);
 		this.createNewBuildingObject(gameCore);
-		console.log("TURRET PURCHASED");
 	} else if (item === "TANK") {
 		var gameCore = new GameCore("TANK", cell);
 		gameCore.setPlayer(this.currentPlayer);
@@ -991,7 +990,6 @@ Engine.prototype.purchaseObject = function(item) {
 		this.phaserGame.newBuilding.target = new Tank(this.engineCore,
 				gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
 				cell.col, cell.row, 100, 100, true);
-		console.log("TANK PURCHASED");
 	}
 }
 
@@ -1289,7 +1287,6 @@ Engine.prototype.processUnitDamage = function(responseData) {
 						gameObject.left, gameObject.top);
 				removeList.push(refObject.instanceId);
 				
-				console.log(refObject.killer);
 				if(refObject.killer == this.currentPlayer.playerId) {
 					this.currentPlayer.playerCash += Math.floor(gameObject.gameCore.cost*1.2);
 				}
