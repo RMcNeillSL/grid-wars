@@ -12,19 +12,27 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.screenCellWidth  = screenCellWidth;
 	this.screenCellHeight = screenCellHeight;
 	
+	// Create map tile function
+	var mapTile = function(baseSource, detailSource, angle) {
+		var newMapTile = {baseSource : baseSource, detailSource : null, angle: 0};
+		if (detailSource) { newMapTile.detailSource = detailSource; }
+		if (angle) { newMapTile.angle = angle; }
+		return result;
+	}
+	
 	// Create tile-map mapping
 	this.tileMapping = {};
-	this.tileMapping[0] = CONSTANTS.MAP_TILE_A;
-	this.tileMapping[1] = CONSTANTS.ROCK_TILE_A;
-	this.tileMapping[2] = CONSTANTS.ROCK_TILE_B;
-	this.tileMapping[3] = CONSTANTS.EDGE_ROCKS_TOP;
-	this.tileMapping[4] = CONSTANTS.EDGE_ROCKS_RIGHT;
-	this.tileMapping[5] = CONSTANTS.EDGE_ROCKS_BOTTOM;
-	this.tileMapping[6] = CONSTANTS.EDGE_ROCKS_LEFT;
-	this.tileMapping[7] = CONSTANTS.CORNER_ROCKS_TOP_LEFT;
-	this.tileMapping[8] = CONSTANTS.CORNER_ROCKS_TOP_RIGHT;
-	this.tileMapping[9] = CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT;
-	this.tileMapping[10] = CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT;
+	this.tileMapping[0] = mapTile(CONSTANTS.MAP_TILE_A);
+	this.tileMapping[1] = mapTile(CONSTANTS.ROCK_TILE_A);
+	this.tileMapping[2] = mapTile(CONSTANTS.ROCK_TILE_B);
+	this.tileMapping[3] = mapTile(CONSTANTS.EDGE_ROCKS_TOP);
+	this.tileMapping[4] = mapTile(CONSTANTS.EDGE_ROCKS_RIGHT);
+	this.tileMapping[5] = mapTile(CONSTANTS.EDGE_ROCKS_BOTTOM);
+	this.tileMapping[6] = mapTile(CONSTANTS.EDGE_ROCKS_LEFT);
+	this.tileMapping[7] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_LEFT);
+	this.tileMapping[8] = mapTile(CONSTANTS.CORNER_ROCKS_TOP_RIGHT);
+	this.tileMapping[9] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT);
+	this.tileMapping[10] = mapTile(CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT);
 	
 	// Create map images
 	this.mapTiles = [];
@@ -38,13 +46,38 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	var createMapTile = function(cellId, col, row) {
 
 		// Create sprite for current tile
-		var tileSprite = null;
+		var baseSprite = null;
+		var detailSprite = null;
 		if (self.tileMapping[cellId]) {
-			tileSprite = self.phaserRef.add.sprite(CONSTANTS.TILE_WIDTH * col, CONSTANTS.TILE_HEIGHT * row, self.tileMapping[cellId], 0);
-			tileSprite.width = CONSTANTS.TILE_WIDTH;
-			tileSprite.height = CONSTANTS.TILE_HEIGHT;
-//			tileSprite.visible = false;
-			mapGroup.add(tileSprite);
+			
+			// Create base sprite
+			if (self.tileMapping[cellId].baseSource) {
+				baseSprite = self.phaserRef.add.sprite(
+						CONSTANTS.TILE_WIDTH * col, 
+						CONSTANTS.TILE_HEIGHT * row,
+						CONSTANTS.MAP_TILE_SPRITESHEET,
+						self.tileMapping[cellId].baseSource);
+				baseSprite.width = CONSTANTS.TILE_WIDTH;
+				baseSprite.height = CONSTANTS.TILE_HEIGHT;
+				mapGroup.add(baseSprite);
+			}
+			
+			// Create detail sprite
+			if (self.tileMapping[cellId].detailSource) {
+				detailSprite = self.phaserRef.add.sprite(
+						CONSTANTS.TILE_WIDTH * col, 
+						CONSTANTS.TILE_HEIGHT * row,
+						CONSTANTS.MAP_TILE_SPRITESHEET,
+						self.tileMapping[cellId].detailSource);
+				detailSprite.width = CONSTANTS.TILE_WIDTH;
+				detailSprite.height = CONSTANTS.TILE_HEIGHT;
+				mapGroup.add(detailSprite);
+			}
+			
+			// Rotate detail sprite
+			if (detailSprite) {
+				detailSprite.angle = self.tileMapping[cellId].angle;
+			}
 		}
 		
 		// Create hover placement sprites
@@ -55,7 +88,8 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 		mapOverlayGroup.add(placementSprite);
 		
 		// Save new sprites
-		this.tileSprite = tileSprite;
+		this.baseSprite = baseSprite;
+		this.detailSprite = detailSprite;
 		this.placementSprite = placementSprite;
 		
 	}
