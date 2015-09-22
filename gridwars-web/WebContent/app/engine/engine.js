@@ -1129,7 +1129,7 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
 		
 		// deduct cost from player
-		if(refObject.playerId == this.currentPlayer.playerId) {
+		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
 			this.currentPlayer.playerCash -= CONSTANTS.GAME_BUILDINGS[0].cost;
 		}
 
@@ -1296,7 +1296,7 @@ Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
 		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
 		
 		// deduct cost from player's cash
-		if(refObject.playerId == this.currentPlayer.playerId) {
+		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
 			this.currentPlayer.playerCash -= CONSTANTS.GAME_UNITS[0].cost;
 		}
 
