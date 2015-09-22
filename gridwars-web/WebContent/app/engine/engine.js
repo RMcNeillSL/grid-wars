@@ -34,10 +34,12 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		var newPlayer = new Player(gameplayConfig.userName[index],
 				gameplayConfig.userColour[index],
 				gameplayConfig.userTeam[index],
-				(gameplayConfig.userName[index] == playerId));
+				(gameplayConfig.userName[index] == playerId),
+				0);
 		this.players.push(newPlayer);
 		if (gameplayConfig.userName[index] == playerId) {
 			this.currentPlayer = newPlayer;
+			this.currentPlayer.playerCash = gameplayConfig.startingCash;
 		}
 	}
 
@@ -110,7 +112,7 @@ Engine.prototype.preload = function() {
 }
 
 Engine.prototype.create = function() {
-
+	
 	// Create self reference
 	var self = this;
 	var local_onKeyPressed = function(char) {
@@ -170,13 +172,27 @@ Engine.prototype.create = function() {
 			self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
 		}
 	};
+	
+	//Adding information text to the game screen
+	var style = {
+		font: "bold 12px Arial", fill: "#fff", 
+	    align: "left", // the alignment of the text is independent of the bounds, try changing to 'center' or 'right'
+	    boundsAlignH: "left", 
+	    boundsAlignV: "top"
+	};
+
+	this.moneyLabel = this.phaserGame.add.text(650, 5, "Money: " + this.currentPlayer.playerCash, style);
+	this.moneyLabel.fixedToCamera = true;
 }
 
 Engine.prototype.update = function() {
 	
     // Manage scrolling of the map
     this.manageMapMovement();
-	
+    
+    // Update player money label
+    this.moneyLabel.setText("Money: " + this.currentPlayer.playerCash);
+    
 	// Render map
 	this.mapRender.renderMap();
 
@@ -280,7 +296,6 @@ Engine.prototype.updatePlayerStatus = function() {
 }
 
 Engine.prototype.render = function() {
-	
 	// Create self reference
 	var self = this;
 
@@ -630,8 +645,6 @@ Engine.prototype.getItemAtPoint = function(point, playerOwned) {
 	// Search for unit at XY
 	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
 		checkBounds = this.units[unitIndex].getBounds();
-
-		console.log(this.units[unitIndex].left + " , " + this.units[unitIndex].top);
 		if (checkBounds.left < point.x && checkBounds.right > point.x
 				&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
 				(this.units[unitIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {
@@ -773,11 +786,12 @@ Engine.prototype.explosionCollisionCheck = function() {
 			for (var index = 0; index < this.buildings.length; index++) {
 				if (!this.buildings[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-//						&& this.buildings[index].gameCore.playerId != this.currentPlayer.playerId
+						&& this.buildings[index].gameCore.playerId == this.currentPlayer.playerId
+						&& this.buildings[index].gameCore.playerId != explosionRegister[explosionIndex].ownerId
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.buildings[index].getCollisionLayers())) {
 					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageAmount);
+					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageAmount, explosionRegister[explosionIndex].ownerId);
 				}
 			}
 
@@ -785,11 +799,12 @@ Engine.prototype.explosionCollisionCheck = function() {
 			for (var index = 0; index < this.units.length; index++) {
 				if (!this.units[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-//						&& this.units[index].gameCore.playerId != this.currentPlayer.playerId
+						&& this.units[index].gameCore.playerId == this.currentPlayer.playerId
+						&& this.units[index].gameCore.playerId != explosionRegister[explosionIndex].ownerId
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.units[index].getCollisionLayers())) {
 					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.units[index]], damageAmount);
+					this.serverAPI.requestDamageSubmission([this.units[index]], damageAmount, explosionRegister[explosionIndex].ownerId);
 				}
 			}
 
@@ -838,6 +853,7 @@ Engine.prototype.purchaseObject = function(item) {
 		var gameCore = new GameCore("TURRET", cell);
 		gameCore.setPlayer(this.currentPlayer);
 		this.createNewBuildingObject(gameCore);
+		console.log("TURRET PURCHASED");
 	} else if (item === "TANK") {
 		var gameCore = new GameCore("TANK", cell);
 		gameCore.setPlayer(this.currentPlayer);
@@ -845,6 +861,7 @@ Engine.prototype.purchaseObject = function(item) {
 		this.phaserGame.newBuilding.target = new Tank(this.engineCore,
 				gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
 				cell.col, cell.row, 100, 100, true);
+		console.log("TANK PURCHASED");
 	}
 }
 
@@ -943,6 +960,11 @@ Engine.prototype.processNewBuilding = function(responseData) {
 
 		// Calculate player from player id
 		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
+		
+		// deduct cost from player
+		if(refObject.playerId == this.currentPlayer.playerId) {
+			this.currentPlayer.playerCash -= CONSTANTS.GAME_BUILDINGS[0].cost;
+		}
 
 		// Create GameCore object
 		var gameCore = new GameCore("TURRET", refObject.cell);
@@ -1050,7 +1072,8 @@ Engine.prototype.processUnitDamage = function(responseData) {
 		// Create reference object
 		var refObject = {
 			newHealth : parseInt(responseData.target[unitIndex]),
-			instanceId : responseData.source[unitIndex]
+			instanceId : responseData.source[unitIndex],
+			killer : responseData.misc[unitIndex]
 		};
 
 		// Get targeted unit
@@ -1068,6 +1091,11 @@ Engine.prototype.processUnitDamage = function(responseData) {
 						CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C,
 						gameObject.left, gameObject.top);
 				removeList.push(refObject.instanceId);
+				
+				console.log(refObject.killer);
+				if(refObject.killer == this.currentPlayer.playerId) {
+					this.currentPlayer.playerCash += Math.floor(gameObject.gameCore.cost*1.2);
+				}
 			}
 
 //			// Log to screen
@@ -1099,6 +1127,11 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 
 		// Calculate player from player id
 		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
+		
+		// deduct cost from player's cash
+		if(refObject.playerId == this.currentPlayer.playerId) {
+			this.currentPlayer.playerCash -= CONSTANTS.GAME_UNITS[0].cost;
+		}
 
 		// Create GameCore object
 		var gameCore = new GameCore("TANK", refObject.cell);
@@ -1124,6 +1157,21 @@ Engine.prototype.processDebugPlacement = function(responseData) {
 	}
 }
 
+Engine.prototype.processInsufficientFunds = function(responseData) {
+	
+	// iterate through all of the buildings
+	for (var index = 0; index < responseData.source.length; index++) {
+		var refObject = {
+			playerId : responseData.target[index],
+			playerCash : responseData.source[index]
+		};
+	
+		if(refObject.playerId == this.currentPlayer.playerId) {
+			this.currentPlayer.playerCash = parseInt(refObject.playerCash);
+		}
+	}
+}
+
 
 // ------------------------------ SERVER GAMEPLAYRESPONSE SWITCH METHOD ------------------------------
 
@@ -1144,6 +1192,9 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 		break;
 	case "DEBUG_PLACEMENT":
 		this.processDebugPlacement(responseData);
+		break;
+	case "INSUFFICIENT_FUNDS":
+		this.processInsufficientFunds(responseData);
 		break;
 	default:
 		// Do nothing

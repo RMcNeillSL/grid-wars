@@ -38,7 +38,7 @@ public class User {
 	
 	public void setPassword(String newPass) {
 		salt = generateSalt();
-		password = SHA512Hash(newPass);
+		password = SHA256Hash(newPass);
 	}
 	
 	private String generateSalt() {
@@ -72,7 +72,7 @@ public class User {
 	}
 	
 	public boolean validateCredentials(String passAttempt) {
-		return SHA512Hash(passAttempt).equals(password);
+		return SHA256Hash(passAttempt).equals(password);
 	}
 
 	public static class Views {

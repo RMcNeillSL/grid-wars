@@ -13,10 +13,11 @@ public class Player {
 	private int cash = 0;
 	
 	// Constructor
-	public Player(LobbyUser lobbyUser) {
+	public Player(LobbyUser lobbyUser, int startingCash) {
 		
 		// Set default variables
 		this.techLevel = E_TechLevel.TECH_01;
+		this.cash = startingCash;
 		
 		// Populate core variables from lobby user
 		this.playerId = lobbyUser.getLinkedUser().getId();
@@ -29,12 +30,28 @@ public class Player {
 		return gameBuilding.validFromTechLevel(this.techLevel);
 	}
 	public boolean playerHasCash(GameObject gameBuilding) {
-//		return (this.cash >= gameBuilding.getCost());
-		return true;
+		boolean hasCash = this.cash >= gameBuilding.getCost();
+		
+		if(hasCash) {
+			removePlayerCash(gameBuilding.getCost());
+		}
+		
+		return hasCash;
 	}
 	
 	// Getters
 	public int getPlayerId() { return this.playerId; }
 	public String getPlayerName() { return this.playerName; }
+	public int getPlayerCash() { return this.cash; }
+	
+	// Setters
+	public int addPlayerCash(int cash) {
+		this.cash = this.cash + cash;
+		return this.cash;
+	}
+	public int removePlayerCash(int cash) {
+		this.cash = this.cash - cash;
+		return this.cash;
+	}
 	
 }

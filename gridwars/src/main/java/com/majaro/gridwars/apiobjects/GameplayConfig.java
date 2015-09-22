@@ -27,6 +27,7 @@ public class GameplayConfig {
 	private ArrayList<Integer> userTeam;
 	
 	// Game setup preferences
+	private int startingCash;
 	
 	// Game object variables
 	private GameBuilding[] gameBuildings;
@@ -55,7 +56,7 @@ public class GameplayConfig {
 		}
 		
 		// Save game setup preferences
-		
+		this.startingCash = gameLobby.getGameConfig().getStartingCash();
 		
 		// Save constants for buildings and units
 		this.gameBuildings = Const.BUILDINGS;
@@ -104,6 +105,10 @@ public class GameplayConfig {
 	@JsonView(GameplayConfig.Views.Summary.class)
 	public Coordinate[] getSpawnCoordinates() {
 		return this.spawnCoordinates;
+	}
+	@JsonView(GameplayConfig.Views.Summary.class)
+	public int getStartingCash() {
+		return this.startingCash;
 	}
 	
 

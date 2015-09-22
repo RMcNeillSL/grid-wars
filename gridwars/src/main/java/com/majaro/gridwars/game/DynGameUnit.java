@@ -58,6 +58,7 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 	public void takeDamage(int damageAmount) { this.health = this.health - damageAmount; }
 	
 	// Getter methods
+	public Player getOwner() { return this.playerRef; }
 	public Coordinate getCoordinate() { return this.coordinate; }
 
 	// DynGameObject interface methods

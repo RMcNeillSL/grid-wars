@@ -1,6 +1,7 @@
 package com.majaro.gridwars.apiobjects;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.majaro.gridwars.game.Const;
 import com.majaro.gridwars.game.Const.E_GameplayRequestCode;
@@ -16,6 +17,7 @@ public class GameplayRequest {
 	private String[] targetString;
 	private ArrayList<GameObject> source;
 	private ArrayList<GameObject> target;
+	private ArrayList<String> misc;
 	
 	// Constructors
 	public GameplayRequest() {
@@ -23,6 +25,7 @@ public class GameplayRequest {
 		// Construct arrays
 		this.source = null;
 		this.target = null;
+		this.misc = new ArrayList<String>();
 		
 		// Set default values
 		this.requestCode = E_GameplayRequestCode.UNKNOWN;
@@ -30,7 +33,7 @@ public class GameplayRequest {
 		this.targetCellY = -1;
 
 	}
-	public GameplayRequest(E_GameplayRequestCode requestCode, int targetCellX, int targetCellY, String[] sourceString, String[] targetString) {
+	public GameplayRequest(E_GameplayRequestCode requestCode, int targetCellX, int targetCellY, String[] sourceString, String[] targetString, String[] misc) {
 		
 		// Call alternate constructor
 		this();
@@ -45,6 +48,9 @@ public class GameplayRequest {
 		this.targetString = targetString;
 		this.source = generateGameObjectArrayFromString(sourceString, true);
 		this.target = generateGameObjectArrayFromString(targetString, true);
+		
+		// Populate misc arraylist
+		this.misc = new ArrayList<String>(Arrays.asList(misc));
 	}
 	
 	// Utility methods
@@ -77,6 +83,9 @@ public class GameplayRequest {
 	public void setTargetCellX(int targetCellX) { this.targetCellX = targetCellX; }
 	public void setTargetCellY(int targetCellY) { this.targetCellY = targetCellY; }
 
+	// Setters
+	public void setMisc(String[] misc) { this.misc = new ArrayList<String>(Arrays.asList(misc)); }
+	
 	// Customise view for source in strings
 	public void setSource(String[] sourceString) {
 		
@@ -106,6 +115,7 @@ public class GameplayRequest {
 	public int getTargetCellY() { return this.targetCellY; }
 	public ArrayList<GameObject> getSource() { return this.source; }
 	public ArrayList<GameObject> getTarget() { return this.target; }
+	public ArrayList<String> getMisc() { return this.misc; }
 	public String[] getSourceString() { return this.sourceString; }
 	public String[] getTargetString() { return this.targetString; }
 
