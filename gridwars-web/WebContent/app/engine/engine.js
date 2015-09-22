@@ -106,7 +106,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
 
 	// Load tile images
-	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 16);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
 //	this.phaserGame.load.image(CONSTANTS.MAP_TILE_A, CONSTANTS.ROOT_SPRITES_LOC + 'mapTileA.png');
 //	this.phaserGame.load.image(CONSTANTS.ROCK_TILE_A, CONSTANTS.ROOT_SPRITES_LOC + 'rockTileA.png');
 //	this.phaserGame.load.image(CONSTANTS.ROCK_TILE_B, CONSTANTS.ROOT_SPRITES_LOC + 'rockTileB.png');

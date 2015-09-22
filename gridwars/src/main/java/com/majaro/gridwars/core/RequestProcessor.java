@@ -86,19 +86,36 @@ public class RequestProcessor {
 								   new Coordinate(1, 4),
 								   new Coordinate(6, 1),
 						           new Coordinate(6, 4) }));
-		this.gameMaps.add(new GameStaticMap("4", "TEST MAP", 16, 12,
-				new int[] {7,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  8,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,
-						   9,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  10},
+		this.gameMaps.add(new GameStaticMap("4", "WATER + DIRT", 16, 12,
+				new int[] {2,  	2,  	2,  	15,  	2,  	2,  	2,  	2,  	2,  	2,  	14,  	2,  	2,  	2,  	15,  	2,
+						   2,  	31,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	29,  	2,
+						   2,  	25,  	0,	  	0,  	12,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	27,  	2,
+						   14,  25,  	0,  	0,  	0,  	0,  	23,  	16,  	16,  	21,  	0,  	13,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,  	0,  	0,  	0,  	19,  	2,  	2,  	17,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,	  	0,  	0,  	0,  	19,  	14,  	2,  	17,  	0,  	0,  	0,  	13,  	27,  	2,
+						   2,  	25,  	0,	  	13,  	0,  	0,  	19,  	2,  	2,  	17,  	0,  	0,  	0,  	0,  	27,  	15,
+						   15,  25,  	0,	  	0,  	0,  	0,  	19,  	2,  	15,  	17,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,	  	0,  	0,  	0,  	22,  	18,  	18,  	20,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,	  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	30,  	24,	  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	28,  	2,
+						   2,  	2,  	2,  	2,  	14,  	2,  	2,  	2,  	2,  	2,  	15,  	15,  	2,  	2,  	2,  	2},
+				new Coordinate[] { new Coordinate(3, 3),
+								   new Coordinate(3, 8),
+						           new Coordinate(12, 3),
+				                   new Coordinate(12, 8) }));
+		this.gameMaps.add(new GameStaticMap("4", "GRASS + ROCKS", 16, 12,
+				new int[] {2,  	2,  	2,  	15,  	2,  	2,  	2,  	2,  	2,  	2,  	14,  	2,  	2,  	2,  	15,  	2,
+						   2,  	31,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	26,  	29,  	2,
+						   2,  	25,  	0,	  	0,  	12,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	27,  	2,
+						   14,  25,  	0,  	0,  	0,  	0,  	23,  	16,  	16,  	21,  	0,  	13,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,  	0,  	0,  	0,  	19,  	2,  	2,  	17,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,	  	0,  	0,  	0,  	19,  	14,  	2,  	17,  	0,  	0,  	0,  	13,  	27,  	2,
+						   2,  	25,  	0,	  	13,  	0,  	0,  	19,  	2,  	2,  	17,  	0,  	0,  	0,  	0,  	27,  	15,
+						   15,  25,  	0,	  	0,  	0,  	0,  	19,  	2,  	15,  	17,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,	  	0,  	0,  	0,  	22,  	18,  	18,  	20,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	25,  	0,	  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	0,  	27,  	2,
+						   2,  	30,  	24,	  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	24,  	28,  	2,
+						   2,  	2,  	2,  	2,  	14,  	2,  	2,  	2,  	2,  	2,  	15,  	15,  	2,  	2,  	2,  	2},
 				new Coordinate[] { new Coordinate(3, 3),
 								   new Coordinate(3, 8),
 						           new Coordinate(12, 3),
@@ -207,7 +224,7 @@ public class RequestProcessor {
 				// Create new game lobby
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
-					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(1), lobbyName);
+					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(3), lobbyName);
 					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
 					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);
