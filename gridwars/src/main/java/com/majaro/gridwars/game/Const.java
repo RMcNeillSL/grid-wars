@@ -16,6 +16,9 @@ public final class Const {
 		// Purchasing request codes
 		NEW_BUILDING("NEW_BUILDING"), NEW_UNIT("NEW_UNIT"),
 		
+		// Generic attack codes
+		OBJECT_ATTACK_OBJECT("OBJECT_ATTACK_OBJECT"),
+		
 		// Unit attacking request codes
 		UNIT_ATTACK_XY("UNIT_ATTACK_XY"), UNIT_ATTACK_UNIT("UNIT_ATTACK_UNIT"), UNIT_ATTACK_BUILDING("UNIT_ATTACK_BUILDING"),
 		WAYPOINT_PATH_COORDS("WAYPOINT_PATH_COORDS"), WAYPOINT_UPDATE_UNIT_CELL("WAYPOINT_UPDATE_UNIT_CELL"),
@@ -40,6 +43,9 @@ public final class Const {
 		
 		// Game setup codes
 		SETUP_SPAWN_OBJECTS("SETUP_SPAWN_OBJECTS"),
+		
+		// Generic attack codes
+		OBJECT_ATTACK_OBJECT("OBJECT_ATTACK_OBJECT"),
 		
 		// Purchasing attempt errors
 		INSUFFICIENT_TECH_LEVEL("INSUFFICIENT_TECH_LEVEL"), INSUFFICIENT_FUNDS("INSUFFICIENT_FUNDS"),
@@ -113,22 +119,25 @@ public final class Const {
 		
 	}
 	
-	// Units in game     [identifier, health, cash, techlv | speed, ]
+	// Units in game     [identifier, health, cash, techlv | range, speed, ]
 	public static class GameUnit extends GameObject {
 
 		// Unit variables
+		protected int range;
 		protected int speed;
 		
 		// Constructors
-		public GameUnit(String identifier, int health, int cost, E_TechLevel techlv, int speed) {
+		public GameUnit(String identifier, int health, int cost, E_TechLevel techlv, int range, int speed) {
 			super(identifier, health, cost, techlv);
+			this.range = range;
 			this.speed = speed;
 		}
 		public GameUnit(GameUnit source) {
-			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getSpeed());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getRange(), source.getSpeed());
 		}
 		
 		// Getters
+		public int getRange() { return this.range; }
 		public int getSpeed() { return this.speed; }
 		
 	}
@@ -180,12 +189,12 @@ public final class Const {
 	
 	// Buildings in game
 	public static final GameBuilding[] BUILDINGS = {
-			new GameDefence("TURRET", 1000, 500, E_TechLevel.TECH_01, 2, 5, 1)
+			new GameDefence("TURRET", 1000, 500, E_TechLevel.TECH_01, 2, 600, 25)
 		};
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
-			new GameUnit("TANK", 200, 400, E_TechLevel.TECH_01, 2)
+			new GameUnit("TANK", 200, 400, E_TechLevel.TECH_01, 500, 2)
 		};
 	
 	

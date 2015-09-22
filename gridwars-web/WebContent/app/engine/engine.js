@@ -96,7 +96,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.stage.disableVisibilityChange = true;
 
 	// Load sprite sheets
-//	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 28);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 28);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
@@ -109,17 +109,6 @@ Engine.prototype.preload = function() {
 
 	// Load tile images
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 16);
-//	this.phaserGame.load.image(CONSTANTS.MAP_TILE_A, CONSTANTS.ROOT_SPRITES_LOC + 'mapTileA.png');
-//	this.phaserGame.load.image(CONSTANTS.ROCK_TILE_A, CONSTANTS.ROOT_SPRITES_LOC + 'rockTileA.png');
-//	this.phaserGame.load.image(CONSTANTS.ROCK_TILE_B, CONSTANTS.ROOT_SPRITES_LOC + 'rockTileB.png');
-//	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_TOP, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksTop.png');
-//	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_RIGHT, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksRight.png');
-//	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_BOTTOM, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksBottom.png');
-//	this.phaserGame.load.image(CONSTANTS.EDGE_ROCKS_LEFT, CONSTANTS.ROOT_SPRITES_LOC + 'edgeRocksLeft.png');
-//	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_TOP_LEFT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksTL.png');
-//	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_TOP_RIGHT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksTR.png');
-//	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_BOTTOM_LEFT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksBL.png');
-//	this.phaserGame.load.image(CONSTANTS.CORNER_ROCKS_BOTTOM_RIGHT, CONSTANTS.ROOT_SPRITES_LOC + 'cornerRocksBR.png');
 
 	// Load particles
 	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
@@ -172,6 +161,9 @@ Engine.prototype.create = function() {
 	// Construct selection rectangle
 	this.selectionRectangle.rect = new Phaser.Rectangle(0, 0, 100, 100);
 	
+	// Range renderer graphics object
+	this.rangeCircles = this.phaserGame.add.graphics(0, 0);
+	
 	// Populate selection lines
 	for (var count = 0; count < 4; count ++) { this.selectedLines.push(new Phaser.Line(0, 0, 0, 0)); }
 	
@@ -188,6 +180,9 @@ Engine.prototype.create = function() {
 		},
 		func_PlaceTankTrack : function(sender, point, angle) {
 			self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
+		},
+		func_GetObjectFromInstanceId : function(instanceId) {
+			return self.getObjectFromInstanceId(instanceId);
 		}
 	};
 	
@@ -202,18 +197,19 @@ Engine.prototype.create = function() {
 	this.moneyLabel = this.phaserGame.add.text(650, 5, "Money: " + this.currentPlayer.playerCash, style);
 	this.moneyLabel.fixedToCamera = true;
 
-//	// Create cursor object
-//	this.pointer = { sprite : null, point : new Point(0, 0) };
-//	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
-//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
-//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
-//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
-//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
-//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
-//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
-//	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
-//	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
-//	this.highestGroup.add(this.pointer.sprite);
+	// Create cursor object
+	this.pointer = { sprite : null, point : new Point(0, 0) };
+	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
+	this.pointer.sprite.z = 100;
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
+	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
+	this.highestGroup.add(this.pointer.sprite);
 
 	// Position camera over spawn point
 	for (var index = 0; index < this.players.length; index++) {
@@ -259,8 +255,8 @@ Engine.prototype.update = function() {
 	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
 
-//	// Update pointer position
-//	this.updatePointerPosition();
+	// Update pointer position
+	this.updatePointerPosition();
 
 	// Get state of players in game
 //	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
@@ -327,10 +323,17 @@ Engine.prototype.render = function() {
 	// Render selection boxes around selected units to scene
 	if (this.selected && this.selected.length > 0) {
 		for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
+			
+			// Draw health bars over selected items
 			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,100,0,1)', 'rgba(0,0,0,1)', 'rgba(150,150,150,1)', 'rgba(200,255,200,1)');
+			
+			// Draw range circles for selected defences and units
+			if (this.selected[selectedIndex].gameCore.range) {
+				this.phaserGame.debug.geom(new Phaser.Circle(this.selected[selectedIndex].left, this.selected[selectedIndex].top, this.selected[selectedIndex].gameCore.range), 'rgba(255,255,255,0.6)', false);
+			}
 		}
 	}
-	
+
 	// Render hover object healthbox
 	if (this.hoverItem) {
 		outputUnitHealth(this.hoverItem, 'rgba(0,100,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
@@ -343,7 +346,7 @@ Engine.prototype.render = function() {
 Engine.prototype.onMouseDown = function(pointer) {
 	
 	// Search for potential under mouse selection
-	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true);
+	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true, false);
 	
 	// Set new selection if one does not already exist
 	if (itemAtPoint) {
@@ -408,7 +411,13 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 				// Process selected turret
 				if (this.selected[selectedIndex].gameCore.identifier == "TURRET") {
-					this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.x,this.mouse.y);
+					var sourceObjectId = this.selected[selectedIndex].gameCore.instanceId;
+					var itemAtPoint = this.getItemAtPoint(point, false, true);
+					if (itemAtPoint) {
+						var targetObjectId = itemAtPoint.gameCore.instanceId;
+						this.serverAPI.requestObjectAttackObject(sourceObjectId, targetObjectId);
+					}
+//					this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.x,this.mouse.y);
 				}
 			}
 
@@ -416,7 +425,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 		} else {
 			
 			// Determine item at point
-			var itemAtPoint = this.getItemAtPoint(point, true);
+			var itemAtPoint = this.getItemAtPoint(point, true, false);
 
 			// Add to reset select list
 			if (itemAtPoint) {
@@ -450,7 +459,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		
 		// Reset selected items
 		if (this.selectionRectangle.selectActive
-				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 10) {
+				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 40) {
 			this.selected = [];
 			this.hoverItem = null;
 		}
@@ -465,7 +474,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
 				&& this.selectionRectangle.rect.width
-						* this.selectionRectangle.rect.height > 10) {
+						* this.selectionRectangle.rect.height > 40) {
 			this.selected = this.getSelectionArray();
 		}
 
@@ -479,7 +488,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		this.selectionRectangle.rect.height = 0;
 
 		// Select hover items
-		this.hoverItem = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true);
+		this.hoverItem = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true, true);
 		if (this.hoverItem) {
 			for (var index = 0; index < this.selected.length; index ++) {
 				if (this.selected[index].gameCore.instanceId == this.hoverItem.gameCore.instanceId) {
@@ -528,22 +537,20 @@ Engine.prototype.onKeyPressed = function(char) {
 
 Engine.prototype.onKeyDown = function() {
 	
-//	// Process mouse form update
-//	this.processMouseFormUpdates();
+	// Process mouse form update
+	this.processMouseFormUpdates();
 }
 
 Engine.prototype.onKeyUp = function() {
 	
-//	// Process mouse form update
-//	this.processMouseFormUpdates();
+	// Process mouse form update
+	this.processMouseFormUpdates();
 }
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
 
 Engine.prototype.processMouseFormUpdates = function() {
-	
-	return;
 	
 	// Selected flags
 	var nothingSelected = false;
@@ -569,7 +576,7 @@ Engine.prototype.processMouseFormUpdates = function() {
 	}
 	
 	// Gather information about item under mouse
-	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), false);
+	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true, true);
 	
 	// Get ctrl state
 	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
@@ -585,7 +592,15 @@ Engine.prototype.processMouseFormUpdates = function() {
 	
 	// Process selection for unit
 	if (unitSelected) {
-		
+		if (!itemAtPoint) {
+			this.updatePointerForm(CONSTANTS.CURSOR_SPRITE_MOVE);
+		} else {
+			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
+				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+			} else {
+				this.updatePointerForm(CONSTANTS.CURSOR_ATTACK);
+			}
+		}
 	}
 
 	// Process selection for defence
@@ -613,8 +628,6 @@ Engine.prototype.processMouseFormUpdates = function() {
 
 Engine.prototype.updatePointerPosition = function(point) {
 	
-	return;
-	
 	// Check if point was passed (default to cursor)
 	if (!point) { point = new Point(this.mouse.x, this.mouse.y); }
 	
@@ -624,8 +637,6 @@ Engine.prototype.updatePointerPosition = function(point) {
 }
 
 Engine.prototype.updatePointerForm = function(formId) {
-	
-	return;
 	
 	// Check for special case forms
 	
@@ -754,7 +765,7 @@ Engine.prototype.updatePlayerStatus = function() {
 	}
 }
 
-Engine.prototype.getItemAtPoint = function(point, playerOwned) {
+Engine.prototype.getItemAtPoint = function(point, playerOwned, enemyOwned) {
 
 	// Declare worker variables
 	var itemUnderMouse = null;
@@ -766,7 +777,8 @@ Engine.prototype.getItemAtPoint = function(point, playerOwned) {
 		checkBounds = this.units[unitIndex].getBounds();
 		if (checkBounds.left < point.x && checkBounds.right > point.x
 				&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
-				(this.units[unitIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {
+				( (this.units[unitIndex].gameCore.playerId == this.currentPlayer.playerId && playerOwned) ||
+				  (this.units[unitIndex].gameCore.playerId != this.currentPlayer.playerId && enemyOwned) ) ) {
 			itemUnderMouse = this.units[unitIndex];
 		}
 	}
@@ -777,7 +789,8 @@ Engine.prototype.getItemAtPoint = function(point, playerOwned) {
 			checkBounds = this.buildings[buildingIndex].getBounds();
 			if (checkBounds.left < point.x && checkBounds.right > point.x
 					&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
-					(this.buildings[buildingIndex].gameCore.playerId == this.currentPlayer.playerId || !playerOwned)) {
+					( (this.buildings[buildingIndex].gameCore.playerId == this.currentPlayer.playerId && playerOwned) ||
+					  (this.buildings[buildingIndex].gameCore.playerId != this.currentPlayer.playerId && enemyOwned) ) ) {
 				itemUnderMouse = this.buildings[buildingIndex];
 			}
 		}
@@ -1170,12 +1183,29 @@ Engine.prototype.processDefenceAttackXY = function(responseData) {
 		};
 
 		// Loop through all defences set to fire
-		var defence = null;
-		for (var index = 0; index < responseData.source.length; index++) {
-			defence = this.getObjectFromInstanceId(refObject.instanceId);
-			if (defence != null && defence.gameCore.isDefence) {
-				defence.rotateAndShoot(refObject.targetX, refObject.targetY);
-			}
+		var defence = this.getObjectFromInstanceId(refObject.instanceId);
+		if (defence != null && defence.gameCore.isDefence) {
+			defence.rotateAndShoot(refObject.targetX, refObject.targetY);
+		}
+	}
+}
+
+Engine.prototype.processObjectAttackObject = function(responseData) {
+
+	// Process all items of request
+	for (var reqIndex = 0; reqIndex < responseData.source.length; reqIndex++) {
+
+		// Create reference object
+		var refObject = {
+			sourceId : responseData.source[reqIndex],
+			targetId : responseData.target[reqIndex],
+		};
+
+		// Loop through all defences set to fire
+		var source = this.getObjectFromInstanceId(refObject.sourceId);
+		var target = this.getObjectFromInstanceId(refObject.targetId);
+		if (target != null && source != null) {
+			source.lockonAndShoot(target);
 		}
 	}
 }
@@ -1356,6 +1386,9 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				break;
 			case "DEFENCE_ATTACK_XY":
 				this.processDefenceAttackXY(responseData);
+				break;
+			case "OBJECT_ATTACK_OBJECT":
+				this.processObjectAttackObject(responseData);
 				break;
 			case "WAYPOINT_PATH_COORDS":
 				this.processWaypoints(responseData);

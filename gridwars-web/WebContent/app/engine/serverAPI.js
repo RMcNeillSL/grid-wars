@@ -99,7 +99,29 @@ ServerAPI.prototype.requestDefenceAttackXY = function(defences, targetX, targetY
 	} else {
 		console.log("ERROR: Attempted to target XY with missing XY.");
 	}
+}
+
+ServerAPI.prototype.requestObjectAttackObject = function(sourceObjectId, targetObjectId) {
+
+	// Make sure target and source objects are present
+	if (sourceObjectId && targetObjectId) {
+
+		// Create request params
+		var params = {
+				source: [sourceObjectId],
+				target: [targetObjectId]
+		};
+		
+		// Generate request object
+		var request = new GameplayRequest("OBJECT_ATTACK_OBJECT", params);
+
+		// Submit request
+		this.gameService.gameplayRequest(request);
 	
+	} else {
+		if (!sourceObjectId) { console.log("ERROR: Attempted to attack target with no source identified."); }
+		if (!targetObjectId) { console.log("ERROR: Attempted to attack target with no target identified."); }
+	}
 }
 
 ServerAPI.prototype.requestUnitMoveCell = function(units, cell) {

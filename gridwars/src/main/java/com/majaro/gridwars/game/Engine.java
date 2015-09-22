@@ -388,6 +388,60 @@ public class Engine extends Thread {
 		return response;
 	}
 	
+	private GameplayResponse processObjectAttackObjectRequest(Player player, String[] sourceIds, String[] targetIds) {
+
+		// Set default result
+		GameplayResponse response = null;
+		boolean validConstruction = true;
+		
+////		// Check each object in turn
+////		for (DynGameDefence sourceDefence : sourceDefences) {
+////			
+////		}
+
+//		// Construct valid response
+//		if (validConstruction) {
+//			response = new GameplayResponse(E_GameplayResponseCode.DEFENCE_ATTACK_XY);
+//			for (DynGameDefence sourceDefence : sourceDefences) {
+//				response.addCoord(col, row);
+//				response.addSource(sourceDefence.getInstanceId());
+//			}
+//		}
+		
+		// Declare working variables
+		DynGameUnit sourceUnit = null;
+		DynGameBuilding sourceBuilding = null;
+		DynGameUnit targetUnit = null;
+		DynGameBuilding targetBuilding = null;
+		
+		// Construct gameplay response
+		response = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT);
+		
+		// Run through all attack requests
+		for (int index = 0; index < sourceIds.length; index ++) {
+			
+			// Create reference to source objects
+			sourceUnit = this.getGameUnitFromInstanceId(sourceIds[index]);
+			sourceBuilding = this.getGameBuildingFromInstanceId(sourceIds[index]);
+			
+			// Create reference to target objects
+			targetUnit = this.getGameUnitFromInstanceId(targetIds[index]);
+			targetBuilding = this.getGameBuildingFromInstanceId(targetIds[index]);
+			
+			// Add attack request to response
+			if ( (sourceUnit != null || sourceBuilding != null) &&
+				 (targetUnit != null || targetBuilding != null) ) {
+				if (sourceUnit != null) 	{ response.addSource(sourceUnit.getInstanceId()); }
+				if (sourceBuilding != null) { response.addSource(sourceBuilding.getInstanceId()); }
+				if (targetUnit != null) 	{ response.addTarget(targetUnit.getInstanceId()); }
+				if (targetBuilding != null) { response.addTarget(targetBuilding.getInstanceId()); }
+			}
+		}
+
+		// Return calculated result
+		return response;
+	}
+	
 	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate coordinate) {
 
 		// Set default result
@@ -587,6 +641,11 @@ public class Engine extends Thread {
 		        			this.getGameDefencesFromInstanceIds(gameplayRequest.getSourceString(), false), 
 		        			gameplayRequest.getTargetCellX(), 
 		        			gameplayRequest.getTargetCellY());
+		        	break;
+		        case OBJECT_ATTACK_OBJECT:
+		        	gameplayResponse = this.processObjectAttackObjectRequest(sender,
+		        			gameplayRequest.getSourceString(),
+		        			gameplayRequest.getTargetString());
 		        	break;
 		        case WAYPOINT_PATH_COORDS:
 		        	gameplayResponse = this.processWaypointPathCoordsRequest(sender, 
