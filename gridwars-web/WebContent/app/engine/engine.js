@@ -108,7 +108,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
 
 	// Load tile images
-	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 16);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
 
 	// Load particles
 	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
@@ -1292,7 +1292,6 @@ Engine.prototype.processUnitDamage = function(responseData) {
 						gameObject.left, gameObject.top);
 				removeList.push(refObject.instanceId);
 				
-				console.log(refObject.killer);
 				if(refObject.killer == this.currentPlayer.playerId) {
 					this.currentPlayer.playerCash += Math.floor(gameObject.gameCore.cost*1.2);
 				}
