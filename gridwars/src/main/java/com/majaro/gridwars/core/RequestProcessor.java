@@ -77,13 +77,16 @@ public class RequestProcessor {
 						   9, 5, 5, 5, 5, 5, 5, 10},
 				new Coordinate[] { new Coordinate(1, 1),
 						           new Coordinate(6, 4) }));
-		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 8, 6,
-				new int[] {0, 4, 4, 4, 4, 4, 4, 0,
-						   3, 0, 0, 0, 0, 0, 0, 1,
-						   3, 0, 0, 0, 0, 0, 0, 1,
-						   3, 0, 0, 0, 0, 0, 0, 1,
-						   3, 0, 0, 0, 0, 0, 0, 1,
-						   0, 2, 2, 2, 2, 2, 2, 0},
+		this.gameMaps.add(new GameStaticMap("2", "Omaga Beach", 11, 9,
+				new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						   0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0},
 				new Coordinate[] { new Coordinate(1, 1),
 								   new Coordinate(6, 4) }));
 		this.gameMaps.add(new GameStaticMap("3", "Test Map", 8, 8,
@@ -120,7 +123,7 @@ public class RequestProcessor {
 							2,2,2,2,38,3,42,1,1,3,44,0,47,34,2,2,2,2,32,47,0,46,3,1,1,40,3,36,2,2,2,2,
 							2,2,2,38,3,46,3,1,1,1,40,56,51,34,2,2,2,2,32,52,55,42,1,1,1,3,44,3,36,2,2,2,
 							2,2,2,32,0,42,1,1,1,3,43,0,54,34,2,2,2,2,32,54,0,45,3,1,1,1,40,0,34,2,2,2,
-							2,2,2,32,0,45,41,41,41,43,0,0,0,34,2,2,2,2,32,0,0,,45,41,41,41,43,0,34,2,2,2,
+							2,2,2,32,0,45,41,41,41,43,0,0,0,34,2,2,2,2,32,0,0,0,45,41,41,41,43,0,34,2,2,2,
 							2,2,2,37,31,31,31,31,31,31,31,31,31,35,2,2,2,2,37,31,31,31,31,31,31,31,31,31,35,2,2,2,
 							2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 							2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
@@ -233,7 +236,7 @@ public class RequestProcessor {
 				// Create new game lobby
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
-					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(2), lobbyName);
+					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(1), lobbyName);
 					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
 					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);

@@ -84,9 +84,10 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.mapGroup = null;
 	this.mapOverlayGroup = null;
 	this.turretGroup = null;
+	this.buildingGroup = null;
 	this.tankGroup = null;
 
-	// player results
+	// Player results
 	this.playerResults = [];
 }
 
@@ -94,11 +95,14 @@ Engine.prototype.preload = function() {
 
 	// Set system to render even when not active
 	this.phaserGame.stage.disableVisibilityChange = true;
+	
+	// Load game object sprite sheets
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_HUB, CONSTANTS.ROOT_SPRITES_LOC + 'tank_hub.png', 300, 300, 70);
 
 	// Load sprite sheets
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 28);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 50, 50, 10);
@@ -127,6 +131,7 @@ Engine.prototype.create = function() {
 	this.mapGroup = this.phaserGame.add.group();
 	this.mapOverlayGroup = this.phaserGame.add.group();
 	this.turretGroup = this.phaserGame.add.group();
+	this.buildingGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
 	this.highestGroup = this.phaserGame.add.group();
 	
@@ -258,8 +263,8 @@ Engine.prototype.update = function() {
 	// Update pointer position
 	this.updatePointerPosition();
 
-	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+//	// Get state of players in game
+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -962,10 +967,16 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) {
 }
 
 Engine.prototype.isSquareEmpty = function(col, row) {
-	for (var index = 0; index < this.buildings.length; index++) {
-		if (this.buildings[index].gameCore.cell.col == col
-				&& this.buildings[index].gameCore.cell.row == row) {
-			return false;
+	
+	// Generate list of all items to process
+	var potentialObstructions = this.buildings.concat(this.units);
+	
+	for (var index = 0; index < potentialObstructions.length; index++) {
+		var cells = potentialObstructions[index].getCells();
+		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
+			if (cells[cellIndex].col == col && cells[cellIndex].row == row) {
+				return false;
+			}
 		}
 	}
 	return true;
@@ -1150,24 +1161,38 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		}
 
 		// Create GameCore object
-		var gameCore = new GameCore("TURRET", refObject.cell);
+		var gameCore = new GameCore(refObject.identifier, refObject.cell);
 		gameCore.setInstanceId(refObject.instanceId);
 		gameCore.setPlayer(refObject.player);
 
 		// Construct object for positioning
-		var newBuilding = new Turret(this.engineCore, gameCore, this.mapGroup,
-				this.turretGroup, refObject.xy, refObject.col, refObject.row,
-				100, 100, false);
-
-		// Add object to building array
-		this.buildings.push(newBuilding);
-		
-		//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
-		for(var index = 0; index < this.players.length; index++) {
-			if(!this.players[index].hasPlacedObject && this.players[index].playerId === refObject.playerId) {
-				this.players[index].hasPlacedObject = true;
+		var newBuilding = null;
+		switch (refObject.identifier) {
+			case "HUB":
+				newBuilding = new Hub(this.engineCore, gameCore, this.mapGroup,
+						this.buildingGroup, refObject.xy, refObject.cell.col, refObject.cell.row,
+						300, 300, false);
 				break;
-			}
+			case "TURRET":
+				newBuilding = new Turret(this.engineCore, gameCore, this.mapGroup,
+						this.turretGroup, refObject.xy, refObject.cell.col, refObject.cell.row,
+						100, 100, false);
+				break;
+		}
+		
+		// Make sure new building was made 
+		if (newBuilding) {
+			
+			// Add object to building array
+			this.buildings.push(newBuilding);
+			
+			//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
+			for(var index = 0; index < this.players.length; index++) {
+				if(!this.players[index].hasPlacedObject && this.players[index].playerId === refObject.playerId) {
+					this.players[index].hasPlacedObject = true;
+					break;
+				}
+			}	
 		}
 	}
 
@@ -1341,7 +1366,7 @@ Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
 		var self = this;
 
 		// Construct object for positioning
-		var newTank = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.col, refObject.row, 100, 100, false);
+		var newTank = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.cell.col, refObject.cell.row, 100, 100, false);
 
 		// Add object to unit array
 		this.units.push(newTank);

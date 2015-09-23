@@ -142,27 +142,33 @@ public final class Const {
 		
 	}
 	
-	// Buildings in game [identifier, health, cash, techlv | power, ]
+	// Buildings in game [identifier, health, cash, techlv | power, widthCellCount, heightCellCount, ]
 	public static class GameBuilding extends GameObject {
 
 		// Building variables
 		protected int power;
+		protected int widthCellCount;
+		protected int heightCellCount;
 		
 		// Constructors
-		public GameBuilding(String identifier, int health, int cost, E_TechLevel techlv, int power) {
+		public GameBuilding(String identifier, int health, int cost, E_TechLevel techlv, int power, int widthCellCount, int heightCellCount) {
 			super(identifier, health, cost, techlv);
 			this.power = power;
+			this.widthCellCount = widthCellCount;
+			this.heightCellCount = heightCellCount;
 		}
 		public GameBuilding(GameBuilding source) {
-			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getPower());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getPower(), source.getWidthCellCount(), source.getHeightCellCount());
 		}
 		
 		// Getters
 		public int getPower() { return this.power; }
+		public int getWidthCellCount() { return this.widthCellCount; }
+		public int getHeightCellCount() { return this.heightCellCount; }
 		
 	}
 
-	// Defences in game  [identifier, health, cash, techlv | power, | range, damage, ]
+	// Defences in game  [identifier, health, cash, techlv | power, widthCellCount, heightCellCount, | range, damage, ]
 	public static class GameDefence extends GameBuilding {
 
 		// Building variables
@@ -170,13 +176,13 @@ public final class Const {
 		private int damage;
 		
 		// Constructors
-		public GameDefence(String identifier, int health, int cost, E_TechLevel techlv, int power, int range, int damage) {
-			super(identifier, health, cost, techlv, power);
+		public GameDefence(String identifier, int health, int cost, E_TechLevel techlv, int power, int widthCellCount, int heightCellCount, int range, int damage) {
+			super(identifier, health, cost, techlv, power, widthCellCount, heightCellCount);
 			this.range = range;
 			this.damage = damage;
 		}
 		public GameDefence(GameDefence source) {
-			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getPower(), source.getRange(), source.getDamage());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getPower(), source.getWidthCellCount(), source.getHeightCellCount(), source.getRange(), source.getDamage());
 		}
 		
 		// Getters
@@ -189,7 +195,8 @@ public final class Const {
 	
 	// Buildings in game
 	public static final GameBuilding[] BUILDINGS = {
-			new GameDefence("TURRET", 1000, 500, E_TechLevel.TECH_01, 2, 400, 25)
+			new GameBuilding("HUB", 1000, 500, E_TechLevel.TECH_01, 2, 3, 3),
+			new GameDefence("TURRET", 500, 500, E_TechLevel.TECH_01, 2, 1, 1, 400, 25)
 		};
 
 	// Units in game

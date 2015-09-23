@@ -1,5 +1,7 @@
 package com.majaro.gridwars.game;
 
+import java.util.ArrayList;
+
 import com.majaro.gridwars.game.Const.GameBuilding;
 
 public class DynGameBuilding extends GameBuilding implements DynGameObject {
@@ -50,6 +52,15 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	// Unique getters for dynamic values
 	public Player getOwner() { return this.playerRef; }
 	public Coordinate getCoordinate() { return this.coordinate; }
+	public Coordinate[] getCoordinates() {
+		ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
+		for (int yCount = 0; yCount < this.getHeightCellCount(); yCount ++) {
+			for (int xCount = 0; xCount < this.getWidthCellCount(); xCount ++) {
+				coordinates.add(new Coordinate(this.getCoordinate().getCol() + xCount, this.getCoordinate().getRow() + yCount));
+			}
+		}
+		return coordinates.toArray(new Coordinate[coordinates.size()]);
+	}
 	
 	// Unique getters for values from super objects
 	public int getMaxHealth() { return super.health; }

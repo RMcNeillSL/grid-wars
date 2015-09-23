@@ -3,8 +3,10 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 	// Make sure dependencies has been passed
 	if (tankGroup) {
 
-		// Save core game object
+		// Save core game object and update cell/point
 		this.gameCore = gameCore;
+		this.gameCore.point = new Point(xy.x + width/2, xy.y + height/2);
+		this.gameCore.cell = new Cell(col, row);
 		
 		// Save engine core
 		this.engineCore = engineCore;
@@ -14,8 +16,8 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		// Save sprite positioning
 		this.width = width;
 		this.height = height;
-		this.left = xy.x + this.width/2;
-		this.top = xy.y + this.height/2;
+		this.left = this.gameCore.point.x;
+		this.top = this.gameCore.point.y;
 		this.col = col;
 		this.row = row;
 		
@@ -454,6 +456,14 @@ Tank.prototype.getHealthRenderBounds = function() {
 	
 	// Return calculated bounds
 	return healthBounds;
+}
+
+Tank.prototype.getCells = function() {
+	var workingCellResult = this.gameCore.getCells();
+	if (this.waypoints.length > 0) {
+		workingCellResult.push(this.waypoints[0].toCell());
+	}
+	return workingCellResult;
 }
 
 

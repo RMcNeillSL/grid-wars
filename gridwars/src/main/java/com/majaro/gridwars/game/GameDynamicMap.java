@@ -71,6 +71,7 @@ public class GameDynamicMap {
 		// Declare local variables
 		boolean isObstructed = false;
 		Coordinate coord = null;
+		Coordinate[] coords = null;
 		
 		// Search through 'locked' cells
 		for (DynamicCell cell : this.cells) {
@@ -82,10 +83,12 @@ public class GameDynamicMap {
 		
 		// Search through buildings
 		for (DynGameBuilding building : this.gameBuildings) {
-			coord = building.getCoordinate();
-			if (coord != null && coord.getCol() == cellX && coord.getRow() == cellY) {
-				isObstructed = true;
-				break;
+			coords = building.getCoordinates();
+			for (int index = 0; index < coords.length; index ++) {
+				if (coords[index] != null && coords[index].getCol() == cellX && coords[index].getRow() == cellY) {
+					isObstructed = true;
+					break;
+				}
 			}
 		}
 		

@@ -10,6 +10,7 @@ import com.majaro.gridwars.apiobjects.GameplayResponse;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.LobbyUser;
 import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
+import com.majaro.gridwars.game.Const.E_TechLevel;
 import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameDefence;
 import com.majaro.gridwars.game.Const.GameObject;
@@ -230,27 +231,27 @@ public class Engine extends Thread {
 		// Declare working variables
 		Coordinate spawnCoordinate = null;
 		DynGameBuilding newBuilding = null;
-		Coordinate newBuildingCoordinate = null;
+		Coordinate startTankFactoryCoordinate = null;
 		
 		// Generate source building objects
-		GameBuilding startTankFactory = (GameBuilding)Const.getGameObjectFromString("TURRET");
+		GameBuilding startTankFactory = (GameBuilding)Const.getGameObjectFromString("HUB");
 		
 		// Move through all player spawns adding buildings and object around spawn
 		for (Player player : this.players) {
 			
 			// Save convenient reference to spawn coordiante
 			spawnCoordinate = player.getSpawnCoordinate();
-			newBuildingCoordinate = new Coordinate(spawnCoordinate.getCol(), spawnCoordinate.getRow());
+			startTankFactoryCoordinate = new Coordinate(spawnCoordinate.getCol(), spawnCoordinate.getRow());
 			
 			// Generate and add new building to response for player
-			newBuilding = new DynGameDefence(this.generateInstanceId(player), (GameDefence)startTankFactory, player, spawnCoordinate);
+			newBuilding = new DynGameBuilding(this.generateInstanceId(player), startTankFactory, player, startTankFactoryCoordinate);
 			gameplayResponse.addCoord(spawnCoordinate);
 			gameplayResponse.addSource(newBuilding.getIdentifier());
 			gameplayResponse.addTarget(newBuilding.getInstanceId());
 			gameplayResponse.addMisc(player.getPlayerName());
 			this.buildings.add(newBuilding);
 		}
-		
+
 		// Return constructed response object
 		return gameplayResponse;
 	}
