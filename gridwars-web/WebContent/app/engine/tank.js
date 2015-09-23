@@ -39,6 +39,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.TURRET);
 		this.turretSegment.anchor.setTo(0.49, 0.82);
 		this.turretSegment.z = 11;
+		this.tankGroup.add(this.turretSegment);
 		
 		// Animations
 		this.fire = this.turretSegment.animations.add('fire', this.gameCore.colour.FIRE, 30, false);

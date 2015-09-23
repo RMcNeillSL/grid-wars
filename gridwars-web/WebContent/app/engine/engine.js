@@ -118,7 +118,7 @@ Engine.prototype.preload = function() {
 	// Load game frame images
 	this.phaserGame.load.image(CONSTANTS.MINI_MAP, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map.png');
 	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
-
+	
 }
 
 Engine.prototype.create = function() {
@@ -348,8 +348,13 @@ Engine.prototype.onMouseDown = function(pointer) {
 	if (itemAtPoint) {
 		this.selected = [itemAtPoint];
 		this.selectedJustSet = true;
+		
+		if(this.selected[0].gameCore.identifier == "TANK") {
+			this.updateSelectedUnitDetails("TANK");
+		} else if(this.selected[0].gameCore.identifier == "TURRET") {
+			this.updateSelectedUnitDetails("TURRET");
+		}
 	}
-	
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
@@ -387,7 +392,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 		// Manage selected units
 		} else if (this.selected.length > 0) {
-
+			
 			// Process selected items
 			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
 
@@ -430,6 +435,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 				} else {
 					this.selected = [itemAtPoint];
 				}
+			}
+			
+			if(this.selected.length < 1) {
+				 this.updateSelectedUnitDetails(null);
 			}
 		}
 	}
@@ -741,12 +750,13 @@ Engine.prototype.drawGameScreen = function() {
 	});
 	
 	
-	this.unitDetails = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
+	this.unitDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
 			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT), CONSTANTS.UNIT_DETAILS);
-	this.unitDetails.z = 90;
-	this.unitDetails.fixedToCamera = true;
+	this.unitDetailsMenu.z = 90;
+	this.unitDetailsMenu.fixedToCamera = true;
+	this.unitDetailsMenu.visible = false;
 	
-    // Draw player money label
+	// Draw player money label
 	var style = {
 		font: "bold 12px Arial",
 		fill: "#fff", 
@@ -754,15 +764,42 @@ Engine.prototype.drawGameScreen = function() {
 		boundsAlignV: "middle"
 	};
 	
-	this.hudGroup.add(this.miniMap);
-	this.hudGroup.add(this.unitDetails);
-	this.hudGroup.add(this.homeButton);
-	this.hudGroup.add(this.defenceButton);
-	this.hudGroup.add(this.tankButton);
-	
 	this.moneyLabel = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 250, 323, this.currentPlayer.playerCash, style);
 	this.moneyLabel.setTextBounds(0, 0, 108, 25);
 	this.moneyLabel.fixedToCamera = true;
+	this.moneyLabel.z = 92;
+	
+	this.unitDetailsText = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 37,
+			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 31, "Nothing Selected.", style);
+	this.unitDetailsText.setTextBounds(0, 0, 204, 14);
+	this.unitDetailsText.z = 92;
+	this.unitDetailsText.fixedToCamera = true;
+	this.unitDetailsText.visible = false;
+	
+	this.hudGroup.add(this.miniMap);
+	this.hudGroup.add(this.unitDetailsMenu);
+	this.hudGroup.add(this.homeButton);
+	this.hudGroup.add(this.defenceButton);
+	this.hudGroup.add(this.tankButton);
+}
+
+Engine.prototype.updateSelectedUnitDetails = function(selectedUnit) {
+	if(selectedUnit != null) {
+		if(selectedUnit.gameCore.identifier == "TANK") {
+			this.unitDetailsVisibility(true);
+			this.unitDetailsText.setText("Tank");
+		} else if(selectedUnit.gameCore.identifier == "TURRET") {
+			this.unitDetailsVisibility(true);
+			this.unitDetailsText.setText("Turret");
+		}
+	} else {
+		this.unitDetailsVisibility(false);
+	}
+}
+
+Engine.prototype.unitDetailsVisibility = function(show) {
+	this.unitDetailsText.visible = show;
+	this.unitDetailsMenu.visible = show;
 }
 
 Engine.prototype.updatePlayerStatus = function() {

@@ -105,6 +105,8 @@ CONSTANTS = {
 	MINI_MAP : "mini_map",
 	MINI_MAP_BUTTONS : "mini_map_buttons",
 	UNIT_DETAILS : "unit_details",
+	TANK_ICON : "tank_icon",
+	TURRET_ICON : "turret_icon",
 	
 	// Game frame properties
 	MINI_MAP_WIDTH : 377,
