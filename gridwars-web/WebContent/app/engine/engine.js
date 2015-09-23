@@ -110,7 +110,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 6);
 
 	// Load tile images
-	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 16);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
 
 	// Load particles
 	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
@@ -200,13 +200,13 @@ Engine.prototype.create = function() {
 	this.pointer = { sprite : null, point : new Point(0, 0) };
 	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
 	this.pointer.sprite.z = 100;
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, 		CONSTANTS.CURSOR_SPRITE_NORMAL, 		30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, 	CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 	30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, 		CONSTANTS.CURSOR_SPRITE_INVALID, 		30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, 		CONSTANTS.CURSOR_SPRITE_ATTACK, 		30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, 	CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 	30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, 			CONSTANTS.CURSOR_SPRITE_MOVE, 			30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, 	CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 	30, true);
 	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
 	this.highestGroup.add(this.pointer.sprite);
 
@@ -325,7 +325,7 @@ Engine.prototype.render = function() {
 			
 			// Draw range circles for selected defences and units
 			if (this.selected[selectedIndex].gameCore.range) {
-				this.phaserGame.debug.geom(new Phaser.Circle(this.selected[selectedIndex].left, this.selected[selectedIndex].top, this.selected[selectedIndex].gameCore.range), 'rgba(255,255,255,0.6)', false);
+				this.phaserGame.debug.geom(new Phaser.Circle(this.selected[selectedIndex].left, this.selected[selectedIndex].top, this.selected[selectedIndex].gameCore.range * 2), 'rgba(255,255,255,0.4)', false);
 			}
 		}
 	}
@@ -406,6 +406,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 							} else {
 								this.serverAPI.requestUnitMoveCell(targetUnit, cell);
 							}
+						}
+					} else {
+						var itemAtPoint = this.getItemAtPoint(point, false, true);
+						if (itemAtPoint) {
+							this.serverAPI.requestObjectAttackObject(this.selected[selectedIndex].gameCore.instanceId, itemAtPoint.gameCore.instanceId);
 						}
 					}
 				}
@@ -598,7 +603,7 @@ Engine.prototype.processMouseFormUpdates = function() {
 	// Process selection for unit
 	if (unitSelected) {
 		if (!itemAtPoint) {
-			this.updatePointerForm(CONSTANTS.CURSOR_SPRITE_MOVE);
+			this.updatePointerForm(CONSTANTS.CURSOR_MOVE);
 		} else {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
 				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);

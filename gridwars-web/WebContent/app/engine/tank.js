@@ -25,7 +25,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.moveSpeed = 1; // MUST BE A MULTIPLE OF 100(size of a square)!
 		this.rotateSpeed = 2;
 		this.turretRotateSpeed = 2;
-		this.shootTarget = { instanceId: "", point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
+		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		this.waypointControl = { trackPlacementFrequency: 30, moveStepCount: 0 };
 		
@@ -49,14 +49,27 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		
 		// Create fire callback function
 		this.fire.onComplete.add(function(sprite, animation) {
-			setTimeout(function() { self.shootTarget.isFiring = false; }, 1000);
-			self.engineCore.func_RequestExplosion(
-					self.mapGroup,
-					CONSTANTS.SPRITE_EXPLOSION_A,
-					self.gameCore.playerId,
-					self.gameCore.instanceId + "_A",
-					self.shootTarget.point.x,
-					self.shootTarget.point.y);
+			setTimeout(function() { self.shootTarget.isFiring = false; }, 2000);
+			if (self.shootTarget.instanceId) {
+				var target = self.engineCore.func_GetObjectFromInstanceId(self.shootTarget.instanceId);
+				if (target) {
+					self.engineCore.func_RequestExplosion(
+							self.mapGroup,
+							CONSTANTS.SPRITE_EXPLOSION_A,
+							self.gameCore.playerId,
+							self.gameCore.instanceId + "_A",
+							target.left,
+							target.top);
+				}
+			} else if (self.shootTarget.point) {
+				self.engineCore.func_RequestExplosion(
+						self.mapGroup,
+						CONSTANTS.SPRITE_EXPLOSION_A,
+						self.gameCore.playerId,
+						self.gameCore.instanceId + "_A",
+						self.shootTarget.point.x,
+						self.shootTarget.point.y);
+			}
 		});
 
 		// Set current mode based on build flag
@@ -76,14 +89,65 @@ Tank.prototype.update = function() {
 	}
 	
 	// Process tank turret rotation
-	if (this.shootTarget && this.shootTarget.point) {
-		this.processTurretRotation();
+	if (this.shootTarget &&
+			(this.shootTarget.point || this.shootTarget.instanceId) ) {
+		if (this.shootTarget.point) { this.processTurretRotation(); }
+		if (this.shootTarget.instanceId) { this.lockonAndShoot(); }
 	}
 	
-	// Process tank turret firing event		inFiring: false, readyToFire
+	// Process tank turret firing event
 	if (this.shootTarget.readyToFire &&
 			!this.shootTarget.isFiring) {
 		this.processTurretFire();
+	}
+}
+
+Tank.prototype.lockonAndShoot = function(targetObject) {
+	
+	// Check if a target needs assigning
+	if (targetObject) {
+		
+		// Save target information
+		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
+		this.shootTarget.isFiring = false;
+		this.shootTarget.readyToFire = false;
+
+		// Calculate rotation and point data
+		var sourcePoint = new Point(this.left, this.top);
+		var targetPoint = new Point(target.left, target.top);
+		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
+		
+		// Save data to shoot target object
+		this.shootTarget.increment = rotationData.angleIncrement;
+	}
+	
+	// Run calculations if a target object is assigned
+	if (this.shootTarget.instanceId) {
+		
+		// Save reference to target
+		var target = this.engineCore.func_GetObjectFromInstanceId(this.shootTarget.instanceId);
+		
+		// Make sure a target was found
+		if (target) {
+			
+			// Calculate rotation and point data
+			var sourcePoint = new Point(this.left, this.top);
+			var targetPoint = new Point(target.left, target.top);
+			var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
+			
+			// Identify further rotation or begin charging animation (if target is in range)
+			if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), rotationData.target360Angle, this.shootTarget.increment) &&
+					!this.shootTarget.isFiring) {
+				this.shootTarget.increment = rotationData.angleIncrement;
+				this.rotate(this.shootTarget.increment, false, true);
+				this.shootTarget.readyToFire = false;
+			} else {
+				this.shootTarget.readyToFire = (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range * 1.1);
+			}
+			
+		} else {
+			this.shootTarget.instanceId = null;
+		}
 	}
 }
 

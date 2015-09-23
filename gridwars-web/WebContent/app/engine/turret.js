@@ -22,7 +22,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		// Set default misc values
 		this.rotateSpeed = 3;
 		this.damageExplosions = [];
-		this.shootTarget = { instanceId: "", point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
+		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
@@ -118,10 +118,6 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 			// Show particle emitters
 			self.bulletParticle01.on = true;
 			self.bulletParticle02.on = true;
-			
-			// Set movement update interval
-			self.bullets.interval = setInterval(function() { self.bullets.elapsed += 1; }, 3);
-			
 		});
 		
 		// Set current mode based on build flag
@@ -274,9 +270,6 @@ Turret.prototype.lockonAndShoot = function(targetObject) {
 		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
 		this.shootTarget.isFiring = false;
 		this.shootTarget.readyToFire = false;
-		
-//		point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
-
 	}
 	
 	// Run calculations if a target object is assigned
@@ -302,10 +295,11 @@ Turret.prototype.lockonAndShoot = function(targetObject) {
 				this.rotate(this.shootTarget.increment);
 				this.shootTarget.readyToFire = true;
 			} else {
-//				if (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range) {
+				var distanceToTarget = this.gameCore.pythag(sourcePoint, targetPoint);
+				if (distanceToTarget <= this.gameCore.range) {
 					this.shootTarget.isFiring = true;
 					this.charge.play();
-//				}
+				}
 			}
 			
 		} else {
@@ -321,6 +315,7 @@ Turret.prototype.manageFiringBullets = function() {
 
 		// Calculate new elapsed distance
 		var elapsedDistance = this.bullets.elapsed * this.bullets.speed;
+		this.bullets.elapsed = this.bullets.elapsed + 1;
 		
 		// Position fire sprites at end of turret
 		this.bulletParticle01.x += this.bullets.incUnitX;
@@ -343,7 +338,6 @@ Turret.prototype.manageFiringBullets = function() {
 				elapsedDistance > this.gameCore.range * 1.5) {
 			this.bullets.incUnitX = 0;
 			this.bullets.incUnitY = 0;
-			clearInterval(this.bullets.interval);
 			this.bullets.interval = null;
 			this.bullets.firing = false;
 			this.bulletParticle01.on = false;

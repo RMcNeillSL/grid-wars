@@ -144,8 +144,7 @@ GameCore.prototype.angleInErrorMargin = function(currentAngle, targetAngle, erro
 }
 
 GameCore.prototype.pythag = function(pointA, pointB) {
-	var result = Math.sqrt((pointA.x - pointB.x) + (pointA.y - pointB.y));
-	return result;
+	return Math.sqrt((pointA.x - pointB.x) * (pointA.x - pointB.x) + (pointA.y - pointB.y) * (pointA.y - pointB.y));
 }
 
 
