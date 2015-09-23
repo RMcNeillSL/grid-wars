@@ -70,7 +70,7 @@ CONSTANTS = {
 	
 	// ***************** CURSOR SPRITES AND IDS ****************** //
 	
-	// Sprite file and frame squences
+	// Sprite file and frame sequences
 	SPRITE_CURSORS : "sprite_cursors",
 	CURSOR_SPRITE_NORMAL 				: [0],
 	CURSOR_SPRITE_NORMAL_ENEMY 			: [1],
@@ -91,6 +91,8 @@ CONSTANTS = {
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",
+	GAME_SCREEN_WIDTH: 1500,
+	GAME_SCREEN_HEIGHT: 800,
 	TILE_WIDTH : 100,
 	TILE_HEIGHT : 100,
 	GAME_BUILDINGS : [],
@@ -98,6 +100,19 @@ CONSTANTS = {
 
 	// Directory locations
 	ROOT_SPRITES_LOC : "app/assets/",
+	
+	// Game frame sprites
+	MINI_MAP : "mini_map",
+	MINI_MAP_BUTTONS : "mini_map_buttons",
+	UNIT_DETAILS : "unit_details",
+	TANK_ICON : "tank_icon",
+	TURRET_ICON : "turret_icon",
+	
+	// Game frame properties
+	MINI_MAP_WIDTH : 377,
+	MINI_MAP_HEIGHT : 365,
+	UNIT_DETAILS_WIDTH : 274,
+	UNIT_DETAILS_HEIGHT : 226,
 	
 	// Loaded image(.png) names
 	SPRITE_HUB : "sprite_hub_anim",

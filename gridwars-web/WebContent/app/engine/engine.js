@@ -14,7 +14,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	var local_render = function() { self.render(); }
 
 	// Create phaser game object
-	this.phaserGame = new Phaser.Game(800, 600, Phaser.CANVAS,
+	this.phaserGame = new Phaser.Game(CONSTANTS.GAME_SCREEN_WIDTH, CONSTANTS.GAME_SCREEN_HEIGHT, Phaser.CANVAS,
 			'gridwars-engine', {
 				preload : local_preload,
 				create : local_create,
@@ -85,6 +85,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.turretGroup = null;
 	this.buildingGroup = null;
 	this.tankGroup = null;
+	this.hudGroup = null;
 
 	// Player results
 	this.playerResults = [];
@@ -109,13 +110,18 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
+	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 6);
 
 	// Load tile images
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
 
 	// Load particles
 	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
-
+	
+	// Load game frame images
+	this.phaserGame.load.image(CONSTANTS.MINI_MAP, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map.png');
+	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
+	
 }
 
 Engine.prototype.create = function() {
@@ -132,6 +138,7 @@ Engine.prototype.create = function() {
 	this.turretGroup = this.phaserGame.add.group();
 	this.buildingGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
+	this.hudGroup = this.phaserGame.add.group();
 	this.highestGroup = this.phaserGame.add.group();
 	
 	// Set map dimensions
@@ -190,6 +197,7 @@ Engine.prototype.create = function() {
 		}
 	};
 	
+
 	//Adding information text to the game screen
 	var style = {
 		font: "bold 12px Arial", fill: "#fff", 
@@ -200,6 +208,10 @@ Engine.prototype.create = function() {
 
 	this.moneyLabel = this.phaserGame.add.text(650, 5, "Money: " + this.currentPlayer.cash, style);
 	this.moneyLabel.fixedToCamera = true;
+
+	// Draw the gameframe
+	this.drawGameScreen();		// merge conflickt
+
 
 	// Create cursor object
 	this.pointer = { sprite : null, point : new Point(0, 0) };
@@ -218,9 +230,9 @@ Engine.prototype.create = function() {
 	// Position camera over spawn point
 	for (var index = 0; index < this.players.length; index++) {
 		if (this.players[index].playerId == this.currentPlayer.playerId) {
-			var spawnPoint = new Cell(this.gameplayConfig.spawnCoordinates[index].col,
+			this.spawnPoint = new Cell(this.gameplayConfig.spawnCoordinates[index].col,
 					this.gameplayConfig.spawnCoordinates[index].row);
-			this.positionCameraOverCell(spawnPoint);
+			this.positionCameraOverCell(this.spawnPoint);
 			break;
 		}
 	}
@@ -238,10 +250,10 @@ Engine.prototype.update = function() {
 	
     // Manage scrolling of the map
     this.manageMapMovement();
-    
+
     // Update player money label
     this.moneyLabel.setText("Money: " + this.currentPlayer.cash);
-    
+
 	// Render map
 	this.mapRender.renderMap();
 
@@ -356,8 +368,13 @@ Engine.prototype.onMouseDown = function(pointer) {
 	if (itemAtPoint) {
 		this.selected = [itemAtPoint];
 		this.selectedJustSet = true;
+		
+		if(this.selected[0].gameCore.identifier == "TANK") {
+			this.updateSelectedUnitDetails("TANK");
+		} else if(this.selected[0].gameCore.identifier == "TURRET") {
+			this.updateSelectedUnitDetails("TURRET");
+		}
 	}
-	
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
@@ -395,7 +412,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 		// Manage selected units
 		} else if (this.selected.length > 0) {
-			
+
 			// Calculate item at point
 			var enemyAtPoint = this.getItemAtPoint(point, false, true);
 			var friendlyAtPoint = this.getItemAtPoint(point, true, true);
@@ -449,6 +466,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 				} else {
 					this.selected = [itemAtPoint];
 				}
+			}
+			
+			if(this.selected.length < 1) {
+				 this.updateSelectedUnitDetails(null);
 			}
 		}
 	}
@@ -706,12 +727,124 @@ Engine.prototype.positionCameraOverCell = function(cell) {
 Engine.prototype.manageMapMovement = function() {
 
 	// Update camera with up and down keys
-	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
-    else if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
+	if (this.cursors.up.isDown) {
+		this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
+	}
+    else if (this.cursors.down.isDown) { 
+    	this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
+    }
 
 	// Update camera with left and right keys
-    if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
-    else if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
+    if (this.cursors.left.isDown) {
+    	this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
+    } else if (this.cursors.right.isDown) {
+    	this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY;
+    }
+}
+
+Engine.prototype.drawGameScreen = function() {
+	this.miniMap = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH), 0, CONSTANTS.MINI_MAP);
+	this.miniMap.fixedToCamera = true;
+	this.miniMap.z = 90;
+	
+	var self = this;
+	
+	this.homeButton = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 65, 318, CONSTANTS.MINI_MAP_BUTTONS);
+	this.homeButton.frame = 4;
+	this.homeButton.fixedToCamera = true;
+	this.homeButton.z = 92;
+	this.homeButton.inputEnabled = true;
+	this.homeButton.events.onInputOver.add(function() {
+		self.homeButton.frame = 5;
+	}, this);
+	this.homeButton.events.onInputOut.add(function() {
+		self.homeButton.frame = 4;
+	});
+	this.homeButton.events.onInputUp.add(function() {
+		self.positionCameraOverCell(self.spawnPoint);
+	});
+	
+	this.defenceButton = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 120, 317, CONSTANTS.MINI_MAP_BUTTONS);
+	this.defenceButton.frame = 2;
+	this.defenceButton.fixedToCamera = true;
+	this.defenceButton.z = 92;
+	this.defenceButton.inputEnabled = true;
+	this.defenceButton.events.onInputOver.add(function() {
+		self.defenceButton.frame = 3;
+	});
+	this.defenceButton.events.onInputOut.add(function() {
+		self.defenceButton.frame = 2;
+	});
+	this.defenceButton.events.onInputUp.add(function() {
+		self.purchaseObject("TURRET");
+	});
+	
+	this.tankButton = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 178, 318, CONSTANTS.MINI_MAP_BUTTONS);
+	this.tankButton.frame = 0;
+	this.tankButton.fixedToCamera = true;
+	this.tankButton.z = 92;
+	this.tankButton.inputEnabled = true;
+	this.tankButton.events.onInputOver.add(function() {
+		self.tankButton.frame = 1;
+	});
+	this.tankButton.events.onInputOut.add(function() {
+		self.tankButton.frame = 0;
+	});
+	this.tankButton.events.onInputUp.add(function() {
+		self.purchaseObject("TANK");
+	});
+	
+	
+	this.unitDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
+			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT), CONSTANTS.UNIT_DETAILS);
+	this.unitDetailsMenu.z = 90;
+	this.unitDetailsMenu.fixedToCamera = true;
+	this.unitDetailsMenu.visible = false;
+	
+	// Draw player money label
+	var style = {
+		font: "bold 12px Arial",
+		fill: "#fff", 
+		boundsAlignH: "center",
+		boundsAlignV: "middle"
+	};
+	
+	this.moneyLabel = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 250, 323, this.currentPlayer.playerCash, style);
+	this.moneyLabel.setTextBounds(0, 0, 108, 25);
+	this.moneyLabel.fixedToCamera = true;
+	this.moneyLabel.z = 92;
+	
+	this.unitDetailsText = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 37,
+			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 31, "Nothing Selected.", style);
+	this.unitDetailsText.setTextBounds(0, 0, 204, 14);
+	this.unitDetailsText.z = 92;
+	this.unitDetailsText.fixedToCamera = true;
+	this.unitDetailsText.visible = false;
+	
+	this.hudGroup.add(this.miniMap);
+	this.hudGroup.add(this.unitDetailsMenu);
+	this.hudGroup.add(this.homeButton);
+	this.hudGroup.add(this.defenceButton);
+	this.hudGroup.add(this.tankButton);
+}
+
+Engine.prototype.updateSelectedUnitDetails = function(selectedUnit) {
+	if(selectedUnit != null) {
+		if(selectedUnit.gameCore.identifier == "TANK") {
+			this.unitDetailsVisibility(true);
+			this.unitDetailsText.setText("Tank");
+		} else if(selectedUnit.gameCore.identifier == "TURRET") {
+			this.unitDetailsVisibility(true);
+			this.unitDetailsText.setText("Turret");
+		}
+	} else {
+		this.unitDetailsVisibility(false);
+	}
+}
+
+Engine.prototype.unitDetailsVisibility = function(show) {
+	this.unitDetailsText.visible = show;
+	this.unitDetailsMenu.visible = show;
 }
 
 Engine.prototype.updatePlayerStatus = function() {
@@ -1277,7 +1410,10 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		// Deduct cost from player
 		var newObject = this.getObjectFromIdentifier(refObject.identifier);
 		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
+
 			this.currentPlayer.cash -= newObject.cost;
+			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label					 merge conflickt
+
 		}
 
 		// Create GameCore object
@@ -1436,9 +1572,12 @@ Engine.prototype.processUnitDamage = function(responseData) {
 						CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C,
 						gameObject.left, gameObject.top);
 				removeList.push(refObject.instanceId);
-				
+
 				if(refObject.killer == this.currentPlayer.playerId) {
+
 					this.currentPlayer.cash += Math.floor(gameObject.gameCore.cost*1.2);
+					this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label				merge conflickt
+
 				}
 			}
 
@@ -1474,7 +1613,10 @@ Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
 		
 		// deduct cost from player's cash
 		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
+
 			this.currentPlayer.cash -= CONSTANTS.GAME_UNITS[0].cost;
+			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label						merge conflickt
+
 		}
 
 		// Create GameCore object
@@ -1511,7 +1653,10 @@ Engine.prototype.processInsufficientFunds = function(responseData) {
 		};
 	
 		if(refObject.playerId == this.currentPlayer.playerId) {
+
 			this.currentPlayer.cash = parseInt(refObject.cash);
+			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label						merge conflickt
+
 		}
 	}
 }
