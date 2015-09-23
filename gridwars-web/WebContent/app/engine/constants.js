@@ -199,7 +199,7 @@ CONSTANTS = {
 	COLOUR_ : {
 		
 		// Tank production building - opens up tank hanger doors - shows platform gradually getting lighter (rising)
-		"HUB" :    [{ COLOUR : "blue", 		HUB : 11, 	SHADOW : 0,	OPEN : 10, 	OPENING : [12,13,14,15,16,17,18,19], 	RISE : [0,1,2,3,4,5,6,7,8,9] },
+		"HUB" :    [{ COLOUR : "blue", 		HUB : 11, 	SHADOW : 0,	OPEN : 10,	CLOSED : 19, 	OPENING : [12,13,14,15,16,17,18,19],	CLOSING : [19,18,17,16,15,14,13,12], 	RISE : [0,1,2,3,4,5,6,7,8,9],	SINK : [9,8,7,6,5,4,3,2,1,0] },
 	                { COLOUR : "red", 		HUB : 21, 	SHADOW : 0, OPEN : 20, 	OPENING : [22,23,24,25,26,27,28,29], 	RISE : [0,1,2,3,4,5,6,7,8,9] },
 	                { COLOUR : "purple", 	HUB : 31, 	SHADOW : 0, OPEN : 30, 	OPENING : [32,33,34,35,36,37,38,39], 	RISE : [0,1,2,3,4,5,6,7,8,9] },
 	                { COLOUR : "green", 	HUB : 41, 	SHADOW : 0, OPEN : 40, 	OPENING : [42,43,44,45,46,47,48,49], 	RISE : [0,1,2,3,4,5,6,7,8,9] },

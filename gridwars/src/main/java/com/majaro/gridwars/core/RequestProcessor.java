@@ -128,7 +128,7 @@ public class RequestProcessor {
 						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-				new Coordinate[] { new Coordinate(9, 8),
+				new Coordinate[] { new Coordinate(6, 5),
 								   new Coordinate(24, 27),
 						           new Coordinate(8, 27),
 				                   new Coordinate(25, 8) }));

@@ -1,4 +1,4 @@
-function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, height, inBuildingMode) {
+function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, height) {
 
 	// Make sure dependencies has been passed
 	if (tankGroup) {
@@ -7,6 +7,9 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.gameCore = gameCore;
 		this.gameCore.point = new Point(xy.x + width/2, xy.y + height/2);
 		this.gameCore.cell = new Cell(col, row);
+		
+		// Mark as currently in production
+		this.inProductionMode = true;
 		
 		// Save engine core
 		this.engineCore = engineCore;
@@ -29,18 +32,20 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.turretRotateSpeed = 2;
 		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
-		this.waypointControl = { trackPlacementFrequency: 30, moveStepCount: 0 };
+		this.waypointControl = { trackPlacementFrequency: 30, moveStepCount: 0, onComplete: null };
 		
 		// Create turret base object
 		this.bodySegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.BODY);
 		this.bodySegment.anchor.setTo(0.48, 0.5);
-		this.bodySegment.z = 10;
+		this.bodySegment.z = 8;
+		this.bodySegment.visible = false;
 		this.tankGroup.add(this.bodySegment);
 		
 		// Create turrent cannon sprite
 		this.turretSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.TURRET);
 		this.turretSegment.anchor.setTo(0.49, 0.82);
-		this.turretSegment.z = 11;
+		this.turretSegment.z = 9;
+		this.turretSegment.visible = false;
 		this.tankGroup.add(this.turretSegment);
 		
 		// Animations
@@ -74,9 +79,6 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 			}
 		});
 
-		// Set current mode based on build flag
-		this.setBuildingMode(inBuildingMode);
-		
 	} else {
 		if (!phaserRef) { console.log("ERROR: Failed to construct tank, missing phaserRef."); }
 	}
@@ -102,6 +104,15 @@ Tank.prototype.update = function() {
 			!this.shootTarget.isFiring) {
 		this.processTurretFire();
 	}
+}
+
+Tank.prototype.setVisible = function(visible) {
+	this.bodySegment.visible = visible;
+	this.turretSegment.visible = visible;
+}
+
+Tank.prototype.removeFromProduction = function() {
+	this.inProductionMode = false;
 }
 
 Tank.prototype.lockonAndShoot = function(targetObject) {
@@ -350,7 +361,7 @@ Tank.prototype.progressWaypoints = function() {
 	var rotationData = this.calculateRotateToPointData(this.bodySegment.angle, new Point(this.left, this.top), nextWaypoint, this.rotateSpeed);
 
 	// Perform rotation if tank angle is not within error margins
-	if (!this.angleInErrorMargin(rotationData.current360Angle, rotationData.target360Angle, this.rotateSpeed/2)) {
+	if (!this.angleInErrorMargin(rotationData.current360Angle, rotationData.target360Angle, (this.rotateSpeed/2+1))) {
 		this.rotate(rotationData.angleIncrement, true, true);
 	} else {
 
@@ -366,7 +377,7 @@ Tank.prototype.progressWaypoints = function() {
 	}
 
 	// Check if track image needs to be placed
-	if (this.waypointControl.moveStepCount == 0) {
+	if (this.waypointControl.moveStepCount == 0 && !this.inProductionMode) {
 		this.engineCore.func_PlaceTankTrack(this, new Point(this.left, this.top), this.bodySegment.angle);
 	}
 	
@@ -385,7 +396,9 @@ Tank.prototype.progressWaypoints = function() {
 	var newCell = (new Point(this.left, this.top)).toCell();
 	this.gameCore.point = new Point(this.left, this.top);
 	if (newCell.col != currentCell.col || newCell.row != currentCell.row) {
-		this.engineCore.func_UpdateNewUnitCell(this, currentCell, newCell);
+		if (!this.inProductionMode) {
+			this.engineCore.func_UpdateNewUnitCell(this, currentCell, newCell);
+		}
 		this.gameCore.cell = this.gameCore.point.toCell();
 	}
 	
@@ -393,6 +406,11 @@ Tank.prototype.progressWaypoints = function() {
 	if (Math.abs(nextWaypoint.x - this.left) < this.moveSpeed / 2 &&
 			Math.abs(nextWaypoint.y - this.top) < this.moveSpeed / 2) {
 		this.waypoints.splice(0, 1);
+		if (this.waypoints.length == 0 &&
+				this.waypointControl.onComplete) {
+			this.waypointControl.onComplete(nextWaypoint);
+			this.waypointControl.onComplete = null;
+		}
 	}
 }
 
