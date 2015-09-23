@@ -40,11 +40,10 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 				gameplayConfig.userColour[index],
 				gameplayConfig.userTeam[index],
 				(gameplayConfig.userName[index] == playerId),
-				0);
+				gameplayConfig.startingCash);
 		this.players.push(newPlayer);
 		if (gameplayConfig.userName[index] == playerId) {
 			this.currentPlayer = newPlayer;
-			this.currentPlayer.playerCash = gameplayConfig.startingCash;
 		}
 	}
 
@@ -199,7 +198,7 @@ Engine.prototype.create = function() {
 	    boundsAlignV: "top"
 	};
 
-	this.moneyLabel = this.phaserGame.add.text(650, 5, "Money: " + this.currentPlayer.playerCash, style);
+	this.moneyLabel = this.phaserGame.add.text(650, 5, "Money: " + this.currentPlayer.cash, style);
 	this.moneyLabel.fixedToCamera = true;
 
 	// Create cursor object
@@ -241,7 +240,7 @@ Engine.prototype.update = function() {
     this.manageMapMovement();
     
     // Update player money label
-    this.moneyLabel.setText("Money: " + this.currentPlayer.playerCash);
+    this.moneyLabel.setText("Money: " + this.currentPlayer.cash);
     
 	// Render map
 	this.mapRender.renderMap();
@@ -307,7 +306,7 @@ Engine.prototype.render = function() {
 		self.phaserGame.debug.geom(remainingRect, remainingColour);
 
 		// Output health interval lines
-		for (var lineX = healthBarBounds.left; lineX < healthBarBounds.left + healthBarBounds.width * healthPercent; lineX += 5) {
+		for (var lineX = healthBarBounds.left; lineX < healthBarBounds.left + healthBarBounds.width * healthPercent; lineX += healthBarBounds.height) {
 			var healthLine = new Phaser.Line(lineX, healthBarBounds.top, lineX, healthBarBounds.bottom);
 			self.phaserGame.debug.geom(healthLine, healthIntervalColour);
 		}
@@ -521,31 +520,11 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 Engine.prototype.onKeyPressed = function(char) {
 
-	// Check if creating a new object
-	if (char == '1' || char == '2' || char == '3') {
+	// Set active building object
+	if (char == '1') { this.purchaseObject("TURRET"); }
 
-		// Game core object
-		var self = this;
-		var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
-
-		// Set active building object
-		if (char == '1') {
-			var gameCore = new GameCore("TURRET", cell);
-			gameCore.setPlayer(this.currentPlayer);
-			this.createNewBuildingObject(gameCore);
-		}
-
-		// Set active building object -phaserRef, -mapGroup, -tankGroup, -xy,
-		// width, height, func_explosionRequest
-		if (char == '2') {
-			var gameCore = new GameCore("TANK", cell);
-			gameCore.setPlayer(this.currentPlayer);
-			this.phaserGame.newBuilding.active = true;
-			this.phaserGame.newBuilding.target = new Tank(this.engineCore,
-					gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
-					cell.col, cell.row, 100, 100, true);
-		}
-	}
+	// Submit request for tank purchase
+	if (char == '2') { this.purchaseObject("TANK"); }
 	
 	// Process mouse form updates
 	this.processMouseFormUpdates();
@@ -565,6 +544,40 @@ Engine.prototype.onKeyUp = function() {
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.purchaseObject = function(objectId) {
+	
+	// Get current cell over
+	var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
+	
+	// Define new request objects
+	var newBuildingCore = null;
+	var newUnitCore = null;
+
+	// Create building objects for tanks
+	switch (objectId) {
+		case "TURRET":
+			var gameCore = new GameCore(objectId, cell);
+			gameCore.setPlayer(this.currentPlayer);
+			this.createNewBuildingObject(gameCore);
+			break;
+		case "TANK":
+			newUnitCore = new GameCore(objectId, cell);
+			newUnitCore.setPlayer(this.currentPlayer);
+			this.serverAPI.purchaseRequest(newUnitCore);
+//			var gameCore = new GameCore("TANK", cell);
+//			gameCore.setPlayer(this.currentPlayer);
+//			this.phaserGame.newBuilding.active = true;
+//			this.phaserGame.newBuilding.target = new Tank(this.engineCore,
+//					gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
+//					cell.col, cell.row, 100, 100, true);
+			break;
+	}
+	
+	// Check submit request for purchase
+	if (newBuildingCore) { }
+	if (newUnitCore) { }
+}
 
 Engine.prototype.processMouseFormUpdates = function() {
 	
@@ -977,6 +990,7 @@ Engine.prototype.isSquareEmpty = function(col, row) {
 	// Generate list of all items to process
 	var potentialObstructions = this.buildings.concat(this.units);
 	
+	// Loop through all potential matches identifying cells to check
 	for (var index = 0; index < potentialObstructions.length; index++) {
 		var cells = potentialObstructions[index].getCells();
 		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
@@ -985,6 +999,8 @@ Engine.prototype.isSquareEmpty = function(col, row) {
 			}
 		}
 	}
+	
+	// Return empty if nothing was found
 	return true;
 }
 
@@ -995,24 +1011,6 @@ Engine.prototype.createNewBuildingObject = function(gameCore) {
 	this.phaserGame.newBuilding.target = new Turret(this.engineCore, gameCore,
 			this.mapGroup, this.turretGroup, gameCore.cell.toPoint(),
 			gameCore.cell.col, gameCore.cell.row, 100, 100, true);
-}
-
-Engine.prototype.purchaseObject = function(item) {
-	
-	var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
-
-	if (item === "TURRET") {
-		var gameCore = new GameCore("TURRET", cell);
-		gameCore.setPlayer(this.currentPlayer);
-		this.createNewBuildingObject(gameCore);
-	} else if (item === "TANK") {
-		var gameCore = new GameCore("TANK", cell);
-		gameCore.setPlayer(this.currentPlayer);
-		this.phaserGame.newBuilding.active = true;
-		this.phaserGame.newBuilding.target = new Tank(this.engineCore,
-				gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
-				cell.col, cell.row, 100, 100, true);
-	}
 }
 
 Engine.prototype.getObjectFromInstanceId = function(instanceId) {
@@ -1089,6 +1087,26 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 	}
 }
 
+Engine.prototype.getObjectFromIdentifier = function(identifier) {
+	
+	// Iterate through units
+	for (var index = 0; index < CONSTANTS.GAME_UNITS.length; index ++) {
+		if (CONSTANTS.GAME_UNITS[index].identifier == identifier) {
+			return CONSTANTS.GAME_UNITS[index];
+		}
+	}
+	
+	// Iterate through buildings
+	for (var index = 0; index < CONSTANTS.GAME_BUILDINGS.length; index ++) {
+		if (CONSTANTS.GAME_BUILDINGS[index].identifier == identifier) {
+			return CONSTANTS.GAME_BUILDINGS[index];
+		}
+	}
+	
+	// Return erroneous value
+	return null;
+}
+
 
 // ------------------------------ SPECIALISED METHODS FOR DEALING WITH RESPONSES ------------------------------//
 
@@ -1142,6 +1160,101 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 	this.processNewBuilding(mockBuildingResponseData, true);
 }
 
+Engine.prototype.processPurchaseObject = function(responseData) {
+
+	// Identify object from response
+	var gameObject = this.getObjectFromIdentifier(responseData.source[0]);
+	
+	// Purchase finished callback
+	var self = this;
+	var purchaseFinished = function() {
+		
+		// Locate purchase object from player and purchaseObjectId 
+		var purchaseObject = self.currentPlayer.getPurchase(responseData.target[0]);
+		
+		// Run purchase finished request
+		self.serverAPI.purchaseFinishedRequest(purchaseObject);
+		
+		// Log to screen finished purchase
+		console.log("READY: " + responseData.target[0]);
+	}
+	
+	// Begin purchase timer with appropriate callback
+	console.log("BOUGHT: " + responseData.target[0]);
+	var purchaseTimeout = setTimeout(purchaseFinished, 3000);
+	var purchaseObject = { gameObject: gameObject.identifier, instanceId: responseData.target[0], purchaseTimeout: purchaseTimeout };
+	
+	// Add item to list of purchased items
+	this.currentPlayer.addPurchase(purchaseObject);
+	
+	// Deduct cash from player
+	this.currentPlayer.reduceCash(gameObject.cost);
+}
+
+Engine.prototype.processPurchasePending = function(responseData) {
+	
+}
+
+Engine.prototype.processPurchaseFinished = function(responseData) {
+
+	// Create quick reference object
+	var refObject = {
+		instanceId : responseData.target[0],
+		identifier : responseData.source[0],
+		cell : new Cell(responseData.coords[0].col, responseData.coords[0].row),
+		xy : (new Cell(responseData.coords[0].col, responseData.coords[0].row)).toPoint(),
+		player : this.getPlayerFromPlayerId(responseData.misc[0])
+	};
+
+	// Declare variables
+	var newUnitObject = null;
+
+	// Create GameCore object
+	var gameCore = new GameCore(refObject.identifier, refObject.cell);
+	gameCore.setInstanceId(refObject.instanceId);
+	gameCore.setPlayer(refObject.player);
+
+	// Construct new unit object
+	switch (refObject.identifier) {
+		case "TANK":
+			newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.cell.col, refObject.cell.row, 100, 100, false);
+			break;
+	}
+	
+	// Make sure new unit was created
+	if (newUnitObject) {
+		
+		// Find tank hub object
+		var tankHub = null;
+		for (var index = 0; index < this.building.length; index ++) {
+			if (this.building[index].gameCore.playerId == refObject.player.playerId &&
+					this.building[index].gameCore.identifier == "HUB") {
+				tankHub = this.building[index];
+			}
+		}
+		
+		// Make sure tank hub was found
+		if (tankHub) {
+			
+			// Construct tank animation from hub
+			var self = this;
+			tankHub.animateTankCreate(newUnitObject, function() {
+
+				// Add object to unit array
+				self.units.push(newUnitObject);
+
+				//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
+				for(var index = 0; index < self.players.length; index++) {
+					if(!self.players[index].hasPlacedObject && self.players[index].playerId === refObject.playerId) {
+						self.players[index].hasPlacedObject = true;
+						break;
+					}
+				}
+			});
+		}
+	}
+}
+
 Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 
 	// Iterate through all buildings
@@ -1161,9 +1274,10 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		// Calculate player from player id
 		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
 		
-		// deduct cost from player
+		// Deduct cost from player
+		var newObject = this.getObjectFromIdentifier(refObject.identifier);
 		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
-			this.currentPlayer.playerCash -= CONSTANTS.GAME_BUILDINGS[0].cost;
+			this.currentPlayer.cash -= newObject.cost;
 		}
 
 		// Create GameCore object
@@ -1324,7 +1438,7 @@ Engine.prototype.processUnitDamage = function(responseData) {
 				removeList.push(refObject.instanceId);
 				
 				if(refObject.killer == this.currentPlayer.playerId) {
-					this.currentPlayer.playerCash += Math.floor(gameObject.gameCore.cost*1.2);
+					this.currentPlayer.cash += Math.floor(gameObject.gameCore.cost*1.2);
 				}
 			}
 
@@ -1360,7 +1474,7 @@ Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
 		
 		// deduct cost from player's cash
 		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
-			this.currentPlayer.playerCash -= CONSTANTS.GAME_UNITS[0].cost;
+			this.currentPlayer.cash -= CONSTANTS.GAME_UNITS[0].cost;
 		}
 
 		// Create GameCore object
@@ -1393,11 +1507,11 @@ Engine.prototype.processInsufficientFunds = function(responseData) {
 	for (var index = 0; index < responseData.source.length; index++) {
 		var refObject = {
 			playerId : responseData.target[index],
-			playerCash : responseData.source[index]
+			cash : responseData.source[index]
 		};
 	
 		if(refObject.playerId == this.currentPlayer.playerId) {
-			this.currentPlayer.playerCash = parseInt(refObject.playerCash);
+			this.currentPlayer.cash = parseInt(refObject.cash);
 		}
 	}
 }
@@ -1417,6 +1531,16 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 			case "NEW_BUILDING":
 				this.processNewBuilding(responseData);
 				break;
+			case "PURCHASE_OBJECT":
+				this.processPurchaseObject(responseData);
+				break;
+			case "PURCHASE_PENDING":
+				this.processPurchasePending(responseData);
+				break;
+			case "UNIT_PURCHASE_FINISHED":
+				this.processPurchaseFinished(responseData);
+				break;
+				
 			case "DEFENCE_ATTACK_XY":
 				this.processDefenceAttackXY(responseData);
 				break;

@@ -109,7 +109,11 @@ public class SocketService {
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameLobby.getLobbyId());
 		if (gameLobby != null && gameplayResponses != null) {
 			for (int index = 0; index < gameplayResponses.length; index ++) {
-				broadcastRoomState.sendEvent("gameplayResponse", gameplayResponses[index]);
+				if (gameplayResponses[index].isSenderOnly()) {
+					client.sendEvent("gameplayResponse", gameplayResponses[index]);
+				} else {
+					broadcastRoomState.sendEvent("gameplayResponse", gameplayResponses[index]);
+				}
 			}
 		}
 	}

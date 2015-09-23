@@ -66,12 +66,22 @@ function GameCore(identifier, cell) {
 }
 
 GameCore.prototype.getCells = function() {
+	
+	// Set default result
 	resultCells = [];
-	for (var yCount = 0; yCount < this.heightCellCount; yCount ++) {
-		for (var xCount = 0; xCount < this.widthCellCount; xCount ++) {
-			resultCells.push(new Cell(this.cell.col + xCount, this.cell.row + yCount));
+	
+	// Check if height and width cell counts are defined
+	if (this.heightCellCount && this.widthCellCount) {
+		for (var yCount = 0; yCount < this.heightCellCount; yCount ++) {
+			for (var xCount = 0; xCount < this.widthCellCount; xCount ++) {
+				resultCells.push(new Cell(this.cell.col + xCount, this.cell.row + yCount));
+			}
 		}
+	} else {
+		resultCells.push(this.cell);
 	}
+	
+	// Return generated result
 	return resultCells;
 }
 

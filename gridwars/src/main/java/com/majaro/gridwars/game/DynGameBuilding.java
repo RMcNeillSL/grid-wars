@@ -19,6 +19,9 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	protected Coordinate coordinate = null;
 	protected String instanceId = "";
 	
+	// Production building coordiantes
+	private Coordinate deployCoordinate;
+	
 	// Constructor
 	public DynGameBuilding(String instanceId, GameBuilding sourceBuilding, Player playerRef, Coordinate coordinate) {
 		
@@ -32,10 +35,24 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 		this.playerRef = playerRef;
 		this.coordinate = coordinate;
 		this.instanceId = instanceId;
+		
+		// Calculate deploy coordiante
+		this.setDeployCoordinate();
 	}
 
 	// State methods
 	public boolean isDead() { return (this.health < 0); }
+	
+	// Deploying item coordinates
+	private void setDeployCoordinate() {
+
+		// Set default deploy coordinate
+		this.deployCoordinate = null;
+		
+		// Construct deploy coordinates for relevant production buildings
+		if (this.source.identifier == "HUB") { this.deployCoordinate = new Coordinate(this.coordinate.getCol() + 1, this.coordinate.getRow() - 1); }
+	}
+	public Coordinate getDeployCoordinate() { return this.deployCoordinate; }
 	
 	// Setter methods
 	public void updateCoordinate(Coordinate newCoordinate) { this.coordinate = newCoordinate; }

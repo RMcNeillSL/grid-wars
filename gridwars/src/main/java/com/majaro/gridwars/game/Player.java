@@ -1,5 +1,7 @@
 package com.majaro.gridwars.game;
 
+import java.util.ArrayList;
+
 import com.majaro.gridwars.core.LobbyUser;
 import com.majaro.gridwars.game.Const.E_TechLevel;
 import com.majaro.gridwars.game.Const.GameObject;
@@ -12,6 +14,7 @@ public class Player {
 	private E_TechLevel techLevel = E_TechLevel.TECH_01;
 	private int cash = 0;
 	private Coordinate spawnCoordinate = null;
+	private ArrayList<PurchaseRequest> purchaseQueue = null;
 	
 	// Constructor
 	public Player(LobbyUser lobbyUser, int startingCash, Coordinate spawnCoordinate) {
@@ -26,6 +29,28 @@ public class Player {
 		
 		// Save spawn coordinates
 		this.spawnCoordinate = spawnCoordinate;
+		
+		// Create purchase queue array
+		this.purchaseQueue = new ArrayList<PurchaseRequest>();
+	}
+	
+	// Purchase request methods
+	public PurchaseRequest purchaseGameObject(GameObject sourceObject, String objectId) {
+		PurchaseRequest purchaseRequest = new PurchaseRequest(sourceObject, objectId);
+		this.purchaseQueue.add(purchaseRequest);
+		return purchaseRequest;
+	}
+	public PurchaseRequest getPurchaseRequestFromId(String objectId) {
+		for (int index = 0; index < this.purchaseQueue.size(); index ++) {
+			if (this.purchaseQueue.get(index).getObjectId().equals(objectId)) {
+				return this.purchaseQueue.get(index);
+			}
+		}
+		return null;
+	}
+	public void removePlayerPurchaseObject(String objectId) {
+		PurchaseRequest purchaseRequest = this.getPurchaseRequestFromId(objectId);
+		this.purchaseQueue.remove(purchaseRequest);
 	}
 	
 	// Common checking functions

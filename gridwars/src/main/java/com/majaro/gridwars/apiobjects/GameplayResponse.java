@@ -16,6 +16,7 @@ import com.majaro.gridwars.game.DynGameUnit;
 public class GameplayResponse {
 	
 	// Response variables
+	private boolean senderResponseOnly = false;
 	private E_GameplayResponseCode responseCode;
 	private ArrayList<Coordinate> coords;
 	private ArrayList<String> sourceString;
@@ -51,6 +52,10 @@ public class GameplayResponse {
 	public Coordinate createGameObject(int col, int row) {
 		return new Coordinate(col, row);
 	}
+	
+	// Single flag function (and flag getters)
+	public void flagForSenderOnly() { this.senderResponseOnly = true; }
+	public boolean isSenderOnly () { return this.senderResponseOnly; }
 	
 	// Setters for server
 	public void addCoord(int col, int row) {

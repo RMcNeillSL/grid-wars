@@ -70,6 +70,11 @@ function Hub(engineCore, gameCore, mapGroup, buildingGroup, xy, col, row, width,
 	
 }
 
+Hub.prototype.animateTankCreate = function(newUnitObject) {
+	
+	
+}
+
 Hub.prototype.markDamage = function(explosionInstanceId) {
 	
 	// Add new damage instance to log
@@ -121,7 +126,6 @@ Hub.prototype.setPosition = function(cell) {
 	this.hubSegment.y = this.top;
 	this.shadowSegment.x = this.left;
 	this.shadowSegment.y = this.top;
-	
 }
 
 Hub.prototype.update = function() {
