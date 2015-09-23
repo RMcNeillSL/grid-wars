@@ -15,6 +15,9 @@ public class GameStaticMap {
 	private int[] cells;
 	private Coordinate[] spawnCoordinates;
 	
+	// Cell values which items can traverse through
+	private static int[] nonObstructedCellIds = {0,1,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,61,62,63,64};
+	
 	// Cell values
 	// 
 	// 0 - dirt
@@ -38,8 +41,10 @@ public class GameStaticMap {
 	public boolean isCellObstructed(int cellX, int cellY) {
 		if (cellX + cellY * this.width < cells.length) {
 			int cellValue = this.cells[cellX + cellY * this.width];
-			if (cellValue == 0) {
-				return false;
+			for (int index = 0; index < nonObstructedCellIds.length; index++) {
+				if (cellValue == nonObstructedCellIds[index]) {
+					return false;
+				}
 			}
 		}
 		return true;
