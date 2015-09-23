@@ -19,7 +19,7 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 		if (angle) { newMapTile.angle = angle; }
 		return newMapTile;
 	}
-	
+
 	// Create tile-map mapping
 	this.tileMapping = {};
 
@@ -27,6 +27,7 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.tileMapping[0]  = mapTile(CONSTANTS.MAP_BASE_DIRT);											// Base dirt tile
 	this.tileMapping[1]  = mapTile(CONSTANTS.MAP_BASE_GRASS);											// Base grass tile
 	this.tileMapping[2]  = mapTile(CONSTANTS.MAP_BASE_WATER);											// Base water tile
+	this.tileMapping[3]  = mapTile(CONSTANTS.MAP_BASE_ROCK);											// Base rock tile
 
 	// ROCK DETAILS
 	// ROCK EDGES
@@ -63,24 +64,24 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 
 	// SHORE DETAILS
 	// SHORE EDGES
-	this.tileMapping[31] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_BOTTOM, 0);		// Shore bottom
-	this.tileMapping[32] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_LEFT, 0);		// Shore left
-	this.tileMapping[33] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_TOP, 0);			// Shore top
-	this.tileMapping[34] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_RIGHT, 0);		// Shore right
-	
+	this.tileMapping[31] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_TOP, 0);			// Shore bottom
+	this.tileMapping[32] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_RIGHT, 0);		// Shore left
+	this.tileMapping[33] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_BOTTOM, 0);		// Shore top
+	this.tileMapping[34] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_LEFT, 0);		// Shore right
+
 	// SHORE CORNERS
 	this.tileMapping[35] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_BR, 0);			// Shore bottom right
 	this.tileMapping[36] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_TR, 0);			// Shore top right
 	this.tileMapping[37] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_BL, 0);			// Shore bottom left
 	this.tileMapping[38] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_TL, 0);			// Shore top left
-	
+
 	// GRASS DETAILS
 	// GRASS EDGES
 	this.tileMapping[39] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_TOP, 0);			// Grass top
 	this.tileMapping[40] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_RIGHT, 0);		// Grass right
 	this.tileMapping[41] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_BOTTOM, 0);		// Grass bottom
 	this.tileMapping[42] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_LEFT, 0);		// Grass left
-	
+
 	// GRASS CORNERS
 	this.tileMapping[43] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_BR, 0);			// Grass bottom right
 	this.tileMapping[44] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_TR, 0);			// Grass top right
@@ -98,6 +99,27 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.tileMapping[54] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_VERT_END, 180);	//
 	this.tileMapping[55] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_HORI_END, 0);		//
 	this.tileMapping[56] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROAD_HORI_END, 180);	//
+
+	// Inverse corners - shore
+	this.tileMapping[57] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_ITR, 0);
+	this.tileMapping[58] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_IBR, 0);
+	this.tileMapping[59] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_IBL, 0);
+	this.tileMapping[60] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_SHORE_ITL, 0);
+
+	// Inverse corners - grass
+	this.tileMapping[61] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_IBR, 0);
+	this.tileMapping[62] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_ITR, 0);
+	this.tileMapping[63] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_ITL, 0);
+	this.tileMapping[64] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_IBL, 0);
+	
+	// Inverse corner - rocks
+	this.tileMapping[65] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, 0);		// Top right
+	this.tileMapping[66] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, 90);	// Bottom right
+	this.tileMapping[67] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, 180);	// Bottom left
+	this.tileMapping[68] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, -90);	// Top left
+	
+	this.tileMapping[69] = mapTile(CONSTANTS.MAP_BASE_ROCK, CONSTANTS.MAP_DETAIL_ROCKS_A, 0);
+	this.tileMapping[70] = mapTile(CONSTANTS.MAP_BASE_ROCK, CONSTANTS.MAP_DETAIL_ROCKS_B, 0);
 
 	// Create map images
 	this.mapTiles = [];
