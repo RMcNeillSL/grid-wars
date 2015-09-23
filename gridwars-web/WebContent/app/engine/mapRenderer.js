@@ -27,6 +27,7 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.tileMapping[0]  = mapTile(CONSTANTS.MAP_BASE_DIRT);											// Base dirt tile
 	this.tileMapping[1]  = mapTile(CONSTANTS.MAP_BASE_GRASS);											// Base grass tile
 	this.tileMapping[2]  = mapTile(CONSTANTS.MAP_BASE_WATER);											// Base water tile
+	this.tileMapping[3]  = mapTile(CONSTANTS.MAP_BASE_ROCK);											// Base rock tile
 
 	// ROCK DETAILS
 	// ROCK EDGES
@@ -110,6 +111,15 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	this.tileMapping[62] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_ITR, 0);
 	this.tileMapping[63] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_ITL, 0);
 	this.tileMapping[64] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_GRASS_IBL, 0);
+	
+	// Inverse corner - rocks
+	this.tileMapping[65] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, 0);		// Top right
+	this.tileMapping[66] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, 90);	// Bottom right
+	this.tileMapping[67] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, 180);	// Bottom left
+	this.tileMapping[68] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER, -90);	// Top left
+	
+	this.tileMapping[69] = mapTile(CONSTANTS.MAP_BASE_ROCK, CONSTANTS.MAP_DETAIL_ROCKS_A, 0);
+	this.tileMapping[70] = mapTile(CONSTANTS.MAP_BASE_ROCK, CONSTANTS.MAP_DETAIL_ROCKS_B, 0);
 
 	// Create map images
 	this.mapTiles = [];
