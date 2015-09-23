@@ -65,6 +65,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	
 	// Define game object arrays
 	this.units = [];
+	this.productionUnits = [];
 	this.buildings = [];
 	
 	// Define selection variables
@@ -212,7 +213,6 @@ Engine.prototype.create = function() {
 	// Draw the gameframe
 	this.drawGameScreen();		// merge conflickt
 
-
 	// Create cursor object
 	this.pointer = { sprite : null, point : new Point(0, 0) };
 	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
@@ -232,6 +232,7 @@ Engine.prototype.create = function() {
 		if (this.players[index].playerId == this.currentPlayer.playerId) {
 			this.spawnPoint = new Cell(this.gameplayConfig.spawnCoordinates[index].col,
 					this.gameplayConfig.spawnCoordinates[index].row);
+			console.log("Player spawn: (" + this.spawnPoint.col + "," + this.spawnPoint.row + ")");
 			this.positionCameraOverCell(this.spawnPoint);
 			break;
 		}
@@ -267,6 +268,7 @@ Engine.prototype.update = function() {
 	// Update all buildings and units
 	for (var index = 0; index < this.buildings.length; index++) { this.buildings[index].update(); }
 	for (var index = 0; index < this.units.length; index++) { this.units[index].update(); }
+	for (var index = 0; index < this.productionUnits.length; index++) { this.productionUnits[index].update(); }
 
 	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
@@ -1104,7 +1106,7 @@ Engine.prototype.explosionCollisionCheck = function() {
 	}
 }
 
-Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) {
+Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old cell is not currently used - may check to make sure request is not corrupt
 
 	// Check if sender is unit owner
 	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
@@ -1240,6 +1242,16 @@ Engine.prototype.getObjectFromIdentifier = function(identifier) {
 	return null;
 }
 
+Engine.prototype.getPlayerActiveHub = function(playerId) {
+	for (var index = 0; index < this.buildings.length; index ++) {
+		if (this.buildings[index].gameCore.playerId == playerId &&
+				this.buildings[index].gameCore.identifier == "HUB") {
+			return this.buildings[index];
+		}
+	}
+	return null;
+}
+
 
 // ------------------------------ SPECIALISED METHODS FOR DEALING WITH RESPONSES ------------------------------//
 
@@ -1281,6 +1293,7 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 		
 		// Populate building array
 		if (arrayIdentifier == "BUILDING") {
+			console.log("Hub placed at: (" + responseData.coords[index].col + "," + responseData.coords[index].row + ")");
 			mockBuildingResponseData.coords.push(responseData.coords[index]);
 			mockBuildingResponseData.misc.push(responseData.misc[index]);
 			mockBuildingResponseData.source.push(responseData.source[index]);
@@ -1347,30 +1360,55 @@ Engine.prototype.processPurchaseFinished = function(responseData) {
 	gameCore.setInstanceId(refObject.instanceId);
 	gameCore.setPlayer(refObject.player);
 
-	// Construct new unit object
-	switch (refObject.identifier) {
-		case "TANK":
-			newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.cell.col, refObject.cell.row, 100, 100, false);
-			break;
-	}
-	
-	// Make sure new unit was created
-	if (newUnitObject) {
+	// Find tank hub object
+	var tankHub = this.getPlayerActiveHub(refObject.player.playerId);
+
+	// Make sure tank hub was found
+	if (tankHub) {
 		
-		// Find tank hub object
-		var tankHub = null;
-		for (var index = 0; index < this.building.length; index ++) {
-			if (this.building[index].gameCore.playerId == refObject.player.playerId &&
-					this.building[index].gameCore.identifier == "HUB") {
-				tankHub = this.building[index];
-			}
+		// Set spawn coordinates for unit
+		var spawnCell = new Cell(tankHub.gameCore.cell.col + 1, tankHub.gameCore.cell.row + 1);
+		var spawnPoint = spawnCell.toPoint();
+		
+		// Construct new unit object
+		switch (refObject.identifier) {
+			case "TANK":
+				newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, spawnPoint, spawnCell.col, spawnCell.row, 100, 100, false);
+				break;
 		}
 		
-		// Make sure tank hub was found
-		if (tankHub) {
+		// Make sure new unit was created
+		if (newUnitObject) {
 			
-			// Construct tank animation from hub
+			// Add new unit to update stream
+			this.productionUnits.push(newUnitObject);
+			
+			// Save self reference
 			var self = this;
+			
+			// Set on complete callback for unit waypoints
+			newUnitObject.waypointControl.onComplete = function(endCell) {
+				
+				// Update tank position on server
+				self.serverAPI.requestUpdateUnitCell(newUnitObject, newUnitObject.gameCore.cell);
+				
+				// Remove new unit from production units array
+				for (var index = 0; index < self.productionUnits.length; index ++) {
+					if (self.productionUnits[index].gameCore.instanceId == newUnitObject.gameCore.instanceId) {
+						self.productionUnits.splice(index, 1);
+						break;
+					}
+				}
+				
+				// Add new unit to units array
+				newUnitObject.inProductionMode = false;
+				self.units.push(newUnitObject);
+				
+				// Run hub reset animation
+				tankHub.resetTankHub();
+			}
+		
+			// Construct tank animation from hub
 			tankHub.animateTankCreate(newUnitObject, function() {
 
 				// Add object to unit array
@@ -1410,10 +1448,8 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		// Deduct cost from player
 		var newObject = this.getObjectFromIdentifier(refObject.identifier);
 		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
-
 			this.currentPlayer.cash -= newObject.cost;
 			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label					 merge conflickt
-
 		}
 
 		// Create GameCore object
@@ -1425,7 +1461,7 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		var newBuilding = null;
 		switch (refObject.identifier) {
 			case "HUB":
-				newBuilding = new Hub(this.engineCore, gameCore, this.mapGroup,
+				newBuilding = new Hub(this.engineCore, gameCore, this.mapGroup, this.highestGroup,
 						this.buildingGroup, refObject.xy, refObject.cell.col, refObject.cell.row,
 						300, 300, false);
 				break;

@@ -8,14 +8,14 @@
 		<!-- class>com.majaro.gridwars.entities.GameResults</class-->
 		<class>com.majaro.gridwars.entities.User</class>
 		<properties>
-			<property name="javax.persistence.jdbc.password" value="woh1Shae" />
+			<!--<property name="javax.persistence.jdbc.password" value="woh1Shae" />
 			<property name="javax.persistence.jdbc.user" value="jhill" />
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://dev-db.scottlogic.co.uk:3306/jhill" />
-			<!--<property name="javax.persistence.jdbc.password" value="Hiz9OV#STd)u" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://dev-db.scottlogic.co.uk:3306/jhill" />-->
+			<property name="javax.persistence.jdbc.password" value="Hiz9OV#STd)u" />
 			<property name="javax.persistence.jdbc.user" value="visualst_def" />
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://cpanel51.uk2.net:3306/visualst_gridwars" />-->
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://cpanel51.uk2.net:3306/visualst_gridwars" />
 		</properties>
 	</persistence-unit>
 </persistence>

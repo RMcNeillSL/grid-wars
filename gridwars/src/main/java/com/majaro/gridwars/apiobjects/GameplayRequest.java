@@ -147,7 +147,7 @@ public class GameplayRequest {
 		}
 
 		// Compile output string
-		outputString = "Gameplay Response:" +
+		outputString = "Gameplay Request:" +
 			newLine + "Request Code: " + this.requestCode.toString() +
 			newLine + "Target (X,Y): (" + Integer.toString(this.targetCellX) + "," + Integer.toString(this.targetCellY) + ")" +
 			newLine + "Source Game Objects: [" + sourceString + "]" +

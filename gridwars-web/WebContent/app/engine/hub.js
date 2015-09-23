@@ -1,4 +1,4 @@
-function Hub(engineCore, gameCore, mapGroup, buildingGroup, xy, col, row, width, height, inBuildingMode) {
+function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, col, row, width, height, inBuildingMode) {
 
 	// Make sure dependencies has been passed
 	if (buildingGroup) {
@@ -11,6 +11,7 @@ function Hub(engineCore, gameCore, mapGroup, buildingGroup, xy, col, row, width,
 		// Save engine core object
 		this.engineCore = engineCore;
 		this.buildingGroup = buildingGroup;
+		this.highestGroup = highestGroup;
 		this.mapGroup = mapGroup;
 		
 		// Save sprite positioning
@@ -35,24 +36,43 @@ function Hub(engineCore, gameCore, mapGroup, buildingGroup, xy, col, row, width,
 		this.shadowSegment.width = this.width;
 		this.shadowSegment.height = this.height;
 		this.shadowSegment.z = 11;
-		this.buildingGroup.add(this.shadowSegment);
+		this.highestGroup.add(this.shadowSegment);
 		
 		// Animations
 		this.open = this.hubSegment.animations.add('open', this.gameCore.colour.OPENING, 10, false);
+		this.close = this.hubSegment.animations.add('close', this.gameCore.colour.CLOSING, 10, false);
 		this.rise = this.shadowSegment.animations.add('rise', this.gameCore.colour.RISE, 10, false);
+		this.sink = this.shadowSegment.animations.add('sink', this.gameCore.colour.SINK, 10, false);
 		
 		// Create self reference for local functions
 		var self = this;
 		
+		// Create callback methods
+		this.openComplete = null;
+		this.closeComplete = null;
+		this.riseComplete = null;
+		this.sinkComplete = null;
+		
 		// Link events to methods
 		this.open.onComplete.add(function(sprite, animation) {
-			self.shadowSegment.visible = true;
-			self.hubSegment.frame = self.gameCore.colour.OPEN;
-			self.rise.play();
+			if (self.openComplete) {
+				self.openComplete(sprite, animation);
+			}
+		});
+		this.close.onComplete.add(function(sprite, animation) {
+			if (self.closeComplete) {
+				self.closeComplete(sprite, animation);
+			}
 		});
 		this.rise.onComplete.add(function(sprite, animation) {
-			self.shadowSegment.frame = self.gameCore.colour.SHADOW;
-			self.shadowSegment.visible = false;
+			if (self.riseComplete) {
+				self.riseComplete(sprite, animation);
+			}
+		});
+		this.sink.onComplete.add(function(sprite, animation) {
+			if (self.sinkComplete) {
+				self.sinkComplete(sprite, animation);
+			}
 		});
 		
 		// Set current mode based on build flag
@@ -61,18 +81,62 @@ function Hub(engineCore, gameCore, mapGroup, buildingGroup, xy, col, row, width,
 		// Hide shadow segment initially
 		this.shadowSegment.visible = false;
 		
-		// Debug animation runthrough
-		setTimeout(function() { self.open.play(); }, 2000);
-		
 	} else {
 		if (!this.engineCore.phaserEngine) { console.log("ERROR: Failed to construct tank hub, missing phaserRef."); }
 	}
-	
 }
 
-Hub.prototype.animateTankCreate = function(newUnitObject) {
+Hub.prototype.animateTankCreate = function(newUnitObject, completionCallback) {
 	
+	// Define self reference
+	var self = this;
 	
+	// Define callback functions
+	this.riseComplete = function(sprite, animation) {
+		
+		// Set visibility state once risen
+		self.shadowSegment.frame = self.gameCore.colour.SHADOW;
+		self.shadowSegment.visible = false;
+		
+		// Set waypoints for unit
+		var refCell = newUnitObject.gameCore.cell;
+		newUnitObject.waypoints = [
+		    (new Cell(refCell.col, refCell.row - 1)).toCenterPoint(),
+			(new Cell(refCell.col, refCell.row - 2)).toCenterPoint()];
+	}
+	this.openComplete = function(sprite, animation) {
+		
+		// Make tank visible
+		newUnitObject.setVisible(true);
+		
+		// Setup to run rise animation
+		self.shadowSegment.visible = true;
+		self.hubSegment.frame = self.gameCore.colour.OPEN;
+		self.rise.play();
+	}
+
+	// Run hub open animation
+	this.open.play();
+}
+
+Hub.prototype.resetTankHub = function() {
+
+	// Define self reference
+	var self = this;
+
+	// Define callback functions
+	this.sinkComplete = function(sprite, animation) {
+		self.hubSegment.frame = self.gameCore.colour.CLOSED;
+		self.shadowSegment.visible = false;
+		self.close.play();
+	}
+	this.closeComplete = function(sprite, animation) {
+		self.hubSegment.frame = self.gameCore.colour.HUB;
+	}
+
+	// Run hub open animation
+	this.shadowSegment.visible = true;
+	this.sink.play();
 }
 
 Hub.prototype.markDamage = function(explosionInstanceId) {
