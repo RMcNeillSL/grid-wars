@@ -396,6 +396,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 		// Manage selected units
 		} else if (this.selected.length > 0) {
+			
+			// Calculate item at point
+			var enemyAtPoint = this.getItemAtPoint(point, false, true);
+			var friendlyAtPoint = this.getItemAtPoint(point, true, true);
 
 			// Process selected items
 			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
@@ -412,9 +416,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 							}
 						}
 					} else {
-						var itemAtPoint = this.getItemAtPoint(point, false, true);
-						if (itemAtPoint) {
-							this.serverAPI.requestObjectAttackObject(this.selected[selectedIndex].gameCore.instanceId, itemAtPoint.gameCore.instanceId);
+						if (enemyAtPoint) {
+							this.serverAPI.requestObjectAttackObject(this.selected[selectedIndex].gameCore.instanceId, enemyAtPoint.gameCore.instanceId);
 						}
 					}
 				}
@@ -422,12 +425,15 @@ Engine.prototype.onMouseUp = function(pointer) {
 				// Process selected turret
 				if (this.selected[selectedIndex].gameCore.identifier == "TURRET") {
 					var sourceObjectId = this.selected[selectedIndex].gameCore.instanceId;
-					var itemAtPoint = this.getItemAtPoint(point, false, true);
-					if (itemAtPoint) {
-						var targetObjectId = itemAtPoint.gameCore.instanceId;
-						this.serverAPI.requestObjectAttackObject(sourceObjectId, targetObjectId);
+					if (enemyAtPoint) {
+						this.serverAPI.requestObjectAttackObject(sourceObjectId, enemyAtPoint.gameCore.instanceId);
 					}
 //					this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.x,this.mouse.y);
+				}
+				
+				// Deselect selection if selected building and player clicks away
+				if (!this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) {
+					this.selected = [];
 				}
 			}
 
