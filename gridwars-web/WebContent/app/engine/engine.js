@@ -1398,6 +1398,7 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 	
 	// Deduct cash from player
 	this.currentPlayer.reduceCash(gameObject.cost);
+	this.moneyLabel.setText(this.currentPlayer.cash);
 }
 
 Engine.prototype.processPurchasePending = function(responseData) {
