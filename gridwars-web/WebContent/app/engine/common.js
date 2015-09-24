@@ -148,7 +148,6 @@ GameCore.prototype.calculateRotateToPointData = function(currentAngle, currentPo
 		targetPoint: targetPoint,
 		angleIncrement: angleIncrement
 	};
-	
 }
 
 GameCore.prototype.angleInErrorMargin = function(currentAngle, targetAngle, errorMargin) {
