@@ -7,9 +7,6 @@ function Player(playerId, colour, team, isUser, startingCash) {
 	this.userBoolean = isUser;
 	this.purchases = [];
 	this.cash = startingCash;
-	
-	//ONLY FOR TESTING PURPOSES, REMOVE LATER
-	this.hasPlacedObject = false;
 }
 
 Player.prototype.getPurchase = function(instanceId) {
