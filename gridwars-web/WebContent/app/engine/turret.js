@@ -256,7 +256,7 @@ Turret.prototype.processTurretRotation = function() {
 		var rotationData = this.gameCore.calculateRotateToPointData(this.topSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
 		
 		// Identify further rotation or begin charging animation (if target is in range)
-		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.topSegment.angle), rotationData.target360Angle, rotationData.angleIncrement) &&
+		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.topSegment.angle), rotationData.target360Angle, this.rotateSpeed / 2 + 1) &&
 				!this.shootTarget.isFiring) {
 			this.rotate(this.shootTarget.increment);
 			this.shootTarget.increment = rotationData.angleIncrement;
@@ -308,8 +308,8 @@ Turret.prototype.manageFiringBullets = function() {
 			this.bullets.firing = false;
 			this.bulletParticle01.on = false;
 			this.bulletParticle02.on = false;
-			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.playerId, this.gameCore.instanceId + "_A", this.bulletParticle01.x, this.bulletParticle01.y);
-			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.playerId, this.gameCore.instanceId + "_B", this.bulletParticle02.x, this.bulletParticle02.y);
+			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.instanceId, this.gameCore.instanceId + "_A", this.bulletParticle01.x, this.bulletParticle01.y);
+			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.instanceId, this.gameCore.instanceId + "_B", this.bulletParticle02.x, this.bulletParticle02.y);
 			var self = this;
 			setTimeout(function() { self.shootTarget.isFiring = false; }, 3000);
 		}
@@ -332,7 +332,6 @@ Turret.prototype.destroy = function() {
 	this.bulletParticle01.destroy();
 	this.bulletParticle02.destroy();
 }
-
 Turret.prototype.getBounds = function() {
 	var tempBounds = this.baseSegment.getBounds();
 	var tempLeft = this.left - (this.width/2);

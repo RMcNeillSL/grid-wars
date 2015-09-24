@@ -127,26 +127,29 @@ public final class Const {
 		
 	}
 	
-	// Units in game     [identifier, health, cash, techlv, buildTime | range, speed, ]
+	// Units in game     [identifier, health, cash, techlv, buildTime | range, speed, damage, ]
 	public static class GameUnit extends GameObject {
 
 		// Unit variables
 		protected int range;
 		protected int speed;
+		private int damage;
 		
 		// Constructors
-		public GameUnit(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int range, int speed) {
+		public GameUnit(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int range, int speed, int damage) {
 			super(identifier, health, cost, techlv, buildTime);
 			this.range = range;
 			this.speed = speed;
+			this.damage = damage;
 		}
 		public GameUnit(GameUnit source) {
-			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getRange(), source.getSpeed());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getRange(), source.getSpeed(), source.getDamage());
 		}
 		
 		// Getters
 		public int getRange() { return this.range; }
 		public int getSpeed() { return this.speed; }
+		public int getDamage() { return this.damage; }
 		
 	}
 	
@@ -209,7 +212,7 @@ public final class Const {
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
-			new GameUnit("TANK", 300, 400, E_TechLevel.TECH_01, 5000, 300, 40)
+			new GameUnit("TANK", 300, 400, E_TechLevel.TECH_01, 5000, 300, 2, 40)
 		};
 	
 	
