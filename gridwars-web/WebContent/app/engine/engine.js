@@ -212,7 +212,7 @@ Engine.prototype.create = function() {
 	};
 
 	// Draw the gameframe
-	this.drawGameScreen();
+	this.createGameScreen();
 
 	// Create cursor object
 	this.pointer = { sprite : null, point : new Point(0, 0) };
@@ -725,7 +725,51 @@ Engine.prototype.manageMapMovement = function() {
 	this.updatePointerPosition();
 }
 
-Engine.prototype.drawGameScreen = function() {
+Engine.prototype.getButtonAndConstants = function(gameObject) {
+
+	// Identify button to run animation on
+	var isUnit = (CONSTANTS.GAME_UNITS.indexOf(gameObject) > -1);
+	var isBuilding = (CONSTANTS.GAME_BUILDINGS.indexOf(gameObject) > -1 && (!gameObject.damage));
+	var isDefence = (isBuilding && (gameObject.damage));
+
+	// Output type of object (debugging)
+	if (isUnit) { console.log("UNIT"); }
+	if (isDefence) { console.log("DEFENCE"); }
+	if (isBuilding) { console.log("BUILDING"); }
+	
+	// Set button to animate
+	var animateButton, hudConstants = null;
+	if (isUnit) { animateButton = this.tankButton; hudConstants = CONSTANTS.HUD.UNIT; }
+	if (isDefence) { animateButton = this.defenceButton; hudConstants = CONSTANTS.HUD.DEFENCE; }
+	if (isBuilding) { animateButton = this.homeButton; hudConstants = CONSTANTS.HUD.BUILDING; }
+	
+	return { animateButton: animateButton, hudConstants: hudConstants };
+}
+
+Engine.prototype.startBuildingAnimation = function(gameObject) {
+
+	// Get button and constant data
+	var buttonData = this.getButtonAndConstants(gameObject);
+	
+	// Check if button is defined and run appropriate animation
+	if (buttonData.animateButton && buttonData.hudConstants) {
+		var frameInterval = ((gameObject.buildTime * 1.0) / buttonData.hudConstants.BUILDING.length);
+		buttonData.animateButton.play(buttonData.hudConstants.A_BUILDING, 1000 / frameInterval, false);
+	}
+}
+
+Engine.prototype.stopBuildingAnimation = function(newObject) {
+
+	// Get button and constant data
+	var gameObject = this.getObjectFromIdentifier(newObject.gameCore.identifier);
+	var buttonData = this.getButtonAndConstants(gameObject);
+	
+	// Stop all animations returning to unselected state
+	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_BUILDING, buttonData.hudConstants.UNSELECTED);
+	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_READY, buttonData.hudConstants.UNSELECTED);
+}
+
+Engine.prototype.createGameScreen = function() {
 	this.miniMap = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH), 0, CONSTANTS.MINI_MAP);
 	this.miniMap.fixedToCamera = true;
 	this.miniMap.z = 90;
@@ -739,16 +783,64 @@ Engine.prototype.drawGameScreen = function() {
 	
 	// Create game button
 	var createGameButton = function(spriteInfo, createPoint) {
+		
+		// Create sprite variable
 		var newButton = self.phaserGame.add.sprite(createPoint.x, createPoint.y, CONSTANTS.MINI_MAP_BUTTONS);
+		
+		// Setup common sprite settings
 		newButton.frame = spriteInfo.UNSELECTED;
 		newButton.fixedToCamera = true;
 		newButton.z = 92;
 		newButton.inputEnabled = true;
-		newButton.events.onInputOver.add(function() { newButton.frame = spriteInfo.SELECTED; }, self);
-		newButton.events.onInputOut.add(function() { newButton.frame = spriteInfo.UNSELECTED; });
-		if (spriteInfo == CONSTANTS.HUD.BUILDING) 	{ newButton.events.onInputUp.add(function() { self.positionCameraOverCell(self.spawnPoint); }); }
-		if (spriteInfo == CONSTANTS.HUD.DEFENCE) 	{ newButton.events.onInputUp.add(function() { self.purchaseObject("TURRET"); }); }
-		if (spriteInfo == CONSTANTS.HUD.TANK) 		{ newButton.events.onInputUp.add(function() { self.purchaseObject("TANK"); }); }
+		
+		// Declare animations
+		var buildingAnim = newButton.animations.add(spriteInfo.A_BUILDING, spriteInfo.BUILDING);
+		var buildingComplete = newButton.animations.add(spriteInfo.A_READY, [spriteInfo.UNSELECTED, spriteInfo.SELECTED], 4, true);
+		
+		// Declare animation events
+		buildingAnim.onComplete.add(function(sprite, animation) {
+			buildingComplete.play();
+		});
+
+		// Add listner events
+		newButton.events.onInputOver.add(function() {
+			
+			// Get state of button animation
+			var buildingPlaying = buildingAnim.isPlaying;
+			var completePlaying = buildingComplete.isPlaying;
+			
+			// DO NOT interrupt button animation when building
+			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.SELECTED; }
+		});
+		newButton.events.onInputOut.add(function() {
+			
+			// Get state of button animation
+			var buildingPlaying = buildingAnim.isPlaying;
+			var completePlaying = buildingComplete.isPlaying;
+			
+			// DO NOT interrupt button animation when building
+			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.UNSELECTED; }
+		});
+		newButton.events.onInputUp.add(function() { 
+			
+			// Get state of button animation
+			var buildingPlaying = buildingAnim.isPlaying;
+			var completePlaying = buildingComplete.isPlaying;
+			
+			// Run functions for when button is complete
+			if (!buildingPlaying && completePlaying) {
+				
+			}
+			
+			// Run functions when button is idle
+			if (!buildingPlaying && !completePlaying) {
+				if (spriteInfo == CONSTANTS.HUD.BUILDING) 	{ self.positionCameraOverCell(self.spawnPoint); }
+				if (spriteInfo == CONSTANTS.HUD.DEFENCE) 	{ self.purchaseObject("TURRET"); }
+				if (spriteInfo == CONSTANTS.HUD.UNIT) 		{ self.purchaseObject("TANK"); }
+			}
+		});
+		
+		// Return constructed sprite
 		return newButton;
 	}
 	
@@ -756,7 +848,7 @@ Engine.prototype.drawGameScreen = function() {
 	var mapLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH;
 	this.homeButton = createGameButton(CONSTANTS.HUD.BUILDING, new Point(mapLeft + 65, 318));
 	this.defenceButton = createGameButton(CONSTANTS.HUD.DEFENCE, new Point(mapLeft + 120, 317));
-	this.tankButton = createGameButton(CONSTANTS.HUD.TANK, new Point(mapLeft + 178, 318));
+	this.tankButton = createGameButton(CONSTANTS.HUD.UNIT, new Point(mapLeft + 178, 318));
 
 	this.gameObjectDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
 			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT), CONSTANTS.UNIT_DETAILS);
@@ -1287,6 +1379,9 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 
 	// Identify object from response
 	var gameObject = this.getObjectFromIdentifier(responseData.source[0]);
+
+	// Start animation playing		-- { button: animateButton, hudConstants: hudConstants }
+	this.startBuildingAnimation(gameObject);
 	
 	// Purchase finished callback
 	var self = this;
@@ -1304,7 +1399,7 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 	
 	// Begin purchase timer with appropriate callback
 	console.log("BOUGHT: " + responseData.target[0]);
-	var purchaseTimeout = setTimeout(purchaseFinished, 3000);
+	var purchaseTimeout = setTimeout(purchaseFinished, gameObject.buildTime);
 	var purchaseObject = { gameObject: gameObject.identifier, instanceId: responseData.target[0], purchaseTimeout: purchaseTimeout };
 	
 	// Add item to list of purchased items
@@ -1352,6 +1447,8 @@ Engine.prototype.processPurchaseFinished = function(responseData) {
 			case "TANK":
 				newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, spawnPoint, spawnCell.col, spawnCell.row, 100, 100, false);
 				break;
+			default:
+				break;
 		}
 		
 		// Make sure new unit was created
@@ -1381,8 +1478,9 @@ Engine.prototype.processPurchaseFinished = function(responseData) {
 				newUnitObject.inProductionMode = false;
 				self.units.push(newUnitObject);
 				
-				// Run hub reset animation
+				// Run hub reset animation and enable button
 				tankHub.resetTankHub();
+				self.stopBuildingAnimation(newUnitObject);
 			}
 		
 			// Construct tank animation from hub

@@ -29,7 +29,7 @@ function GameCore(identifier, cell) {
 		self.isDefence = (!isUnit && sourceObject.damage && sourceObject.damage > 0);
 		
 		// Define fields to save
-		var fields = ['cost', 'damage', 'health', 'power', 'range', 'techLv', 'speed', 'widthCellCount', 'heightCellCount'];
+		var fields = ['cost', 'damage', 'health', 'power', 'range', 'techLv', 'speed', 'widthCellCount', 'heightCellCount', 'buildTime'];
 		
 		// Process all variables to save
 		for (var index = 0; index < fields.length; index ++) {
