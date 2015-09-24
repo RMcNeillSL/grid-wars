@@ -401,7 +401,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 		if (this.phaserGame.newBuilding.active) {
 
 			// Render placement overlay
-			if (this.isSquareEmpty(cell.col, cell.row)) {
+			if (this.isSquareEmpty(cell.col, cell.row) && this.isSquareWithinBaseRange(cell.col, cell.row)) {
+				console.log(this.isSquareWithinBaseRange(cell.col, cell.row));
 				self.phaserGame.newBuilding.target.setPosition(cell);
 				this.serverAPI.requestBuildingPlacement(this.phaserGame.newBuilding);
 				self.phaserGame.newBuilding.active = false;
@@ -482,6 +483,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 	// Perform checks for right click
 	if (!clickHandled && pointer.rightButton.isDown) {
 		this.selected = [];
+		this.setGameObjectDetailsVisibility(false);
 	}
 
 }
@@ -1103,6 +1105,12 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 
 }
 
+// REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
+Engine.prototype.isSquareWithinBaseRange = function(col, row) {
+	return (row <= (this.spawnPoint.row+4) && row >= (this.spawnPoint.row-4)
+			&& col <= (this.spawnPoint.col+4) && col >= (this.spawnPoint.col-4));
+}
+
 Engine.prototype.isSquareEmpty = function(col, row) {
 	
 	// Run check against map manager
@@ -1429,7 +1437,7 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		var newObject = this.getObjectFromIdentifier(refObject.identifier);
 		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
 			this.currentPlayer.cash -= newObject.cost;
-			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label					 merge conflickt
+			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label
 		}
 
 		// Create GameCore object
@@ -1591,7 +1599,7 @@ Engine.prototype.processUnitDamage = function(responseData) {
 				if(refObject.killer == this.currentPlayer.playerId) {
 
 					this.currentPlayer.cash += Math.floor(gameObject.gameCore.cost*1.2);
-					this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label				merge conflickt
+					this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label
 
 				}
 			}
@@ -1681,7 +1689,7 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 		// Direct response to appropriate handler
 		switch (responseData.responseCode) {
 			case "NEW_BUILDING":
-				this.processNewBuilding(responseData);
+				this.processNewBuilding(responseData, false);
 				break;
 			case "PURCHASE_OBJECT":
 				this.processPurchaseObject(responseData);
