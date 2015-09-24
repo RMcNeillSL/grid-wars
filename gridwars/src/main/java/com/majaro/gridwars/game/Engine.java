@@ -311,10 +311,10 @@ public class Engine extends Thread {
 		return purchaseResponse;
 	}
 	
-	private GameplayResponse processUnitBuildFinishedRequest(Player player, String purchaseObjectId) {
+	private GameplayResponse processBuildFinishedRequest(Player player, String purchaseObjectId) {
 
 		// Declare response variables
-		GameplayResponse finishedUnitBuildResponse = null;
+		GameplayResponse finishedBuildResponse = null;
 		boolean validUnitBuildComplete = true;
 		
 		// Get purchase object for player
@@ -323,41 +323,63 @@ public class Engine extends Thread {
 		// Check if purchase is still pending
 		if (validUnitBuildComplete && !purchaseRequest.buildComplete(3000)) {
 			validUnitBuildComplete = false;
-			finishedUnitBuildResponse = new GameplayResponse(E_GameplayResponseCode.PURCHASE_PENDING);
+			finishedBuildResponse = new GameplayResponse(E_GameplayResponseCode.PURCHASE_PENDING);
 		}
 		
 		// Construct valid purchase complete response object
 		if (validUnitBuildComplete) {
-			
-			// Locate hub to deploy from
-			DynGameBuilding deployHub = this.getPlayerDeployHub(player);
-			
-			// Make sure deploy hub was identified
-			if (deployHub != null) {
+
+			// UNITS: Run building finished
+			if (purchaseRequest.getSourceObject() instanceof GameUnit) {
+
+				// Locate hub to deploy from
+				DynGameBuilding deployHub = this.getPlayerDeployHub(player);
 				
+				// Make sure deploy hub was identified
+				if (deployHub != null) {
+					
+					// Construct new unit
+					Coordinate deployCoord = deployHub.getDeployCoordinate();
+					DynGameUnit newUnit = new DynGameUnit(purchaseRequest.getObjectId(),
+							(GameUnit)purchaseRequest.getSourceObject(), player, deployCoord);
+					
+					// Construct response object
+					if (newUnit != null) {
+						this.units.add(newUnit);
+						finishedBuildResponse = new GameplayResponse(E_GameplayResponseCode.UNIT_PURCHASE_FINISHED);
+						finishedBuildResponse.addSource(purchaseRequest.getSourceObject().getIdentifier());
+						finishedBuildResponse.addTarget(purchaseObjectId);
+						finishedBuildResponse.addMisc(player.getPlayerName());
+						finishedBuildResponse.addCoord(deployCoord);
+					}
+				}
+			}
+
+			// BUILDINGS: Run building finished
+			if (purchaseRequest.getSourceObject() instanceof GameBuilding) {
+
 				// Construct new unit
-				Coordinate deployCoord = deployHub.getDeployCoordinate();
-				DynGameUnit newUnit = new DynGameUnit(purchaseRequest.getObjectId(), (GameUnit)purchaseRequest.getSourceObject(), player, deployCoord.getCol(), deployCoord.getRow());
-				
-				// Add new units to engine units array
-				this.units.add(newUnit);
+				Coordinate deployCoord = new Coordinate(0, 0);
+				DynGameBuilding newBuilding = new DynGameBuilding(purchaseRequest.getObjectId(),
+						(GameBuilding)purchaseRequest.getSourceObject(), player, deployCoord);
 				
 				// Construct response object
-				if (newUnit != null) {
-					finishedUnitBuildResponse = new GameplayResponse(E_GameplayResponseCode.UNIT_PURCHASE_FINISHED);
-					finishedUnitBuildResponse.addSource(purchaseRequest.getSourceObject().getIdentifier());
-					finishedUnitBuildResponse.addTarget(purchaseObjectId);
-					finishedUnitBuildResponse.addMisc(player.getPlayerName());
-					finishedUnitBuildResponse.addCoord(deployCoord);
+				if (newBuilding != null) {
+					this.buildings.add(newBuilding);
+					finishedBuildResponse = new GameplayResponse(E_GameplayResponseCode.BUILDING_PURCHASE_FINISHED);
+					finishedBuildResponse.addSource(purchaseRequest.getSourceObject().getIdentifier());
+					finishedBuildResponse.addTarget(purchaseObjectId);
+					finishedBuildResponse.addMisc(player.getPlayerName());
+					finishedBuildResponse.addCoord(deployCoord);
 				}
-				
-				// Remove player purchase record from array
-				player.removePlayerPurchaseObject(purchaseRequest.getObjectId());
 			}
+			
+			// Remove player purchase record from array
+			player.removePlayerPurchaseObject(purchaseRequest.getObjectId());
 		}
 		
 		// Return calculated result
-		return finishedUnitBuildResponse;
+		return finishedBuildResponse;
 	}
 	
 	@SuppressWarnings("unused")
@@ -688,7 +710,7 @@ public class Engine extends Thread {
 		boolean validConstruction = true;
 		
 		// Construct result object
-		DynGameUnit newUnit = new DynGameUnit(this.generateInstanceId(player), (GameUnit)sourceUnits[0], player, col, row);
+		DynGameUnit newUnit = new DynGameUnit(this.generateInstanceId(player), (GameUnit)sourceUnits[0], player, new Coordinate(col, row));
 		
 		if (newUnit != null) {
 			// Check user has appropriate funds
@@ -737,7 +759,7 @@ public class Engine extends Thread {
 		        			Const.getGameObjectFromString(gameplayRequest.getSourceString()[0]));
 					break;
 				case PURCHASE_FINISHED:
-		        	gameplayResponse = this.processUnitBuildFinishedRequest(sender, 
+		        	gameplayResponse = this.processBuildFinishedRequest(sender, 
 		        			gameplayRequest.getSourceString()[0]);
 		        	break;
 		        case NEW_BUILDING:  

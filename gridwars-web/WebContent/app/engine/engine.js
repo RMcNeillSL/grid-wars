@@ -275,7 +275,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -581,9 +581,10 @@ Engine.prototype.purchaseObject = function(objectId) {
 	// Create building objects for tanks
 	switch (objectId) {
 		case "TURRET":
-			var gameCore = new GameCore(objectId, cell);
-			gameCore.setPlayer(this.currentPlayer);
-			this.createNewBuildingObject(gameCore);
+			var newDefenceCore = new GameCore(objectId, cell);
+			newDefenceCore.setPlayer(this.currentPlayer);
+//			this.createNewBuildingObject(gameCore);
+			this.serverAPI.purchaseRequest(newDefenceCore);
 			break;
 		case "TANK":
 			newUnitCore = new GameCore(objectId, cell);
@@ -733,7 +734,7 @@ Engine.prototype.getButtonAndConstants = function(gameObject) {
 	// Identify button to run animation on
 	var isUnit = (CONSTANTS.GAME_UNITS.indexOf(gameObject) > -1);
 	var isBuilding = (CONSTANTS.GAME_BUILDINGS.indexOf(gameObject) > -1 && (!gameObject.damage));
-	var isDefence = (isBuilding && (gameObject.damage));
+	var isDefence = (CONSTANTS.GAME_BUILDINGS.indexOf(gameObject) > -1 && (gameObject.damage));
 
 	// Output type of object (debugging)
 	if (isUnit) { console.log("UNIT"); }
@@ -824,7 +825,7 @@ Engine.prototype.createGameScreen = function() {
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.UNSELECTED; }
 		});
-		newButton.events.onInputUp.add(function() { 
+		newButton.events.onInputUp.add(function() {
 			
 			// Get state of button animation
 			var buildingPlaying = buildingAnim.isPlaying;
@@ -832,7 +833,16 @@ Engine.prototype.createGameScreen = function() {
 			
 			// Run functions for when button is complete
 			if (!buildingPlaying && completePlaying) {
-				
+				if (spriteInfo == CONSTANTS.HUD.DEFENCE) 	{
+					var cell = self.mouse.position;
+					var gameCore = new GameCore("TURRET", cell);
+					gameCore.addPlayer();
+					gameCore.setInstanceId();
+					self.phaserGame.newBuilding.active = true;
+					self.phaserGame.newBuilding.target = new Turret(self.engineCore, gameCore,
+							self.mapGroup, self.turretGroup, gameCore.cell.toPoint(),
+							gameCore.cell.col, gameCore.cell.row, 100, 100, true);
+				}
 			}
 			
 			// Run functions when button is idle
@@ -1404,7 +1414,7 @@ Engine.prototype.processPurchasePending = function(responseData) {
 	
 }
 
-Engine.prototype.processPurchaseFinished = function(responseData) {
+Engine.prototype.processUnitPurchaseFinished = function(responseData) {
 
 	// Create quick reference object
 	var refObject = {
@@ -1481,6 +1491,26 @@ Engine.prototype.processPurchaseFinished = function(responseData) {
 				self.units.push(newUnitObject);
 			});
 		}
+	}
+}
+
+Engine.prototype.processBuildingPurchaseFinished = function(responseData) {
+
+	// Create quick reference object
+	var refObject = {
+		instanceId : responseData.target[0],
+		identifier : responseData.source[0],
+		cell : new Cell(responseData.coords[0].col, responseData.coords[0].row),
+		xy : (new Cell(responseData.coords[0].col, responseData.coords[0].row)).toPoint(),
+		player : this.getPlayerFromPlayerId(responseData.misc[0])
+	};
+
+	// Construct new unit object
+	switch (refObject.identifier) {
+		case "TURRET":
+			break;
+		default:
+			break;
 	}
 }
 
@@ -1768,7 +1798,10 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processPurchasePending(responseData);
 				break;
 			case "UNIT_PURCHASE_FINISHED":
-				this.processPurchaseFinished(responseData);
+				this.processUnitPurchaseFinished(responseData);
+				break;
+			case "BUILDING_PURCHASE_FINISHED":
+				this.processBuildingPurchaseFinished(responseData);
 				break;
 				
 			case "DEFENCE_ATTACK_XY":
