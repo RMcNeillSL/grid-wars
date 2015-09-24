@@ -620,24 +620,34 @@ Engine.prototype.processMouseFormUpdates = function() {
 	// Get ctrl state
 	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	
+	// Update pointer form function
+	var self = this;
+	var updatePointerForm = function(formId) {
+		self.pointer.sprite.animations.play(formId);
+	}
+	
 	// Process selection for nothing
 	if (nothingSelected) {
 		if (!itemAtPoint || itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
-			this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+			updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 		} else {
-			this.updatePointerForm(CONSTANTS.CURSOR_NORMAL_ENEMY);
+			updatePointerForm(CONSTANTS.CURSOR_NORMAL_ENEMY);
 		}
 	}
 	
 	// Process selection for unit
 	if (unitSelected) {
 		if (!itemAtPoint) {
-			this.updatePointerForm(CONSTANTS.CURSOR_MOVE);
+			if (ctrlState) {
+				updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
+			} else {
+				updatePointerForm(CONSTANTS.CURSOR_MOVE);
+			}
 		} else {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
-				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+				updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 			} else {
-				this.updatePointerForm(CONSTANTS.CURSOR_ATTACK);
+				updatePointerForm(CONSTANTS.CURSOR_ATTACK);
 			}
 		}
 	}
@@ -646,15 +656,15 @@ Engine.prototype.processMouseFormUpdates = function() {
 	if (defenceSelected) {
 		if (itemAtPoint) {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
-				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+				updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 			} else {
-				this.updatePointerForm(CONSTANTS.CURSOR_ATTACK);
+				updatePointerForm(CONSTANTS.CURSOR_ATTACK);
 			}
 		} else {
 			if (ctrlState) {
-				this.updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
+				updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
 			} else {
-				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+				updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 			}
 		}
 	}
@@ -673,24 +683,6 @@ Engine.prototype.updatePointerPosition = function(point) {
 	// Position sprite at mouse point
 	this.pointer.sprite.x = point.x;
 	this.pointer.sprite.y = point.y;
-}
-
-Engine.prototype.updatePointerForm = function(formId) {
-	
-	// Check for special case forms
-	
-	// Run standard conversion straight to passed form
-	this.pointer.sprite.animations.play(formId);
-
-//	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
-//	this.turretSegment.animations.add(, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
-//	this.turretSegment.animations.add(, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS., CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
-//	this.turretSegment.animations.play(CONSTANTS.CURSOR_NORMAL);
 }
 
 Engine.prototype.positionCameraOverCell = function(cell) {
