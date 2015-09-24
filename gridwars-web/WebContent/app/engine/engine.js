@@ -486,7 +486,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	this.updatePointerPosition();
 
 	// Process updates for selection rectangle
-	if (pointer.isDown) {
+	if (pointer.isDown && pointer.leftButton.isDown) {
 		
 		// Reset selected items
 		if (this.selectionRectangle.selectActive

@@ -21,6 +21,9 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 		this.top = this.gameCore.point.y;
 		this.col = col;
 		this.row = row;
+		
+		// Set default misc values
+		this.damageExplosions = [];
 
 		// Create turret base object
 		this.hubSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_HUB, this.gameCore.colour.HUB);
