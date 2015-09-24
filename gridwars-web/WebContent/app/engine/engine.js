@@ -159,7 +159,7 @@ Engine.prototype.create = function() {
 			this.mapOverlayGroup, this.gameplayConfig.width,
 			this.gameplayConfig.height, this.gameplayConfig.cells,
 			this.phaserGame.width / CONSTANTS.TILE_WIDTH,
-			this.phaserGame.height / CONSTANTS.TILE_EIGHT);
+			this.phaserGame.height / CONSTANTS.TILE_HEIGHT);
 
 	// Construct event listeners
 	this.phaserGame.input.onUp.add(this.onMouseUp, this);
@@ -696,21 +696,15 @@ Engine.prototype.updatePointerForm = function(formId) {
 Engine.prototype.positionCameraOverCell = function(cell) {
 	
 	// Calculate map bounds
-	var mapBound = Math.ceil(this.mapRender.screenCellWidth / 2);
-	var mapBounds = {
-		left: mapBound,
-		right: this.mapRender.width,
-		top: mapBound,
-		bottom: this.mapRender.height,
-	}
+	var mapBound = { x: this.mapRender.screenCellWidth / 2, y : this.mapRender.screenCellHeight / 2 };
 	
 	// Calculate centre cell
-	cell.col = Math.min(mapBounds.right, Math.max(cell.col, mapBounds.left));
-	cell.row = Math.min(mapBounds.bottom, Math.max(cell.row, mapBounds.top));
+	var moveAmount = { x: Math.min(this.mapRender.width - mapBound.x, Math.max(cell.col - mapBound.x, 0)),
+					   y: Math.min(this.mapRender.height - mapBound.y, Math.max(cell.row - mapBound.y, 0)) };
 	
 	// Move camera to centralise cell
-	this.phaserGame.camera.x = (cell.col - mapBounds.left) * CONSTANTS.TILE_WIDTH;
-	this.phaserGame.camera.y = (cell.row - mapBounds.top) * CONSTANTS.TILE_HEIGHT;
+	this.phaserGame.camera.x = (moveAmount.x * CONSTANTS.TILE_WIDTH) + (CONSTANTS.TILE_WIDTH / 2);
+	this.phaserGame.camera.y = (moveAmount.y * CONSTANTS.TILE_HEIGHT) + (CONSTANTS.TILE_HEIGHT / 2);
 }
 
 Engine.prototype.manageMapMovement = function() {
