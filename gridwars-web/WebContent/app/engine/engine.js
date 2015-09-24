@@ -651,7 +651,11 @@ Engine.prototype.processMouseFormUpdates = function() {
 			if (ctrlState) {
 				updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
 			} else {
-				updatePointerForm(CONSTANTS.CURSOR_MOVE);
+//				if () {
+//					updatePointerForm(CONSTANTS.CURSOR_INVALID);
+//				} else {
+					updatePointerForm(CONSTANTS.CURSOR_MOVE);
+//				}
 			}
 		} else {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
@@ -1102,6 +1106,11 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 }
 
 Engine.prototype.isSquareEmpty = function(col, row) {
+	
+	// Run check against map manager
+	if (this.mapRender.isCellObstructed(new Cell(col, row))) {
+		return false;
+	}
 	
 	// Generate list of all items to process
 	var potentialObstructions = this.buildings.concat(this.units);
