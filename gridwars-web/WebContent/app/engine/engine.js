@@ -275,7 +275,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -714,7 +714,8 @@ Engine.prototype.manageMapMovement = function() {
 	// Update camera with up, down, left and right keys
 	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
 	else if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
-	else if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
+	
+	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
 	else if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
 	
 	// Update mouse values
@@ -855,8 +856,8 @@ Engine.prototype.updatePlayerStatus = function() {
 
 	var removeArray = [];
 	
-	for (var index = 0; index < deadPlayers.length; index++) {
-		if (!deadPlayers[index].hasPlacedObject) {
+	for(var index = 0; index < deadPlayers.length; index++) {
+		if (self.getPlayerActiveHub(deadPlayers[index].playerId) != null) {
 			removeArray.push(index);
 		}
 	}
@@ -864,24 +865,6 @@ Engine.prototype.updatePlayerStatus = function() {
 	for (var index = (removeArray.length-1); index >= 0; index--) {
 		deadPlayers.splice(removeArray[index], 1);
 	}
-	
-	self.units.filter(function(unit) {
-		for (var index = 0; index < deadPlayers.length; index++) {
-			if (unit.gameCore.playerId === deadPlayers[index].playerId) {
-				deadPlayers.splice(index, 1);
-				break;
-			}
-		}
-	});
-
-	self.buildings.filter(function(building) {
-		for (var index = 0; index < deadPlayers.length; index++) {
-			if (building.gameCore.playerId === deadPlayers[index].playerId) {
-				deadPlayers.splice(index, 1);
-				break;
-			}
-		}
-	});
 
 	if (deadPlayers.length > 0) {
 		for (var i1 = 0; i1 < deadPlayers.length; i1++) {
@@ -894,7 +877,7 @@ Engine.prototype.updatePlayerStatus = function() {
 				}
 			}
 
-			if (!playerAlreadyDead) {
+			if (!playerAlreadyDead && self.playerResults.length < self.players.length) {
 				self.playerResults.push({
 					position : self.players.length - self.playerResults.length,
 					playerId : deadPlayers[i1].playerId,
@@ -914,7 +897,7 @@ Engine.prototype.updatePlayerStatus = function() {
 					break;
 				}
 			}
-			if (!isDead) {
+			if (!isDead && self.playerResults.length < self.players.length) {
 				self.playerResults.push({
 					position : 1,
 					playerId : self.players[index].playerId,
@@ -1418,14 +1401,6 @@ Engine.prototype.processPurchaseFinished = function(responseData) {
 
 				// Add object to unit array
 				self.units.push(newUnitObject);
-
-				//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
-				for(var index = 0; index < self.players.length; index++) {
-					if(!self.players[index].hasPlacedObject && self.players[index].playerId === refObject.playerId) {
-						self.players[index].hasPlacedObject = true;
-						break;
-					}
-				}
 			});
 		}
 	}
@@ -1482,14 +1457,6 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 			
 			// Add object to building array
 			this.buildings.push(newBuilding);
-			
-			//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
-			for(var index = 0; index < this.players.length; index++) {
-				if(!this.players[index].hasPlacedObject && this.players[index].playerId === refObject.playerId) {
-					this.players[index].hasPlacedObject = true;
-					break;
-				}
-			}	
 		}
 	}
 
@@ -1607,8 +1574,6 @@ Engine.prototype.processUnitDamage = function(responseData) {
 			// Submit unit damage
 			gameObject.gameCore.setHealth(refObject.newHealth);
 			
-			console.log(gameObject);
-			
 			// Update health on the game object details menu
 			if(gameObject.gameCore.health > 0) {
 				this.gameObjectHealthText.setText(Math.floor((gameObject.gameCore.health / gameObject.gameCore.maxHealth)*100) + "%");
@@ -1682,14 +1647,6 @@ Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
 
 		// Add object to unit array
 		this.units.push(newTank);
-
-		//ONLY USED FOR TESTING PURPOSES, REMOVE ONCE BASES ARE PLACED BY DEFAULT.
-		for(var index = 0; index < this.players.length; index++) {
-			if(!this.players[index].hasPlacedObject && this.players[index].playerId === refObject.playerId) {
-				this.players[index].hasPlacedObject = true;
-				break;
-			}
-		}
 	}
 }
 
