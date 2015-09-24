@@ -216,7 +216,7 @@ ServerAPI.prototype.requestUpdateUnitCell = function(unit, newCell) {
 ServerAPI.prototype.requestDamageSubmission = function(units, damageAmount, killerId) {
 
 	// Make sure required information is present
-	if (units && damageAmount) {
+	if (units && damageAmount && killerId) {
 		
 		// Create request params
 		var params = {
@@ -236,6 +236,8 @@ ServerAPI.prototype.requestDamageSubmission = function(units, damageAmount, kill
 		// Submit request
 		this.gameService.gameplayRequest(request);
 		
+	} else {
+		console.log("ERROR attempted to cause damage with missing param");
 	}
 	
 }

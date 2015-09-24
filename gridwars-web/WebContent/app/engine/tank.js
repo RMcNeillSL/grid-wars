@@ -27,7 +27,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		// Set default misc values
 		this.waypoints = [];
 		this.damageExplosions = [];
-		this.moveSpeed = 1; // MUST BE A MULTIPLE OF 100(size of a square)!
+		this.moveSpeed = 50; // MUST BE A MULTIPLE OF 100(size of a square)!
 		this.rotateSpeed = 2;
 		this.turretRotateSpeed = 2;
 		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
@@ -63,7 +63,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 					self.engineCore.func_RequestExplosion(
 							self.mapGroup,
 							CONSTANTS.SPRITE_EXPLOSION_A,
-							self.gameCore.playerId,
+							self.gameCore.instanceId,
 							self.gameCore.instanceId + "_A",
 							target.left,
 							target.top);
@@ -72,7 +72,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 				self.engineCore.func_RequestExplosion(
 						self.mapGroup,
 						CONSTANTS.SPRITE_EXPLOSION_A,
-						self.gameCore.playerId,
+						self.gameCore.instanceId,
 						self.gameCore.instanceId + "_A",
 						self.shootTarget.point.x,
 						self.shootTarget.point.y);
@@ -136,14 +136,6 @@ Tank.prototype.lockonAndShoot = function(targetObject) {
 		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
 		this.shootTarget.isFiring = false;
 		this.shootTarget.readyToFire = false;
-
-		// Calculate rotation and point data
-		var sourcePoint = new Point(this.left, this.top);
-		var targetPoint = new Point(targetObject.left, targetObject.top);		//ROBERT: Changed from target.left and target.right
-		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
-
-		// Save data to shoot target object
-		this.shootTarget.increment = rotationData.angleIncrement;
 	}
 }
 

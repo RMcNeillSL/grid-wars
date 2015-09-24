@@ -426,7 +426,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 						if (targetUnit) {
 							clickHandled = true;
 							if (ctrlDown) {
-								targetUnit.shootAtXY(point);
+//								targetUnit.shootAtXY(point);
 							} else {
 								this.serverAPI.requestUnitMoveCell(targetUnit, cell);
 							}
@@ -446,11 +446,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 						clickHandled = true;
 						this.serverAPI.requestObjectAttackObject(sourceObjectId, enemyAtPoint.gameCore.instanceId);
 					}
-					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
-						clickHandled = true;
-						this.selected[selectedIndex].shootAtXY(point);
-//						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
-					}
+//					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
+//						clickHandled = true;
+//						this.selected[selectedIndex].shootAtXY(point);
+////						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
+//					}
 				}
 				
 				// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
@@ -598,13 +598,16 @@ Engine.prototype.purchaseObject = function(objectId) {
 }
 
 Engine.prototype.processMouseFormUpdates = function() {
-	
+
 	// Selected flags
 	var nothingSelected = false;
 	var unitSelected = false;
 	var defenceSelected = false;
 	var buildingSelected = false;
-	
+
+	// Get current cell over
+	var cell = this.mouse.position.toCell();
+
 	// Check type of selection occuring
 	if (this.selected.length == 0) {
 		nothingSelected = true;
@@ -649,11 +652,11 @@ Engine.prototype.processMouseFormUpdates = function() {
 			if (ctrlState) {
 				updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
 			} else {
-//				if () {
-//					updatePointerForm(CONSTANTS.CURSOR_INVALID);
-//				} else {
+				if (this.mapRender.isCellObstructed(cell)) {
+					updatePointerForm(CONSTANTS.CURSOR_INVALID);
+				} else {
 					updatePointerForm(CONSTANTS.CURSOR_MOVE);
-//				}
+				}
 			}
 		} else {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
@@ -1071,6 +1074,8 @@ Engine.prototype.explosionCollisionCheck = function() {
 			// Calculate boundaries for sprites
 			var boundsA = explosionSprite.getBounds();
 			var boundsB = spriteList[index].getBounds();
+			
+//			console.log("BOUNDS A: " + boundsA.x + ", " + bounds)
 
 			// Calculate intersect rectangle
 			var x_overlap = Math.max(0, Math.min(boundsA.right, boundsB.right)
@@ -1124,17 +1129,23 @@ Engine.prototype.explosionCollisionCheck = function() {
 	var explosionRegister = this.explosionManager.explosionRegister;
 	if (explosionRegister.length > 0) {
 		for (var explosionIndex = 0; explosionIndex < this.explosionManager.explosionRegister.length; explosionIndex++) {
-
+			
+			// Determine damage for explosion
+			var explosionDealerObject = this.getObjectFromInstanceId(explosionRegister[explosionIndex].ownerId);
+			var explosionDealerPlayer = explosionDealerObject.gameCore.playerId;
+			var damageToDeal = explosionDealerObject.gameCore.damage;
+			
 			// Test each building with current explosion
 			for (var index = 0; index < this.buildings.length; index++) {
 				if (!this.buildings[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
 						&& this.buildings[index].gameCore.playerId == this.currentPlayer.playerId
-						&& this.buildings[index].gameCore.playerId != explosionRegister[explosionIndex].ownerId
+						&& this.buildings[index].gameCore.playerId != explosionDealerPlayer
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.buildings[index].getCollisionLayers())) {
+					console.log("COLLISION WITH BUILDING OCCURED -- BUILDING");
 					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.buildings[index]], this.buildings[index].gameCore.damage, explosionRegister[explosionIndex].ownerId);
+					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageToDeal, explosionDealerPlayer);
 				}
 			}
 
@@ -1143,11 +1154,12 @@ Engine.prototype.explosionCollisionCheck = function() {
 				if (!this.units[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
 						&& this.units[index].gameCore.playerId == this.currentPlayer.playerId
-						&& this.units[index].gameCore.playerId != explosionRegister[explosionIndex].ownerId
+						&& this.units[index].gameCore.playerId != explosionDealerPlayer
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.units[index].getCollisionLayers())) {
+					console.log("COLLISION WITH UNIT OCCURED -- UNIT");
 					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.units[index]], this.units[index].gameCore.damage, explosionRegister[explosionIndex].ownerId);
+					this.serverAPI.requestDamageSubmission([this.units[index]], damageToDeal, explosionDealerPlayer);
 				}
 			}
 
