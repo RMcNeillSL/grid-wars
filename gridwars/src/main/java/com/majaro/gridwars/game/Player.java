@@ -52,6 +52,14 @@ public class Player {
 		PurchaseRequest purchaseRequest = this.getPurchaseRequestFromId(objectId);
 		this.purchaseQueue.remove(purchaseRequest);
 	}
+	public boolean buildingInProgress(GameObject sourceObject) {
+		for (int index = 0; index < this.purchaseQueue.size(); index ++) {
+			if (this.purchaseQueue.get(index).getSourceObject().getClass().equals(sourceObject.getClass())) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	// Common checking functions
 	public boolean playerHasTechLevel(GameObject gameBuilding) {
@@ -59,11 +67,9 @@ public class Player {
 	}
 	public boolean playerHasCash(GameObject gameBuilding) {
 		boolean hasCash = this.cash >= gameBuilding.getCost();
-		
 		if(hasCash) {
 			removePlayerCash(gameBuilding.getCost());
 		}
-		
 		return hasCash;
 	}
 	
