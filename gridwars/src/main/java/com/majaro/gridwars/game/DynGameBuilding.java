@@ -1,5 +1,7 @@
 package com.majaro.gridwars.game;
 
+import java.util.ArrayList;
+
 import com.majaro.gridwars.game.Const.GameBuilding;
 
 public class DynGameBuilding extends GameBuilding implements DynGameObject {
@@ -17,6 +19,9 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	protected Coordinate coordinate = null;
 	protected String instanceId = "";
 	
+	// Production building coordiantes
+	private Coordinate deployCoordinate;
+	
 	// Constructor
 	public DynGameBuilding(String instanceId, GameBuilding sourceBuilding, Player playerRef, Coordinate coordinate) {
 		
@@ -30,10 +35,24 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 		this.playerRef = playerRef;
 		this.coordinate = coordinate;
 		this.instanceId = instanceId;
+		
+		// Calculate deploy coordiante
+		this.setDeployCoordinate();
 	}
 
 	// State methods
 	public boolean isDead() { return (this.health < 0); }
+	
+	// Deploying item coordinates
+	private void setDeployCoordinate() {
+
+		// Set default deploy coordinate
+		this.deployCoordinate = null;
+		
+		// Construct deploy coordinates for relevant production buildings
+		if (this.source.identifier == "HUB") { this.deployCoordinate = new Coordinate(this.coordinate.getCol() + 1, this.coordinate.getRow() - 1); }
+	}
+	public Coordinate getDeployCoordinate() { return this.deployCoordinate; }
 	
 	// Setter methods
 	public void updateCoordinate(Coordinate newCoordinate) { this.coordinate = newCoordinate; }
@@ -50,6 +69,15 @@ public class DynGameBuilding extends GameBuilding implements DynGameObject {
 	// Unique getters for dynamic values
 	public Player getOwner() { return this.playerRef; }
 	public Coordinate getCoordinate() { return this.coordinate; }
+	public Coordinate[] getCoordinates() {
+		ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
+		for (int yCount = 0; yCount < this.getHeightCellCount(); yCount ++) {
+			for (int xCount = 0; xCount < this.getWidthCellCount(); xCount ++) {
+				coordinates.add(new Coordinate(this.getCoordinate().getCol() + xCount, this.getCoordinate().getRow() + yCount));
+			}
+		}
+		return coordinates.toArray(new Coordinate[coordinates.size()]);
+	}
 	
 	// Unique getters for values from super objects
 	public int getMaxHealth() { return super.health; }

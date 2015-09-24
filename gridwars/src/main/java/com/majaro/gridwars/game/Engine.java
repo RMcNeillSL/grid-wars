@@ -10,6 +10,7 @@ import com.majaro.gridwars.apiobjects.GameplayResponse;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.LobbyUser;
 import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
+import com.majaro.gridwars.game.Const.E_TechLevel;
 import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameDefence;
 import com.majaro.gridwars.game.Const.GameObject;
@@ -230,33 +231,122 @@ public class Engine extends Thread {
 		// Declare working variables
 		Coordinate spawnCoordinate = null;
 		DynGameBuilding newBuilding = null;
-		Coordinate newBuildingCoordinate = null;
+		Coordinate startTankFactoryCoordinate = null;
 		
 		// Generate source building objects
-		GameBuilding startTankFactory = (GameBuilding)Const.getGameObjectFromString("TURRET");
+		GameBuilding startTankFactory = (GameBuilding)Const.getGameObjectFromString("HUB");
 		
 		// Move through all player spawns adding buildings and object around spawn
 		for (Player player : this.players) {
 			
 			// Save convenient reference to spawn coordiante
 			spawnCoordinate = player.getSpawnCoordinate();
-			newBuildingCoordinate = new Coordinate(spawnCoordinate.getCol(), spawnCoordinate.getRow());
+			startTankFactoryCoordinate = new Coordinate(spawnCoordinate.getCol(), spawnCoordinate.getRow());
 			
 			// Generate and add new building to response for player
-			newBuilding = new DynGameDefence(this.generateInstanceId(player), (GameDefence)startTankFactory, player, spawnCoordinate);
+			newBuilding = new DynGameBuilding(this.generateInstanceId(player), startTankFactory, player, startTankFactoryCoordinate);
 			gameplayResponse.addCoord(spawnCoordinate);
 			gameplayResponse.addSource(newBuilding.getIdentifier());
 			gameplayResponse.addTarget(newBuilding.getInstanceId());
 			gameplayResponse.addMisc(player.getPlayerName());
 			this.buildings.add(newBuilding);
 		}
-		
+
 		// Return constructed response object
 		return gameplayResponse;
 	}
 	
 	
 	// Game request methods (more specific functionality for each request type)
+	
+	private GameplayResponse processPurchaseRequest(Player player, GameObject sourceObject) {
+
+		// Declare response variables
+		GameplayResponse purchaseResponse = null;
+		boolean validPurchase = true;
+
+		// Check user is at appropriate technology level
+		if (validPurchase && !player.playerHasTechLevel(sourceObject)) {
+			validPurchase = false;
+			purchaseResponse = new GameplayResponse(E_GameplayResponseCode.DYNAMIC_MAP_OBSTRUCTION);
+		}
+
+		// Check user has appropriate funds
+		if (validPurchase && !player.playerHasCash(sourceObject)) {
+			validPurchase = false;
+			purchaseResponse = new GameplayResponse(E_GameplayResponseCode.INSUFFICIENT_FUNDS);
+			purchaseResponse.addSource(Integer.toString(player.getPlayerCash()));
+			purchaseResponse.addTarget(player.getPlayerName());
+		}
+		
+		// Proceed to purchase object
+		if (validPurchase) {
+			
+			// Add purchase request to users purchase queue
+			PurchaseRequest purchase = player.purchaseGameObject(sourceObject, this.generateInstanceId(player));
+			
+			// Start timer running
+			purchase.buildTimeStart();
+			
+			// Construct response
+			purchaseResponse = new GameplayResponse(E_GameplayResponseCode.PURCHASE_OBJECT);
+			purchaseResponse.addSource(sourceObject.getIdentifier());
+			purchaseResponse.addTarget(purchase.getObjectId());
+			purchaseResponse.flagForSenderOnly();
+		}
+		
+		// Return calculated result
+		return purchaseResponse;
+	}
+	
+	private GameplayResponse processUnitBuildFinishedRequest(Player player, String purchaseObjectId) {
+
+		// Declare response variables
+		GameplayResponse finishedUnitBuildResponse = null;
+		boolean validUnitBuildComplete = true;
+		
+		// Get purchase object for player
+		PurchaseRequest purchaseRequest = player.getPurchaseRequestFromId(purchaseObjectId);
+
+		// Check if purchase is still pending
+		if (validUnitBuildComplete && !purchaseRequest.buildComplete(3000)) {
+			validUnitBuildComplete = false;
+			finishedUnitBuildResponse = new GameplayResponse(E_GameplayResponseCode.PURCHASE_PENDING);
+		}
+		
+		// Construct valid purchase complete response object
+		if (validUnitBuildComplete) {
+			
+			// Locate hub to deploy from
+			DynGameBuilding deployHub = this.getPlayerDeployHub(player);
+			
+			// Make sure deploy hub was identified
+			if (deployHub != null) {
+				
+				// Construct new unit
+				Coordinate deployCoord = deployHub.getDeployCoordinate();
+				DynGameUnit newUnit = new DynGameUnit(purchaseRequest.getObjectId(), (GameUnit)purchaseRequest.getSourceObject(), player, deployCoord.getCol(), deployCoord.getRow());
+				
+				// Add new units to engine units array
+				this.units.add(newUnit);
+				
+				// Construct response object
+				if (newUnit != null) {
+					finishedUnitBuildResponse = new GameplayResponse(E_GameplayResponseCode.UNIT_PURCHASE_FINISHED);
+					finishedUnitBuildResponse.addSource(purchaseRequest.getSourceObject().getIdentifier());
+					finishedUnitBuildResponse.addTarget(purchaseObjectId);
+					finishedUnitBuildResponse.addMisc(player.getPlayerName());
+					finishedUnitBuildResponse.addCoord(deployCoord);
+				}
+				
+				// Remove player purchase record from array
+				player.removePlayerPurchaseObject(purchaseRequest.getObjectId());
+			}
+		}
+		
+		// Return calculated result
+		return finishedUnitBuildResponse;
+	}
 	
 	@SuppressWarnings("unused")
 	private GameplayResponse[] processBuildingPlaceRequest(Player player, GameBuilding[] sourceBuildings, Coordinate coord) {
@@ -630,6 +720,14 @@ public class Engine extends Thread {
 
 			// Determine which request was sent 
 			switch (gameplayRequest.getRequestCode()) {
+				case PURCHASE_OBJECT:
+		        	gameplayResponse = this.processPurchaseRequest(sender, 
+		        			Const.getGameObjectFromString(gameplayRequest.getSourceString()[0]));
+					break;
+				case PURCHASE_FINISHED:
+		        	gameplayResponse = this.processUnitBuildFinishedRequest(sender, 
+		        			gameplayRequest.getSourceString()[0]);
+		        	break;
 		        case NEW_BUILDING:  
 		        	gameplayResponseArray = this.processBuildingPlaceRequest(sender, 
 		        			Const.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
@@ -703,6 +801,20 @@ public class Engine extends Thread {
 	
 	
 	// Utility methods
+	
+	private DynGameBuilding getPlayerDeployHub(Player player) {
+		
+		// Look through buildings to find deploy hub
+		for (DynGameBuilding building : this.buildings) {
+			if (building.playerRef == player) {
+				return building;
+			}
+		}
+		
+		// Return no hub found
+		return null;
+		
+	}
 
 	private ArrayList<DynGameUnit> getInterruptedWaypointUnits(Coordinate coord) {
 		

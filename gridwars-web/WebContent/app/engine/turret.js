@@ -2,9 +2,11 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 
 	// Make sure dependencies has been passed
 	if (turretGroup) {
-		
-		// Save core game object
+
+		// Save core game object and update cell/point
 		this.gameCore = gameCore;
+		this.gameCore.point = new Point(xy.x + width/2, xy.y + height/2);
+		this.gameCore.cell = new Cell(col, row);
 		
 		// Save engine core object
 		this.engineCore = engineCore;
@@ -14,8 +16,8 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		// Save sprite positioning
 		this.width = width;
 		this.height = height;
-		this.left = xy.x + this.width/2;
-		this.top = xy.y + this.height/2;
+		this.left = this.gameCore.point.x;
+		this.top = this.gameCore.point.y;
 		this.col = col;
 		this.row = row;
 		
@@ -400,6 +402,10 @@ Turret.prototype.getHealthRenderBounds = function() {
 	
 	// Return calculated bounds
 	return healthBounds;
+}
+
+Turret.prototype.getCells = function() {
+	return this.gameCore.getCells();
 }
 
 

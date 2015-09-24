@@ -29,6 +29,48 @@ function ServerAPI(gameService) {
 	
 }
 
+ServerAPI.prototype.purchaseRequest = function(newObjectCore) {
+
+	// Make sure a building object is present
+	if (newObjectCore) {
+
+		// Create request params
+		var params = {
+				source: [newObjectCore.identifier]
+		};
+		
+		// Generate request object
+		var request = new GameplayRequest("PURCHASE_OBJECT", params);
+
+		// Submit request
+		this.gameService.gameplayRequest(request);
+	
+	} else {
+		console.log("ERROR: Attempted to purchase new object with no object specified.");
+	}
+}
+
+ServerAPI.prototype.purchaseFinishedRequest = function(purchaseObject) {
+
+	// Make sure a building object is present
+	if (purchaseObject) {
+
+		// Create request params
+		var params = {
+				source: [purchaseObject.instanceId]
+		};
+		
+		// Generate request object
+		var request = new GameplayRequest("PURCHASE_FINISHED", params);
+
+		// Submit request
+		this.gameService.gameplayRequest(request);
+	
+	} else {
+		console.log("ERROR: Attempted to varify purchase finish of an object which does not exist.");
+	}
+}
+
 ServerAPI.prototype.requestBuildingPlacement = function(newBuilding) {
 	
 	// Make sure a building object is present

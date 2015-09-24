@@ -23,15 +23,31 @@ function GameCore(identifier, cell) {
 	
 	// Field population from server source object
 	var populateProperties = function(sourceObject, isUnit) {
+		
+		// Define unit or defence booleans
 		self.isUnit = isUnit;
 		self.isDefence = (!isUnit && sourceObject.damage && sourceObject.damage > 0);
-		if (sourceObject.cost) { self.cost = sourceObject.cost; }
-		if (sourceObject.damage) { self.damage = sourceObject.damage; }
-		if (sourceObject.health) { self.health = sourceObject.health; self.maxHealth = sourceObject.health; }
-		if (sourceObject.power) { self.power = sourceObject.power; }
-		if (sourceObject.range) { self.range = sourceObject.range; }
-		if (sourceObject.techLv) { self.techLv = sourceObject.techLv; }
-		if (sourceObject.speed) { self.speed = sourceObject.speed; }
+		
+		// Define fields to save
+		var fields = ['cost', 'damage', 'health', 'power', 'range', 'techLv', 'speed', 'widthCellCount', 'heightCellCount'];
+		
+		// Process all variables to save
+		for (var index = 0; index < fields.length; index ++) {
+			if (sourceObject[fields[index]]) {
+				self[fields[index]] = sourceObject[fields[index]];
+				if (fields[index] == 'health') { self.maxHealth =  sourceObject[fields[index]]}
+			}
+		}
+		
+//		if (sourceObject.cost) { self.cost = sourceObject.cost; }
+//		if (sourceObject.damage) { self.damage = sourceObject.damage; }
+//		if (sourceObject.health) { self.health = sourceObject.health; self.maxHealth = sourceObject.health; }
+//		if (sourceObject.power) { self.power = sourceObject.power; }
+//		if (sourceObject.range) { self.range = sourceObject.range; }
+//		if (sourceObject.techLv) { self.techLv = sourceObject.techLv; }
+//		if (sourceObject.speed) { self.speed = sourceObject.speed; }
+//		if (sourceObject.widthCellCount) { self.widthCellCount = sourceObject.widthCellCount; }
+//		if (sourceObject.heightCellCount) { self.heightCellCount = sourceObject.heightCellCount; }
 	}
 
 	// Locate 'building object' to transfer data from server buildings object
@@ -42,11 +58,31 @@ function GameCore(identifier, cell) {
 	}
 
 	// Locate 'unit object' to transfer data from server buildings object
-	for (var unitIndex = 0; unitIndex < CONSTANTS.GAME_BUILDINGS.length; unitIndex++) {
+	for (var unitIndex = 0; unitIndex < CONSTANTS.GAME_UNITS.length; unitIndex++) {
 		if (CONSTANTS.GAME_UNITS[unitIndex].identifier == identifier) {
 			populateProperties(CONSTANTS.GAME_UNITS[unitIndex], true);
 		}
 	}
+}
+
+GameCore.prototype.getCells = function() {
+	
+	// Set default result
+	resultCells = [];
+	
+	// Check if height and width cell counts are defined
+	if (this.heightCellCount && this.widthCellCount) {
+		for (var yCount = 0; yCount < this.heightCellCount; yCount ++) {
+			for (var xCount = 0; xCount < this.widthCellCount; xCount ++) {
+				resultCells.push(new Cell(this.cell.col + xCount, this.cell.row + yCount));
+			}
+		}
+	} else {
+		resultCells.push(this.cell);
+	}
+	
+	// Return generated result
+	return resultCells;
 }
 
 GameCore.prototype.setInstanceId = function(instanceId) {
