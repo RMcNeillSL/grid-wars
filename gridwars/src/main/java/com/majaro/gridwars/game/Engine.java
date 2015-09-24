@@ -279,6 +279,14 @@ public class Engine extends Thread {
 			purchaseResponse.addTarget(player.getPlayerName());
 		}
 		
+		// Check production is not already in progress
+		if (validPurchase && player.buildingInProgress(sourceObject)) {
+			validPurchase = false;
+			if (sourceObject instanceof GameUnit) { purchaseResponse = new GameplayResponse(E_GameplayResponseCode.UNIT_BUILDING_INPROGRESS); }
+			else if (sourceObject instanceof GameDefence) { purchaseResponse = new GameplayResponse(E_GameplayResponseCode.DEFENCE_BUILDING_INPROGRESS); }
+			else if (sourceObject instanceof GameBuilding) { purchaseResponse = new GameplayResponse(E_GameplayResponseCode.BUILDING_BUILDING_INPROGRESS); }
+		}
+		
 		// Proceed to purchase object
 		if (validPurchase) {
 			
@@ -292,6 +300,10 @@ public class Engine extends Thread {
 			purchaseResponse = new GameplayResponse(E_GameplayResponseCode.PURCHASE_OBJECT);
 			purchaseResponse.addSource(sourceObject.getIdentifier());
 			purchaseResponse.addTarget(purchase.getObjectId());
+		}
+		
+		// Mark any result as specific to player
+		if (purchaseResponse != null) {
 			purchaseResponse.flagForSenderOnly();
 		}
 		
