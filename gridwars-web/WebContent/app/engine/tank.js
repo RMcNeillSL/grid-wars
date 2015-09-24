@@ -27,7 +27,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		// Set default misc values
 		this.waypoints = [];
 		this.damageExplosions = [];
-		this.moveSpeed = 50; // MUST BE A MULTIPLE OF 100(size of a square)!
+		this.moveSpeed = 2; // MUST BE A MULTIPLE OF 100(size of a square)!
 		this.rotateSpeed = 2;
 		this.turretRotateSpeed = 2;
 		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
