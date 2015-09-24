@@ -55,10 +55,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.mapRender = null;
 	this.explosionManager = null;
 	this.gameplayConfig = gameplayConfig;
-	this.mouse = {
-		x : 0,
-		y : 0
-	};
+	this.mouse = { position : new Point(0, 0) };
 
 	// Define game camera variables
 	this.cursors = null;
@@ -169,7 +166,7 @@ Engine.prototype.create = function() {
 			this.mapOverlayGroup, this.gameplayConfig.width,
 			this.gameplayConfig.height, this.gameplayConfig.cells,
 			this.phaserGame.width / CONSTANTS.TILE_WIDTH,
-			this.phaserGame.height / CONSTANTS.TILE_EIGHT);
+			this.phaserGame.height / CONSTANTS.TILE_HEIGHT);
 
 	// Construct event listeners
 	this.phaserGame.input.onUp.add(this.onMouseUp, this);
@@ -261,7 +258,7 @@ Engine.prototype.update = function() {
 
 	// Render placement overlay
 	if (this.phaserGame.newBuilding.active) {
-		var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
+		var cell = this.mouse.position.toCell();
 		var canPlace = this.isSquareEmpty(cell.col, cell.row);
 		this.mapRender.placementHover(cell.col, cell.row, canPlace);
 	}
@@ -365,7 +362,7 @@ Engine.prototype.render = function() {
 Engine.prototype.onMouseDown = function(pointer) {
 	
 	// Search for potential under mouse selection
-	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true, false);
+	var itemAtPoint = this.getItemAtPoint(this.mouse.position, true, false);
 	
 	// Set new selection if one does not already exist
 	if (itemAtPoint) {
@@ -391,8 +388,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 	var shiftDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.SHIFT);
 
 	// Positional values for cell and xy
-	var point = new Point(this.mouse.x, this.mouse.y);
+	var point = this.mouse.position;
 	var cell = point.toCell();
+	
+	// Flag for general pointer actions handled
+	var clickHandled = false;
 
 	// Perform checks for left click
 	if (pointer.leftButton.isDown) {
@@ -423,6 +423,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 					if (this.isSquareEmpty(cell.col, cell.row)) {
 						var targetUnit = this.selected[0];
 						if (targetUnit) {
+							clickHandled = true;
 							if (ctrlDown) {
 								targetUnit.shootAtXY(point);
 							} else {
@@ -431,6 +432,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 						}
 					} else {
 						if (enemyAtPoint) {
+							clickHandled = true;
 							this.serverAPI.requestObjectAttackObject(this.selected[selectedIndex].gameCore.instanceId, enemyAtPoint.gameCore.instanceId);
 						}
 					}
@@ -440,13 +442,18 @@ Engine.prototype.onMouseUp = function(pointer) {
 				if (this.selected[selectedIndex].gameCore.identifier == "TURRET") {
 					var sourceObjectId = this.selected[selectedIndex].gameCore.instanceId;
 					if (enemyAtPoint) {
+						clickHandled = true;
 						this.serverAPI.requestObjectAttackObject(sourceObjectId, enemyAtPoint.gameCore.instanceId);
 					}
-//					this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.x,this.mouse.y);
+					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
+						clickHandled = true;
+						this.selected[selectedIndex].shootAtXY(point);
+//						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
+					}
 				}
 				
-				// Deselect selection if selected building and player clicks away
-				if (!this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) {
+				// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
+				if (!clickHandled && !this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) {
 					this.selected = [];
 				}
 			}
@@ -473,7 +480,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 	}
 
 	// Perform checks for right click
-	if (pointer.rightButton.isDown) {
+	if (!clickHandled && pointer.rightButton.isDown) {
 		this.selected = [];
 	}
 
@@ -481,15 +488,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 Engine.prototype.onMouseMove = function(pointer, x, y) {
 
-	// Save position information
-	this.mouse.x = this.phaserGame.camera.x + x;
-	this.mouse.y = this.phaserGame.camera.y + y;
-
 	// Update pointer position
 	this.updatePointerPosition();
 
 	// Process updates for selection rectangle
-	if (pointer.isDown) {
+	if (pointer.isDown && pointer.leftButton.isDown) {
 		
 		// Reset selected items
 		if (this.selectionRectangle.selectActive
@@ -500,8 +503,8 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Set new rectangle selection coordinates
 		this.selectionRectangle.selectActive = true;
-		this.selectionRectangle.rect.width = (this.mouse.x - this.selectionRectangle.originX);
-		this.selectionRectangle.rect.height = (this.mouse.y - this.selectionRectangle.originY);
+		this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
+		this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 
 	} else {
 
@@ -514,15 +517,15 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Mark selection as not active and reset
 		this.selectionRectangle.selectActive = false;
-		this.selectionRectangle.rect.x = this.mouse.x;
-		this.selectionRectangle.rect.y = this.mouse.y;
-		this.selectionRectangle.originX = this.mouse.x;
-		this.selectionRectangle.originY = this.mouse.y;
+		this.selectionRectangle.rect.x = this.mouse.position.x;
+		this.selectionRectangle.rect.y = this.mouse.position.y;
+		this.selectionRectangle.originX = this.mouse.position.x;
+		this.selectionRectangle.originY = this.mouse.position.y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
 
 		// Select hover items
-		this.hoverItem = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true, true);
+		this.hoverItem = this.getItemAtPoint(this.mouse.position, true, true);
 		if (this.hoverItem) {
 			for (var index = 0; index < this.selected.length; index ++) {
 				if (this.selected[index].gameCore.instanceId == this.hoverItem.gameCore.instanceId) {
@@ -567,7 +570,7 @@ Engine.prototype.onKeyUp = function() {
 Engine.prototype.purchaseObject = function(objectId) {
 	
 	// Get current cell over
-	var cell = (new Point(this.mouse.x, this.mouse.y)).toCell();
+	var cell = this.mouse.position.toCell();
 	
 	// Define new request objects
 	var newBuildingCore = null;
@@ -584,12 +587,6 @@ Engine.prototype.purchaseObject = function(objectId) {
 			newUnitCore = new GameCore(objectId, cell);
 			newUnitCore.setPlayer(this.currentPlayer);
 			this.serverAPI.purchaseRequest(newUnitCore);
-//			var gameCore = new GameCore("TANK", cell);
-//			gameCore.setPlayer(this.currentPlayer);
-//			this.phaserGame.newBuilding.active = true;
-//			this.phaserGame.newBuilding.target = new Tank(this.engineCore,
-//					gameCore, this.mapGroup, this.tankGroup, cell.toPoint(),
-//					cell.col, cell.row, 100, 100, true);
 			break;
 	}
 	
@@ -624,29 +621,43 @@ Engine.prototype.processMouseFormUpdates = function() {
 	}
 	
 	// Gather information about item under mouse
-	var itemAtPoint = this.getItemAtPoint(new Point(this.mouse.x, this.mouse.y), true, true);
+	var itemAtPoint = this.getItemAtPoint(this.mouse.position, true, true);
 	
 	// Get ctrl state
 	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	
+	// Update pointer form function
+	var self = this;
+	var updatePointerForm = function(formId) {
+		self.pointer.sprite.animations.play(formId);
+	}
+	
 	// Process selection for nothing
 	if (nothingSelected) {
 		if (!itemAtPoint || itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
-			this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+			updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 		} else {
-			this.updatePointerForm(CONSTANTS.CURSOR_NORMAL_ENEMY);
+			updatePointerForm(CONSTANTS.CURSOR_NORMAL_ENEMY);
 		}
 	}
 	
 	// Process selection for unit
 	if (unitSelected) {
 		if (!itemAtPoint) {
-			this.updatePointerForm(CONSTANTS.CURSOR_MOVE);
+			if (ctrlState) {
+				updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
+			} else {
+//				if () {
+//					updatePointerForm(CONSTANTS.CURSOR_INVALID);
+//				} else {
+					updatePointerForm(CONSTANTS.CURSOR_MOVE);
+//				}
+			}
 		} else {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
-				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+				updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 			} else {
-				this.updatePointerForm(CONSTANTS.CURSOR_ATTACK);
+				updatePointerForm(CONSTANTS.CURSOR_ATTACK);
 			}
 		}
 	}
@@ -655,15 +666,15 @@ Engine.prototype.processMouseFormUpdates = function() {
 	if (defenceSelected) {
 		if (itemAtPoint) {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
-				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+				updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 			} else {
-				this.updatePointerForm(CONSTANTS.CURSOR_ATTACK);
+				updatePointerForm(CONSTANTS.CURSOR_ATTACK);
 			}
 		} else {
 			if (ctrlState) {
-				this.updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
+				updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
 			} else {
-				this.updatePointerForm(CONSTANTS.CURSOR_NORMAL);
+				updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 			}
 		}
 	}
@@ -677,67 +688,41 @@ Engine.prototype.processMouseFormUpdates = function() {
 Engine.prototype.updatePointerPosition = function(point) {
 	
 	// Check if point was passed (default to cursor)
-	if (!point) { point = new Point(this.mouse.x, this.mouse.y); }
+	if (!point) { point = this.mouse.position; }
 	
 	// Position sprite at mouse point
 	this.pointer.sprite.x = point.x;
 	this.pointer.sprite.y = point.y;
 }
 
-Engine.prototype.updatePointerForm = function(formId) {
-	
-	// Check for special case forms
-	
-	// Run standard conversion straight to passed form
-	this.pointer.sprite.animations.play(formId);
-
-//	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
-//	this.turretSegment.animations.add(, CONSTANTS.CURSOR_SPRITE_NORMAL, 30, true);
-//	this.turretSegment.animations.add(, CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_INVALID, CONSTANTS.CURSOR_SPRITE_INVALID, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_ATTACK, CONSTANTS.CURSOR_SPRITE_ATTACK, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS., CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_MOVE, CONSTANTS.CURSOR_SPRITE_MOVE, 30, true);
-//	this.turretSegment.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 30, true);
-//	this.turretSegment.animations.play(CONSTANTS.CURSOR_NORMAL);
-}
-
 Engine.prototype.positionCameraOverCell = function(cell) {
 	
 	// Calculate map bounds
-	var mapBound = Math.ceil(this.mapRender.screenCellWidth / 2);
-	var mapBounds = {
-		left: mapBound,
-		right: this.mapRender.width,
-		top: mapBound,
-		bottom: this.mapRender.height,
-	}
+	var mapBound = { x: this.mapRender.screenCellWidth / 2, y : this.mapRender.screenCellHeight / 2 };
 	
 	// Calculate centre cell
-	cell.col = Math.min(mapBounds.right, Math.max(cell.col, mapBounds.left));
-	cell.row = Math.min(mapBounds.bottom, Math.max(cell.row, mapBounds.top));
+	var moveAmount = { x: Math.min(this.mapRender.width - mapBound.x, Math.max(cell.col - mapBound.x, 0)),
+					   y: Math.min(this.mapRender.height - mapBound.y, Math.max(cell.row - mapBound.y, 0)) };
 	
 	// Move camera to centralise cell
-	this.phaserGame.camera.x = (cell.col - mapBounds.left) * CONSTANTS.TILE_WIDTH;
-	this.phaserGame.camera.y = (cell.row - mapBounds.top) * CONSTANTS.TILE_HEIGHT;
+	this.phaserGame.camera.x = (moveAmount.x * CONSTANTS.TILE_WIDTH) + (CONSTANTS.TILE_WIDTH / 2);
+	this.phaserGame.camera.y = (moveAmount.y * CONSTANTS.TILE_HEIGHT) + (CONSTANTS.TILE_HEIGHT / 2);
 }
 
 Engine.prototype.manageMapMovement = function() {
 
-	// Update camera with up and down keys
-	if (this.cursors.up.isDown) {
-		this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
-	}
-    else if (this.cursors.down.isDown) { 
-    	this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
-    }
-
-	// Update camera with left and right keys
-    if (this.cursors.left.isDown) {
-    	this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
-    } else if (this.cursors.right.isDown) {
-    	this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY;
-    }
+	// Update camera with up, down, left and right keys
+	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
+	else if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
+	else if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
+	else if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
+	
+	// Update mouse values
+	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+	
+	// Process updates for mouse
+	this.updatePointerPosition();
 }
 
 Engine.prototype.drawGameScreen = function() {
@@ -1137,6 +1122,11 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 
 Engine.prototype.isSquareEmpty = function(col, row) {
 	
+	// Run check against map manager
+	if (this.mapRender.isCellObstructed(new Cell(col, row))) {
+		return false;
+	}
+	
 	// Generate list of all items to process
 	var potentialObstructions = this.buildings.concat(this.units);
 	
@@ -1315,7 +1305,7 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 			mockBuildingResponseData.target.push(responseData.target[index]);			
 		}
 	}
-	
+
 	// Submit mock request arrays
 	this.processDebugPlacement(mockUnitResponseData, true);
 	this.processNewBuilding(mockBuildingResponseData, true);

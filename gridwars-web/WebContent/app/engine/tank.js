@@ -95,8 +95,7 @@ Tank.prototype.update = function() {
 	// Process tank turret rotation
 	if (this.shootTarget &&
 			(this.shootTarget.point || this.shootTarget.instanceId) ) {
-		if (this.shootTarget.point) { this.processTurretRotation(); }
-		if (this.shootTarget.instanceId) { this.lockonAndShoot(); }
+		this.processTurretRotation();
 	}
 	
 	// Process tank turret firing event
@@ -115,8 +114,21 @@ Tank.prototype.removeFromProduction = function() {
 	this.inProductionMode = false;
 }
 
+Tank.prototype.shootAtXY = function(point) {
+
+	// Generate angle information
+	var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, new Point(this.left, this.top), point, this.turretRotateSpeed);
+
+	// Save info to shoot target
+	this.shootTarget.increment = rotationData.angleIncrement;
+	this.shootTarget.point = rotationData.targetPoint;
+	this.shootTarget.angle = rotationData.target360Angle;
+	this.shootTarget.isFiring = false;
+	this.shootTarget.readyToFire = false;
+}
+
 Tank.prototype.lockonAndShoot = function(targetObject) {
-	
+
 	// Check if a target needs assigning
 	if (targetObject) {
 		
@@ -133,185 +145,41 @@ Tank.prototype.lockonAndShoot = function(targetObject) {
 		// Save data to shoot target object
 		this.shootTarget.increment = rotationData.angleIncrement;
 	}
+}
+
+Tank.prototype.processTurretRotation = function() {
 	
-	// Run calculations if a target object is assigned
+	// Generate target point
+	var targetPoint = null;
+	var sourcePoint = new Point(this.left, this.top);
+	if (this.shootTarget.point) { targetPoint = this.shootTarget.point; }
 	if (this.shootTarget.instanceId) {
-		
-		// Save reference to target
 		var target = this.engineCore.func_GetObjectFromInstanceId(this.shootTarget.instanceId);
+		if (target) { targetPoint = new Point(target.left, target.top); }
+		else { this.shootTarget.instanceId = null; }
+	}
+
+	// Run calculations if a target is assigned
+	if (targetPoint && sourcePoint) {
+
+		// Calculate rotation and point data
+		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
 		
-		// Make sure a target was found
-		if (target) {
-			
-			// Calculate rotation and point data
-			var sourcePoint = new Point(this.left, this.top);
-			var targetPoint = new Point(target.left, target.top);
-			var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
-			
-			// Identify further rotation or begin charging animation (if target is in range)
-			if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), rotationData.target360Angle, this.shootTarget.increment) &&
-					!this.shootTarget.isFiring) {
-				this.shootTarget.increment = rotationData.angleIncrement;
-				this.rotate(this.shootTarget.increment, false, true);
-				this.shootTarget.readyToFire = false;
-			} else {
-				this.shootTarget.readyToFire = (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range * 1.1);
-			}
-			
+		// Identify further rotation or begin charging animation (if target is in range)
+		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), rotationData.target360Angle, this.shootTarget.increment) &&
+				!this.shootTarget.isFiring) {
+			this.rotate(rotationData.angleIncrement, false, true);
+			this.shootTarget.increment = rotationData.angleIncrement;
+			this.shootTarget.readyToFire = false;
 		} else {
-			this.shootTarget.instanceId = null;
+			this.shootTarget.readyToFire = (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range * 1.1);
 		}
 	}
 }
 
 Tank.prototype.processTurretFire = function() {
-	
-	// Mark firing as not possible
 	this.shootTarget.isFiring = true;
-
-	// Trigger fire animation
 	this.fire.play();
-}
-
-Tank.prototype.processTurretRotation = function() {
-	
-	// Check if rotation is needed
-	if (!this.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), this.shootTarget.angle, this.shootTarget.increment)) {
-
-		// Perform total rotation
-		this.rotate(this.shootTarget.increment, false, true);
-		
-		// Mark turret as not ready to fire
-		this.shootTarget.readyToFire = false;
-		
-	} else {
-		
-		// Mark turret as ready to fire
-		this.shootTarget.readyToFire = true;
-	}
-}
-
-Tank.prototype.shootAtXY = function(point) {
-	
-	// Generate angle information
-	var rotationData = this.calculateRotateToPointData(this.turretSegment.angle, new Point(this.left, this.top), point, this.turretRotateSpeed);
-
-	// Save info to shoot target
-	this.shootTarget.increment = rotationData.angleIncrement;
-	this.shootTarget.point = rotationData.targetPoint;
-	this.shootTarget.angle = rotationData.target360Angle;
-	
-}
-
-Tank.prototype.calculateRotateToPointData = function(currentAngle, currentPoint, targetPoint, rotateSpeed) {
-
-	// Check X&Y deltas
-	var deltaX = targetPoint.x - currentPoint.x;
-	var deltaY = targetPoint.y - currentPoint.y;
-	
-	// Calculate target angle
-	var targetAngle = 0;
-	var calcAngle = Math.atan((deltaX*1.0)/deltaY) * 180/Math.PI;
-	if (deltaX >= 0 && deltaY >= 0) { targetAngle = 180 - calcAngle; }
-	if (deltaX >= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
-	if (deltaX <= 0 && deltaY >= 0) { targetAngle = -180 - calcAngle; }
-	if (deltaX <= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
-
-	// Adjust angles to 0-360 values
-	var target360Angle = this.gameCore.phaserAngleTo360(targetAngle);
-	var current360Angle = this.gameCore.phaserAngleTo360(currentAngle);
-	
-	// Determine move increment direction based on angle size
-	var angleIncrement = 0;
-	var angleAbsDif = Math.max(target360Angle, current360Angle) - Math.min(target360Angle, current360Angle);
-	if (current360Angle < target360Angle && angleAbsDif <= 180) { angleIncrement = rotateSpeed; }
-	if (current360Angle < target360Angle && angleAbsDif > 180) { angleIncrement = -rotateSpeed; }
-	if (current360Angle > target360Angle && angleAbsDif <= 180) { angleIncrement = -rotateSpeed; }
-	if (current360Angle > target360Angle && angleAbsDif > 180) { angleIncrement = rotateSpeed; }
-
-	// Return calculated object
-	return {
-		current360Angle: Math.round(current360Angle),
-		target360Angle: Math.round(target360Angle),
-		currentPoint: currentPoint,
-		targetPoint: targetPoint,
-		angleIncrement: angleIncrement
-	};
-	
-}
-
-Tank.prototype.angleInErrorMargin = function(currentAngle, targetAngle, errorMargin) {
-	
-	// Make sure error margin is non-negative
-	errorMargin = Math.abs(errorMargin);
-
-	// Create checking variables
-	var current = {
-			angle: currentAngle,
-			upper: currentAngle + errorMargin,
-			lower: currentAngle - errorMargin
-	}
-	var target = {
-			angle: targetAngle,
-			upper: targetAngle + errorMargin,
-			lower: targetAngle - errorMargin
-	}
-	
-	// Rotation needed
-	var rotationNeeded = 
-		( (target.lower < current.angle && target.upper > current.angle) ||
-		  (current.upper > 360 && target.lower < 0) ||
-		  (current.lower < 0 && target.upper > 360) );
-		
-//	// Check values
-//	console.log("Normal: " + (target.lower < current.angle && target.upper > current.angle) +
-//			", BigCurrent: " + (current.upper > 360 && target.lower < 0) +
-//			", SmallCurrent: " + (current.lower < 0 && target.upper > 360));
-	
-	// Return calculated rotation needed
-	return rotationNeeded;
-
-}
-
-Tank.prototype.rotateToPoint = function(point) {
-	if (!this.rotateTest) { this.rotateTest = {}; }
-	this.rotateTest.point = point;
-}
-
-Tank.prototype.getCollisionLayers = function() {
-	return [this.bodySegment, this.turretSegment];
-}
-
-Tank.prototype.setBuildingMode = function(inBuildingMode) {
-	
-	if (inBuildingMode) {
-		this.bodySegment.visible = false;
-		this.turretSegment.visible = false; 
-	} else {
-		this.bodySegment.visible = true;
-		this.turretSegment.visible = true; 		
-	}
-	
-}
-
-Tank.prototype.setPosition = function(cell) {
-
-	// Update internal position keepers
-	this.left = cell.toPoint().x + this.width/2;
-	this.top = cell.toPoint().y + this.height/2;
-	this.col = cell.col;
-	this.row = cell.row;
-	
-	// Update game core
-	this.gameCore.cell = cell;
-	this.gameCore.point = cell.toPoint();
-	
-	// Update sprite positioning
-	this.bodySegment.x = this.left;
-	this.bodySegment.y = this.top;
-	this.turretSegment.x = this.left;
-	this.turretSegment.y = this.top;
-	
 }
 
 Tank.prototype.rotate = function(angle, rotateBody, rotateTurret) {
@@ -358,10 +226,10 @@ Tank.prototype.progressWaypoints = function() {
 	if (nextWaypoint.y - this.top < 0) { incY = -this.moveSpeed; }
 
 	// Calculate rotate to point data
-	var rotationData = this.calculateRotateToPointData(this.bodySegment.angle, new Point(this.left, this.top), nextWaypoint, this.rotateSpeed);
+	var rotationData = this.gameCore.calculateRotateToPointData(this.bodySegment.angle, new Point(this.left, this.top), nextWaypoint, this.rotateSpeed);
 
 	// Perform rotation if tank angle is not within error margins
-	if (!this.angleInErrorMargin(rotationData.current360Angle, rotationData.target360Angle, (this.rotateSpeed/2+1))) {
+	if (!this.gameCore.angleInErrorMargin(rotationData.current360Angle, rotationData.target360Angle, (this.rotateSpeed/2+1))) {
 		this.rotate(rotationData.angleIncrement, true, true);
 	} else {
 
@@ -387,10 +255,11 @@ Tank.prototype.progressWaypoints = function() {
 		this.waypointControl.moveStepCount = 0;
 	}
 	
-	// Check if turret rotation needs recalculating
-	if (this.shootTarget && this.shootTarget.point) {
-		this.shootAtXY(this.shootTarget.point);
-	}
+//	// Check if turret rotation needs recalculating
+//	if (this.shootTarget && 
+//			(this.shootTarget.point || this.shootTarget.instanceId)) {
+//		this.processTurretRotation();
+//	}
 	
 	// Check new cell position
 	var newCell = (new Point(this.left, this.top)).toCell();

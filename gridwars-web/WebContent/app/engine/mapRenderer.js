@@ -176,9 +176,10 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 		
 		// Save new sprites
 		this.baseSprite = baseSprite;
+		this.baseId = self.tileMapping[cellId].baseSource;
 		this.detailSprite = detailSprite;
+		this.detailId = self.tileMapping[cellId].detailSource;
 		this.placementSprite = placementSprite;
-		
 	}
 	
 	// Generate map sprites
@@ -275,6 +276,20 @@ MapRenderer.prototype.placeTankTrack = function(mapGroup, sender, point, angle) 
 		// Play fade out animation
 		fadeOut.play(0.25, false, null);
 	}
+}
+
+MapRenderer.prototype.isCellObstructed = function(cell) {
+	var checkCell = this.getTileFromColRow(cell.col, cell.row);
+	var invalidBaseIds = [CONSTANTS.MAP_BASE_WATER, CONSTANTS.MAP_BASE_ROCK];
+	var invalidDetailIds = [CONSTANTS.MAP_DETAIL_ROCKS_EDGE, CONSTANTS.MAP_DETAIL_ROCKS_CORNER, CONSTANTS.MAP_DETAIL_ROCKS_A, CONSTANTS.MAP_DETAIL_ROCKS_B, CONSTANTS.MAP_DETAIL_ROCKS_C, CONSTANTS.MAP_DETAIL_ROCKS_D, CONSTANTS.MAP_DETAIL_ROCKS_E, CONSTANTS.MAP_DETAIL_ROCKS_ICORNER,
+	                        CONSTANTS.MAP_DETAIL_WATER_TOP, CONSTANTS.MAP_DETAIL_WATER_RIGHT, CONSTANTS.MAP_DETAIL_WATER_BOTTOM, CONSTANTS.MAP_DETAIL_WATER_LEFT, CONSTANTS.MAP_DETAIL_WATER_BR, CONSTANTS.MAP_DETAIL_WATER_TR, CONSTANTS.MAP_DETAIL_WATER_BL, CONSTANTS.MAP_DETAIL_WATER_TL,
+	                        CONSTANTS.MAP_DETAIL_SHORE_BOTTOM, CONSTANTS.MAP_DETAIL_SHORE_LEFT, CONSTANTS.MAP_DETAIL_SHORE_TOP, CONSTANTS.MAP_DETAIL_SHORE_RIGHT, CONSTANTS.MAP_DETAIL_SHORE_BR, CONSTANTS.MAP_DETAIL_SHORE_TR, CONSTANTS.MAP_DETAIL_SHORE_BL, CONSTANTS.MAP_DETAIL_SHORE_TL,
+	                        CONSTANTS.MAP_DETAIL_SHORE_ITR, CONSTANTS.MAP_DETAIL_SHORE_IBR, CONSTANTS.MAP_DETAIL_SHORE_IBL, CONSTANTS.MAP_DETAIL_SHORE_ITL];
+	if (checkCell) {
+		return (invalidBaseIds.indexOf(checkCell.baseId) > -1  ||
+				invalidDetailIds.indexOf(checkCell.detailId) > -1);
+	}
+	return false;
 }
 
 MapRenderer.prototype.renderMap = function() {
