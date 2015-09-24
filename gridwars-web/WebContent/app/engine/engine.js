@@ -413,6 +413,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 		} else if (this.selected.length > 0) {
 
 			// Calculate item at point
+			var clickHandled = false;
 			var enemyAtPoint = this.getItemAtPoint(point, false, true);
 			var friendlyAtPoint = this.getItemAtPoint(point, true, true);
 
@@ -441,13 +442,18 @@ Engine.prototype.onMouseUp = function(pointer) {
 				if (this.selected[selectedIndex].gameCore.identifier == "TURRET") {
 					var sourceObjectId = this.selected[selectedIndex].gameCore.instanceId;
 					if (enemyAtPoint) {
+						clickHandled = true;
 						this.serverAPI.requestObjectAttackObject(sourceObjectId, enemyAtPoint.gameCore.instanceId);
 					}
-//					this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
+					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
+						clickHandled = true;
+						this.selected[selectedIndex].shootAtXY(point);
+//						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
+					}
 				}
 				
-				// Deselect selection if selected building and player clicks away
-				if (!this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) {
+				// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
+				if (!clickHandled && !this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) {
 					this.selected = [];
 				}
 			}

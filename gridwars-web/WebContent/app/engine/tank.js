@@ -123,7 +123,8 @@ Tank.prototype.shootAtXY = function(point) {
 	this.shootTarget.increment = rotationData.angleIncrement;
 	this.shootTarget.point = rotationData.targetPoint;
 	this.shootTarget.angle = rotationData.target360Angle;
-	
+	this.shootTarget.isFiring = false;
+	this.shootTarget.readyToFire = false;
 }
 
 Tank.prototype.lockonAndShoot = function(targetObject) {
@@ -177,11 +178,7 @@ Tank.prototype.processTurretRotation = function() {
 }
 
 Tank.prototype.processTurretFire = function() {
-	
-	// Mark firing as not possible
 	this.shootTarget.isFiring = true;
-
-	// Trigger fire animation
 	this.fire.play();
 }
 
