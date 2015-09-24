@@ -108,7 +108,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
-	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 6);
+	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
 
 	// Load tile images
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
@@ -123,9 +123,9 @@ Engine.prototype.preload = function() {
 	
 	// Load game object icons
 	for(var i = 0; i < 6; i++) {
-		this.phaserGame.load.image(CONSTANTS.COLOUR_["TANK"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_' + CONSTANTS.COLOUR_["TANK"][i].COLOUR + '.png');
-		this.phaserGame.load.image(CONSTANTS.COLOUR_["TURRET"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/turret_' + CONSTANTS.COLOUR_["TURRET"][i].COLOUR + '.png');
-		this.phaserGame.load.image(CONSTANTS.COLOUR_["HUB"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_hub_' + CONSTANTS.COLOUR_["HUB"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR["TANK"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_' + CONSTANTS.COLOUR["TANK"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR["TURRET"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/turret_' + CONSTANTS.COLOUR["TURRET"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR["HUB"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_hub_' + CONSTANTS.COLOUR["HUB"][i].COLOUR + '.png');
 	}
 }
 
@@ -737,52 +737,27 @@ Engine.prototype.drawGameScreen = function() {
 	this.displayedMinimap.fixedToCamera = true;
 	this.displayedMinimap.z = 92;
 	
-	this.homeButton = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 65, 318, CONSTANTS.MINI_MAP_BUTTONS);
-	this.homeButton.frame = 4;
-	this.homeButton.fixedToCamera = true;
-	this.homeButton.z = 92;
-	this.homeButton.inputEnabled = true;
-	this.homeButton.events.onInputOver.add(function() {
-		self.homeButton.frame = 5;
-	}, this);
-	this.homeButton.events.onInputOut.add(function() {
-		self.homeButton.frame = 4;
-	});
-	this.homeButton.events.onInputUp.add(function() {
-		self.positionCameraOverCell(self.spawnPoint);
-	});
+	// Create game button
+	var createGameButton = function(spriteInfo, createPoint) {
+		var newButton = self.phaserGame.add.sprite(createPoint.x, createPoint.y, CONSTANTS.MINI_MAP_BUTTONS);
+		newButton.frame = spriteInfo.UNSELECTED;
+		newButton.fixedToCamera = true;
+		newButton.z = 92;
+		newButton.inputEnabled = true;
+		newButton.events.onInputOver.add(function() { newButton.frame = spriteInfo.SELECTED; }, self);
+		newButton.events.onInputOut.add(function() { newButton.frame = spriteInfo.UNSELECTED; });
+		if (spriteInfo == CONSTANTS.HUD.BUILDING) 	{ newButton.events.onInputUp.add(function() { self.positionCameraOverCell(self.spawnPoint); }); }
+		if (spriteInfo == CONSTANTS.HUD.DEFENCE) 	{ newButton.events.onInputUp.add(function() { self.purchaseObject("TURRET"); }); }
+		if (spriteInfo == CONSTANTS.HUD.TANK) 		{ newButton.events.onInputUp.add(function() { self.purchaseObject("TANK"); }); }
+		return newButton;
+	}
 	
-	this.defenceButton = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 120, 317, CONSTANTS.MINI_MAP_BUTTONS);
-	this.defenceButton.frame = 2;
-	this.defenceButton.fixedToCamera = true;
-	this.defenceButton.z = 92;
-	this.defenceButton.inputEnabled = true;
-	this.defenceButton.events.onInputOver.add(function() {
-		self.defenceButton.frame = 3;
-	});
-	this.defenceButton.events.onInputOut.add(function() {
-		self.defenceButton.frame = 2;
-	});
-	this.defenceButton.events.onInputUp.add(function() {
-		self.purchaseObject("TURRET");
-	});
-	
-	this.tankButton = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 178, 318, CONSTANTS.MINI_MAP_BUTTONS);
-	this.tankButton.frame = 0;
-	this.tankButton.fixedToCamera = true;
-	this.tankButton.z = 92;
-	this.tankButton.inputEnabled = true;
-	this.tankButton.events.onInputOver.add(function() {
-		self.tankButton.frame = 1;
-	});
-	this.tankButton.events.onInputOut.add(function() {
-		self.tankButton.frame = 0;
-	});
-	this.tankButton.events.onInputUp.add(function() {
-		self.purchaseObject("TANK");
-	});
-	
-	
+	// Construct buttons
+	var mapLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH;
+	this.homeButton = createGameButton(CONSTANTS.HUD.BUILDING, new Point(mapLeft + 65, 318));
+	this.defenceButton = createGameButton(CONSTANTS.HUD.DEFENCE, new Point(mapLeft + 120, 317));
+	this.tankButton = createGameButton(CONSTANTS.HUD.TANK, new Point(mapLeft + 178, 318));
+
 	this.gameObjectDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
 			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT), CONSTANTS.UNIT_DETAILS);
 	this.gameObjectDetailsMenu.z = 90;
@@ -790,7 +765,7 @@ Engine.prototype.drawGameScreen = function() {
 	this.gameObjectDetailsMenu.visible = false;
 	
 	this.gameObjectDetailsIcon = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 128,
-			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 48, CONSTANTS.COLOUR_["TANK"][0].ICON);
+			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 48, CONSTANTS.COLOUR["TANK"][0].ICON);
 	this.gameObjectDetailsIcon.z = 92;
 	this.gameObjectDetailsIcon.fixedToCamera = true;
 	this.gameObjectDetailsIcon.visible = false;
@@ -1057,9 +1032,6 @@ Engine.prototype.explosionCollisionCheck = function() {
 				//				
 				// // Check for pixels on colcanvas
 
-				// Process damage calculation
-				damageAmount = 50;
-
 				// Mark collision as occuring
 				collisionOccured = true;
 
@@ -1085,7 +1057,7 @@ Engine.prototype.explosionCollisionCheck = function() {
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.buildings[index].getCollisionLayers())) {
 					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageAmount, explosionRegister[explosionIndex].ownerId);
+					this.serverAPI.requestDamageSubmission([this.buildings[index]], this.buildings[index].gameCore.damage, explosionRegister[explosionIndex].ownerId);
 				}
 			}
 
@@ -1098,7 +1070,7 @@ Engine.prototype.explosionCollisionCheck = function() {
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.units[index].getCollisionLayers())) {
 					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.units[index]], damageAmount, explosionRegister[explosionIndex].ownerId);
+					this.serverAPI.requestDamageSubmission([this.units[index]], this.units[index].gameCore.damage, explosionRegister[explosionIndex].ownerId);
 				}
 			}
 

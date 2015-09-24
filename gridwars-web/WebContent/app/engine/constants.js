@@ -197,9 +197,15 @@ CONSTANTS = {
 	MAP_DETAIL_GRASS_ITR		: 53,
 	MAP_DETAIL_GRASS_ITL		: 54,
 	MAP_DETAIL_GRASS_IBL		: 55,
+	
+	// Heads Up Display sprites
+	HUD : { BUILDING	:	{ UNSELECTED : 52, 	SELECTED : 53,	BUILDING : [54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76], 	READY : 77 },
+			DEFENCE 	:	{ UNSELECTED : 26,	SELECTED : 27,	BUILDING : [28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50],	READY :	51 },
+			TANK		:	{ UNSELECTED : 0,	SELECTED : 1,	BUILDING : [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24], 			READY : 25 }
+	},
 
 	// Colour variation arrays
-	COLOUR_ : {
+	COLOUR : {
 		
 		// Tank production building - opens up tank hanger doors - shows platform gradually getting lighter (rising)
 		"HUB" :    [{ COLOUR : "blue", 		HUB : 11, 	SHADOW : 0,	OPEN : 10,	CLOSED : 19, 	OPENING : [12,13,14,15,16,17,18,19],	CLOSING : [19,18,17,16,15,14,13,12], 	RISE : [0,1,2,3,4,5,6,7,8,9],	SINK : [9,8,7,6,5,4,3,2,1,0], ICON : "tank_hub_icon_blue" },

@@ -38,16 +38,6 @@ function GameCore(identifier, cell) {
 				if (fields[index] == 'health') { self.maxHealth =  sourceObject[fields[index]]}
 			}
 		}
-		
-//		if (sourceObject.cost) { self.cost = sourceObject.cost; }
-//		if (sourceObject.damage) { self.damage = sourceObject.damage; }
-//		if (sourceObject.health) { self.health = sourceObject.health; self.maxHealth = sourceObject.health; }
-//		if (sourceObject.power) { self.power = sourceObject.power; }
-//		if (sourceObject.range) { self.range = sourceObject.range; }
-//		if (sourceObject.techLv) { self.techLv = sourceObject.techLv; }
-//		if (sourceObject.speed) { self.speed = sourceObject.speed; }
-//		if (sourceObject.widthCellCount) { self.widthCellCount = sourceObject.widthCellCount; }
-//		if (sourceObject.heightCellCount) { self.heightCellCount = sourceObject.heightCellCount; }
 	}
 
 	// Locate 'building object' to transfer data from server buildings object
@@ -95,10 +85,10 @@ GameCore.prototype.setPlayer = function(player) {
 	this.playerId = player.playerId;
 
 	// Set up colours
-	this.colour = CONSTANTS.COLOUR_[this.identifier][0];
-	for (var index = 1; index < CONSTANTS.COLOUR_[this.identifier].length; index ++) {
-		if (player.colour === CONSTANTS.COLOUR_[this.identifier][index].COLOUR) {
-			this.colour = CONSTANTS.COLOUR_[this.identifier][index];
+	this.colour = CONSTANTS.COLOUR[this.identifier][0];
+	for (var index = 1; index < CONSTANTS.COLOUR[this.identifier].length; index ++) {
+		if (player.colour === CONSTANTS.COLOUR[this.identifier][index].COLOUR) {
+			this.colour = CONSTANTS.COLOUR[this.identifier][index];
 		}
 	}
 
