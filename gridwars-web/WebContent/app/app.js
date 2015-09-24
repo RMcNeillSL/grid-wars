@@ -22,33 +22,32 @@ config(['$routeProvider', function($routeProvider) {
 	$routeProvider.otherwise({redirectTo: '/login'});
 }]);
 
-//(function() {
-//	var nonAuthPages = [ "login", "register" ];
-//	var currPath = window.location.href;
-//
-//	if (currPath.indexOf("?") > -1) {
-//		currPath = currPath.substring(0, currPath.indexOf("?"));
-//	}
-//
-//	for (var i = 0; i < nonAuthPages.length; i++) {
-//		if (currPath.indexOf(nonAuthPages[i]) > -1) {
-//			return;
-//		}
-//	}
-//
-//	var redirectToLogin = function(res) {
-//		if (res === null || res === undefined || res === "") {
-//			window.location.replace("/#/login");
-//		}
-//	}
-//
-//	var checkAuth = function(callback) {
-//
-//		$.post("gridwars/rest/checkauth", function() {
-//		}).complete(function(res) {
-//			callback(res.responseText);
-//		});
-//	}
-//
-//	checkAuth(redirectToLogin);
-//})();
+(function() {
+	var nonAuthPages = [ "login", "register" ];
+	var currPath = window.location.href;
+
+	if (currPath.indexOf("?") > -1) {
+		currPath = currPath.substring(0, currPath.indexOf("?"));
+	}
+
+	for (var i = 0; i < nonAuthPages.length; i++) {
+		if (currPath.indexOf(nonAuthPages[i]) > -1) {
+			return;
+		}
+	}
+	var redirectToLogin = function(res) {
+		if (res === null || res === undefined || res === "") {
+			window.location.replace("/#/login");
+		}
+	}
+
+	var checkAuth = function(callback) {
+
+		$.post("gridwars/rest/checkauth", function() {
+		}).complete(function(res) {
+			callback(res.responseText);
+		});
+	}
+
+	checkAuth(redirectToLogin);
+})();

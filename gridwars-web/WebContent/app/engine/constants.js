@@ -202,27 +202,27 @@ CONSTANTS = {
 	COLOUR_ : {
 		
 		// Tank production building - opens up tank hanger doors - shows platform gradually getting lighter (rising)
-		"HUB" :    [{ COLOUR : "blue", 		HUB : 11, 	SHADOW : 0,	OPEN : 10,	CLOSED : 19, 	OPENING : [12,13,14,15,16,17,18,19],	CLOSING : [19,18,17,16,15,14,13,12], 	RISE : [0,1,2,3,4,5,6,7,8,9],	SINK : [9,8,7,6,5,4,3,2,1,0] },
-	                { COLOUR : "red", 		HUB : 21, 	SHADOW : 0, OPEN : 20, 	OPENING : [22,23,24,25,26,27,28,29], 	RISE : [0,1,2,3,4,5,6,7,8,9] },
-	                { COLOUR : "purple", 	HUB : 31, 	SHADOW : 0, OPEN : 30, 	OPENING : [32,33,34,35,36,37,38,39], 	RISE : [0,1,2,3,4,5,6,7,8,9] },
-	                { COLOUR : "green", 	HUB : 41, 	SHADOW : 0, OPEN : 40, 	OPENING : [42,43,44,45,46,47,48,49], 	RISE : [0,1,2,3,4,5,6,7,8,9] },
-	                { COLOUR : "yellow", 	HUB : 51, 	SHADOW : 0, OPEN : 50, 	OPENING : [52,53,54,55,56,57,58,59], 	RISE : [0,1,2,3,4,5,6,7,8,9] },
-	                { COLOUR : "cyan", 		HUB : 61, 	SHADOW : 0, OPEN : 60, 	OPENING : [62,63,64,65,66,67,68,69], 	RISE : [0,1,2,3,4,5,6,7,8,9] } ],
+		"HUB" :    [{ COLOUR : "blue", 		HUB : 11, 	SHADOW : 0,	OPEN : 10,	CLOSED : 19, 	OPENING : [12,13,14,15,16,17,18,19],	CLOSING : [19,18,17,16,15,14,13,12], 	RISE : [0,1,2,3,4,5,6,7,8,9],	SINK : [9,8,7,6,5,4,3,2,1,0], ICON : "tank_hub_icon_blue" },
+	                { COLOUR : "red", 		HUB : 21, 	SHADOW : 0, OPEN : 20,	CLOSED : 29, 	OPENING : [22,23,24,25,26,27,28,29], 	CLOSING : [29,28,27,26,25,24,23,22],	RISE : [0,1,2,3,4,5,6,7,8,9], 	SINK : [9,8,7,6,5,4,3,2,1,0], ICON : "tank_hub_icon_red"  },
+	                { COLOUR : "purple", 	HUB : 31, 	SHADOW : 0, OPEN : 30, 	CLOSED : 39,	OPENING : [32,33,34,35,36,37,38,39], 	CLOSING : [39,38,37,36,35,34,33,32],	RISE : [0,1,2,3,4,5,6,7,8,9],  	SINK : [9,8,7,6,5,4,3,2,1,0], ICON : "tank_hub_icon_purple"  },
+	                { COLOUR : "green", 	HUB : 41, 	SHADOW : 0, OPEN : 40, 	CLOSED : 49,	OPENING : [42,43,44,45,46,47,48,49], 	CLOSING : [49,48,47,46,45,44,43,42],	RISE : [0,1,2,3,4,5,6,7,8,9], 	SINK : [9,8,7,6,5,4,3,2,1,0], ICON : "tank_hub_icon_green"  },
+	                { COLOUR : "yellow", 	HUB : 51, 	SHADOW : 0, OPEN : 50, 	CLOSED : 59,	OPENING : [52,53,54,55,56,57,58,59], 	CLOSING : [59,58,57,56,55,54,53,52], 	RISE : [0,1,2,3,4,5,6,7,8,9], 	SINK : [9,8,7,6,5,4,3,2,1,0], ICON : "tank_hub_icon_yellow"  },
+	                { COLOUR : "cyan", 		HUB : 61, 	SHADOW : 0, OPEN : 60, 	CLOSED : 69,	OPENING : [62,63,64,65,66,67,68,69], 	CLOSING : [69,68,67,66,65,64,63,62], 	RISE : [0,1,2,3,4,5,6,7,8,9], 	SINK : [9,8,7,6,5,4,3,2,1,0], ICON : "tank_hub_icon_cyan"  } ],
 	    
 	    // Turret defence - charges 4 lights - four lights fade out - fires with muzzleflash and recoil while lights fade out
-		"TURRET" : [{ COLOUR : "blue", 		BASE : 0, 	TOP : 1, 		CHARGE : [1,2,3,4,5], 		COOL : [5,4,3,2,1], 		FIREANDCOOL : [6,7,8,9,10,11,12,1] },
-	                { COLOUR : "red", 		BASE : 13, 	TOP : 14, 		CHARGE : [14,15,16,17,18], 	COOL : [18,17,16,15,14], 	FIREANDCOOL : [19,20,21,22,23,24,25,14] },
-	                { COLOUR : "purple", 	BASE : 26, 	TOP : 27, 		CHARGE : [27,28,29,30,31], 	COOL : [31,30,29,28,27], 	FIREANDCOOL : [32,33,34,35,36,37,38,27] },
-	                { COLOUR : "green", 	BASE : 39, 	TOP : 40, 		CHARGE : [40,41,42,43,44], 	COOL : [44,43,42,41,40], 	FIREANDCOOL : [45,46,47,48,49,50,51,40] },
-	                { COLOUR : "yellow", 	BASE : 52, 	TOP : 53, 		CHARGE : [53,54,55,56,57], 	COOL : [57,56,55,54,53], 	FIREANDCOOL : [58,59,60,61,62,63,64,53] },
-	                { COLOUR : "cyan", 		BASE : 65, 	TOP : 66, 		CHARGE : [66,67,68,69,70], 	COOL : [70,69,68,67,66], 	FIREANDCOOL : [71,72,73,74,75,76,77,66] } ],
+		"TURRET" : [{ COLOUR : "blue", 		BASE : 0, 	TOP : 1, 		CHARGE : [1,2,3,4,5], 		COOL : [5,4,3,2,1], 		FIREANDCOOL : [6,7,8,9,10,11,12,1], 	 ICON : "turret_icon_blue" },
+	                { COLOUR : "red", 		BASE : 13, 	TOP : 14, 		CHARGE : [14,15,16,17,18], 	COOL : [18,17,16,15,14], 	FIREANDCOOL : [19,20,21,22,23,24,25,14], ICON : "turret_icon_red" },
+	                { COLOUR : "purple", 	BASE : 26, 	TOP : 27, 		CHARGE : [27,28,29,30,31], 	COOL : [31,30,29,28,27], 	FIREANDCOOL : [32,33,34,35,36,37,38,27], ICON : "turret_icon_purple" },
+	                { COLOUR : "green", 	BASE : 39, 	TOP : 40, 		CHARGE : [40,41,42,43,44], 	COOL : [44,43,42,41,40], 	FIREANDCOOL : [45,46,47,48,49,50,51,40], ICON : "turret_icon_green" },
+	                { COLOUR : "yellow", 	BASE : 52, 	TOP : 53, 		CHARGE : [53,54,55,56,57], 	COOL : [57,56,55,54,53], 	FIREANDCOOL : [58,59,60,61,62,63,64,53], ICON : "turret_icon_yellow" },
+	                { COLOUR : "cyan", 		BASE : 65, 	TOP : 66, 		CHARGE : [66,67,68,69,70], 	COOL : [70,69,68,67,66], 	FIREANDCOOL : [71,72,73,74,75,76,77,66], ICON : "turret_icon_cyan" } ],
 	                
 	    // Tank unit - shoots cannon with slight recoil and muzzleflash
-	    "TANK" :   [{ COLOUR : "blue", 		BODY : 0, 	TURRET : 1, 	FIRE : [2,3,4,5,1] },
-	              	{ COLOUR : "red", 		BODY : 6, 	TURRET : 7, 	FIRE : [8,9,10,11,7] },
-	              	{ COLOUR : "purple", 	BODY : 12, 	TURRET : 13, 	FIRE : [14,15,16,17,13] },
-	              	{ COLOUR : "green", 	BODY : 18, 	TURRET : 19, 	FIRE : [20,21,22,23,19] },
-	              	{ COLOUR : "yellow", 	BODY : 24, 	TURRET : 25, 	FIRE : [26,27,28,29,25] },
-	              	{ COLOUR : "cyan", 		BODY : 30, 	TURRET : 31, 	FIRE : [32,33,34,35,31] } ],
+	    "TANK" :   [{ COLOUR : "blue", 		BODY : 0, 	TURRET : 1, 	FIRE : [2,3,4,5,1], 		ICON: "tank_icon_blue" },
+	              	{ COLOUR : "red", 		BODY : 6, 	TURRET : 7, 	FIRE : [8,9,10,11,7], 		ICON: "tank_icon_red" },
+	              	{ COLOUR : "purple", 	BODY : 12, 	TURRET : 13, 	FIRE : [14,15,16,17,13],	ICON: "tank_icon_purple" },
+	              	{ COLOUR : "green", 	BODY : 18, 	TURRET : 19, 	FIRE : [20,21,22,23,19], 	ICON: "tank_icon_green" },
+	              	{ COLOUR : "yellow", 	BODY : 24, 	TURRET : 25, 	FIRE : [26,27,28,29,25], 	ICON: "tank_icon_yellow" },
+	              	{ COLOUR : "cyan", 		BODY : 30, 	TURRET : 31, 	FIRE : [32,33,34,35,31], 	ICON: "tank_icon_cyan" }],
 	}
 }

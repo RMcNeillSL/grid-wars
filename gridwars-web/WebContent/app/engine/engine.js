@@ -124,6 +124,12 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
 	
+	// Load game object icons
+	for(var i = 0; i < 6; i++) {
+		this.phaserGame.load.image(CONSTANTS.COLOUR_["TANK"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_' + CONSTANTS.COLOUR_["TANK"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR_["TURRET"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/turret_' + CONSTANTS.COLOUR_["TURRET"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR_["HUB"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_hub_' + CONSTANTS.COLOUR_["HUB"][i].COLOUR + '.png');
+	}
 }
 
 Engine.prototype.create = function() {
@@ -208,11 +214,8 @@ Engine.prototype.create = function() {
 	    boundsAlignV: "top"
 	};
 
-	this.moneyLabel = this.phaserGame.add.text(650, 5, "Money: " + this.currentPlayer.cash, style);
-	this.moneyLabel.fixedToCamera = true;
-
 	// Draw the gameframe
-	this.drawGameScreen();		// merge conflickt
+	this.drawGameScreen();
 
 	// Create cursor object
 	this.pointer = { sprite : null, point : new Point(0, 0) };
@@ -252,9 +255,6 @@ Engine.prototype.update = function() {
 	
     // Manage scrolling of the map
     this.manageMapMovement();
-
-    // Update player money label
-    this.moneyLabel.setText("Money: " + this.currentPlayer.cash);
 
 	// Render map
 	this.mapRender.renderMap();
@@ -804,6 +804,12 @@ Engine.prototype.drawGameScreen = function() {
 	this.gameObjectDetailsMenu.fixedToCamera = true;
 	this.gameObjectDetailsMenu.visible = false;
 	
+	this.gameObjectDetailsIcon = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 128,
+			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 48, CONSTANTS.COLOUR_["TANK"][0].ICON);
+	this.gameObjectDetailsIcon.z = 92;
+	this.gameObjectDetailsIcon.fixedToCamera = true;
+	this.gameObjectDetailsIcon.visible = false;
+	
 	// Draw player money label
 	var style = {
 		font: "bold 12px Arial",
@@ -812,7 +818,7 @@ Engine.prototype.drawGameScreen = function() {
 		boundsAlignV: "middle"
 	};
 	
-	this.moneyLabel = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 250, 323, this.currentPlayer.playerCash, style);
+	this.moneyLabel = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 250, 323, this.currentPlayer.cash, style);
 	this.moneyLabel.setTextBounds(0, 0, 108, 25);
 	this.moneyLabel.fixedToCamera = true;
 	this.moneyLabel.z = 92;
@@ -837,21 +843,24 @@ Engine.prototype.drawGameScreen = function() {
 	this.hudGroup.add(this.homeButton);
 	this.hudGroup.add(this.defenceButton);
 	this.hudGroup.add(this.tankButton);
+	this.hudGroup.add(this.gameObjectDetailsIcon);
 }
 
-Engine.prototype.updateSelectedGameObjectDetails = function(selectedUnit) {
-	if(selectedUnit != null) {
-		this.gameObjectDetailsText.setText(selectedUnit.gameCore.identifier);
-		this.gameObjectHealthText.setText((Math.floor(selectedUnit.gameCore.health / selectedUnit.gameCore.maxHealth)*100) + "%");
+Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) {
+	if(selectedGameObject != null) {
+		this.gameObjectDetailsText.setText(selectedGameObject.gameCore.identifier);
+		this.gameObjectHealthText.setText((Math.floor(selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100) + "%");
+		this.gameObjectDetailsIcon.loadTexture(selectedGameObject.gameCore.colour.ICON);
 	}
 	
-	this.displayedGameObject = selectedUnit;
-	this.setGameObjectDetailsVisibility(selectedUnit != null);
+	this.displayedGameObject = selectedGameObject;
+	this.setGameObjectDetailsVisibility(selectedGameObject != null);
 }
 
 Engine.prototype.setGameObjectDetailsVisibility = function(show) {
 	this.gameObjectDetailsText.visible = show;
 	this.gameObjectDetailsMenu.visible = show;
+	this.gameObjectDetailsIcon.visible = show;
 	this.gameObjectHealthText.visible = show;
 }
 
