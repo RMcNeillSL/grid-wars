@@ -394,6 +394,9 @@ Engine.prototype.onMouseUp = function(pointer) {
 	// Positional values for cell and xy
 	var point = this.mouse.position;
 	var cell = point.toCell();
+	
+	// Flag for general pointer actions handled
+	var clickHandled = false;
 
 	// Perform checks for left click
 	if (pointer.leftButton.isDown) {
@@ -413,7 +416,6 @@ Engine.prototype.onMouseUp = function(pointer) {
 		} else if (this.selected.length > 0) {
 
 			// Calculate item at point
-			var clickHandled = false;
 			var enemyAtPoint = this.getItemAtPoint(point, false, true);
 			var friendlyAtPoint = this.getItemAtPoint(point, true, true);
 
@@ -425,6 +427,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 					if (this.isSquareEmpty(cell.col, cell.row)) {
 						var targetUnit = this.selected[0];
 						if (targetUnit) {
+							clickHandled = true;
 							if (ctrlDown) {
 								targetUnit.shootAtXY(point);
 							} else {
@@ -433,6 +436,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 						}
 					} else {
 						if (enemyAtPoint) {
+							clickHandled = true;
 							this.serverAPI.requestObjectAttackObject(this.selected[selectedIndex].gameCore.instanceId, enemyAtPoint.gameCore.instanceId);
 						}
 					}
@@ -480,7 +484,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 	}
 
 	// Perform checks for right click
-	if (pointer.rightButton.isDown) {
+	if (!clickHandled && pointer.rightButton.isDown) {
 		this.selected = [];
 	}
 
