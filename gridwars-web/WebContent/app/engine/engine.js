@@ -715,10 +715,10 @@ Engine.prototype.manageMapMovement = function() {
 
 	// Update camera with up, down, left and right keys
 	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
-	else if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
+	if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
 	
 	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
-	else if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
+	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
 	
 	// Update mouse values
 	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,

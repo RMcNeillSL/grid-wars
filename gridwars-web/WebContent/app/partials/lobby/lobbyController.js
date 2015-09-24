@@ -190,13 +190,13 @@
 			setTab: function (tab) {
 				this.$scope.tabSelect = tab;
 			},
-			logOut : function() {
-				var self = this;
-				this.$rootScope.loggedOut = true;
-				$.post("gridwars/rest/logout");
-				this.lobbyService.leaveGame();
-				self.$location.path("/login");
-			}
+//			logOut : function() {
+//				var self = this;
+//				this.$rootScope.loggedOut = true;
+//				this.lobbyService.leaveGame();
+//				$.post("gridwars/rest/logout");
+//				self.$location.path("/login");
+//			}
 	}
 
 	LobbyController.$inject = ['$scope', '$location', '$rootScope', '$window', 'gridWarsApp.lobby.service'];
