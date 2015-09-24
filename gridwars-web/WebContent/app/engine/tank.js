@@ -131,7 +131,7 @@ Tank.prototype.lockonAndShoot = function(targetObject) {
 
 	// Check if a target needs assigning
 	if (targetObject) {
-		
+
 		// Save target information
 		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
 		this.shootTarget.isFiring = false;
@@ -139,9 +139,9 @@ Tank.prototype.lockonAndShoot = function(targetObject) {
 
 		// Calculate rotation and point data
 		var sourcePoint = new Point(this.left, this.top);
-		var targetPoint = new Point(target.left, target.top);
+		var targetPoint = new Point(targetObject.left, targetObject.top);		//ROBERT: Changed from target.left and target.right
 		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
-		
+
 		// Save data to shoot target object
 		this.shootTarget.increment = rotationData.angleIncrement;
 	}

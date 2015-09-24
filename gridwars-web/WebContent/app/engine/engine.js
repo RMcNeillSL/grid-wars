@@ -1336,13 +1336,13 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 	var mockUnitResponseData = { responseCode: "DEBUG_PLACEMENT", coords: [], misc: [], source: [], target: [] };
 	var mockBuildingResponseData = { responseCode: "NEW_BUILDING", coords: [], misc: [], source: [], target: [] };
 	var arrayIdentifier = null;
-	
+
 	// Construct building and unit arrays
 	for (var index = 0; index < responseData.source.length; index ++) {
-		
+
 		// Add to correct array
 		arrayIdentifier = getObjectType(responseData.source[index]);
-		
+
 		// Populate unit array
 		if (arrayIdentifier == "UNIT") {
 			mockUnitResponseData.coords.push(responseData.coords[index]);
@@ -1350,14 +1350,15 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 			mockUnitResponseData.source.push(responseData.source[index]);
 			mockUnitResponseData.target.push(responseData.target[index]);
 		}
-		
+
 		// Populate building array
 		if (arrayIdentifier == "BUILDING") {
+			console.log("CONFIG: ", responseData);
 			console.log("Hub placed at: (" + responseData.coords[index].col + "," + responseData.coords[index].row + ")");
 			mockBuildingResponseData.coords.push(responseData.coords[index]);
 			mockBuildingResponseData.misc.push(responseData.misc[index]);
 			mockBuildingResponseData.source.push(responseData.source[index]);
-			mockBuildingResponseData.target.push(responseData.target[index]);			
+			mockBuildingResponseData.target.push(responseData.target[index]);
 		}
 	}
 

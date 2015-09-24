@@ -59,6 +59,11 @@ html, body {
 	width: 100%;
 }
 
+.map {
+	height: 100%;
+	width: 100%;
+}
+
 .table-striped>tbody>tr:nth-child(odd)>td, 
 .table-striped>tbody>tr:nth-child(odd)>th {
    color: #333;
