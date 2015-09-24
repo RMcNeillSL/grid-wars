@@ -91,8 +91,8 @@ CONSTANTS = {
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",
-	GAME_SCREEN_WIDTH: 1500,
-	GAME_SCREEN_HEIGHT: 800,
+	GAME_SCREEN_WIDTH: 1400,
+	GAME_SCREEN_HEIGHT: 700,
 	TILE_WIDTH : 100,
 	TILE_HEIGHT : 100,
 	GAME_BUILDINGS : [],
@@ -107,6 +107,9 @@ CONSTANTS = {
 	UNIT_DETAILS : "unit_details",
 	TANK_ICON : "tank_icon",
 	TURRET_ICON : "turret_icon",
+	
+	// Minimaps
+	MINIMAP_MAJARO : "minimap_majaro",
 	
 	// Game frame properties
 	MINI_MAP_WIDTH : 377,

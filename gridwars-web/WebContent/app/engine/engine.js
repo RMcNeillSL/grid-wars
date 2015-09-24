@@ -118,6 +118,7 @@ Engine.prototype.preload = function() {
 	// Load game frame images
 	this.phaserGame.load.image(CONSTANTS.MINI_MAP, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map.png');
 	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
+	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
 	
 }
 
@@ -348,12 +349,7 @@ Engine.prototype.onMouseDown = function(pointer) {
 	if (itemAtPoint) {
 		this.selected = [itemAtPoint];
 		this.selectedJustSet = true;
-		
-		if(this.selected[0].gameCore.identifier == "TANK") {
-			this.updateSelectedUnitDetails("TANK");
-		} else if(this.selected[0].gameCore.identifier == "TURRET") {
-			this.updateSelectedUnitDetails("TURRET");
-		}
+		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
 }
 
@@ -443,7 +439,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 			}
 			
 			if(this.selected.length < 1) {
-				 this.updateSelectedUnitDetails(null);
+				 this.updateSelectedGameObjectDetails(null);
 			}
 		}
 	}
@@ -709,6 +705,11 @@ Engine.prototype.drawGameScreen = function() {
 	
 	var self = this;
 	
+	// TO DO, MAKE PROCESSING DYNAMIC
+	this.displayedMinimap = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 92, 31, CONSTANTS.MINIMAP_MAJARO);
+	this.displayedMinimap.fixedToCamera = true;
+	this.displayedMinimap.z = 92;
+	
 	this.homeButton = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 65, 318, CONSTANTS.MINI_MAP_BUTTONS);
 	this.homeButton.frame = 4;
 	this.homeButton.fixedToCamera = true;
@@ -755,11 +756,11 @@ Engine.prototype.drawGameScreen = function() {
 	});
 	
 	
-	this.unitDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
+	this.gameObjectDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
 			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT), CONSTANTS.UNIT_DETAILS);
-	this.unitDetailsMenu.z = 90;
-	this.unitDetailsMenu.fixedToCamera = true;
-	this.unitDetailsMenu.visible = false;
+	this.gameObjectDetailsMenu.z = 90;
+	this.gameObjectDetailsMenu.fixedToCamera = true;
+	this.gameObjectDetailsMenu.visible = false;
 	
 	// Draw player money label
 	var style = {
@@ -774,37 +775,42 @@ Engine.prototype.drawGameScreen = function() {
 	this.moneyLabel.fixedToCamera = true;
 	this.moneyLabel.z = 92;
 	
-	this.unitDetailsText = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 37,
+	this.gameObjectDetailsText = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 37,
 			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 31, "Nothing Selected.", style);
-	this.unitDetailsText.setTextBounds(0, 0, 204, 14);
-	this.unitDetailsText.z = 92;
-	this.unitDetailsText.fixedToCamera = true;
-	this.unitDetailsText.visible = false;
+	this.gameObjectDetailsText.setTextBounds(0, 0, 204, 14);
+	this.gameObjectDetailsText.z = 92;
+	this.gameObjectDetailsText.fixedToCamera = true;
+	this.gameObjectDetailsText.visible = false;
+	
+	this.gameObjectHealthText = this.phaserGame.add.text((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 30,
+			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 58, "", style);
+	this.gameObjectHealthText.setTextBounds(0, 0, 70, 70);
+	this.gameObjectHealthText.z = 92;
+	this.gameObjectHealthText.fixedToCamera = true;
+	this.gameObjectHealthText.visible = false;
 	
 	this.hudGroup.add(this.miniMap);
-	this.hudGroup.add(this.unitDetailsMenu);
+	this.hudGroup.add(this.displayedMinimap);
+	this.hudGroup.add(this.gameObjectDetailsMenu);
 	this.hudGroup.add(this.homeButton);
 	this.hudGroup.add(this.defenceButton);
 	this.hudGroup.add(this.tankButton);
 }
 
-Engine.prototype.updateSelectedUnitDetails = function(selectedUnit) {
+Engine.prototype.updateSelectedGameObjectDetails = function(selectedUnit) {
 	if(selectedUnit != null) {
-		if(selectedUnit.gameCore.identifier == "TANK") {
-			this.unitDetailsVisibility(true);
-			this.unitDetailsText.setText("Tank");
-		} else if(selectedUnit.gameCore.identifier == "TURRET") {
-			this.unitDetailsVisibility(true);
-			this.unitDetailsText.setText("Turret");
-		}
-	} else {
-		this.unitDetailsVisibility(false);
+		this.gameObjectDetailsText.setText(selectedUnit.gameCore.identifier);
+		this.gameObjectHealthText.setText((Math.floor(selectedUnit.gameCore.health / selectedUnit.gameCore.maxHealth)*100) + "%");
 	}
+	
+	this.displayedGameObject = selectedUnit;
+	this.setGameObjectDetailsVisibility(selectedUnit != null);
 }
 
-Engine.prototype.unitDetailsVisibility = function(show) {
-	this.unitDetailsText.visible = show;
-	this.unitDetailsMenu.visible = show;
+Engine.prototype.setGameObjectDetailsVisibility = function(show) {
+	this.gameObjectDetailsText.visible = show;
+	this.gameObjectDetailsMenu.visible = show;
+	this.gameObjectHealthText.visible = show;
 }
 
 Engine.prototype.updatePlayerStatus = function() {
@@ -1402,6 +1408,15 @@ Engine.prototype.processUnitDamage = function(responseData) {
 
 			// Submit unit damage
 			gameObject.gameCore.setHealth(refObject.newHealth);
+			
+			console.log(gameObject);
+			
+			// Update health on the game object details menu
+			if(gameObject.gameCore.health > 0) {
+				this.gameObjectHealthText.setText(Math.floor((gameObject.gameCore.health / gameObject.gameCore.maxHealth)*100) + "%");
+			} else {
+				this.setGameObjectDetailsVisibility(false);
+			}
 
 			// Determine if unit was destroyed
 			if (gameObject.gameCore.health == 0) {
