@@ -107,7 +107,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
-	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 3);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
 
 	// Load tile images
@@ -244,7 +244,7 @@ Engine.prototype.create = function() {
 }
 
 Engine.prototype.update = function() {
-	
+
 	// Process any responses in buffer
 	if (!this.engineLoading && this.responseBuffer && this.responseBuffer.length > 0) {
 		this.processGameplayResponse(this.responseBuffer.splice(0, 1)[0]);
@@ -260,7 +260,10 @@ Engine.prototype.update = function() {
 	if (this.phaserGame.newBuilding.active) {
 		var cell = this.mouse.position.toCell();
 		var canPlace = this.isSquareEmpty(cell.col, cell.row);
-		this.mapRender.placementHover(cell.col, cell.row, canPlace);
+		// build cells within range here
+
+		this.mapRender.clearPlacementHover();
+		this.mapRender.placementHover(cell, canPlace, this.cellsWithinRange());
 	}
 
 	// Update all buildings and units
@@ -1188,8 +1191,20 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 
 // REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
 Engine.prototype.isSquareWithinBaseRange = function(col, row) {
-	return (row <= (this.spawnPoint.row+4) && row >= (this.spawnPoint.row-4)
-			&& col <= (this.spawnPoint.col+4) && col >= (this.spawnPoint.col-4));
+	return (row <= (this.spawnPoint.row+6) && row >= (this.spawnPoint.row-6)
+			&& col <= (this.spawnPoint.col+6) && col >= (this.spawnPoint.col-6));
+}
+
+Engine.prototype.cellsWithinRange = function () {
+	var withinRange = [];
+	for (var rowIndex = this.spawnPoint.row-5; rowIndex < this.spawnPoint.row+5; rowIndex++) {
+		for (var colIndex = this.spawnPoint.col-5; colIndex < this.spawnPoint.col+5; colIndex++) {
+			if (this.isSquareEmpty(colIndex, rowIndex)) {
+				withinRange.push(new Cell(colIndex, rowIndex));
+			}
+		}
+	}
+	return withinRange;
 }
 
 Engine.prototype.isSquareEmpty = function(col, row) {
@@ -1211,6 +1226,7 @@ Engine.prototype.isSquareEmpty = function(col, row) {
 			}
 		}
 	}
+	
 	
 	// Return empty if nothing was found
 	return true;

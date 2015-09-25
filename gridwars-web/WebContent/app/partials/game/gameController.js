@@ -86,7 +86,7 @@
 			// Finished game callback
 			var gameFinished = function(playerResults) {
 				var callback = function() {
-					self.changeView("/results");
+					//self.changeView("/results");
 				}
 				
 				self.$rootScope.playerResults = playerResults;
@@ -128,7 +128,7 @@
 		}
 
 		// Call connect debug methods
-//		gameService.debugConnect();
+		gameService.debugConnect();
 //		gameService.initialiseSockets();
 
 

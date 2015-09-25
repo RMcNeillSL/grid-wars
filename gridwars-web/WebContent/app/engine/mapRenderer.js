@@ -209,35 +209,47 @@ MapRenderer.prototype.getTileFromColRow = function(col, row) {
 	}
 }
 
-MapRenderer.prototype.placementHover = function(col, row, canPlace) {
-	
+MapRenderer.prototype.placementHover = function(cell, canPlace, cellsWithinRange) {
+
 	// Define local variables
-	var hoverTile = null;
-	
+	var tileRef = null;
+	var cellInHubRange = false;
+
 	// Iterate through all tiles
 	for (var rowIndex = 0; rowIndex < this.height; rowIndex ++) {
 		for (var colIndex = 0; colIndex < this.width; colIndex ++) {
-			
+
 			// Create cell reference
-			hoverTile = this.getTileFromColRow(colIndex, rowIndex);
-			
-			// Check for tile retrieval success
-			if (hoverTile) {
-				if (col == colIndex && row == rowIndex) {
-					if (canPlace) {
-						hoverTile.placementSprite.frame = 1;
-					} else {
-						hoverTile.placementSprite.frame = 2;
-					}
-					hoverTile.placementSprite.visible = true;
-				} else {
-					hoverTile.placementSprite.visible = false;
+			tileRef = this.getTileFromColRow(colIndex, rowIndex);
+
+			// Check if cell is in hub range
+			cellInHubRange = false;
+			for (var rangeIndex = 0; rangeIndex < cellsWithinRange.length; rangeIndex++) {
+				if (colIndex == cellsWithinRange[rangeIndex].col && rowIndex == cellsWithinRange[rangeIndex].row) {
+					cellInHubRange = true;
 				}
 			}
-			
+
+			// Check for tile retrieval success
+			if (tileRef) {
+				if (cell.col == colIndex && cell.row == rowIndex) {
+					if (canPlace && cellInHubRange) {
+						tileRef.placementSprite.frame = 1;
+					} else {
+						tileRef.placementSprite.frame = 2;
+					}
+					tileRef.placementSprite.visible = true;
+				} else {
+					if (cellInHubRange) {
+						tileRef.placementSprite.frame = 3;
+						tileRef.placementSprite.visible = true;
+					} else {
+						tileRef.placementSprite.visable = false;
+					}
+				}
+			}
 		}
 	}
-	
 }
 
 MapRenderer.prototype.clearPlacementHover = function() {
