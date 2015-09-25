@@ -117,16 +117,21 @@ public class SocketService {
 			}
 		}
 	}
-	
+
 	@OnEvent("gameCompleted")
 	public void removeConnectedUsersOnGameCompleted(SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
-		
-		if(requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId()
+
+		if(gameAndUserInfo != null) {
+			if (gameAndUserInfo.getUserId() > 0) {
+				if(requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId()
 				== gameAndUserInfo.getUserId()) {
-			requestProcessor.deleteGameLobby(gameAndUserInfo.getLobbyId());
+					requestProcessor.deleteGameLobby(gameAndUserInfo.getLobbyId());
+				}
+			}
 		}
+
 	}
 
 	@OnEvent("joinGameLobby")

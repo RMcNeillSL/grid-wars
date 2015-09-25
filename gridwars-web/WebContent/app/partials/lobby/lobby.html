@@ -1,5 +1,5 @@
 <div class="gwa-lobby">
-	<h2 class="title">Game Lobby <a ng-click="controller.logOut()">Logout</a></h2>
+	<h2 class="title">Game Lobby</h2><!-- <a ng-click="controller.logOut()">Logout</a></h2>-->
 
 	<section ng-if="$root.gameLobbyLoaded===false">
 	   <h2 class="title">Loading game lobby....</h2>
@@ -8,14 +8,14 @@
 	<section ng-if="$root.gameLeader===true && $root.gameLobbyLoaded===true">      <!-- CREATOR VIEW -->
         <div class="col-md-6">
         <h2 class="title">Game Options</h2>
-	        <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
+	        <!-- <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
 				<li class="active"><a>Map Selection</a></li>
 				<li><a class="inactiveTab whiteText" ng-click="controller.setTab('Game Rules')">Game Rules</a></li>
 			</ul>
 			<ul class="nav nav-tabs col-md-12" ng-if="tabSelect==='Game Rules'">
                 <li><a class="inactiveTab whiteText" ng-click="controller.setTab('Map Selection')">Map Selection</a></li>
                 <li class="active"><a>Game Rules</a></li>
-            </ul>
+            </ul>-->
 	        <div ng-if="tabSelect!=='Game Rules'">
 		        <section class="col-md-6">
 		        <h3 class="subTitle">Map Selection</h3>
@@ -39,10 +39,11 @@
                 <section class="col-md-6">
                     <h3 class="subTitle">Map Preview</h3>
                     <div class="map-preview">
+                        <img src="app/assets/map_items/{{$root.mapName}}/minimap.png" class="map">
                     </div>
                 </section>
 	        </div>
-            <div ng-if="tabSelect==='Game Rules'">  <!-- GAME RULES TAB -->
+            <!-- <div ng-if="tabSelect==='Game Rules'">  <!-- GAME RULES TAB
                 <section class="col-md-12 rulesContainer">
                     <h3 class="subTitle">Game Rules</h3>
                     <section class="col-md-6 rulesColumn">
@@ -132,7 +133,7 @@
 						<button ng-click="controller.resetToDefault()" class="btn btn-sm form-button"><span class="glyphicon glyphicon-pencil"></span> Reset to default</button>
                 	</section>
                 </section>
-            </div>
+            </div> -->
         </div>
 	</section>
 
@@ -149,7 +150,7 @@
 		            </tr>
 		        </table>
 		        </div>
-		        <div>
+		        <!-- <div>
 			        <p>Starting Cash: {{$root.gameConfig.startingCash}}</p>
 	                <p>Game Speed: </b>{{$root.gameConfig.gameSpeed}}</p>
 	                <p>Unit Health: </b>{{$root.gameConfig.unitHealth}}</p>
@@ -159,12 +160,13 @@
                     <span ng-if="$root.gameConfig.randomCrates===false">Disabled</span></p>
                     <p>Redeployable MCV: <span ng-if="$root.gameConfig.redeployableMCV===true">Enabled</span>
                     <span ng-if="$root.gameConfig.redeployableMCV===false">Disabled</span></p>
-                </div>
+                </div> -->
 	        </section>
 
 	        <section class="col-md-6">
 	            <h3 class="subTitle">Map Preview</h3>
 		        <div class="map-preview">
+		          <img src="app/assets/map_items/{{$root.mapName}}/minimap.png" class="map">
 		        </div>
 	        </section>
         </div>
@@ -187,8 +189,8 @@
         <table class="table table-striped" id="game-player-list">
             <tr>
                 <th>Player</th>
-                <th>Faction</th>
-                <th>Team</th>
+                <!-- <th>Faction</th> -->
+                <!-- <th>Team</th> -->
                 <th>Colour</th>
                 <th>Ready</th>
             </tr>
@@ -212,12 +214,11 @@
                         </ul>
                     </div>
                 </td>
-                <td class="tdInfo" ng-if="lobbyUser.factionId==-1">N/A</td>
+                <!-- <td class="tdInfo" ng-if="lobbyUser.factionId==-1">N/A</td>
                 <td class="tdInfo" ng-if="lobbyUser.factionId==0">Allied</td>
                 <td class="tdInfo" ng-if="lobbyUser.factionId==1">Soviet</td>
                 <td class="tdInfo" ng-if="lobbyUser.factionId==3">Empire of the Rising Sun</td>
                 <td class="tdInfo textCentral">
-                    <!-- Split button -->
                     <div class="btn-group dropup" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
                         <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</button>
                         <button type="button" class="btn btn-default btn-sm" ng-if="lobbyUser.playerTeam==0">-</button>
@@ -235,7 +236,7 @@
                         <div ng-if="lobbyUser.playerTeam!=0">{{lobbyUser.playerTeam}}</div>
                         <div ng-if="lobbyUser.playerTeam==0">-</div>
                     </div>
-                </td>
+                </td> -->
                 <td class="tdInfo textCentral">
                     <!-- Split button -->
 					<div class="btn-group dropup" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">

@@ -44,6 +44,7 @@
 		logOut : function() {
 			var self = this;
 			$.post("gridwars/rest/logout");
+			clearInterval(self.refresh);
 			self.$location.path("/login");
 		},
 		createGame : function() {
@@ -53,6 +54,7 @@
 				self.$rootScope.gameConfig = response;
 				self.$rootScope.gameLeader = true;
 				self.$window.sessionStorage.gameLeader = true;
+				clearInterval(self.refresh);
 				self.$location.path("/lobby");
 			};
 			clearInterval(this.refresh);
@@ -64,6 +66,7 @@
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
 				self.$window.sessionStorage.gameLeader = false;
+				clearInterval(self.refresh);
 				self.$location.path("/lobby");
 			};
 			clearInterval(this.refresh);

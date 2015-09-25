@@ -60,7 +60,7 @@
 
 		// Get information from server
 		function getAllData () {
-			setTimeout(function () {
+			_this.getData = setTimeout(function () {
 				if (_this.$rootScope.mapList.length === 0) {
 					console.log("Haven't received maps yet.");
 					_this.lobbyService.getMaps();
@@ -87,10 +87,13 @@
 
 		getAllData();
 
+		this.$rootScope.mapName = this.$rootScope.gameConfig.mapName.toLowerCase();
+
 		$scope.$on('$locationChangeStart', function (event, next, current) {
 			if(self.$rootScope.currentlyInLobby) {
 				if(next !== "http://" + window.location.host + "/#/game") {
 					_this.lobbyService.leaveGame();
+					clearTimeout(_this.getData);
 				}
 			}
 		});
@@ -187,13 +190,13 @@
 			setTab: function (tab) {
 				this.$scope.tabSelect = tab;
 			},
-			logOut : function() {
-				var self = this;
-				this.$rootScope.loggedOut = true;
-				$.post("gridwars/rest/logout");
-				this.lobbyService.leaveGame();
-				self.$location.path("/login");
-			}
+//			logOut : function() {
+//				var self = this;
+//				this.$rootScope.loggedOut = true;
+//				this.lobbyService.leaveGame();
+//				$.post("gridwars/rest/logout");
+//				self.$location.path("/login");
+//			}
 	}
 
 	LobbyController.$inject = ['$scope', '$location', '$rootScope', '$window', 'gridWarsApp.lobby.service'];

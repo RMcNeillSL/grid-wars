@@ -423,7 +423,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 						if (targetUnit) {
 							clickHandled = true;
 							if (ctrlDown) {
-								targetUnit.shootAtXY(point);
+//								targetUnit.shootAtXY(point);
 							} else {
 								this.serverAPI.requestUnitMoveCell(targetUnit, cell);
 							}
@@ -443,11 +443,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 						clickHandled = true;
 						this.serverAPI.requestObjectAttackObject(sourceObjectId, enemyAtPoint.gameCore.instanceId);
 					}
-					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
-						clickHandled = true;
-						this.selected[selectedIndex].shootAtXY(point);
-//						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
-					}
+//					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
+//						clickHandled = true;
+//						this.selected[selectedIndex].shootAtXY(point);
+////						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
+//					}
 				}
 				
 				// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
@@ -595,13 +595,16 @@ Engine.prototype.purchaseObject = function(objectId) {
 }
 
 Engine.prototype.processMouseFormUpdates = function() {
-	
+
 	// Selected flags
 	var nothingSelected = false;
 	var unitSelected = false;
 	var defenceSelected = false;
 	var buildingSelected = false;
-	
+
+	// Get current cell over
+	var cell = this.mouse.position.toCell();
+
 	// Check type of selection occuring
 	if (this.selected.length == 0) {
 		nothingSelected = true;
@@ -646,11 +649,11 @@ Engine.prototype.processMouseFormUpdates = function() {
 			if (ctrlState) {
 				updatePointerForm(CONSTANTS.CURSOR_FORCE_ATTACK);
 			} else {
-//				if () {
-//					updatePointerForm(CONSTANTS.CURSOR_INVALID);
-//				} else {
+				if (this.mapRender.isCellObstructed(cell)) {
+					updatePointerForm(CONSTANTS.CURSOR_INVALID);
+				} else {
 					updatePointerForm(CONSTANTS.CURSOR_MOVE);
-//				}
+				}
 			}
 		} else {
 			if (itemAtPoint.gameCore.playerId == this.currentPlayer.playerId) {
@@ -712,10 +715,10 @@ Engine.prototype.manageMapMovement = function() {
 
 	// Update camera with up, down, left and right keys
 	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
-	else if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
+	if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
 	
 	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
-	else if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
+	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
 	
 	// Update mouse values
 	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
@@ -1092,6 +1095,8 @@ Engine.prototype.explosionCollisionCheck = function() {
 			// Calculate boundaries for sprites
 			var boundsA = explosionSprite.getBounds();
 			var boundsB = spriteList[index].getBounds();
+			
+//			console.log("BOUNDS A: " + boundsA.x + ", " + bounds)
 
 			// Calculate intersect rectangle
 			var x_overlap = Math.max(0, Math.min(boundsA.right, boundsB.right)
@@ -1145,17 +1150,22 @@ Engine.prototype.explosionCollisionCheck = function() {
 	var explosionRegister = this.explosionManager.explosionRegister;
 	if (explosionRegister.length > 0) {
 		for (var explosionIndex = 0; explosionIndex < this.explosionManager.explosionRegister.length; explosionIndex++) {
-
+			
+			// Determine damage for explosion
+			var explosionDealerObject = this.getObjectFromInstanceId(explosionRegister[explosionIndex].ownerId);
+			var explosionDealerPlayer = explosionDealerObject.gameCore.playerId;
+			var damageToDeal = explosionDealerObject.gameCore.damage;
+			
 			// Test each building with current explosion
 			for (var index = 0; index < this.buildings.length; index++) {
 				if (!this.buildings[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
 						&& this.buildings[index].gameCore.playerId == this.currentPlayer.playerId
-						&& this.buildings[index].gameCore.playerId != explosionRegister[explosionIndex].ownerId
+						&& this.buildings[index].gameCore.playerId != explosionDealerPlayer
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.buildings[index].getCollisionLayers())) {
 					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.buildings[index]], this.buildings[index].gameCore.damage, explosionRegister[explosionIndex].ownerId);
+					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageToDeal, explosionDealerPlayer);
 				}
 			}
 
@@ -1164,11 +1174,11 @@ Engine.prototype.explosionCollisionCheck = function() {
 				if (!this.units[index]
 						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
 						&& this.units[index].gameCore.playerId == this.currentPlayer.playerId
-						&& this.units[index].gameCore.playerId != explosionRegister[explosionIndex].ownerId
+						&& this.units[index].gameCore.playerId != explosionDealerPlayer
 						&& explosionHitTest(explosionRegister[explosionIndex],
 								this.units[index].getCollisionLayers())) {
 					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.units[index]], this.units[index].gameCore.damage, explosionRegister[explosionIndex].ownerId);
+					this.serverAPI.requestDamageSubmission([this.units[index]], damageToDeal, explosionDealerPlayer);
 				}
 			}
 
@@ -1333,10 +1343,10 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 	var mockUnitResponseData = { responseCode: "DEBUG_PLACEMENT", coords: [], misc: [], source: [], target: [] };
 	var mockBuildingResponseData = { responseCode: "NEW_BUILDING", coords: [], misc: [], source: [], target: [] };
 	var arrayIdentifier = null;
-	
+
 	// Construct building and unit arrays
 	for (var index = 0; index < responseData.source.length; index ++) {
-		
+
 		// Add to correct array
 		arrayIdentifier = CONSTANTS.getObjectType(responseData.source[index]);
 		
@@ -1347,14 +1357,14 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 			mockUnitResponseData.source.push(responseData.source[index]);
 			mockUnitResponseData.target.push(responseData.target[index]);
 		}
-		
+
 		// Populate building array
 		if (arrayIdentifier == "BUILDING" || arrayIdentifier == "DEFENCE") {
 			console.log("Hub placed at: (" + responseData.coords[index].col + "," + responseData.coords[index].row + ")");
 			mockBuildingResponseData.coords.push(responseData.coords[index]);
 			mockBuildingResponseData.misc.push(responseData.misc[index]);
 			mockBuildingResponseData.source.push(responseData.source[index]);
-			mockBuildingResponseData.target.push(responseData.target[index]);			
+			mockBuildingResponseData.target.push(responseData.target[index]);
 		}
 	}
 
@@ -1380,13 +1390,9 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 		
 		// Run purchase finished request
 		self.serverAPI.purchaseFinishedRequest(purchaseObject);
-		
-		// Log to screen finished purchase
-		console.log("READY: " + responseData.target[0]);
 	}
 	
 	// Begin purchase timer with appropriate callback
-	console.log("BOUGHT: " + responseData.target[0]);
 	var purchaseTimeout = setTimeout(purchaseFinished, gameObject.buildTime);
 	
 	// Add item to list of purchased items
@@ -1394,6 +1400,7 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 	
 	// Deduct cash from player
 	this.currentPlayer.reduceCash(gameObject.cost);
+	this.moneyLabel.setText(this.currentPlayer.cash);
 }
 
 Engine.prototype.processPurchasePending = function(responseData) {
