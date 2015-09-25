@@ -76,6 +76,9 @@ public final class Const {
 	// Static enumerands
 	public static enum E_GameType { UNDEFINED, FREE_FOR_ALL, TEAM_ALLIANCE }
 	public static enum E_TechLevel { TECH_01, TECH_02, TECH_03 }
+	
+	// Client side cosntants
+	public static int cellSize = 100;
 
 	
 	

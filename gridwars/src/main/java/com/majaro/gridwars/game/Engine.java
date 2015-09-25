@@ -65,7 +65,7 @@ public class Engine extends Thread {
 		}
 		
 		// Path finding methods
-		public ArrayList<Coordinate> calculatePath(Coordinate startCoord, Coordinate endCoord) {
+		public ArrayList<Coordinate> calculatePath(Coordinate startCoord, Coordinate endCoord, double acceptableDistance) {
 			
 			// Make sure required info is valid
 			if (startCoord != null && endCoord != null) {
@@ -105,9 +105,10 @@ public class Engine extends Thread {
 				}
 				
 				// Main A Star search loop
-				while (isPathPossible &&										// Check path is still possible
-						currentCell != null && cellsToProcess != null			// Check objects are assigned
-						&& !currentCell.isCoord(endCoord)) {					// Check there are still cells to process
+				while (isPathPossible &&											// Check path is still possible
+						currentCell != null && cellsToProcess != null &&			// Check objects are assigned
+						!currentCell.isCoord(endCoord) &&							// Check there are still cells to process
+						!(acceptableDistance >= currentCell.mDistanceCost) ) {		// Allow breaking if the distance left is within acceptable distance			
 					
 					// Select next current cell from list
 					currentCell = cellsToProcess.get(0);
@@ -151,7 +152,8 @@ public class Engine extends Thread {
 					ArrayList<AStarCell> path = currentCell.getPathToSource();
 					
 					// Return path if final cell was target
-					if (currentCell.isCoord(endCoord)) {
+					if (currentCell.isCoord(endCoord) ||
+							acceptableDistance >= currentCell.mDistanceCost) {
 						ArrayList<Coordinate> formattedResult = new ArrayList<Coordinate>();
 						for (AStarCell cell : path) {
 							formattedResult.add(0, cell.coord);
@@ -164,6 +166,9 @@ public class Engine extends Thread {
 			
 			// Return failed value
 			return null;
+		}
+		public ArrayList<Coordinate> calculatePath(Coordinate startCoord, Coordinate endCoord) {
+			return this.calculatePath(startCoord, endCoord, 0);
 		}
 		private double mCostToCell(Coordinate fromCoord, Coordinate toCoord) {
 			double deltaX = toCoord.getCol() - fromCoord.getCol();
@@ -520,34 +525,23 @@ public class Engine extends Thread {
 		return response;
 	}
 	
-	private GameplayResponse processObjectAttackObjectRequest(Player player, String[] sourceIds, String[] targetIds) {
+	private GameplayResponse[] processObjectAttackObjectRequest(Player player, String[] sourceIds, String[] targetIds) {
 
 		// Set default result
-		GameplayResponse response = null;
+		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
+		GameplayResponse attackResponse = null;
+		GameplayResponse waypointResponse = null;
 		boolean validConstruction = true;
-		
-////		// Check each object in turn
-////		for (DynGameDefence sourceDefence : sourceDefences) {
-////			
-////		}
-
-//		// Construct valid response
-//		if (validConstruction) {
-//			response = new GameplayResponse(E_GameplayResponseCode.DEFENCE_ATTACK_XY);
-//			for (DynGameDefence sourceDefence : sourceDefences) {
-//				response.addCoord(col, row);
-//				response.addSource(sourceDefence.getInstanceId());
-//			}
-//		}
 		
 		// Declare working variables
 		DynGameUnit sourceUnit = null;
 		DynGameBuilding sourceBuilding = null;
 		DynGameUnit targetUnit = null;
 		DynGameBuilding targetBuilding = null;
+		Coordinate sourceCoord = null;
+		Coordinate targetCoord = null;
 		
-		// Construct gameplay response
-		response = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT);
+		// Run checks ...
 		
 		// Run through all attack requests
 		for (int index = 0; index < sourceIds.length; index ++) {
@@ -563,15 +557,36 @@ public class Engine extends Thread {
 			// Add attack request to response
 			if ( (sourceUnit != null || sourceBuilding != null) &&
 				 (targetUnit != null || targetBuilding != null) ) {
-				if (sourceUnit != null) 	{ response.addSource(sourceUnit.getInstanceId()); }
-				if (sourceBuilding != null) { response.addSource(sourceBuilding.getInstanceId()); }
-				if (targetUnit != null) 	{ response.addTarget(targetUnit.getInstanceId()); }
-				if (targetBuilding != null) { response.addTarget(targetBuilding.getInstanceId()); }
+				
+				// Process response for attck
+				attackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT);
+				if (sourceUnit != null) 	{ attackResponse.addSource(sourceUnit.getInstanceId());			sourceCoord = sourceUnit.getCoordinate(); }
+				if (sourceBuilding != null) { attackResponse.addSource(sourceBuilding.getInstanceId());		sourceCoord = sourceBuilding.getCoordinate(); }
+				if (targetUnit != null) 	{ attackResponse.addTarget(targetUnit.getInstanceId());			targetCoord = targetUnit.getCoordinate(); }
+				if (targetBuilding != null) { attackResponse.addTarget(targetBuilding.getInstanceId());		targetCoord = targetBuilding.getCoordinate(); }
+				responseList.add(attackResponse);
+				
+				// Check if movement to bring target in range is needed
+				double deltaX = (double)(sourceCoord.getCol() - targetCoord.getCol());
+				double deltaY = (double)(sourceCoord.getRow() - targetCoord.getRow());
+				double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+				if (sourceUnit != null && distance > sourceUnit.getRange() / Const.cellSize) {
+					ArrayList<Coordinate> path = this.aStarPathFinder.calculatePath(sourceCoord, targetCoord, sourceUnit.getRange() / Const.cellSize);
+					if (path != null) {
+						waypointResponse = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
+						for (Coordinate coord : path) {
+							waypointResponse.addCoord(coord);
+							waypointResponse.addSource(sourceUnit.getInstanceId());
+						}
+						responseList.add(waypointResponse);
+					}
+				}
+				
 			}
 		}
 
 		// Return calculated result
-		return response;
+		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 	
 	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate coordinate) {
@@ -752,7 +767,7 @@ public class Engine extends Thread {
 		        			gameplayRequest.getTargetCellY());
 		        	break;
 		        case OBJECT_ATTACK_OBJECT:
-		        	gameplayResponse = this.processObjectAttackObjectRequest(sender,
+		        	gameplayResponseArray = this.processObjectAttackObjectRequest(sender,
 		        			gameplayRequest.getSourceString(),
 		        			gameplayRequest.getTargetString());
 		        	break;
