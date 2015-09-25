@@ -1,14 +1,16 @@
 <div class="gwa-lobby">
-	<h2 class="title">Game Lobby</h2><!-- <a ng-click="controller.logOut()">Logout</a></h2>-->
+	<h2 class="title">Game Lobby</h2>
 
 	<section ng-if="$root.gameLobbyLoaded===false">
-	   <h2 class="title">Loading game lobby....</h2>
+		<h2 class="title">Loading game lobby....</h2>
 	</section>
 
-	<section ng-if="$root.gameLeader===true && $root.gameLobbyLoaded===true">      <!-- CREATOR VIEW -->
-        <div class="col-md-6">
-        <h2 class="title">Game Options</h2>
-	        <!-- <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
+	<section
+		ng-if="$root.gameLeader===true && $root.gameLobbyLoaded===true">
+		<!-- CREATOR VIEW -->
+		<div class="col-md-6">
+			<h2 class="title">Game Options</h2>
+			<!-- <ul class="nav nav-tabs col-md-12" ng-if="tabSelect!=='Game Rules'">
 				<li class="active"><a>Map Selection</a></li>
 				<li><a class="inactiveTab whiteText" ng-click="controller.setTab('Game Rules')">Game Rules</a></li>
 			</ul>
@@ -16,34 +18,38 @@
                 <li><a class="inactiveTab whiteText" ng-click="controller.setTab('Map Selection')">Map Selection</a></li>
                 <li class="active"><a>Game Rules</a></li>
             </ul>-->
-	        <div ng-if="tabSelect!=='Game Rules'">
-		        <section class="col-md-6">
-		        <h3 class="subTitle">Map Selection</h3>
-		        <table class="table table-striped map-table" id="map-list">
-		            <tr>
-		                <th>Map Name</th>
-		                <th>Players</th>
-		                <th>Select</th>
-		            </tr>
-		            <tr ng-repeat="map in $root.mapList">
-		                <td class="tdInfo">{{map.mapName}}</td>
-		                <td class="tdInfo textCentral">{{map.maxPlayers}}</td>
-		                <td class="tdInfo textCentral">
-		                    <button type="button" class="btn btn-default btn-sm" ng-click="controller.changeMap(map)" ng-if="$root.gameConfig.mapId!=map.mapId">Select</button>
-		                    <span class="glyphicon glyphicon-ok textCentral" ng-if="$root.gameConfig.mapId==map.mapId"></span>
-		                </td>
-		            </tr>
-		        </table>
-		        </section>
+			<div ng-if="tabSelect!=='Game Rules'">
+				<section class="col-md-6">
+					<h3 class="subTitle">Map Selection</h3>
+					<table class="table table-striped map-table" id="map-list">
+						<tr>
+							<th>Map Name</th>
+							<th>Players</th>
+							<th>Select</th>
+						</tr>
+						<tr ng-repeat="map in $root.mapList">
+							<td class="tdInfo">{{map.mapName}}</td>
+							<td class="tdInfo textCentral">{{map.maxPlayers}}</td>
+							<td class="tdInfo textCentral">
+								<button type="button" class="btn btn-default btn-sm"
+									ng-click="controller.changeMap(map)"
+									ng-if="$root.gameConfig.mapId!=map.mapId">Select</button> <span
+								class="glyphicon glyphicon-ok textCentral"
+								ng-if="$root.gameConfig.mapId==map.mapId"></span>
+							</td>
+						</tr>
+					</table>
+				</section>
 
-                <section class="col-md-6">
-                    <h3 class="subTitle">Map Preview</h3>
-                    <div class="map-preview">
-                        <img src="app/assets/map_items/{{$root.mapName}}/minimap.png" class="map">
-                    </div>
-                </section>
-	        </div>
-            <!-- <div ng-if="tabSelect==='Game Rules'">  <!-- GAME RULES TAB
+				<section class="col-md-6">
+					<h3 class="subTitle">Map Preview</h3>
+					<div class="map-preview">
+						<img src="app/assets/map_items/{{$root.mapName}}/minimap.png"
+							class="map">
+					</div>
+				</section>
+			</div>
+			<!-- <div ng-if="tabSelect==='Game Rules'">  <!-- GAME RULES TAB
                 <section class="col-md-12 rulesContainer">
                     <h3 class="subTitle">Game Rules</h3>
                     <section class="col-md-6 rulesColumn">
@@ -134,23 +140,26 @@
                 	</section>
                 </section>
             </div> -->
-        </div>
+		</div>
 	</section>
 
-    <section ng-if="$root.gameLeader===false  && $root.gameLobbyLoaded===true">      <!-- JOINER VIEW -->
-        <div class="col-md-6">
-        <h2 class="title">Game Configuration</h2>
-	        <section class="col-md-6 rulesColumn">
-		        <h3 class="subTitle">Selected Map</h3>
-		        <div>
-		            <table class="table" id="map-list">
-		            <tr ng-repeat="map in $root.mapList | filter: {mapId: $root.gameConfig.mapId}">
-		                <td class="whiteText">{{map.mapName}}</td>
-		                <td class="whiteText">{{map.maxPlayers}} Players Max</td>
-		            </tr>
-		        </table>
-		        </div>
-		        <!-- <div>
+	<section
+		ng-if="$root.gameLeader===false  && $root.gameLobbyLoaded===true">
+		<!-- JOINER VIEW -->
+		<div class="col-md-6">
+			<h2 class="title">Game Configuration</h2>
+			<section class="col-md-6 rulesColumn">
+				<h3 class="subTitle">Selected Map</h3>
+				<div>
+					<table class="table" id="map-list">
+						<tr
+							ng-repeat="map in $root.mapList | filter: {mapId: $root.gameConfig.mapId}">
+							<td class="whiteText">{{map.mapName}}</td>
+							<td class="whiteText">{{map.maxPlayers}} Players Max</td>
+						</tr>
+					</table>
+				</div>
+				<!-- <div>
 			        <p>Starting Cash: {{$root.gameConfig.startingCash}}</p>
 	                <p>Game Speed: </b>{{$root.gameConfig.gameSpeed}}</p>
 	                <p>Unit Health: </b>{{$root.gameConfig.unitHealth}}</p>
@@ -161,60 +170,76 @@
                     <p>Redeployable MCV: <span ng-if="$root.gameConfig.redeployableMCV===true">Enabled</span>
                     <span ng-if="$root.gameConfig.redeployableMCV===false">Disabled</span></p>
                 </div> -->
-	        </section>
+			</section>
 
-	        <section class="col-md-6">
-	            <h3 class="subTitle">Map Preview</h3>
-		        <div class="map-preview">
-		          <img src="app/assets/map_items/{{$root.mapName}}/minimap.png" class="map">
-		        </div>
-	        </section>
-        </div>
-    </section>
+			<section class="col-md-6">
+				<h3 class="subTitle">Map Preview</h3>
+				<div class="map-preview">
+					<img src="app/assets/map_items/{{$root.mapName}}/minimap.png"
+						class="map">
+				</div>
+			</section>
+		</div>
+	</section>
 
 	<section class="col-md-6" ng-if="$root.gameLobbyLoaded===true">
-        <h2 class="title">Lobby</h2>
-        <div class="container-fluid chat-container">
-            <div ng-repeat="message in $root.lobbyMessages" class="whiteText">
-                {{message.user}}: {{message.message}}
-            </div>
-        </div>
-	    <form name="sendLobbyMessage" ng-submit="controller.callSendMessage($root.newMessage)">
-		    <input type="text" placeholder="What would you like to say?" ng-model="$root.newMessage" id="new-message" class="form-control">
-	    </form>
-    </section>
+		<h2 class="title">Lobby</h2>
+		<div class="container-fluid chat-container">
+			<div ng-repeat="message in $root.lobbyMessages" class="whiteText">
+				{{message.user}}: {{message.message}}</div>
+		</div>
+		<form name="sendLobbyMessage"
+			ng-submit="controller.callSendMessage($root.newMessage)">
+			<input type="text" placeholder="What would you like to say?"
+				ng-model="$root.newMessage" id="new-message" class="form-control">
+		</form>
+	</section>
 
-    <section class="col-md-12 player-table" ng-if="$root.gameLobbyLoaded===true">
-        <h2 class="title">Player Options</h2>
-        <table class="table table-striped" id="game-player-list">
-            <tr>
-                <th>Player</th>
-                <!-- <th>Faction</th> -->
-                <!-- <th>Team</th> -->
-                <th>Colour</th>
-                <th>Ready</th>
-            </tr>
-            <tr ng-repeat="lobbyUser in $root.lobbyUserList">
-                <td class="tdInfo" ng-if="(lobbyUser.linkedUser.id==-1 && $root.gameLeader===false)">{{lobbyUser.linkedUser.username}}</td>
-                <td class="tdInfo" ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===false">{{lobbyUser.linkedUser.username}}</td>
-                <td class="tdInfo" ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===true">
-                    {{lobbyUser.linkedUser.username}}
-                    <button type="button" ng-if="$root.gameLeader===true && (lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)" class="btn btn-default btn-sm" style="float: right" ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make Leader</button>
-                </td>
-                <td class="tdInfo" ng-if="lobbyUser.linkedUser.id==-1 && $root.gameLeader===true">
-                    <div class="btn-group fullWidth dropup" ng-if="$root.gameLeader===true">
-                        <button type="button" class="btn btn-default btn-sm dropdownBtn">{{lobbyUser.linkedUser.username}}</button>
-                        <button type="button" class="btn btn-default btn-sm dropdown-toggle dropdownArrow" data-toggle="dropdown">
-                            <span class="caret"></span>
-                            <span class="sr-only">Toggle Dropdown</span>
-                        </button>
-                        <ul class="dropdown-menu fullWidth">
-                            <li ng-if="lobbyUser.linkedUser.username!=='Open'"><a ng-click="controller.openSlot()">Open</a></li>
-                            <li ng-if="lobbyUser.linkedUser.username!=='Closed'"><a ng-click="controller.closeSlot()">Close</a></li>
-                        </ul>
-                    </div>
-                </td>
-                <!-- <td class="tdInfo" ng-if="lobbyUser.factionId==-1">N/A</td>
+	<section class="col-md-12 player-table"
+		ng-if="$root.gameLobbyLoaded===true">
+		<h2 class="title">Player Options</h2>
+		<table class="table table-striped" id="game-player-list">
+			<tr>
+				<th>Player</th>
+				<!-- <th>Faction</th> -->
+				<!-- <th>Team</th> -->
+				<th>Colour</th>
+				<th>Ready</th>
+			</tr>
+			<tr ng-repeat="lobbyUser in $root.lobbyUserList">
+				<td class="tdInfo"
+					ng-if="(lobbyUser.linkedUser.id==-1 && $root.gameLeader===false)">{{lobbyUser.linkedUser.username}}</td>
+				<td class="tdInfo"
+					ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===false">{{lobbyUser.linkedUser.username}}</td>
+				<td class="tdInfo"
+					ng-if="lobbyUser.linkedUser.id!=-1 && $root.gameLeader===true">
+					{{lobbyUser.linkedUser.username}}
+					<button type="button"
+						ng-if="$root.gameLeader===true && (lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)"
+						class="btn btn-default btn-sm" style="float: right"
+						ng-click="controller.callChangeLeader(lobbyUser.linkedUser.id)">Make
+						Leader</button>
+				</td>
+				<td class="tdInfo"
+					ng-if="lobbyUser.linkedUser.id==-1 && $root.gameLeader===true">
+					<div class="btn-group fullWidth dropup"
+						ng-if="$root.gameLeader===true">
+						<button type="button" class="btn btn-default btn-sm dropdownBtn">{{lobbyUser.linkedUser.username}}</button>
+						<button type="button"
+							class="btn btn-default btn-sm dropdown-toggle dropdownArrow"
+							data-toggle="dropdown">
+							<span class="caret"></span> <span class="sr-only">Toggle
+								Dropdown</span>
+						</button>
+						<ul class="dropdown-menu fullWidth">
+							<li ng-if="lobbyUser.linkedUser.username!=='Open'"><a
+								ng-click="controller.openSlot()">Open</a></li>
+							<li ng-if="lobbyUser.linkedUser.username!=='Closed'"><a
+								ng-click="controller.closeSlot()">Close</a></li>
+						</ul>
+					</div>
+				</td>
+				<!-- <td class="tdInfo" ng-if="lobbyUser.factionId==-1">N/A</td>
                 <td class="tdInfo" ng-if="lobbyUser.factionId==0">Allied</td>
                 <td class="tdInfo" ng-if="lobbyUser.factionId==1">Soviet</td>
                 <td class="tdInfo" ng-if="lobbyUser.factionId==3">Empire of the Rising Sun</td>
@@ -237,42 +262,132 @@
                         <div ng-if="lobbyUser.playerTeam==0">-</div>
                     </div>
                 </td> -->
-                <td class="tdInfo textCentral">
-                    <!-- Split button -->
-					<div class="btn-group dropup" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
-					    <button type="button" class="btn btn-default btn-sm">{{lobbyUser.playerColour}}</button>
-                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>
-					    <ul class="dropdown-menu">
-					        <li ng-repeat="colour in $root.colourList"><a ng-click="controller.callChangeColour(colour)">{{colour}}</a></li>
+				<td class="tdInfo textCentral">
+					<!-- Split button -->
+					<div class="btn-group dropup"
+						ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)">
+						<button type="button" class="btn btn-default btn-sm">{{lobbyUser.playerColour}}</button>
+						<button type="button"
+							class="btn btn-default btn-sm dropdown-toggle"
+							data-toggle="dropdown">
+							<span class="caret"></span><span class="sr-only">Toggle
+								Dropdown</span>
+						</button>
+						<ul class="dropdown-menu">
+							<li ng-repeat="colour in $root.colourList"><a
+								ng-click="controller.callChangeColour(colour)">{{colour}}</a></li>
 						</ul>
 					</div>
-					<div class="btn-group" ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
-                        {{lobbyUser.playerColour}}
+					<div class="btn-group"
+						ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
+						{{lobbyUser.playerColour}}</div>
+				</td>
+				<td class="tdInfo textCentral" ng-if="$root.gameLeader===false">
+					<input type="button" class="btn btn-success btn-sm"
+					ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && !lobbyUser.ready"
+					value="Ready?" ng-click="controller.toggleUserReady()"
+					id="toggle-ready">
+					<div
+						ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && lobbyUser.ready">
+						<span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
+					</div>
+					<div
+						ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
+						<span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
+						<span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
 					</div>
 				</td>
-                <td class="tdInfo textCentral" ng-if="$root.gameLeader===false">
-                    <input type="button" class="btn btn-success btn-sm" ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && !lobbyUser.ready" value="Ready?" ng-click="controller.toggleUserReady()" id="toggle-ready">
-                    <div ng-if="(lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && lobbyUser.ready">
-                        <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
-                    </div>
-                    <div ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
-                        <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
-                        <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
-                    </div>
-                </td>
-                <td class="textCentral" ng-if="$root.gameLeader===true">
-                    <input type="button" class="btn btn-success btn-sm" ng-if="$root.notReadyCount==0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && $root.connectedUsers!=1" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
-                    <input type="button" class="btn btn-sm disabled" ng-disabled="$root.notReadyCount!=0 || $root.connectedUsers==1" ng-if="($root.notReadyCount!=0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)) || ($root.connectedUsers==1 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase))" value="Start Game" ng-click="controller.callStartGame()" id="start-game">
-                    <div ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
-                        <span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
-                        <span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </section>
-    <div class="col-md-12" ng-if="$root.gameLobbyLoaded===true">
-    	<button ng-click="controller.callLeaveGame()" class="btn btn-default btn-sm" style="float: right"><span class="glyphicon glyphicon-globe"></span> Return to server lobby</button>
-    </div>
+				<td class="textCentral" ng-if="$root.gameLeader===true"><input
+					type="button" class="btn btn-success btn-sm"
+					ng-if="$root.notReadyCount==0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && $root.connectedUsers!=1"
+					value="Start Game" ng-click="controller.callStartGame()"
+					id="start-game"> <input type="button"
+					class="btn btn-sm disabled"
+					ng-disabled="$root.notReadyCount!=0 || $root.connectedUsers==1"
+					ng-if="($root.notReadyCount!=0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)) || ($root.connectedUsers==1 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase))"
+					value="Start Game" ng-click="controller.callStartGame()"
+					id="start-game">
+					<div
+						ng-if="(lobbyUser.linkedUser.username | uppercase) != ($root.currentUser | uppercase)">
+						<span class="glyphicon glyphicon-ok" ng-if="lobbyUser.ready"></span>
+						<span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
+					</div></td>
+			</tr>
+		</table>
+	</section>
+	<div class="col-md-12" ng-if="$root.gameLobbyLoaded===true">
+		<button ng-click="controller.callLeaveGame()"
+			class="btn btn-default btn-sm" style="float: right">
+			<span class="glyphicon glyphicon-globe"></span> Return to server
+			lobby
+		</button>
+		<button class="btn btn-default btn-sm" data-toggle="modal"
+			data-target="#myModal">
+			<span class="glyphicon glyphicon-info-sign"></span> How to play
+		</button>
+	</div>
 
+	<!--  Modal -->
+	<div id="myModal" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-lg">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">How to play Grid Wars</h4>
+				</div>
+				<div class="modal-header">
+					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
+					data-target="#info1">1) Getting Started</button>
+				</div>
+				<div id="info1" class="modal-body collapse">
+					<img src="">
+					<p>Once in the game lobby you'll be able to see the different options available to you within the game lobby, these are set by the game leader. This includes choosing the map you want to play on, opening spots for other players to join and selecting the colour you want to be. Once you are happy with the options, click ready.<br /><br />
+					If you are the game leader you can start the game once all of the available player slots are filled and all players have clicked ready.<br /><br />
+					Whilst you are in the game lobby you are able to speak to other players whilst you wait for the game to load.</p>
+				</div>
+				<div class="modal-header">
+					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
+					data-target="#info2">2) Navigation</button>
+				</div>
+				<div id="info2" class="modal-body collapse">
+					<img src="">
+					<p>There are two methods of navigating around the game. Firstly by simply using the arrow keys to move the camera around and secondly by clicking on the minimap to quickly navigate to different sections of the map quicker.<br /><br />
+					Clicking the minimap is better when you are on a larger map as it would allow you to go straight to the location you want to be at with one click. You can also click the Home button just under the minimap to return to your base.<br /><br />
+					When looking to move your units, simply click on them individually and click on either the tile you want to move to or the enemy object you want to attack. You can also multi-select units to move multiple units at once.</p>
+				</div>
+				<div class="modal-header">
+					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
+					data-target="#info3">3) Setting Up</button>
+				</div>
+				<div id="info3" class="modal-body collapse">
+					<img src="">
+					<p>Once the game has loaded you will spawn at your base with a starting amount of cash. You can use this to either purchase tanks to attack enemy bases or alternatively you can invest in turrets for defending your base.<br /><br />
+					The tank button is located under the minimap and will be available when you have sufficient money to purchase one. Once purchased and the timer has completed, your base will release it ready to use.<br /><br />
+					The turret button is located under the minimap also, and too will be available when you have sufficient money to purchase it. If purchased you will have to wait until the timer completes before you place it. As turrets are defensive weapons you can only place them within a particular range of your own base.</p>
+				</div>
+				<div class="modal-header">
+					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
+					data-target="#info4">4) Gaining Resource</button>
+				</div>
+				<div id="info4" class="modal-body collapse">
+					<img src="">
+					<p>In each game you start with an amount of starter cash, this can be used to setup your initial game objects. Each time you kill an enemy you gain some resource ready to spend on your own fleet.</p>
+				</div>
+				<div class="modal-header">
+					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
+					data-target="#info5">5) How to Win</button>
+				</div>
+				<div id="info5" class="modal-body collapse">
+					<img src="">
+					<p>The purpose of each game is to be the last base standing, it is up to you whether you want to spend your resource defending your base, attacking the enemy base or taking a more balanced approach.<br /><br />
+					Ultimately this will determine who wins the game. Once your game is complete you will reach the results screen to outline how players performed.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+	</div>
+</div>
 </div>

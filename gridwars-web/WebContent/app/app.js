@@ -20,34 +20,44 @@ config(['$routeProvider', function($routeProvider) {
 	$routeProvider.when('/servers', {template: '<gwa-servers></gwa-servers>'});
 	$routeProvider.when('/testing', {template: '<gwa-testing></gwa-testing>'});
 	$routeProvider.otherwise({redirectTo: '/login'});
-}]);
-
-(function() {
-	var nonAuthPages = [ "login", "register" ];
-	var currPath = window.location.href;
-
-	if (currPath.indexOf("?") > -1) {
-		currPath = currPath.substring(0, currPath.indexOf("?"));
-	}
-
-	for (var i = 0; i < nonAuthPages.length; i++) {
-		if (currPath.indexOf(nonAuthPages[i]) > -1) {
-			return;
+}])
+.run(function($rootScope, $location, $route) {
+	$rootScope.$on("$routeChangeStart", function(event, next, current) {
+		var nonAuthPages = [ "login", "register" ];
+		var currPath = window.location.href;
+	
+		if (currPath.indexOf("?") > -1) {
+			currPath = currPath.substring(0, currPath.indexOf("?"));
 		}
-	}
-	var redirectToLogin = function(res) {
-		if (res === null || res === undefined || res === "") {
-			window.location.replace("/#/login");
+	
+		for (var i = 0; i < nonAuthPages.length; i++) {
+			if (currPath.indexOf(nonAuthPages[i]) > -1) {
+				return;
+			}
 		}
-	}
-
-	var checkAuth = function(callback) {
-
-		$.post("gridwars/rest/checkauth", function() {
-		}).complete(function(res) {
-			callback(res.responseText);
-		});
-	}
-
-	checkAuth(redirectToLogin);
-})();
+		
+		var redirectToLogin = function(res) {
+			if (res === null || res === undefined || res === "") {
+				$location.path("/login");
+				
+				if ($rootScope.refresh) {
+					clearInterval($rootScope.refresh);
+				}
+				
+				if($rootScope.getData) {
+					clearInterval($rootScope.getData);
+				}
+				
+			}
+		}
+		
+		var checkAuth = function(callback) {
+			$.post("gridwars/rest/checkauth", function() {
+			}).complete(function(res) {
+				callback(res.responseText);
+			});
+		}
+		
+		checkAuth(redirectToLogin);
+	});
+});

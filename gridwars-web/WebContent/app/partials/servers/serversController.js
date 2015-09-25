@@ -27,7 +27,7 @@
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_SERVER_LOBBY_UPDATE, this.serversService.serverLobbyUpdate);
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_REFRESH_GAME_LOBBY, this.serversService.refreshGameLobby);
 
-		this.refresh = setInterval(function() {self.serversService.refreshServerList(); }, 1000);
+		this.$rootScope.refresh = setInterval(function() {self.serversService.refreshServerList(); }, 1000);
 		this.serversService.joinServerLobby();
 	}
 
@@ -44,7 +44,7 @@
 		logOut : function() {
 			var self = this;
 			$.post("gridwars/rest/logout");
-			clearInterval(self.refresh);
+			clearInterval(self.$rootScope.refresh);
 			self.$location.path("/login");
 		},
 		createGame : function() {
@@ -54,10 +54,10 @@
 				self.$rootScope.gameConfig = response;
 				self.$rootScope.gameLeader = true;
 				self.$window.sessionStorage.gameLeader = true;
-				clearInterval(self.refresh);
+				clearInterval(self.$rootScope.refresh);
 				self.$location.path("/lobby");
 			};
-			clearInterval(this.refresh);
+			clearInterval(this.$rootScope.refresh);
 			this.serversService.createGame(updateNewGameResponse);
 		},
 		joinGame : function(lobbyId) {
@@ -66,10 +66,10 @@
 			var updateJoinGameResponse = function(response) {
 				self.$rootScope.gameConfig = response;
 				self.$window.sessionStorage.gameLeader = false;
-				clearInterval(self.refresh);
+				clearInterval(self.$rootScope.refresh);
 				self.$location.path("/lobby");
 			};
-			clearInterval(this.refresh);
+			clearInterval(this.$rootScope.refresh);
 			this.serversService.joinGame(lobbyId, updateJoinGameResponse);
 		},
 		formatGameType : function(gameType) {
