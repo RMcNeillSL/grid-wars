@@ -178,6 +178,20 @@ public class Engine extends Thread {
 		
 	}
 
+	// Attack pair objects
+	private class AttackPair {
+		private String sourceInstanceId = null;
+		private String targetInstanceId = null;
+		public AttackPair(String sourceInstanceId, String targetInstanceId) {
+			this.sourceInstanceId = sourceInstanceId;
+			this.targetInstanceId = targetInstanceId;
+		}
+		public boolean containsInstanceId(String checkInstanceId) {
+			return (checkInstanceId.equals(this.sourceInstanceId) ||
+					checkInstanceId.equals(this.targetInstanceId));
+		}
+	}
+	
 	// Engine state variables
 	private boolean isRunning = false;
 	
@@ -191,6 +205,7 @@ public class Engine extends Thread {
 	// In-game object lists
 	private ArrayList<DynGameBuilding> buildings;
 	private ArrayList<DynGameUnit> units;
+	private ArrayList<AttackPair> attackPairs;
 	
 	// Path finding object
 	private AStarPathFinder aStarPathFinder;
@@ -209,6 +224,7 @@ public class Engine extends Thread {
 		// Initialise in-game object lists
 		this.buildings = new ArrayList<DynGameBuilding>();
 		this.units = new ArrayList<DynGameUnit>();
+		this.attackPairs = new ArrayList<AttackPair>();
 
 		// Construct map objects
 		this.staticMap = gameMap;
@@ -540,6 +556,8 @@ public class Engine extends Thread {
 		DynGameBuilding targetBuilding = null;
 		Coordinate sourceCoord = null;
 		Coordinate targetCoord = null;
+		String sourceId = null;
+		String targetId = null;
 		
 		// Run checks ...
 		
@@ -560,11 +578,14 @@ public class Engine extends Thread {
 				
 				// Process response for attck
 				attackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT);
-				if (sourceUnit != null) 	{ attackResponse.addSource(sourceUnit.getInstanceId());			sourceCoord = sourceUnit.getCoordinate(); }
-				if (sourceBuilding != null) { attackResponse.addSource(sourceBuilding.getInstanceId());		sourceCoord = sourceBuilding.getCoordinate(); }
-				if (targetUnit != null) 	{ attackResponse.addTarget(targetUnit.getInstanceId());			targetCoord = targetUnit.getCoordinate(); }
-				if (targetBuilding != null) { attackResponse.addTarget(targetBuilding.getInstanceId());		targetCoord = targetBuilding.getCoordinate(); }
+				if (sourceUnit != null) 	{ attackResponse.addSource(sourceUnit.getInstanceId());			sourceCoord = sourceUnit.getCoordinate();		sourceId = sourceUnit.getInstanceId(); }
+				if (sourceBuilding != null) { attackResponse.addSource(sourceBuilding.getInstanceId());		sourceCoord = sourceBuilding.getCoordinate();	sourceId = sourceBuilding.getInstanceId(); }
+				if (targetUnit != null) 	{ attackResponse.addTarget(targetUnit.getInstanceId());			targetCoord = targetUnit.getCoordinate();		targetId = targetUnit.getInstanceId(); }
+				if (targetBuilding != null) { attackResponse.addTarget(targetBuilding.getInstanceId());		targetCoord = targetBuilding.getCoordinate();	targetId = targetBuilding.getInstanceId(); }
 				responseList.add(attackResponse);
+				
+				// Add new items recorded attack pair array
+				if (sourceCoord != null) { this.attackPairs.add(new AttackPair(sourceId, targetId)); }
 				
 				// Check if movement to bring target in range is needed
 				double deltaX = (double)(sourceCoord.getCol() - targetCoord.getCol());
@@ -632,11 +653,17 @@ public class Engine extends Thread {
 		return this.processWaypointPathCoordsRequest(player, unitsArray, coordinate);
 	}
 	
-	private void processWaypointUpdateUnitCellRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] newCoordinates) {
+	private GameplayResponse processWaypointUpdateUnitCellRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] newCoordinates) {
+
+		// Set default result
+		GameplayResponse response = null;
 		
 		// Declare working variables
 		DynGameUnit unitRef = null;
 		Coordinate coordRef = null;
+		DynGameUnit[] attackingUnits = null;
+		DynGameUnit attackUnitRef = null;
+		ArrayList<Coordinate> path = null;		
 		
 		// Process each unit update inturn
 		for (int index = 0; index < Math.min(sourceUnits.length, newCoordinates.length); index ++) {
@@ -645,9 +672,27 @@ public class Engine extends Thread {
 			unitRef = sourceUnits[index];
 			coordRef = newCoordinates[index];
 			
+			// Check if unit was involved in an attack pair as target - update source waypoints
+			attackingUnits = this.getUnitsAttackingInstance(sourceUnits[index].getInstanceId());
+			if (attackingUnits != null && attackingUnits.length > 0) {
+				for (int attackIndex = 0; attackIndex < attackingUnits.length; attackIndex ++) {
+					attackUnitRef = attackingUnits[attackIndex];
+					path = this.aStarPathFinder.calculatePath(attackUnitRef.getCoordinate(), unitRef.getCoordinate(), attackUnitRef.getRange() / Const.cellSize);
+					if (path != null) {
+						if (response == null) { response = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS); }
+						for (Coordinate coord : path) {
+							response.addCoord(coord);
+							response.addSource(attackUnitRef.getInstanceId());
+						}
+					}
+				}
+			}
+			
 			// Update cell of unit
 			unitRef.updateCoordinate(coordRef);
 		}
+		
+		return response;
 	}
 	
 	private GameplayResponse processDamageRequest(Player player, String[] instanceIds, int damageAmount, ArrayList<String> miscStrings) {
@@ -710,6 +755,7 @@ public class Engine extends Thread {
 		// Clean up all units and buildings which have now been destroyed
 		for (DynGameUnit targetUnit : sourceUnits) {
 			if (targetUnit.getHealth() == 0) {
+				this.removeFromAttackPairs(targetUnit.getInstanceId());
 				this.destroyGameObject(targetUnit);
 				killer.addPlayerCash((int)Math.floor(targetUnit.getCost() * 1.2));
 			}
@@ -717,6 +763,7 @@ public class Engine extends Thread {
 		
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
 			if (targetBuilding.getHealth() == 0) {
+				this.removeFromAttackPairs(targetBuilding.getInstanceId());
 				this.destroyGameObject(targetBuilding);
 				killer.addPlayerCash((int)Math.floor(targetBuilding.getCost() * 1.2));
 			}
@@ -777,10 +824,9 @@ public class Engine extends Thread {
 		        			new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY()));
 		        	break;
 		        case WAYPOINT_UPDATE_UNIT_CELL:
-		        	gameplayResponse = null;
 		        	Coordinate[] coordinates = new Coordinate[1];
 		        	coordinates[0] = new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY());
-		        	this.processWaypointUpdateUnitCellRequest(sender, 
+		        	gameplayResponse = this.processWaypointUpdateUnitCellRequest(sender, 
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false),
 		        			coordinates);
 		        	break;
@@ -821,6 +867,32 @@ public class Engine extends Thread {
 	
 	
 	// Utility methods
+	
+	private DynGameUnit[] getUnitsAttackingInstance(String instanceId) {
+		ArrayList<DynGameUnit> attackingUnits = new ArrayList<DynGameUnit>();
+		DynGameUnit attackingUnit = null;
+		for (int index = 0; index < this.attackPairs.size(); index ++) {
+			if (this.attackPairs.get(index).targetInstanceId.equals(instanceId)) {
+				attackingUnit = this.getGameUnitFromInstanceId(this.attackPairs.get(index).sourceInstanceId);
+				if (attackingUnit != null) {
+					attackingUnits.add(attackingUnit);
+				}
+			}
+		}
+		return attackingUnits.toArray(new DynGameUnit[attackingUnits.size()]);
+	}
+	
+	private void removeFromAttackPairs(String instanceId) {
+		ArrayList<AttackPair> removeList = new ArrayList<AttackPair>();
+		for (int index = 0; index < this.attackPairs.size(); index ++) {
+			if (this.attackPairs.get(index).containsInstanceId(instanceId)) {
+				removeList.add(this.attackPairs.get(index));
+			}
+		}
+		for (int index = 0; index < removeList.size(); index ++) {
+			this.attackPairs.remove(removeList.get(index));
+		}
+	}
 	
 	private DynGameBuilding getPlayerDeployHub(Player player) {
 		
