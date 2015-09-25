@@ -99,21 +99,30 @@
 			
 			// Make sure a second engine is not being created
 			if (!self.engineExists) {
+				
+				// Notify of game starting
+				console.log("LOG: Game engine initialising.");
 
 				// Mark engine as constructed
 				self.engineExists = true;
 
 				// Define server interface object
 				self.serverAPI = new ServerAPI(gameService);
+				console.log("LOG: Server API object constructed.");
 
 				// Define core game phaser variable
 				self.phaserGame = new Engine(self.$rootScope.gameplayConfig, self.$rootScope.currentUser, self.serverAPI, gameFinished);
+				console.log("LOG: Engine object constructed.");
+				
+				// Link responses for socket communication
 				self.$rootScope.gameplayResponseManager = function(responseData) {
 					self.phaserGame.processGameplayResponse(responseData);
 				};
+				console.log("LOG: Linked game sockets to socket manager.");
 
 				// Submit ready message
 				gameService.gameStartRequest();
+				console.log("LOG: Game start request has been sent.");
 
 			}
 		}

@@ -1132,37 +1132,42 @@ Engine.prototype.explosionCollisionCheck = function() {
 			
 			// Determine damage for explosion
 			var explosionDealerObject = this.getObjectFromInstanceId(explosionRegister[explosionIndex].ownerId);
-			var explosionDealerPlayer = explosionDealerObject.gameCore.playerId;
-			var damageToDeal = explosionDealerObject.gameCore.damage;
 			
-			// Test each building with current explosion
-			for (var index = 0; index < this.buildings.length; index++) {
-				if (!this.buildings[index]
-						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-						&& this.buildings[index].gameCore.playerId == this.currentPlayer.playerId
-						&& this.buildings[index].gameCore.playerId != explosionDealerPlayer
-						&& explosionHitTest(explosionRegister[explosionIndex],
-								this.buildings[index].getCollisionLayers())) {
-					console.log("COLLISION WITH BUILDING OCCURED -- BUILDING");
-					this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.buildings[index]], damageToDeal, explosionDealerPlayer);
+			// Make sure an owner was found			-- Quick fix 		-|- ADD GRAVEYARD ARRAY -|-
+			if (explosionDealerObject) {
+
+				// Define information for use calauclating explosion owners
+				var explosionDealerPlayer = explosionDealerObject.gameCore.playerId;
+				var damageToDeal = explosionDealerObject.gameCore.damage;
+				
+				// Test each building with current explosion
+				for (var index = 0; index < this.buildings.length; index++) {
+					if (!this.buildings[index]
+							.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
+							&& this.buildings[index].gameCore.playerId == this.currentPlayer.playerId
+							&& this.buildings[index].gameCore.playerId != explosionDealerPlayer
+							&& explosionHitTest(explosionRegister[explosionIndex],
+									this.buildings[index].getCollisionLayers())) {
+						console.log("COLLISION WITH BUILDING OCCURED -- BUILDING");
+						this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+						this.serverAPI.requestDamageSubmission([this.buildings[index]], damageToDeal, explosionDealerPlayer);
+					}
+				}
+
+				// Test each unit with current explosion
+				for (var index = 0; index < this.units.length; index++) {
+					if (!this.units[index]
+							.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
+							&& this.units[index].gameCore.playerId == this.currentPlayer.playerId
+							&& this.units[index].gameCore.playerId != explosionDealerPlayer
+							&& explosionHitTest(explosionRegister[explosionIndex],
+									this.units[index].getCollisionLayers())) {
+						console.log("COLLISION WITH UNIT OCCURED -- UNIT");
+						this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
+						this.serverAPI.requestDamageSubmission([this.units[index]], damageToDeal, explosionDealerPlayer);
+					}
 				}
 			}
-
-			// Test each unit with current explosion
-			for (var index = 0; index < this.units.length; index++) {
-				if (!this.units[index]
-						.isDamageMarkRegistered(explosionRegister[explosionIndex].explosionInstanceId)
-						&& this.units[index].gameCore.playerId == this.currentPlayer.playerId
-						&& this.units[index].gameCore.playerId != explosionDealerPlayer
-						&& explosionHitTest(explosionRegister[explosionIndex],
-								this.units[index].getCollisionLayers())) {
-					console.log("COLLISION WITH UNIT OCCURED -- UNIT");
-					this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
-					this.serverAPI.requestDamageSubmission([this.units[index]], damageToDeal, explosionDealerPlayer);
-				}
-			}
-
 		}
 	}
 }
