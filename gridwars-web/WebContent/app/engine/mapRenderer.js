@@ -221,6 +221,8 @@ MapRenderer.prototype.placementHover = function(col, row, canPlace) {
 			// Create cell reference
 			hoverTile = this.getTileFromColRow(colIndex, rowIndex);
 			
+			//
+			
 			// Check for tile retrieval success
 			if (hoverTile) {
 				if (col == colIndex && row == rowIndex) {
