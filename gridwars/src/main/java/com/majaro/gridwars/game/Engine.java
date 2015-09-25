@@ -383,13 +383,17 @@ public class Engine extends Thread {
 	}
 	
 	@SuppressWarnings("unused")
-	private GameplayResponse[] processBuildingPlaceRequest(Player player, GameBuilding[] sourceBuildings, Coordinate coord) {
+	private GameplayResponse[] processBuildingPlaceRequest(Player player, GameBuilding[] sourceBuildings, String[] instanceIds, Coordinate coord) {
 
 		// Declare response variables
 		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
 		GameplayResponse newBuildingResponse = null;
 		GameplayResponse waypointUpdateResponse = null;
 		boolean validConstruction = true;
+
+		// Declare local working variables
+		GameBuilding sourceBuilding = null;
+		String instanceId = null;
 		
 		// Declare waypoint amending variables
 		ArrayList<DynGameUnit> waypointInterruptedUnits = new ArrayList<DynGameUnit>();
@@ -397,7 +401,11 @@ public class Engine extends Thread {
 		Coordinate unitWaypointEnd = null;
 		
 		// Check each object in turn
-		for (GameBuilding sourceBuilding : sourceBuildings) {
+		for (int index = 0; index < sourceBuildings.length; index ++) {
+			
+			// Create working references
+			sourceBuilding = sourceBuildings[index];
+			instanceId = instanceIds[index];
 
 			// Check all cells required for building are free in the static map -- currently a single cell
 			if (validConstruction && this.staticMap.isCellObstructed(coord)) {
@@ -431,6 +439,8 @@ public class Engine extends Thread {
 				newBuildingResponse.addSource(Integer.toString(player.getPlayerCash()));
 			}
 			
+			// Make sure building was purchases by player
+			
 			// Search for units which may need waypoint paths updating with new building placement
 			newWaypointInterruptedUnits = this.getInterruptedWaypointUnits(coord);
 			waypointInterruptedUnits.addAll(newWaypointInterruptedUnits);
@@ -443,12 +453,12 @@ public class Engine extends Thread {
 			DynGameBuilding newBuilding = null;
 			
 			// Create game object(s)
-			for (GameBuilding sourceBuilding : sourceBuildings) {
+			for (int index = 0; index < sourceBuildings.length; index ++) {
 				newBuilding = null;
-				if (sourceBuilding instanceof GameDefence) {
-					newBuilding = new DynGameDefence(this.generateInstanceId(player), (GameDefence)sourceBuilding, player, coord); // -- need to calculate for multiBuilding structures later e.g. walls
-				} else if (sourceBuilding instanceof GameBuilding) {
-					newBuilding = new DynGameBuilding(this.generateInstanceId(player), sourceBuilding, player, coord); // -- need to calculate for multiBuilding structures later e.g. walls
+				if (sourceBuildings[index] instanceof GameDefence) {
+					newBuilding = new DynGameDefence(instanceIds[index], (GameDefence)sourceBuildings[index], player, coord); // -- need to calculate for multiBuilding structures later e.g. walls
+				} else if (sourceBuildings[index] instanceof GameBuilding) {
+					newBuilding = new DynGameBuilding(instanceIds[index], sourceBuildings[index], player, coord); // -- need to calculate for multiBuilding structures later e.g. walls
 				} 
 				if (newBuilding != null) { this.buildings.add(newBuilding); }
 			}
@@ -469,12 +479,10 @@ public class Engine extends Thread {
 				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.SERVER_ERROR);
 			} else {
 				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.NEW_BUILDING);
-				for (GameBuilding sourceBuilding : sourceBuildings) {
-					newBuildingResponse.addCoord(coord); // -- need to calculate for multiBuilding structures later e.g. walls
-					newBuildingResponse.addSource(newBuilding.getIdentifier());
-					newBuildingResponse.addTarget(newBuilding.getInstanceId());
-					newBuildingResponse.addMisc(player.getPlayerName());
-				}
+				newBuildingResponse.addCoord(coord); // -- need to calculate for multiBuilding structures later e.g. walls
+				newBuildingResponse.addSource(newBuilding.getIdentifier());
+				newBuildingResponse.addTarget(newBuilding.getInstanceId());
+				newBuildingResponse.addMisc(player.getPlayerName());
 			}
 			
 		}
@@ -703,38 +711,6 @@ public class Engine extends Thread {
 		return response;
 	}
 
-	private GameplayResponse processDebugPlacementRequest(Player player, GameUnit[] sourceUnits, int col, int row) {
-
-		// Set default result
-		GameplayResponse response = null;
-		boolean validConstruction = true;
-		
-		// Construct result object
-		DynGameUnit newUnit = new DynGameUnit(this.generateInstanceId(player), (GameUnit)sourceUnits[0], player, new Coordinate(col, row));
-		
-		if (newUnit != null) {
-			// Check user has appropriate funds
-			if (validConstruction && !player.playerHasCash(newUnit)) {
-				validConstruction = false;
-				response = new GameplayResponse(E_GameplayResponseCode.INSUFFICIENT_FUNDS);
-				response.addTarget(player.getPlayerName());
-				response.addSource(Integer.toString(player.getPlayerCash()));
-			}
-			
-			if (validConstruction) {
-				response = new GameplayResponse(E_GameplayResponseCode.DEBUG_PLACEMENT);
-				response.addCoord(col, row);
-				response.addSource(newUnit.getIdentifier());
-				response.addTarget(newUnit.getInstanceId());
-				response.addMisc(player.getPlayerName());
-				if (newUnit != null) { this.units.add(newUnit); }
-			}
-		}
-
-		// Return calculated result
-		return response;
-	}
-	
 	
 	// Game request method
 
@@ -764,7 +740,8 @@ public class Engine extends Thread {
 		        	break;
 		        case NEW_BUILDING:  
 		        	gameplayResponseArray = this.processBuildingPlaceRequest(sender, 
-		        			Const.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource()), 
+		        			Const.getGameBuildingArrayFromGameObjectArrayList(gameplayRequest.getSource()),
+		        			gameplayRequest.getTargetString(),
 		        			new Coordinate(gameplayRequest.getTargetCellX(), 
 		        					gameplayRequest.getTargetCellY()));
 		        	break;
@@ -797,12 +774,6 @@ public class Engine extends Thread {
 		        			gameplayRequest.getSourceString(), 
 		        			Integer.parseInt(gameplayRequest.getTargetString()[0]),
 		        			gameplayRequest.getMisc());
-		        	break;
-		        case DEBUG_PLACEMENT:
-		        	gameplayResponse = this.processDebugPlacementRequest(sender, 
-		        			Const.getGameUnitArrayFromGameObjectArrayList(gameplayRequest.getSource()),
-		        			gameplayRequest.getTargetCellX(), 
-		        			gameplayRequest.getTargetCellY());
 		        	break;
 			    default:
 			    	gameplayResponse = new GameplayResponse();
