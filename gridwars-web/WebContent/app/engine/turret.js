@@ -266,6 +266,8 @@ Turret.prototype.processTurretRotation = function() {
 			this.bullets.targetY = rotationData.targetPoint.y;
 			this.shootTarget.readyToFire = (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range * 1.1);
 		}
+	} else {
+		this.shootTarget.readyToFire = false;
 	}
 }
 

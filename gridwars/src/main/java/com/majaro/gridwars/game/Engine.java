@@ -192,6 +192,9 @@ public class Engine extends Thread {
 		}
 	}
 	
+	// User specified waypoints
+	
+	
 	// Engine state variables
 	private boolean isRunning = false;
 	

@@ -155,10 +155,10 @@ Tank.prototype.processTurretRotation = function() {
 	if (targetPoint && sourcePoint) {
 
 		// Calculate rotation and point data
-		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
+		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.turretRotateSpeed);
 		
 		// Identify further rotation or begin charging animation (if target is in range)
-		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), rotationData.target360Angle, this.shootTarget.increment) &&
+		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), rotationData.target360Angle, this.turretRotateSpeed / 2 + 1) &&
 				!this.shootTarget.isFiring) {
 			this.rotate(rotationData.angleIncrement, false, true);
 			this.shootTarget.increment = rotationData.angleIncrement;
@@ -166,6 +166,8 @@ Tank.prototype.processTurretRotation = function() {
 		} else {
 			this.shootTarget.readyToFire = (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range * 1.1);
 		}
+	} else {
+		this.shootTarget.readyToFire = false;
 	}
 }
 
