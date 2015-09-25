@@ -132,7 +132,11 @@ public class GameplayRequest {
 		ArrayList<GameObject> tempSource = this.getSource();
 		if (tempSource != null && tempSource.size() > 0) {
 			for (GameObject gameObject : tempSource) {
-				sourceString = sourceString + "(" + gameObject.toString() + "), ";
+				if (gameObject != null ) {
+					sourceString = sourceString + "(" + gameObject.toString() + "), ";
+				} else {
+					sourceString = sourceString + "(null)";
+				}
 			}
 			sourceString.substring(0, sourceString.length()-2);
 		}
@@ -141,7 +145,11 @@ public class GameplayRequest {
 		ArrayList<GameObject> tempTarget = this.getTarget();
 		if (tempTarget != null && tempTarget.size() > 0) {
 			for (GameObject gameObject : tempTarget) {
-				targetString = targetString + "(" + gameObject.toString() + "), ";
+				if (gameObject != null ) {
+					targetString = targetString + "(" + gameObject.toString() + "), ";
+				} else {
+					targetString = targetString + "(null)";
+				}
 			}
 			targetString.substring(0, targetString.length()-2);
 		}

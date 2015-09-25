@@ -76,41 +76,18 @@ ServerAPI.prototype.requestBuildingPlacement = function(newBuilding) {
 	// Make sure a building object is present
 	if (newBuilding) {
 		
-		// Define variables
-		var request = null;
+		// Create request params
+		var params = {
+				source: [newBuilding.target.gameCore.identifier],
+				target: [newBuilding.target.gameCore.instanceId],
+				targetCellX: newBuilding.target.gameCore.cell.col,
+				targetCellY: newBuilding.target.gameCore.cell.row
+		};
 		
-		// Check if debug tank pathfinding request
-		if (newBuilding.target instanceof Turret) {
+		// Generate and submit request
+		request = new GameplayRequest("NEW_BUILDING", params);
+		this.gameService.gameplayRequest(request);
 
-			// Create request params
-			var params = {
-					source: [newBuilding.target.gameCore.identifier],
-					targetCellX: newBuilding.target.gameCore.cell.col,
-					targetCellY: newBuilding.target.gameCore.cell.row
-			};
-			
-			// Generate request object
-			request = new GameplayRequest("NEW_BUILDING", params);
-
-		} else if (newBuilding.target instanceof Tank) {
-
-			// Create request params
-			var params = {
-					source: [newBuilding.target.gameCore.identifier],
-					targetCellX: newBuilding.target.gameCore.cell.col,
-					targetCellY: newBuilding.target.gameCore.cell.row
-			};
-			
-			// Generate request object
-			request = new GameplayRequest("DEBUG_PLACEMENT", params);
-
-		}
-		
-		// Submit request if one was constructed
-		if (request) {
-			this.gameService.gameplayRequest(request);
-		}
-		
 	} else {
 		console.log("ERROR: Attempted to construct building from no source.");
 	}

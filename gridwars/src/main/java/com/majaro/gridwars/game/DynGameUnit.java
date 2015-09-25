@@ -16,7 +16,7 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 	protected ArrayList<Coordinate> waypoints = null;
 	
 	// Constructor
-	public DynGameUnit(String instanceId, GameUnit sourceUnit, Player playerRef, int cellX, int cellY) {
+	public DynGameUnit(String instanceId, GameUnit sourceUnit, Player playerRef, Coordinate coordinate) {
 		
 		// Call super
 		super(sourceUnit);
@@ -26,7 +26,7 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 		
 		// Save passed values
 		this.playerRef = playerRef;
-		this.coordinate = new Coordinate(cellX, cellY);
+		this.coordinate = coordinate;
 		this.waypoints = new ArrayList<Coordinate>();
 		this.instanceId = instanceId;
 	}
