@@ -277,7 +277,7 @@ Engine.prototype.update = function() {
 	// Update pointer position
 	this.updatePointerPosition();
 
-//	// Get state of players in game
+	// Get state of players in game
 	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
