@@ -52,7 +52,8 @@ public final class Const {
 		INSUFFICIENT_TECH_LEVEL("INSUFFICIENT_TECH_LEVEL"), INSUFFICIENT_FUNDS("INSUFFICIENT_FUNDS"),
 		
 		// Construction codes
-		PURCHASE_OBJECT("PURCHASE_OBJECT"), UNIT_PURCHASE_FINISHED("UNIT_PURCHASE_FINISHED"), PURCHASE_PENDING("PURCHASE_PENDING"),
+		PURCHASE_OBJECT("PURCHASE_OBJECT"), UNIT_PURCHASE_FINISHED("UNIT_PURCHASE_FINISHED"), BUILDING_PURCHASE_FINISHED("BUILDING_PURCHASE_FINISHED"),
+		PURCHASE_PENDING("PURCHASE_PENDING"),
 	
 		// Building response codes
 		NEW_BUILDING("NEW_BUILDING"), STATIC_MAP_OBSTRUCTION("STATIC_MAP_OBSTRUCTION"), OUT_OF_MAP_BOUNDS("OUT_OF_MAP_BOUNDS"),
@@ -75,6 +76,9 @@ public final class Const {
 	// Static enumerands
 	public static enum E_GameType { UNDEFINED, FREE_FOR_ALL, TEAM_ALLIANCE }
 	public static enum E_TechLevel { TECH_01, TECH_02, TECH_03 }
+	
+	// Client side cosntants
+	public static int cellSize = 100;
 
 	
 	
@@ -234,6 +238,22 @@ public final class Const {
 		}		
 		
 		// Return erroneous result
+		return null;
+	}
+	public static GameBuilding getGameBuildingFromString(String source) {
+		for (GameBuilding building : BUILDINGS) {
+			if (source.equals(building.identifier)) {
+				return building;
+			}
+		}	
+		return null;
+	}
+	public static GameUnit getGameUnitFromString(String source) {
+		for (GameUnit unit : UNITS) {
+			if (source.equals(unit.identifier)) {
+				return unit;
+			}
+		}	
 		return null;
 	}
 	public static GameBuilding[] getGameBuildingArrayFromGameObjectArrayList(ArrayList<GameObject> sourceArray) {

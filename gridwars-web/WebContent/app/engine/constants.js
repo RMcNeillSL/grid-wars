@@ -229,6 +229,25 @@ CONSTANTS = {
 	              	{ COLOUR : "purple", 	BODY : 12, 	TURRET : 13, 	FIRE : [14,15,16,17,13],	ICON: "tank_icon_purple" },
 	              	{ COLOUR : "green", 	BODY : 18, 	TURRET : 19, 	FIRE : [20,21,22,23,19], 	ICON: "tank_icon_green" },
 	              	{ COLOUR : "yellow", 	BODY : 24, 	TURRET : 25, 	FIRE : [26,27,28,29,25], 	ICON: "tank_icon_yellow" },
-	              	{ COLOUR : "cyan", 		BODY : 30, 	TURRET : 31, 	FIRE : [32,33,34,35,31], 	ICON: "tank_icon_cyan" }],
+	              	{ COLOUR : "cyan", 		BODY : 30, 	TURRET : 31, 	FIRE : [32,33,34,35,31], 	ICON: "tank_icon_cyan" }]
+	},
+	
+	// Method to calculate constant item type given object identifier
+	getObjectType : function(identifier) {
+		for (var buildingIndex = 0; buildingIndex < CONSTANTS.GAME_BUILDINGS.length; buildingIndex ++) {
+			if (identifier == CONSTANTS.GAME_BUILDINGS[buildingIndex].identifier) {
+				if (CONSTANTS.GAME_BUILDINGS[buildingIndex].damage) {
+					return "DEFENCE";
+				} else {
+					return "BUILDING";
+				}
+			}
+		}
+		for (var unitIndex = 0; unitIndex < CONSTANTS.GAME_UNITS.length; unitIndex ++) {
+			if (identifier == CONSTANTS.GAME_UNITS[unitIndex].identifier) {
+				return "UNIT";
+			}
+		}
+		return "UNKNOWN";
 	}
 }

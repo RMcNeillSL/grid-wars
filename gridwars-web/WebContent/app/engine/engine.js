@@ -27,9 +27,10 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.gameFinishedCallback = func_GameFinished;
 
 	// Introduce dynamic pointer objects
-	this.phaserGame.newBuilding = {
+	this.newBuilding = {
 		active : false,
-		target : null
+		target : null,
+		placeCallback : null
 	};
 	
 	// Create user objects
@@ -257,7 +258,7 @@ Engine.prototype.update = function() {
 	this.mapRender.renderMap();
 
 	// Render placement overlay
-	if (this.phaserGame.newBuilding.active) {
+	if (this.newBuilding.active) {
 		var cell = this.mouse.position.toCell();
 		var canPlace = this.isSquareEmpty(cell.col, cell.row);
 		// build cells within range here
@@ -383,9 +384,6 @@ Engine.prototype.onMouseUp = function(pointer) {
 		return;
 	}
 
-	// Save self reference
-	var self = this;
-
 	// Check for key press
 	var ctrlDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	var shiftDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.SHIFT);
@@ -401,15 +399,14 @@ Engine.prototype.onMouseUp = function(pointer) {
 	if (pointer.leftButton.isDown) {
 
 		// Create new building
-		if (this.phaserGame.newBuilding.active) {
+		if (this.newBuilding.active) {
 
 			// Render placement overlay
 			if (this.isSquareEmpty(cell.col, cell.row) && this.isSquareWithinBaseRange(cell.col, cell.row)) {
-				console.log(this.isSquareWithinBaseRange(cell.col, cell.row));
-				self.phaserGame.newBuilding.target.setPosition(cell);
-				this.serverAPI.requestBuildingPlacement(this.phaserGame.newBuilding);
-				self.phaserGame.newBuilding.active = false;
-				self.mapRender.clearPlacementHover();
+				this.newBuilding.target.setPosition(cell);
+				this.serverAPI.requestBuildingPlacement(this.newBuilding);
+				this.newBuilding.active = false;
+				this.mapRender.clearPlacementHover();
 			}
 
 		// Manage selected units
@@ -602,9 +599,9 @@ Engine.prototype.purchaseObject = function(objectId) {
 	// Create building objects for tanks
 	switch (objectId) {
 		case "TURRET":
-			var gameCore = new GameCore(objectId, cell);
-			gameCore.setPlayer(this.currentPlayer);
-			this.createNewBuildingObject(gameCore);
+			var newDefenceCore = new GameCore(objectId, cell);
+			newDefenceCore.setPlayer(this.currentPlayer);
+			this.serverAPI.purchaseRequest(newDefenceCore);
 			break;
 		case "TANK":
 			newUnitCore = new GameCore(objectId, cell);
@@ -760,7 +757,7 @@ Engine.prototype.getButtonAndConstants = function(gameObject) {
 	// Identify button to run animation on
 	var isUnit = (CONSTANTS.GAME_UNITS.indexOf(gameObject) > -1);
 	var isBuilding = (CONSTANTS.GAME_BUILDINGS.indexOf(gameObject) > -1 && (!gameObject.damage));
-	var isDefence = (isBuilding && (gameObject.damage));
+	var isDefence = (CONSTANTS.GAME_BUILDINGS.indexOf(gameObject) > -1 && (gameObject.damage));
 
 	// Output type of object (debugging)
 	if (isUnit) { console.log("UNIT"); }
@@ -851,7 +848,7 @@ Engine.prototype.createGameScreen = function() {
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.UNSELECTED; }
 		});
-		newButton.events.onInputUp.add(function() { 
+		newButton.events.onInputUp.add(function() {
 			
 			// Get state of button animation
 			var buildingPlaying = buildingAnim.isPlaying;
@@ -859,7 +856,31 @@ Engine.prototype.createGameScreen = function() {
 			
 			// Run functions for when button is complete
 			if (!buildingPlaying && completePlaying) {
-				
+				if (spriteInfo == CONSTANTS.HUD.DEFENCE) 	{
+					
+					// Calculate instanceId from button type
+					var purchase = self.currentPlayer.getPurchaseFromObjectType("DEFENCE");
+					
+					// Make sure a purchase was found and complete
+					if (purchase && purchase.buildFinished) {
+						
+						// Construct gameCore object
+						var gameCore = new GameCore(purchase.identifier, self.mouse.position.toCell());
+						gameCore.setPlayer(self.currentPlayer);
+						gameCore.setInstanceId(purchase.instanceId);
+						
+						// Create turret plant object
+						self.newBuilding.active = true;
+						self.newBuilding.target = new Turret(self.engineCore, gameCore,
+								self.mapGroup, self.turretGroup, gameCore.cell.toPoint(),
+								gameCore.cell.col, gameCore.cell.row, 100, 100, true);
+						self.newBuilding.placeCallback = function() {
+							buildingAnim.stop();
+							buildingComplete.stop();
+							newButton.frame = spriteInfo.UNSELECTED;
+						}
+					}
+				}
 			}
 			
 			// Run functions when button is idle
@@ -1172,12 +1193,11 @@ Engine.prototype.explosionCollisionCheck = function() {
 							&& this.buildings[index].gameCore.playerId != explosionDealerPlayer
 							&& explosionHitTest(explosionRegister[explosionIndex],
 									this.buildings[index].getCollisionLayers())) {
-						console.log("COLLISION WITH BUILDING OCCURED -- BUILDING");
 						this.buildings[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
 						this.serverAPI.requestDamageSubmission([this.buildings[index]], damageToDeal, explosionDealerPlayer);
 					}
 				}
-
+				
 				// Test each unit with current explosion
 				for (var index = 0; index < this.units.length; index++) {
 					if (!this.units[index]
@@ -1186,7 +1206,6 @@ Engine.prototype.explosionCollisionCheck = function() {
 							&& this.units[index].gameCore.playerId != explosionDealerPlayer
 							&& explosionHitTest(explosionRegister[explosionIndex],
 									this.units[index].getCollisionLayers())) {
-						console.log("COLLISION WITH UNIT OCCURED -- UNIT");
 						this.units[index].markDamage(explosionRegister[explosionIndex].explosionInstanceId);
 						this.serverAPI.requestDamageSubmission([this.units[index]], damageToDeal, explosionDealerPlayer);
 					}
@@ -1251,15 +1270,6 @@ Engine.prototype.isSquareEmpty = function(col, row) {
 	
 	// Return empty if nothing was found
 	return true;
-}
-
-Engine.prototype.createNewBuildingObject = function(gameCore) {
-
-	// Create new object and return
-	this.phaserGame.newBuilding.active = true;
-	this.phaserGame.newBuilding.target = new Turret(this.engineCore, gameCore,
-			this.mapGroup, this.turretGroup, gameCore.cell.toPoint(),
-			gameCore.cell.col, gameCore.cell.row, 100, 100, true);
 }
 
 Engine.prototype.getObjectFromInstanceId = function(instanceId) {
@@ -1371,21 +1381,6 @@ Engine.prototype.getPlayerActiveHub = function(playerId) {
 
 Engine.prototype.processSetupSpawnObjects = function(responseData) {
 	
-	// Function to determine type of object being placed
-	var getObjectType = function(identifier) {
-		for (var buildingIndex = 0; buildingIndex < CONSTANTS.GAME_BUILDINGS.length; buildingIndex ++) {
-			if (identifier == CONSTANTS.GAME_BUILDINGS[buildingIndex].identifier) {
-				return "BUILDING";
-			}
-		}
-		for (var unitIndex = 0; unitIndex < CONSTANTS.GAME_UNITS.length; unitIndex ++) {
-			if (identifier == CONSTANTS.GAME_UNITS[unitIndex].identifier) {
-				return "UNIT";
-			}
-		}
-		return "UNKNOWN";
-	}
-
 	// Define worker variables
 	var mockUnitResponseData = { responseCode: "DEBUG_PLACEMENT", coords: [], misc: [], source: [], target: [] };
 	var mockBuildingResponseData = { responseCode: "NEW_BUILDING", coords: [], misc: [], source: [], target: [] };
@@ -1395,8 +1390,8 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 	for (var index = 0; index < responseData.source.length; index ++) {
 
 		// Add to correct array
-		arrayIdentifier = getObjectType(responseData.source[index]);
-
+		arrayIdentifier = CONSTANTS.getObjectType(responseData.source[index]);
+		
 		// Populate unit array
 		if (arrayIdentifier == "UNIT") {
 			mockUnitResponseData.coords.push(responseData.coords[index]);
@@ -1406,8 +1401,7 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 		}
 
 		// Populate building array
-		if (arrayIdentifier == "BUILDING") {
-			console.log("CONFIG: ", responseData);
+		if (arrayIdentifier == "BUILDING" || arrayIdentifier == "DEFENCE") {
 			console.log("Hub placed at: (" + responseData.coords[index].col + "," + responseData.coords[index].row + ")");
 			mockBuildingResponseData.coords.push(responseData.coords[index]);
 			mockBuildingResponseData.misc.push(responseData.misc[index]);
@@ -1438,18 +1432,13 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 		
 		// Run purchase finished request
 		self.serverAPI.purchaseFinishedRequest(purchaseObject);
-		
-		// Log to screen finished purchase
-		console.log("READY: " + responseData.target[0]);
 	}
 	
 	// Begin purchase timer with appropriate callback
-	console.log("BOUGHT: " + responseData.target[0]);
 	var purchaseTimeout = setTimeout(purchaseFinished, gameObject.buildTime);
-	var purchaseObject = { gameObject: gameObject.identifier, instanceId: responseData.target[0], purchaseTimeout: purchaseTimeout };
 	
 	// Add item to list of purchased items
-	this.currentPlayer.addPurchase(purchaseObject);
+	this.currentPlayer.addPurchase(gameObject.identifier, responseData.target[0], purchaseTimeout);
 	
 	// Deduct cash from player
 	this.currentPlayer.reduceCash(gameObject.cost);
@@ -1460,7 +1449,7 @@ Engine.prototype.processPurchasePending = function(responseData) {
 	
 }
 
-Engine.prototype.processPurchaseFinished = function(responseData) {
+Engine.prototype.processUnitPurchaseFinished = function(responseData) {
 
 	// Create quick reference object
 	var refObject = {
@@ -1501,6 +1490,10 @@ Engine.prototype.processPurchaseFinished = function(responseData) {
 		// Make sure new unit was created
 		if (newUnitObject) {
 			
+			// Remove new unit from users purchase queue
+			this.currentPlayer.markPurchaseAsBuilt(refObject.instanceId);	// Keep here just to remain consistant
+			this.currentPlayer.removePurchase(refObject.instanceId);
+			
 			// Add new unit to update stream
 			this.productionUnits.push(newUnitObject);
 			
@@ -1540,6 +1533,21 @@ Engine.prototype.processPurchaseFinished = function(responseData) {
 	}
 }
 
+Engine.prototype.processBuildingPurchaseFinished = function(responseData) {
+
+	// Create quick reference object
+	var refObject = {
+		instanceId : responseData.target[0],
+		identifier : responseData.source[0],
+		cell : new Cell(responseData.coords[0].col, responseData.coords[0].row),
+		xy : (new Cell(responseData.coords[0].col, responseData.coords[0].row)).toPoint(),
+		player : this.getPlayerFromPlayerId(responseData.misc[0])
+	};
+
+	// Flag object as built
+	this.currentPlayer.markPurchaseAsBuilt(refObject.instanceId);
+}
+
 Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 
 	// Iterate through all buildings
@@ -1550,20 +1558,27 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 			instanceId : responseData.target[index],
 			identifier : responseData.source[index],
 			cell : responseData.coords[index],
-			playerId : responseData.misc[index]
+			player : this.getPlayerFromPlayerId(responseData.misc[index])
 		};
 
 		// Create XY position from col/row
 		refObject.xy = refObject.cell.toPoint();
 
-		// Calculate player from player id
-		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
-		
 		// Deduct cost from player
 		var newObject = this.getObjectFromIdentifier(refObject.identifier);
 		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
 			this.currentPlayer.cash -= newObject.cost;
 			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label
+		}
+		
+		// Locate and remove purchase object from player purchases
+		if (this.currentPlayer.playerId == refObject.player.playerId) {
+			var objectType = CONSTANTS.getObjectType(refObject.identifier);
+			var purchase = this.currentPlayer.getPurchaseFromObjectType(objectType);
+			if (purchase) {
+				this.currentPlayer.removePurchase(purchase.instanceId);
+				if (this.newBuilding.placeCallback) { this.newBuilding.placeCallback(); }
+			}
 		}
 
 		// Create GameCore object
@@ -1585,13 +1600,9 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 						100, 100, false);
 				break;
 		}
-		
-		// Make sure new building was made 
-		if (newBuilding) {
-			
-			// Add object to building array
-			this.buildings.push(newBuilding);
-		}
+
+		// Add object to building array
+		if (newBuilding) { this.buildings.push(newBuilding); }
 	}
 
 }
@@ -1814,9 +1825,13 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 
 		// Direct response to appropriate handler
 		switch (responseData.responseCode) {
-			case "NEW_BUILDING":
-				this.processNewBuilding(responseData, false);
+
+			// Startup responses
+			case "SETUP_SPAWN_OBJECTS":
+				this.processSetupSpawnObjects(responseData);
 				break;
+				
+			// Purchase responses
 			case "PURCHASE_OBJECT":
 				this.processPurchaseObject(responseData);
 				break;
@@ -1824,32 +1839,40 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processPurchasePending(responseData);
 				break;
 			case "UNIT_PURCHASE_FINISHED":
-				this.processPurchaseFinished(responseData);
+				this.processUnitPurchaseFinished(responseData);
+				break;
+			case "BUILDING_PURCHASE_FINISHED":
+				this.processBuildingPurchaseFinished(responseData);
+				break;
+			
+			// Construction of new building/defence responses
+			case "NEW_BUILDING":
+				this.processNewBuilding(responseData, false);
 				break;
 				
-			case "DEFENCE_ATTACK_XY":
-				this.processDefenceAttackXY(responseData);
-				break;
+			// Object attack responses
 			case "OBJECT_ATTACK_OBJECT":
 				this.processObjectAttackObject(responseData);
-				break;
-			case "WAYPOINT_PATH_COORDS":
-				this.processWaypoints(responseData);
 				break;
 			case "DAMAGE_OBJECT":
 				this.processUnitDamage(responseData);
 				break;
-			case "DEBUG_PLACEMENT":
-				this.processDebugPlacement(responseData);
+				
+			// Waypoint responses
+			case "WAYPOINT_PATH_COORDS":
+				this.processWaypoints(responseData);
 				break;
+				
+			// Error responses
 			case "INSUFFICIENT_FUNDS":
 				this.processInsufficientFunds(responseData);
 				break;
-			case "SETUP_SPAWN_OBJECTS":
-				this.processSetupSpawnObjects(responseData);
-				break;
-			default:
-				// Do nothing
+				
+				
+				
+			// ----------------------	
+			case "DEFENCE_ATTACK_XY":
+				this.processDefenceAttackXY(responseData);
 				break;
 		}
 	}
