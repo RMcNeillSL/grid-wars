@@ -496,6 +496,24 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	// Update pointer position
 	this.updatePointerPosition();
 
+	if (pointer.middleButton.isDown) {		//ROB
+		if (x < this.mouse.position.x) {
+			x = this.mouse.position.x;
+			this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; 
+		}
+		if (x > this.mouse.position.x) {
+			x = this.mouse.position.x;
+			this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
+		}
+		if (y < this.mouse.position.y) {
+			y = this.mouse.position.y;
+			this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
+		}
+		if (y > this.mouse.position.y) {
+			y = this.mouse.position.y;
+			this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
+		}
+	}
 	// Process updates for selection rectangle
 	if (pointer.isDown && pointer.leftButton.isDown) {
 		
@@ -725,6 +743,9 @@ Engine.prototype.manageMapMovement = function() {
 	
 	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
 	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
+	
+	// ROB
+	
 	
 	// Update mouse values
 	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
