@@ -57,26 +57,10 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 		this.sinkComplete = null;
 		
 		// Link events to methods
-		this.open.onComplete.add(function(sprite, animation) {
-			if (self.openComplete) {
-				self.openComplete(sprite, animation);
-			}
-		});
-		this.close.onComplete.add(function(sprite, animation) {
-			if (self.closeComplete) {
-				self.closeComplete(sprite, animation);
-			}
-		});
-		this.rise.onComplete.add(function(sprite, animation) {
-			if (self.riseComplete) {
-				self.riseComplete(sprite, animation);
-			}
-		});
-		this.sink.onComplete.add(function(sprite, animation) {
-			if (self.sinkComplete) {
-				self.sinkComplete(sprite, animation);
-			}
-		});
+		this.open.onComplete.add(function(sprite, animation) { if (self.openComplete) { self.openComplete(sprite, animation); } });
+		this.close.onComplete.add(function(sprite, animation) { if (self.closeComplete) { self.closeComplete(sprite, animation); } });
+		this.rise.onComplete.add(function(sprite, animation) { if (self.riseComplete) { self.riseComplete(sprite, animation); } });
+		this.sink.onComplete.add(function(sprite, animation) { if (self.sinkComplete) { self.sinkComplete(sprite, animation); } });
 		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
@@ -87,6 +71,10 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 	} else {
 		if (!this.engineCore.phaserEngine) { console.log("ERROR: Failed to construct tank hub, missing phaserRef."); }
 	}
+}
+
+Hub.prototype.getRallyCell = function() {
+	return new Cell(this.gameCore.cell.col + 1, this.gameCore.cell.row - 1);
 }
 
 Hub.prototype.animateTankCreate = function(newUnitObject, completionCallback) {

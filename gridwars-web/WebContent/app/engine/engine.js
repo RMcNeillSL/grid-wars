@@ -264,7 +264,7 @@ Engine.prototype.update = function() {
 		// build cells within range here
 
 		this.mapRender.clearPlacementHover();
-		this.mapRender.placementHover(cell, canPlace, this.cellsWithinRange());
+		this.mapRender.placementHover(cell, canPlace, this.getCellsWithinBuildRangeOfHub());
 	}
 
 	// Update all buildings and units
@@ -1279,8 +1279,12 @@ Engine.prototype.isSquareWithinBaseRange = function(col, row) {
 			&& col <= (this.spawnPoint.col+6) && col >= (this.spawnPoint.col-6));
 }
 
-Engine.prototype.cellsWithinRange = function () {
+Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
+	
+	// Declare variables
 	var withinRange = [];
+	
+	// Search for all cells in hub range
 	for (var rowIndex = this.spawnPoint.row-5; rowIndex < this.spawnPoint.row+5; rowIndex++) {
 		for (var colIndex = this.spawnPoint.col-5; colIndex < this.spawnPoint.col+5; colIndex++) {
 			if (this.isSquareEmpty(colIndex, rowIndex)) {
@@ -1288,6 +1292,8 @@ Engine.prototype.cellsWithinRange = function () {
 			}
 		}
 	}
+	
+	// Return generated list
 	return withinRange;
 }
 
@@ -1298,14 +1304,25 @@ Engine.prototype.isSquareEmpty = function(col, row) {
 		return false;
 	}
 	
-	// Generate list of all items to process
+	// Generate list of all ingame objects to process
 	var potentialObstructions = this.buildings.concat(this.units);
 	
 	// Loop through all potential matches identifying cells to check
 	for (var index = 0; index < potentialObstructions.length; index++) {
+		
+		// Check if any part of the building is occupying the cell
 		var cells = potentialObstructions[index].getCells();
 		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
 			if (cells[cellIndex].col == col && cells[cellIndex].row == row) {
+				return false;
+			}
+		}
+		
+		// Check if building deploy point is at cell
+		if (potentialObstructions[index].gameCore.identifier == "HUB") {
+			var hubRallyCell = potentialObstructions[index].getRallyCell();
+			console.log("Checking item " + index + " of " + potentialObstructions.length + ": (" + hubRallyCell.col + "," + hubRallyCell.row + ")");
+			if (hubRallyCell.col == col && hubRallyCell.row == row) {
 				return false;
 			}
 		}
