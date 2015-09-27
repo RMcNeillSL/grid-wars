@@ -354,10 +354,29 @@ Engine.prototype.render = function() {
 	if (this.hoverItem) {
 		outputUnitHealth(this.hoverItem, 'rgba(0,100,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
 	}
+	
+	// Create references for minimap cell width and height
+	var miniMapCellWidth = (this.minimap.width * 1.0 / this.mapRender.width);
+	var miniMapCellHeight = (this.minimap.height * 1.0 / this.mapRender.height);
+	
+	// Run through all objects outputting square for each
+	var potentialObstructions = this.buildings.concat(this.units);
+	for (var index = 0; index < potentialObstructions.length; index ++) {
+		if (potentialObstructions[index].gameCore.playerId == this.currentPlayer.playerId) {
+			var cells = potentialObstructions[index].gameCore.getCells();
+			for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
+				
+				this.phaserGame.debug.geom(new Phaser.Rectangle(
+						this.minimap.x + cells[cellIndex].col * miniMapCellWidth,
+						this.minimap.y + cells[cellIndex].row * miniMapCellHeight,
+						miniMapCellWidth, miniMapCellHeight), 'rgba(' + this.currentPlayer.RGB.red + ',' + this.currentPlayer.RGB.green + ',' + this.currentPlayer.RGB.blue + ',0.5)');
+			}
+		}
+	}
 
 	// Render current map square in minimap
-	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * (this.minimap.width * 1.0 / this.mapRender.width);
-	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * (this.minimap.height * 1.0 / this.mapRender.height);
+	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * miniMapCellWidth;
+	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * miniMapCellHeight;
 	this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
 }
 
@@ -607,7 +626,7 @@ Engine.prototype.onKeyUp = function() {
 }
 
 
-// ------------------------------ UTILITY METHODS ------------------------------ //
+//------------------------------ CREATION/DESTRUCTION METHODS ------------------------------ //
 
 Engine.prototype.registerNewGameObject = function(gameObject) {
 	
@@ -620,8 +639,65 @@ Engine.prototype.registerNewGameObject = function(gameObject) {
 	} else if (objectType == "UNIT") {
 		this.units.push(gameObject);
 	}
-	
 }
+
+Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
+
+	// Define working variables
+	var searchObject = null;
+	
+	// Search through selected items
+	for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
+		if (this.selected[selectedIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.selected[selectedIndex];
+			this.selected.splice(selectedIndex, 1);
+			break;
+		}
+	}
+	
+	// Check hover item
+	if (this.hoverItem && this.hoverItem.gameCore.instanceId == instanceId) {
+		this.hoverItem = null;
+	}
+
+	// Locate and remove item from units/buildings list
+	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
+		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.units[unitIndex];
+			this.units.splice(unitIndex, 1);
+			break;
+		}
+	}
+	for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
+		if (this.buildings[buildingIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.buildings[buildingIndex];
+			this.buildings.splice(buildingIndex, 1);
+			break;
+		}
+	}
+
+	// Delete the object
+	if (searchObject) {
+		searchObject.destroy();
+	}
+}
+
+Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old cell is not currently used - may check to make sure request is not corrupt
+
+	// Check if sender is unit owner
+	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
+
+		// Submit update message to server
+		this.serverAPI.requestUpdateUnitCell(sender, newCell);
+
+		// Debugging output
+		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
+	}
+
+}
+
+
+// ------------------------------ UTILITY METHODS ------------------------------ //
 
 Engine.prototype.purchaseObject = function(objectId) {
 	
@@ -1274,20 +1350,6 @@ Engine.prototype.explosionCollisionCheck = function() {
 	}
 }
 
-Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old cell is not currently used - may check to make sure request is not corrupt
-
-	// Check if sender is unit owner
-	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
-
-		// Submit update message to server
-		this.serverAPI.requestUpdateUnitCell(sender, newCell);
-
-		// Debugging output
-		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
-	}
-
-}
-
 // REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
 Engine.prototype.isSquareWithinBaseRange = function(col, row) {
 	return (row <= (this.spawnPoint.row+6) && row >= (this.spawnPoint.row-6)
@@ -1379,47 +1441,6 @@ Engine.prototype.getPlayerFromPlayerId = function(playerId) {
 
 	// Return not found
 	return null;
-}
-
-Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
-
-	// Define working variables
-	var searchObject = null;
-	
-	// Search through selected items
-	for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
-		if (this.selected[selectedIndex].gameCore.instanceId == instanceId) {
-			searchObject = this.selected[selectedIndex];
-			this.selected.splice(selectedIndex, 1);
-			break;
-		}
-	}
-	
-	// Check hover item
-	if (this.hoverItem && this.hoverItem.gameCore.instanceId == instanceId) {
-		this.hoverItem = null;
-	}
-
-	// Locate and remove item from units/buildings list
-	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
-		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
-			searchObject = this.units[unitIndex];
-			this.units.splice(unitIndex, 1);
-			break;
-		}
-	}
-	for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
-		if (this.buildings[buildingIndex].gameCore.instanceId == instanceId) {
-			searchObject = this.buildings[buildingIndex];
-			this.buildings.splice(buildingIndex, 1);
-			break;
-		}
-	}
-
-	// Delete the object
-	if (searchObject) {
-		searchObject.destroy();
-	}
 }
 
 Engine.prototype.getObjectFromIdentifier = function(identifier) {
