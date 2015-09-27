@@ -1473,7 +1473,7 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 	}
 
 	// Submit mock request arrays
-	this.processDebugPlacement(mockUnitResponseData, true);
+//	this.processUnitPurchaseFinished(mockUnitResponseData, true);
 	this.processNewBuilding(mockBuildingResponseData, true);
 }
 
@@ -1511,7 +1511,7 @@ Engine.prototype.processPurchasePending = function(responseData) {
 	
 }
 
-Engine.prototype.processUnitPurchaseFinished = function(responseData) {
+Engine.prototype.processUnitPurchaseFinished = function(responseData, overridePurchase) {
 
 	// Create quick reference object
 	var refObject = {
@@ -1543,7 +1543,7 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData) {
 		// Construct new unit object
 		switch (refObject.identifier) {
 			case "TANK":
-				newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, spawnPoint, spawnCell.col, spawnCell.row, 100, 100, false);
+				newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, spawnPoint, spawnCell.col, spawnCell.row, 100, 100);
 				break;
 			default:
 				break;
@@ -1552,45 +1552,52 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData) {
 		// Make sure new unit was created
 		if (newUnitObject) {
 			
-			// Remove new unit from users purchase queue
-			this.currentPlayer.markPurchaseAsBuilt(refObject.instanceId);	// Keep here just to remain consistant
-			this.currentPlayer.removePurchase(refObject.instanceId);
-			
-			// Add new unit to update stream
-			this.productionUnits.push(newUnitObject);
-			
-			// Save self reference
-			var self = this;
-			
-			// Set on complete callback for unit waypoints
-			newUnitObject.waypointControl.onComplete = function(endCell) {
-				
-				// Update tank position on server
-				self.serverAPI.requestUpdateUnitCell(newUnitObject, newUnitObject.gameCore.cell);
-				
-				// Remove new unit from production units array
-				for (var index = 0; index < self.productionUnits.length; index ++) {
-					if (self.productionUnits[index].gameCore.instanceId == newUnitObject.gameCore.instanceId) {
-						self.productionUnits.splice(index, 1);
-						break;
-					}
-				}
-				
-				// Add new unit to units array
-				newUnitObject.inProductionMode = false;
-				self.units.push(newUnitObject);
-				
-				// Run hub reset animation and enable button
-				tankHub.resetTankHub();
-				self.stopBuildingAnimation(newUnitObject);
-			}
-		
-			// Construct tank animation from hub
-			tankHub.animateTankCreate(newUnitObject, function() {
+			// Check if should be overriding production purchase
+			if (overridePurchase) {
+				newUnitObject.setVisible();
+				this.units.push(newUnitObject);
+			} else {
 
-				// Add object to unit array
-				self.units.push(newUnitObject);
-			});
+				// Remove new unit from users purchase queue
+				this.currentPlayer.markPurchaseAsBuilt(refObject.instanceId);	// Keep here just to remain consistant
+				this.currentPlayer.removePurchase(refObject.instanceId);
+				
+				// Add new unit to update stream
+				this.productionUnits.push(newUnitObject);
+				
+				// Save self reference
+				var self = this;
+				
+				// Set on complete callback for unit waypoints
+				newUnitObject.waypointControl.onComplete = function(endCell) {
+					
+					// Update tank position on server
+					self.serverAPI.requestUpdateUnitCell(newUnitObject, newUnitObject.gameCore.cell);
+					
+					// Remove new unit from production units array
+					for (var index = 0; index < self.productionUnits.length; index ++) {
+						if (self.productionUnits[index].gameCore.instanceId == newUnitObject.gameCore.instanceId) {
+							self.productionUnits.splice(index, 1);
+							break;
+						}
+					}
+					
+					// Add new unit to units array
+					newUnitObject.inProductionMode = false;
+					self.units.push(newUnitObject);
+					
+					// Run hub reset animation and enable button
+					tankHub.resetTankHub();
+					self.stopBuildingAnimation(newUnitObject);
+				}
+			
+				// Construct tank animation from hub
+				tankHub.animateTankCreate(newUnitObject, function() {
+
+					// Add object to unit array
+					self.units.push(newUnitObject);
+				});
+			}
 		}
 	}
 }
@@ -1814,49 +1821,6 @@ Engine.prototype.processUnitDamage = function(responseData) {
 	}
 }
 
-Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
-
-	// Iterate through all buildings
-	for (var index = 0; index < responseData.source.length; index++) {
-
-		// Create quick reference object
-		var refObject = {
-			instanceId : responseData.target[index],
-			identifier : responseData.source[index],
-			cell : responseData.coords[index],
-			playerId : responseData.misc[index]
-		};
-
-		// Create XY position from col/row
-		refObject.xy = refObject.cell.toPoint();
-
-		// Calculate player from player id
-		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
-		
-		// deduct cost from player's cash
-		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
-
-			this.currentPlayer.cash -= CONSTANTS.GAME_UNITS[0].cost;
-			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label						merge conflickt
-
-		}
-
-		// Create GameCore object
-		var gameCore = new GameCore("TANK", refObject.cell);
-		gameCore.setInstanceId(refObject.instanceId);
-		gameCore.setPlayer(refObject.player);
-
-		// Create self reference
-		var self = this;
-
-		// Construct object for positioning
-		var newTank = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.cell.col, refObject.cell.row, 100, 100, false);
-
-		// Add object to unit array
-		this.units.push(newTank);
-	}
-}
-
 Engine.prototype.processInsufficientFunds = function(responseData) {
 	
 	// iterate through all of the buildings
@@ -1888,12 +1852,12 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 		// Direct response to appropriate handler
 		switch (responseData.responseCode) {
 
-			// Startup responses
+			// ----- Startup responses
 			case "SETUP_SPAWN_OBJECTS":
 				this.processSetupSpawnObjects(responseData);
 				break;
 				
-			// Purchase responses
+			// ----- Purchase responses
 			case "PURCHASE_OBJECT":
 				this.processPurchaseObject(responseData);
 				break;
@@ -1907,12 +1871,12 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processBuildingPurchaseFinished(responseData);
 				break;
 			
-			// Construction of new building/defence responses
+			// ----- Construction of new building/defence responses
 			case "NEW_BUILDING":
 				this.processNewBuilding(responseData, false);
 				break;
 				
-			// Object attack responses
+			// ----- Object attack responses
 			case "OBJECT_ATTACK_OBJECT":
 				this.processObjectAttackObject(responseData);
 				break;
@@ -1920,12 +1884,12 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processUnitDamage(responseData);
 				break;
 				
-			// Waypoint responses
+			// ----- Waypoint responses
 			case "WAYPOINT_PATH_COORDS":
 				this.processWaypoints(responseData);
 				break;
 				
-			// Error responses
+			// ----- Error responses
 			case "INSUFFICIENT_FUNDS":
 				this.processInsufficientFunds(responseData);
 				break;
