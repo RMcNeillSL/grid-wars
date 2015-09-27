@@ -74,7 +74,8 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		selectActive : false,
 		rect : null,
 		originX : 0,
-		originY : 0
+		originY : 0,
+		miniMapClickStart : false
 	};
 	this.hoverItem = null;
 
@@ -155,9 +156,7 @@ Engine.prototype.create = function() {
 
 	// Start physics engine and disable mouse right event
 	this.phaserGame.physics.startSystem(Phaser.Physics.P2JS);
-	this.phaserGame.canvas.oncontextmenu = function(e) {
-		e.preventDefault();
-	}
+	this.phaserGame.canvas.oncontextmenu = function(e) { e.preventDefault(); }
 
 	// Construct explosion manager
 	this.explosionManager = new ExplosionManager(this.phaserGame);
@@ -187,10 +186,8 @@ Engine.prototype.create = function() {
 	// Construct engine core values for unit/building/defence construction
 	this.engineCore = {
 		phaserEngine : this.phaserGame,
-		func_RequestExplosion : function(mapGroup, explosionId, ownerId,
-				explosionInstanceId, x, y) {
-			self.explosionManager.requestExplosion(mapGroup, explosionId,
-					ownerId, explosionInstanceId, x, y)
+		func_RequestExplosion : function(mapGroup, explosionId, ownerId, explosionInstanceId, x, y) {
+			self.explosionManager.requestExplosion(mapGroup, explosionId, ownerId, explosionInstanceId, x, y)
 		},
 		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
 			self.updateNewUnitCell(sender, oldCell, newCell);
@@ -203,14 +200,13 @@ Engine.prototype.create = function() {
 		}
 	};
 	
-
-	//Adding information text to the game screen
-	var style = {
-		font: "bold 12px Arial", fill: "#fff", 
-	    align: "left", // the alignment of the text is independent of the bounds, try changing to 'center' or 'right'
-	    boundsAlignH: "left", 
-	    boundsAlignV: "top"
-	};
+//	//Adding information text to the game screen		-- IS THIS CODE NEEDED MATT?
+//	var style = {
+//		font: "bold 12px Arial", fill: "#fff", 
+//	    align: "left", // the alignment of the text is independent of the bounds, try changing to 'center' or 'right'
+//	    boundsAlignH: "left", 
+//	    boundsAlignV: "top"
+//	};
 
 	// Draw the gameframe
 	this.createGameScreen();
@@ -264,7 +260,7 @@ Engine.prototype.update = function() {
 		// build cells within range here
 
 		this.mapRender.clearPlacementHover();
-		this.mapRender.placementHover(cell, canPlace, this.cellsWithinRange());
+		this.mapRender.placementHover(cell, canPlace, this.getCellsWithinBuildRangeOfHub());
 	}
 
 	// Update all buildings and units
@@ -278,8 +274,8 @@ Engine.prototype.update = function() {
 	// Update pointer position
 	this.updatePointerPosition();
 
-	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+//	// Get state of players in game
+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -339,14 +335,14 @@ Engine.prototype.render = function() {
 		self.phaserGame.debug.geom(self.selectedLines[2], healthOutline);
 		self.phaserGame.debug.geom(self.selectedLines[3], healthOutline);
 	}
-	
+
 	// Render selection boxes around selected units to scene
 	if (this.selected && this.selected.length > 0) {
 		for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
-			
+
 			// Draw health bars over selected items
 			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,100,0,1)', 'rgba(0,0,0,1)', 'rgba(150,150,150,1)', 'rgba(200,255,200,1)');
-			
+
 			// Draw range circles for selected defences and units
 			if (this.selected[selectedIndex].gameCore.range) {
 				this.phaserGame.debug.geom(new Phaser.Circle(this.selected[selectedIndex].left, this.selected[selectedIndex].top, this.selected[selectedIndex].gameCore.range * 2), 'rgba(255,255,255,0.4)', false);
@@ -358,22 +354,49 @@ Engine.prototype.render = function() {
 	if (this.hoverItem) {
 		outputUnitHealth(this.hoverItem, 'rgba(0,100,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
 	}
+	
+	// Create references for minimap cell width and height
+	var miniMapCellWidth = (this.minimap.width * 1.0 / this.mapRender.width);
+	var miniMapCellHeight = (this.minimap.height * 1.0 / this.mapRender.height);
+	
+	// Run through all objects outputting square for each
+	var potentialObstructions = this.buildings.concat(this.units);
+	for (var index = 0; index < potentialObstructions.length; index ++) {
+		if (potentialObstructions[index].gameCore.playerId == this.currentPlayer.playerId) {
+			var cells = potentialObstructions[index].gameCore.getCells();
+			for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
+				
+				this.phaserGame.debug.geom(new Phaser.Rectangle(
+						this.minimap.x + cells[cellIndex].col * miniMapCellWidth,
+						this.minimap.y + cells[cellIndex].row * miniMapCellHeight,
+						miniMapCellWidth, miniMapCellHeight), 'rgba(' + this.currentPlayer.RGB.red + ',' + this.currentPlayer.RGB.green + ',' + this.currentPlayer.RGB.blue + ',0.5)');
+			}
+		}
+	}
+
+	// Render current map square in minimap
+	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * miniMapCellWidth;
+	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * miniMapCellHeight;
+	this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
 }
 
 
 // ------------------------------ INPUT EVENT METHODS ------------------------------ //
 
 Engine.prototype.onMouseDown = function(pointer) {
-	
+
 	// Search for potential under mouse selection
 	var itemAtPoint = this.getItemAtPoint(this.mouse.position, true, false);
-	
+
 	// Set new selection if one does not already exist
 	if (itemAtPoint) {
 		this.selected = [itemAtPoint];
 		this.selectedJustSet = true;
 		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
+	
+	// Check if mouse down occured over minimap
+	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
@@ -397,9 +420,15 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 	// Perform checks for left click
 	if (pointer.leftButton.isDown) {
+		
+		// Check if clicking on a new location on the map first
+		if (this.isPointOverMinimap(point)) {
 
+			// Jump to cell at point
+			this.moveToMinimapClick(new Point(point.x - this.minimap.left, point.y - this.minimap.top));
+			
 		// Create new building
-		if (this.newBuilding.active) {
+		} else if (this.newBuilding.active) {
 
 			// Render placement overlay
 			if (this.isSquareEmpty(cell.col, cell.row) && this.isSquareWithinBaseRange(cell.col, cell.row)) {
@@ -485,7 +514,9 @@ Engine.prototype.onMouseUp = function(pointer) {
 		this.selected = [];
 		this.setGameObjectDetailsVisibility(false);
 	}
-
+	
+	// Release mark as mouse down overminimap
+	this.selectionRectangle.miniMapClickStart = false;
 }
 
 Engine.prototype.onMouseMove = function(pointer, x, y) {
@@ -496,36 +527,46 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	if (pointer.middleButton.isDown) {		//ROB
 		if (x < this.mouse.position.x) {
 			x = this.mouse.position.x;
-			this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; 
+			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; 
 		}
 		if (x > this.mouse.position.x) {
 			x = this.mouse.position.x;
-			this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
+			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
 		}
 		if (y < this.mouse.position.y) {
 			y = this.mouse.position.y;
-			this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
+			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
 		}
 		if (y > this.mouse.position.y) {
 			y = this.mouse.position.y;
-			this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
+			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
 		}
 	}
+	
 	// Process updates for selection rectangle
 	if (pointer.isDown && pointer.leftButton.isDown) {
 		
-		// Reset selected items
-		if (this.selectionRectangle.selectActive
-				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 40) {
-			this.selected = [];
-			this.hoverItem = null;
+		// Check if clicking on a new location on the map first
+		if (this.isPointOverMinimap(this.mouse.position)) {
+
+			// Jump to cell at point
+			this.moveToMinimapClick(new Point(this.mouse.position.x - this.minimap.left, this.mouse.position.y - this.minimap.top));
+			
+		} else if (!this.selectionRectangle.miniMapClickStart) {
+
+			// Reset selected items
+			if (this.selectionRectangle.selectActive
+					&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 40) {
+				this.selected = [];
+				this.hoverItem = null;
+			}
+
+			// Set new rectangle selection coordinates
+			this.selectionRectangle.selectActive = true;
+			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
+			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-
-		// Set new rectangle selection coordinates
-		this.selectionRectangle.selectActive = true;
-		this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
-		this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
-
+		
 	} else {
 
 		// Run search for any selected units
@@ -582,6 +623,77 @@ Engine.prototype.onKeyUp = function() {
 	
 	// Process mouse form update
 	this.processMouseFormUpdates();
+}
+
+
+//------------------------------ CREATION/DESTRUCTION METHODS ------------------------------ //
+
+Engine.prototype.registerNewGameObject = function(gameObject) {
+	
+	// Check game object type
+	var objectType = CONSTANTS.getObjectType(gameObject.gameCore.identifier);
+	
+	// Perform correct array addition
+	if (objectType == "DEFENCE" || objectType == "BUILDING") {
+		this.buildings.push(gameObject);
+	} else if (objectType == "UNIT") {
+		this.units.push(gameObject);
+	}
+}
+
+Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
+
+	// Define working variables
+	var searchObject = null;
+	
+	// Search through selected items
+	for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
+		if (this.selected[selectedIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.selected[selectedIndex];
+			this.selected.splice(selectedIndex, 1);
+			break;
+		}
+	}
+	
+	// Check hover item
+	if (this.hoverItem && this.hoverItem.gameCore.instanceId == instanceId) {
+		this.hoverItem = null;
+	}
+
+	// Locate and remove item from units/buildings list
+	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
+		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.units[unitIndex];
+			this.units.splice(unitIndex, 1);
+			break;
+		}
+	}
+	for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
+		if (this.buildings[buildingIndex].gameCore.instanceId == instanceId) {
+			searchObject = this.buildings[buildingIndex];
+			this.buildings.splice(buildingIndex, 1);
+			break;
+		}
+	}
+
+	// Delete the object
+	if (searchObject) {
+		searchObject.destroy();
+	}
+}
+
+Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old cell is not currently used - may check to make sure request is not corrupt
+
+	// Check if sender is unit owner
+	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
+
+		// Submit update message to server
+		this.serverAPI.requestUpdateUnitCell(sender, newCell);
+
+		// Debugging output
+		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
+	}
+
 }
 
 
@@ -735,20 +847,16 @@ Engine.prototype.positionCameraOverCell = function(cell) {
 Engine.prototype.manageMapMovement = function() {
 
 	// Update camera with up, down, left and right keys
-	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
-	if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
-	
-	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
-	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
-	
-	// ROB
-	
+	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED; }
+	if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED; }
+	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED; }
+	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
 	
 	// Update mouse values
 	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
 			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 	
-	// Process updates for mouse
+	// Process updates for new map position
 	this.updatePointerPosition();
 }
 
@@ -796,17 +904,27 @@ Engine.prototype.stopBuildingAnimation = function(newObject) {
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_READY, buttonData.hudConstants.UNSELECTED);
 }
 
+Engine.prototype.isPointOverMinimap = function(checkPoint) {
+	return (checkPoint.x >= this.minimap.left && checkPoint.x <= this.minimap.right &&
+			checkPoint.y >= this.minimap.top && checkPoint.y <= this.minimap.bottom);
+}
+
+Engine.prototype.moveToMinimapClick = function(miniMapPoint) {
+
+	// Calculate cell under mouse on map
+	var minimapCellWidth = this.minimap.width * 1.0 / this.mapRender.width;
+	var minimapCellHeight = this.minimap.height * 1.0 / this.mapRender.height;
+	var cellAtMouse = new Cell(Math.floor(miniMapPoint.x / minimapCellWidth),
+			Math.floor(miniMapPoint.y / minimapCellHeight));
+	
+	// Jump to cell at point
+	this.positionCameraOverCell(cellAtMouse);
+}
+
 Engine.prototype.createGameScreen = function() {
-	this.miniMap = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH), 0, CONSTANTS.MINI_MAP);
-	this.miniMap.fixedToCamera = true;
-	this.miniMap.z = 90;
 	
+	// Create reference to this
 	var self = this;
-	
-	// TO DO, MAKE PROCESSING DYNAMIC
-	this.displayedMinimap = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 92, 31, CONSTANTS.MINIMAP_MAJARO);
-	this.displayedMinimap.fixedToCamera = true;
-	this.displayedMinimap.z = 92;
 	
 	// Create game button
 	var createGameButton = function(spriteInfo, createPoint) {
@@ -895,23 +1013,39 @@ Engine.prototype.createGameScreen = function() {
 		return newButton;
 	}
 	
-	// Construct buttons
-	var mapLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH;
-	this.homeButton = createGameButton(CONSTANTS.HUD.BUILDING, new Point(mapLeft + 65, 318));
-	this.defenceButton = createGameButton(CONSTANTS.HUD.DEFENCE, new Point(mapLeft + 120, 317));
-	this.tankButton = createGameButton(CONSTANTS.HUD.UNIT, new Point(mapLeft + 178, 318));
-
-	this.gameObjectDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
-			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT), CONSTANTS.UNIT_DETAILS);
-	this.gameObjectDetailsMenu.z = 90;
-	this.gameObjectDetailsMenu.fixedToCamera = true;
-	this.gameObjectDetailsMenu.visible = false;
+	// Function to create simple HUD sprites
+	var createHUDSprite = function(left, top, frame, zIndex, visible) {
+		var newSprite = self.phaserGame.add.sprite(left, top, frame);
+		newSprite.fixedToCamera = true;
+		newSprite.z = zIndex;
+		newSprite.visible = visible;
+		return newSprite;
+	};
 	
-	this.gameObjectDetailsIcon = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 128,
-			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 48, CONSTANTS.COLOUR["TANK"][0].ICON);
-	this.gameObjectDetailsIcon.z = 92;
-	this.gameObjectDetailsIcon.fixedToCamera = true;
-	this.gameObjectDetailsIcon.visible = false;
+	// Create references to points on screen
+	var mapLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH;
+	var unitLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH;
+	var unitTop = CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT;
+
+	// Create map map HUD, minimap image and button sprites
+	this.mapHUD = createHUDSprite(mapLeft, 0, CONSTANTS.MINI_MAP, 90, true);
+	this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
+	this.homeButton = createGameButton(CONSTANTS.HUD.BUILDING, new Point(mapLeft + 65, 318), true);
+	this.defenceButton = createGameButton(CONSTANTS.HUD.DEFENCE, new Point(mapLeft + 120, 317), true);
+	this.tankButton = createGameButton(CONSTANTS.HUD.UNIT, new Point(mapLeft + 178, 318), true);
+	
+	// Create object details HUD sprites
+	this.gameObjectDetailsMenu = createHUDSprite(unitLeft, unitTop, CONSTANTS.UNIT_DETAILS, 90, false);
+	this.gameObjectDetailsIcon = createHUDSprite(unitLeft + 128, unitTop + 48, CONSTANTS.COLOUR["TANK"][0].ICON, 92, false);
+	
+	// Create minimap rectangle
+	var singleCellWidth = this.minimap.width * 1.0 / this.mapRender.width;
+	var singleCellHeight = this.minimap.height * 1.0 / this.mapRender.height;
+	this.miniMapViewRectangle = new Phaser.Rectangle(
+			this.minimap.x + (this.phaserGame.camera.x / 100) * singleCellWidth,
+			this.minimap.y + (this.phaserGame.camera.y / 100) * singleCellHeight,
+			singleCellWidth * this.mapRender.screenCellWidth - 1,
+			singleCellHeight * this.mapRender.screenCellHeight - 1);
 	
 	// Draw player money label
 	var style = {
@@ -940,8 +1074,9 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectHealthText.fixedToCamera = true;
 	this.gameObjectHealthText.visible = false;
 	
-	this.hudGroup.add(this.miniMap);
-	this.hudGroup.add(this.displayedMinimap);
+	// Add all buttons to groups - keep zindex order correct
+	this.hudGroup.add(this.mapHUD);
+	this.hudGroup.add(this.minimap);
 	this.hudGroup.add(this.gameObjectDetailsMenu);
 	this.hudGroup.add(this.homeButton);
 	this.hudGroup.add(this.defenceButton);
@@ -1215,28 +1350,18 @@ Engine.prototype.explosionCollisionCheck = function() {
 	}
 }
 
-Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old cell is not currently used - may check to make sure request is not corrupt
-
-	// Check if sender is unit owner
-	if (sender.gameCore.playerId == this.currentPlayer.playerId) {
-
-		// Submit update message to server
-		this.serverAPI.requestUpdateUnitCell(sender, newCell);
-
-		// Debugging output
-		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
-	}
-
-}
-
 // REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
 Engine.prototype.isSquareWithinBaseRange = function(col, row) {
 	return (row <= (this.spawnPoint.row+6) && row >= (this.spawnPoint.row-6)
 			&& col <= (this.spawnPoint.col+6) && col >= (this.spawnPoint.col-6));
 }
 
-Engine.prototype.cellsWithinRange = function () {
+Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
+	
+	// Declare variables
 	var withinRange = [];
+	
+	// Search for all cells in hub range
 	for (var rowIndex = this.spawnPoint.row-5; rowIndex < this.spawnPoint.row+5; rowIndex++) {
 		for (var colIndex = this.spawnPoint.col-5; colIndex < this.spawnPoint.col+5; colIndex++) {
 			if (this.isSquareEmpty(colIndex, rowIndex)) {
@@ -1244,6 +1369,8 @@ Engine.prototype.cellsWithinRange = function () {
 			}
 		}
 	}
+	
+	// Return generated list
 	return withinRange;
 }
 
@@ -1254,14 +1381,25 @@ Engine.prototype.isSquareEmpty = function(col, row) {
 		return false;
 	}
 	
-	// Generate list of all items to process
+	// Generate list of all ingame objects to process
 	var potentialObstructions = this.buildings.concat(this.units);
 	
 	// Loop through all potential matches identifying cells to check
 	for (var index = 0; index < potentialObstructions.length; index++) {
+		
+		// Check if any part of the building is occupying the cell
 		var cells = potentialObstructions[index].getCells();
 		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
 			if (cells[cellIndex].col == col && cells[cellIndex].row == row) {
+				return false;
+			}
+		}
+		
+		// Check if building deploy point is at cell
+		if (potentialObstructions[index].gameCore.identifier == "HUB") {
+			var hubRallyCell = potentialObstructions[index].getRallyCell();
+			console.log("Checking item " + index + " of " + potentialObstructions.length + ": (" + hubRallyCell.col + "," + hubRallyCell.row + ")");
+			if (hubRallyCell.col == col && hubRallyCell.row == row) {
 				return false;
 			}
 		}
@@ -1303,47 +1441,6 @@ Engine.prototype.getPlayerFromPlayerId = function(playerId) {
 
 	// Return not found
 	return null;
-}
-
-Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
-
-	// Define working variables
-	var searchObject = null;
-	
-	// Search through selected items
-	for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
-		if (this.selected[selectedIndex].gameCore.instanceId == instanceId) {
-			searchObject = this.selected[selectedIndex];
-			this.selected.splice(selectedIndex, 1);
-			break;
-		}
-	}
-	
-	// Check hover item
-	if (this.hoverItem && this.hoverItem.gameCore.instanceId == instanceId) {
-		this.hoverItem = null;
-	}
-
-	// Locate and remove item from units/buildings list
-	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
-		if (this.units[unitIndex].gameCore.instanceId == instanceId) {
-			searchObject = this.units[unitIndex];
-			this.units.splice(unitIndex, 1);
-			break;
-		}
-	}
-	for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
-		if (this.buildings[buildingIndex].gameCore.instanceId == instanceId) {
-			searchObject = this.buildings[buildingIndex];
-			this.buildings.splice(buildingIndex, 1);
-			break;
-		}
-	}
-
-	// Delete the object
-	if (searchObject) {
-		searchObject.destroy();
-	}
 }
 
 Engine.prototype.getObjectFromIdentifier = function(identifier) {
@@ -1411,7 +1508,7 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 	}
 
 	// Submit mock request arrays
-	this.processDebugPlacement(mockUnitResponseData, true);
+//	this.processUnitPurchaseFinished(mockUnitResponseData, true);
 	this.processNewBuilding(mockBuildingResponseData, true);
 }
 
@@ -1449,7 +1546,7 @@ Engine.prototype.processPurchasePending = function(responseData) {
 	
 }
 
-Engine.prototype.processUnitPurchaseFinished = function(responseData) {
+Engine.prototype.processUnitPurchaseFinished = function(responseData, overridePurchase) {
 
 	// Create quick reference object
 	var refObject = {
@@ -1481,7 +1578,7 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData) {
 		// Construct new unit object
 		switch (refObject.identifier) {
 			case "TANK":
-				newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, spawnPoint, spawnCell.col, spawnCell.row, 100, 100, false);
+				newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, spawnPoint, spawnCell.col, spawnCell.row, 100, 100);
 				break;
 			default:
 				break;
@@ -1490,45 +1587,48 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData) {
 		// Make sure new unit was created
 		if (newUnitObject) {
 			
-			// Remove new unit from users purchase queue
-			this.currentPlayer.markPurchaseAsBuilt(refObject.instanceId);	// Keep here just to remain consistant
-			this.currentPlayer.removePurchase(refObject.instanceId);
-			
-			// Add new unit to update stream
-			this.productionUnits.push(newUnitObject);
-			
-			// Save self reference
-			var self = this;
-			
-			// Set on complete callback for unit waypoints
-			newUnitObject.waypointControl.onComplete = function(endCell) {
-				
-				// Update tank position on server
-				self.serverAPI.requestUpdateUnitCell(newUnitObject, newUnitObject.gameCore.cell);
-				
-				// Remove new unit from production units array
-				for (var index = 0; index < self.productionUnits.length; index ++) {
-					if (self.productionUnits[index].gameCore.instanceId == newUnitObject.gameCore.instanceId) {
-						self.productionUnits.splice(index, 1);
-						break;
-					}
-				}
-				
-				// Add new unit to units array
-				newUnitObject.inProductionMode = false;
-				self.units.push(newUnitObject);
-				
-				// Run hub reset animation and enable button
-				tankHub.resetTankHub();
-				self.stopBuildingAnimation(newUnitObject);
-			}
-		
-			// Construct tank animation from hub
-			tankHub.animateTankCreate(newUnitObject, function() {
+			// Check if should be overriding production purchase
+			if (overridePurchase) {
+				newUnitObject.setVisible();
+				this.registerNewGameObject(newUnitObject);
+			} else {
 
-				// Add object to unit array
-				self.units.push(newUnitObject);
-			});
+				// Remove new unit from users purchase queue
+				this.currentPlayer.markPurchaseAsBuilt(refObject.instanceId);	// Keep here just to remain consistant
+				this.currentPlayer.removePurchase(refObject.instanceId);
+				
+				// Add new unit to update stream
+				this.productionUnits.push(newUnitObject);
+				
+				// Save self reference
+				var self = this;
+				
+				// Set on complete callback for unit waypoints
+				newUnitObject.waypointControl.onComplete = function(endCell) {
+					
+					// Update tank position on server
+					self.serverAPI.requestUpdateUnitCell(newUnitObject, newUnitObject.gameCore.cell);
+					
+					// Remove new unit from production units array
+					for (var index = 0; index < self.productionUnits.length; index ++) {
+						if (self.productionUnits[index].gameCore.instanceId == newUnitObject.gameCore.instanceId) {
+							self.productionUnits.splice(index, 1);
+							break;
+						}
+					}
+					
+					// Add new unit to units array
+					newUnitObject.inProductionMode = false;
+					self.registerNewGameObject(newUnitObject);
+					
+					// Run hub reset animation and enable button
+					tankHub.resetTankHub();
+					self.stopBuildingAnimation(newUnitObject);
+				}
+			
+				// Construct tank animation from hub
+				tankHub.animateTankCreate(newUnitObject);
+			}
 		}
 	}
 }
@@ -1602,7 +1702,7 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		}
 
 		// Add object to building array
-		if (newBuilding) { this.buildings.push(newBuilding); }
+		if (newBuilding) { this.registerNewGameObject(newBuilding); }
 	}
 
 }
@@ -1752,49 +1852,6 @@ Engine.prototype.processUnitDamage = function(responseData) {
 	}
 }
 
-Engine.prototype.processDebugPlacement = function(responseData, keepCash) {
-
-	// Iterate through all buildings
-	for (var index = 0; index < responseData.source.length; index++) {
-
-		// Create quick reference object
-		var refObject = {
-			instanceId : responseData.target[index],
-			identifier : responseData.source[index],
-			cell : responseData.coords[index],
-			playerId : responseData.misc[index]
-		};
-
-		// Create XY position from col/row
-		refObject.xy = refObject.cell.toPoint();
-
-		// Calculate player from player id
-		refObject.player = this.getPlayerFromPlayerId(refObject.playerId);
-		
-		// deduct cost from player's cash
-		if(refObject.playerId == this.currentPlayer.playerId && !keepCash) {
-
-			this.currentPlayer.cash -= CONSTANTS.GAME_UNITS[0].cost;
-			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label						merge conflickt
-
-		}
-
-		// Create GameCore object
-		var gameCore = new GameCore("TANK", refObject.cell);
-		gameCore.setInstanceId(refObject.instanceId);
-		gameCore.setPlayer(refObject.player);
-
-		// Create self reference
-		var self = this;
-
-		// Construct object for positioning
-		var newTank = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, refObject.xy, refObject.cell.col, refObject.cell.row, 100, 100, false);
-
-		// Add object to unit array
-		this.units.push(newTank);
-	}
-}
-
 Engine.prototype.processInsufficientFunds = function(responseData) {
 	
 	// iterate through all of the buildings
@@ -1826,12 +1883,12 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 		// Direct response to appropriate handler
 		switch (responseData.responseCode) {
 
-			// Startup responses
+			// ----- Startup responses
 			case "SETUP_SPAWN_OBJECTS":
 				this.processSetupSpawnObjects(responseData);
 				break;
 				
-			// Purchase responses
+			// ----- Purchase responses
 			case "PURCHASE_OBJECT":
 				this.processPurchaseObject(responseData);
 				break;
@@ -1845,12 +1902,12 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processBuildingPurchaseFinished(responseData);
 				break;
 			
-			// Construction of new building/defence responses
+			// ----- Construction of new building/defence responses
 			case "NEW_BUILDING":
 				this.processNewBuilding(responseData, false);
 				break;
 				
-			// Object attack responses
+			// ----- Object attack responses
 			case "OBJECT_ATTACK_OBJECT":
 				this.processObjectAttackObject(responseData);
 				break;
@@ -1858,19 +1915,19 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processUnitDamage(responseData);
 				break;
 				
-			// Waypoint responses
+			// ----- Waypoint responses
 			case "WAYPOINT_PATH_COORDS":
 				this.processWaypoints(responseData);
 				break;
 				
-			// Error responses
+			// ----- Error responses
 			case "INSUFFICIENT_FUNDS":
 				this.processInsufficientFunds(responseData);
 				break;
 				
 				
 				
-			// ----------------------	
+			// ----------------------	LEGACY METHODS TO REMOVE
 			case "DEFENCE_ATTACK_XY":
 				this.processDefenceAttackXY(responseData);
 				break;

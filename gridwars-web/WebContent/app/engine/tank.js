@@ -348,6 +348,14 @@ Tank.prototype.getCells = function() {
 	return workingCellResult;
 }
 
+Tank.prototype.getRadarCells = function() {
+	var workingCellResult = this.gameCore.getCells();
+	if (this.waypoints.length > 0) {
+		workingCellResult.push(this.waypoints[0].toCell());
+	}
+	return workingCellResult;
+}
+
 
 
 

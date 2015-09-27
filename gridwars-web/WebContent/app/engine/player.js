@@ -7,6 +7,32 @@ function Player(playerId, colour, team, isUser, startingCash) {
 	this.userBoolean = isUser;
 	this.purchases = [];			// Purchase object --> (gameObject: identifier of object, instanceId: instanceId for object, purchaseTimeout: timeout function, built: boolean)
 	this.cash = startingCash;
+
+	// Set player RGB value from colour string
+	switch (this.colour) {
+		case "blue":
+			this.RGB = { red : 17, green : 38, blue : 129 };
+			break;
+		case "red":
+			this.RGB = { red : 102, green : 1, blue : 1 };
+			break;
+		case "purple":
+			this.RGB = { red : 60, green : 14, blue : 66 };
+			break;
+		case "green":
+			this.RGB = { red : 0, green : 61, blue : 0 };
+			break;
+		case "yellow":
+			this.RGB = { red : 129, green : 70, blue : 0 };
+			break;
+		case "cyan":
+			this.RGB = { red : 2, green : 78, blue : 78 };
+			break;
+		default:
+			this.RGB = { red : 0, green : 0, blue : 0 };
+			break;
+	}
+	
 }
 
 Player.prototype.getPurchase = function(instanceId) {
