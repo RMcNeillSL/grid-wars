@@ -77,7 +77,7 @@ Hub.prototype.getRallyCell = function() {
 	return new Cell(this.gameCore.cell.col + 1, this.gameCore.cell.row - 1);
 }
 
-Hub.prototype.animateTankCreate = function(newUnitObject, completionCallback) {
+Hub.prototype.animateTankCreate = function(newUnitObject) {
 	
 	// Define self reference
 	var self = this;

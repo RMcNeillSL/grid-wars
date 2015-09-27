@@ -1592,11 +1592,7 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData, overridePu
 				}
 			
 				// Construct tank animation from hub
-				tankHub.animateTankCreate(newUnitObject, function() {
-
-					// Add object to unit array
-					self.units.push(newUnitObject);
-				});
+				tankHub.animateTankCreate(newUnitObject);
 			}
 		}
 	}
@@ -1896,7 +1892,7 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				
 				
 				
-			// ----------------------	
+			// ----------------------	LEGACY METHODS TO REMOVE
 			case "DEFENCE_ATTACK_XY":
 				this.processDefenceAttackXY(responseData);
 				break;
