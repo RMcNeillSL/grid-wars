@@ -135,7 +135,7 @@ CONSTANTS = {
 
 	// Camera constants
 	CAMERA_SPRITE : "camera",
-	CAMERA_VELOCITY : 10,
+	CAMERA_SPEED : 10,
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT 			: "tile_build",

@@ -278,8 +278,8 @@ Engine.prototype.update = function() {
 	// Update pointer position
 	this.updatePointerPosition();
 
-	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+//	// Get state of players in game
+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -339,14 +339,14 @@ Engine.prototype.render = function() {
 		self.phaserGame.debug.geom(self.selectedLines[2], healthOutline);
 		self.phaserGame.debug.geom(self.selectedLines[3], healthOutline);
 	}
-	
+
 	// Render selection boxes around selected units to scene
 	if (this.selected && this.selected.length > 0) {
 		for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex ++) {
-			
+
 			// Draw health bars over selected items
 			outputUnitHealth(this.selected[selectedIndex], 'rgba(0,100,0,1)', 'rgba(0,0,0,1)', 'rgba(150,150,150,1)', 'rgba(200,255,200,1)');
-			
+
 			// Draw range circles for selected defences and units
 			if (this.selected[selectedIndex].gameCore.range) {
 				this.phaserGame.debug.geom(new Phaser.Circle(this.selected[selectedIndex].left, this.selected[selectedIndex].top, this.selected[selectedIndex].gameCore.range * 2), 'rgba(255,255,255,0.4)', false);
@@ -358,16 +358,21 @@ Engine.prototype.render = function() {
 	if (this.hoverItem) {
 		outputUnitHealth(this.hoverItem, 'rgba(0,100,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.5)', 'rgba(0,55,0,0.5)');
 	}
+
+	// Render current map square in minimap
+	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * (this.minimap.width * 1.0 / this.mapRender.width);
+	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * (this.minimap.height * 1.0 / this.mapRender.height);
+	this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
 }
 
 
 // ------------------------------ INPUT EVENT METHODS ------------------------------ //
 
 Engine.prototype.onMouseDown = function(pointer) {
-	
+
 	// Search for potential under mouse selection
 	var itemAtPoint = this.getItemAtPoint(this.mouse.position, true, false);
-	
+
 	// Set new selection if one does not already exist
 	if (itemAtPoint) {
 		this.selected = [itemAtPoint];
@@ -496,19 +501,19 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	if (pointer.middleButton.isDown) {		//ROB
 		if (x < this.mouse.position.x) {
 			x = this.mouse.position.x;
-			this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; 
+			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; 
 		}
 		if (x > this.mouse.position.x) {
 			x = this.mouse.position.x;
-			this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY;
+			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
 		}
 		if (y < this.mouse.position.y) {
 			y = this.mouse.position.y;
-			this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY;
+			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
 		}
 		if (y > this.mouse.position.y) {
 			y = this.mouse.position.y;
-			this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY;
+			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
 		}
 	}
 	// Process updates for selection rectangle
@@ -735,20 +740,16 @@ Engine.prototype.positionCameraOverCell = function(cell) {
 Engine.prototype.manageMapMovement = function() {
 
 	// Update camera with up, down, left and right keys
-	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_VELOCITY; }
-	if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_VELOCITY; }
-	
-	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_VELOCITY; }
-	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_VELOCITY; }
-	
-	// ROB
-	
+	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED; }
+	if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED; }
+	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED; }
+	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
 	
 	// Update mouse values
 	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
 			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 	
-	// Process updates for mouse
+	// Process updates for new map position
 	this.updatePointerPosition();
 }
 
@@ -797,16 +798,9 @@ Engine.prototype.stopBuildingAnimation = function(newObject) {
 }
 
 Engine.prototype.createGameScreen = function() {
-	this.miniMap = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH), 0, CONSTANTS.MINI_MAP);
-	this.miniMap.fixedToCamera = true;
-	this.miniMap.z = 90;
 	
+	// Create reference to this
 	var self = this;
-	
-	// TO DO, MAKE PROCESSING DYNAMIC
-	this.displayedMinimap = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH) + 92, 31, CONSTANTS.MINIMAP_MAJARO);
-	this.displayedMinimap.fixedToCamera = true;
-	this.displayedMinimap.z = 92;
 	
 	// Create game button
 	var createGameButton = function(spriteInfo, createPoint) {
@@ -895,24 +889,53 @@ Engine.prototype.createGameScreen = function() {
 		return newButton;
 	}
 	
-	// Construct buttons
+	// Function to create simple HUD sprites
+	var createHUDSprite = function(left, top, frame, zIndex, visible) {
+		var newSprite = self.phaserGame.add.sprite(left, top, frame);
+		newSprite.fixedToCamera = true;
+		newSprite.z = zIndex;
+		newSprite.visible = visible;
+		return newSprite;
+	};
+	
+	// Create references to points on screen
 	var mapLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.MINI_MAP_WIDTH;
-	this.homeButton = createGameButton(CONSTANTS.HUD.BUILDING, new Point(mapLeft + 65, 318));
-	this.defenceButton = createGameButton(CONSTANTS.HUD.DEFENCE, new Point(mapLeft + 120, 317));
-	this.tankButton = createGameButton(CONSTANTS.HUD.UNIT, new Point(mapLeft + 178, 318));
+	var unitLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH;
+	var unitTop = CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT;
 
-	this.gameObjectDetailsMenu = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH),
-			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT), CONSTANTS.UNIT_DETAILS);
-	this.gameObjectDetailsMenu.z = 90;
-	this.gameObjectDetailsMenu.fixedToCamera = true;
-	this.gameObjectDetailsMenu.visible = false;
+	// Create map map HUD, minimap image and button sprites
+	this.mapHUD = createHUDSprite(mapLeft, 0, CONSTANTS.MINI_MAP, 90, true);
+	this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
+	this.homeButton = createGameButton(CONSTANTS.HUD.BUILDING, new Point(mapLeft + 65, 318), true);
+	this.defenceButton = createGameButton(CONSTANTS.HUD.DEFENCE, new Point(mapLeft + 120, 317), true);
+	this.tankButton = createGameButton(CONSTANTS.HUD.UNIT, new Point(mapLeft + 178, 318), true);
 	
-	this.gameObjectDetailsIcon = this.phaserGame.add.sprite((CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.UNIT_DETAILS_WIDTH) + 128,
-			(CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.UNIT_DETAILS_HEIGHT) + 48, CONSTANTS.COLOUR["TANK"][0].ICON);
-	this.gameObjectDetailsIcon.z = 92;
-	this.gameObjectDetailsIcon.fixedToCamera = true;
-	this.gameObjectDetailsIcon.visible = false;
+	// Create object details HUD sprites
+	this.gameObjectDetailsMenu = createHUDSprite(unitLeft, unitTop, CONSTANTS.UNIT_DETAILS, 90, false);
+	this.gameObjectDetailsIcon = createHUDSprite(unitLeft + 128, unitTop + 48, CONSTANTS.COLOUR["TANK"][0].ICON, 92, false);
 	
+	// Create minimap rectangle
+	var singleCellWidth = this.minimap.width * 1.0 / this.mapRender.width;
+	var singleCellHeight = this.minimap.height * 1.0 / this.mapRender.height;
+	this.miniMapViewRectangle = new Phaser.Rectangle(
+			this.minimap.x + (this.phaserGame.camera.x / 100) * singleCellWidth,
+			this.minimap.y + (this.phaserGame.camera.y / 100) * singleCellHeight,
+			singleCellWidth * this.mapRender.screenCellWidth - 1,
+			singleCellHeight * this.mapRender.screenCellHeight - 1);
+	
+	console.log(this.miniMapViewRectangle);
+
+//	var miniMapView = {
+//			left : this.minimap.x + this.phaserGame.camera.x / 100 * miniMapCell.width,
+//			right : this.minimap.x + this.phaserGame.camera.x / 100 * miniMapCell.width + miniMapCell.width * this.mapRender.screenCellWidth - 1,
+//			top : this.minimap.y + this.phaserGame.camera.y / 100 * miniMapCell.width,
+//			bottom : this.minimap.y + this.phaserGame.camera.y / 100 * miniMapCell.width + miniMapCell.height * this.mapRender.screenCellHeight - 1
+//		};
+//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.left, miniMapView.top, miniMapView.left, miniMapView.bottom), 'rgba(255,255,255,1)');
+//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.right, miniMapView.top, miniMapView.right, miniMapView.bottom), 'rgba(255,255,255,1)');
+//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.left, miniMapView.top, miniMapView.right, miniMapView.top), 'rgba(255,255,255,1)');
+//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.left, miniMapView.bottom, miniMapView.right, miniMapView.bottom), 'rgba(255,255,255,1)');
+
 	// Draw player money label
 	var style = {
 		font: "bold 12px Arial",
@@ -940,8 +963,9 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectHealthText.fixedToCamera = true;
 	this.gameObjectHealthText.visible = false;
 	
-	this.hudGroup.add(this.miniMap);
-	this.hudGroup.add(this.displayedMinimap);
+	// Add all buttons to groups - keep zindex order correct
+	this.hudGroup.add(this.mapHUD);
+	this.hudGroup.add(this.minimap);
 	this.hudGroup.add(this.gameObjectDetailsMenu);
 	this.hudGroup.add(this.homeButton);
 	this.hudGroup.add(this.defenceButton);
