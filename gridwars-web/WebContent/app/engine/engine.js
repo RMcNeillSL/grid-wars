@@ -74,7 +74,8 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		selectActive : false,
 		rect : null,
 		originX : 0,
-		originY : 0
+		originY : 0,
+		miniMapClickStart : false
 	};
 	this.hoverItem = null;
 
@@ -155,9 +156,7 @@ Engine.prototype.create = function() {
 
 	// Start physics engine and disable mouse right event
 	this.phaserGame.physics.startSystem(Phaser.Physics.P2JS);
-	this.phaserGame.canvas.oncontextmenu = function(e) {
-		e.preventDefault();
-	}
+	this.phaserGame.canvas.oncontextmenu = function(e) { e.preventDefault(); }
 
 	// Construct explosion manager
 	this.explosionManager = new ExplosionManager(this.phaserGame);
@@ -187,10 +186,8 @@ Engine.prototype.create = function() {
 	// Construct engine core values for unit/building/defence construction
 	this.engineCore = {
 		phaserEngine : this.phaserGame,
-		func_RequestExplosion : function(mapGroup, explosionId, ownerId,
-				explosionInstanceId, x, y) {
-			self.explosionManager.requestExplosion(mapGroup, explosionId,
-					ownerId, explosionInstanceId, x, y)
+		func_RequestExplosion : function(mapGroup, explosionId, ownerId, explosionInstanceId, x, y) {
+			self.explosionManager.requestExplosion(mapGroup, explosionId, ownerId, explosionInstanceId, x, y)
 		},
 		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
 			self.updateNewUnitCell(sender, oldCell, newCell);
@@ -203,14 +200,13 @@ Engine.prototype.create = function() {
 		}
 	};
 	
-
-	//Adding information text to the game screen
-	var style = {
-		font: "bold 12px Arial", fill: "#fff", 
-	    align: "left", // the alignment of the text is independent of the bounds, try changing to 'center' or 'right'
-	    boundsAlignH: "left", 
-	    boundsAlignV: "top"
-	};
+//	//Adding information text to the game screen		-- IS THIS CODE NEEDED MATT?
+//	var style = {
+//		font: "bold 12px Arial", fill: "#fff", 
+//	    align: "left", // the alignment of the text is independent of the bounds, try changing to 'center' or 'right'
+//	    boundsAlignH: "left", 
+//	    boundsAlignV: "top"
+//	};
 
 	// Draw the gameframe
 	this.createGameScreen();
@@ -379,6 +375,9 @@ Engine.prototype.onMouseDown = function(pointer) {
 		this.selectedJustSet = true;
 		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
+	
+	// Check if mouse down occured over minimap
+	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap;
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
@@ -496,7 +495,9 @@ Engine.prototype.onMouseUp = function(pointer) {
 		this.selected = [];
 		this.setGameObjectDetailsVisibility(false);
 	}
-
+	
+	// Release mark as mouse down overminimap
+	this.selectionRectangle.miniMapClickStart = false;
 }
 
 Engine.prototype.onMouseMove = function(pointer, x, y) {
@@ -532,7 +533,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			// Jump to cell at point
 			this.moveToMinimapClick(new Point(this.mouse.position.x - this.minimap.left, this.mouse.position.y - this.minimap.top));
 			
-		} else {
+		} else if (!this.selectionRectangle.miniMapClickStart) {
 
 			// Reset selected items
 			if (this.selectionRectangle.selectActive
