@@ -377,7 +377,7 @@ Engine.prototype.onMouseDown = function(pointer) {
 	}
 	
 	// Check if mouse down occured over minimap
-	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap;
+	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
@@ -526,7 +526,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	
 	// Process updates for selection rectangle
 	if (pointer.isDown && pointer.leftButton.isDown) {
-
+		
 		// Check if clicking on a new location on the map first
 		if (this.isPointOverMinimap(this.mouse.position)) {
 
@@ -608,6 +608,20 @@ Engine.prototype.onKeyUp = function() {
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.registerNewGameObject = function(gameObject) {
+	
+	// Check game object type
+	var objectType = CONSTANTS.getObjectType(gameObject.gameCore.identifier);
+	
+	// Perform correct array addition
+	if (objectType == "DEFENCE" || objectType == "BUILDING") {
+		this.buildings.push(gameObject);
+	} else if (objectType == "UNIT") {
+		this.units.push(gameObject);
+	}
+	
+}
 
 Engine.prototype.purchaseObject = function(objectId) {
 	
@@ -1555,7 +1569,7 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData, overridePu
 			// Check if should be overriding production purchase
 			if (overridePurchase) {
 				newUnitObject.setVisible();
-				this.units.push(newUnitObject);
+				this.registerNewGameObject(newUnitObject);
 			} else {
 
 				// Remove new unit from users purchase queue
@@ -1584,7 +1598,7 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData, overridePu
 					
 					// Add new unit to units array
 					newUnitObject.inProductionMode = false;
-					self.units.push(newUnitObject);
+					self.registerNewGameObject(newUnitObject);
 					
 					// Run hub reset animation and enable button
 					tankHub.resetTankHub();
@@ -1667,7 +1681,7 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 		}
 
 		// Add object to building array
-		if (newBuilding) { this.buildings.push(newBuilding); }
+		if (newBuilding) { this.registerNewGameObject(newBuilding); }
 	}
 
 }
