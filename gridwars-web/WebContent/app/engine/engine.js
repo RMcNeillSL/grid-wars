@@ -402,9 +402,15 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 	// Perform checks for left click
 	if (pointer.leftButton.isDown) {
+		
+		// Check if clicking on a new location on the map first
+		if (this.isPointOverMinimap(point)) {
 
+			// Jump to cell at point
+			this.moveToMinimapClick(new Point(point.x - this.minimap.left, point.y - this.minimap.top));
+			
 		// Create new building
-		if (this.newBuilding.active) {
+		} else if (this.newBuilding.active) {
 
 			// Render placement overlay
 			if (this.isSquareEmpty(cell.col, cell.row) && this.isSquareWithinBaseRange(cell.col, cell.row)) {
@@ -516,21 +522,31 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
 		}
 	}
+	
 	// Process updates for selection rectangle
 	if (pointer.isDown && pointer.leftButton.isDown) {
-		
-		// Reset selected items
-		if (this.selectionRectangle.selectActive
-				&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 40) {
-			this.selected = [];
-			this.hoverItem = null;
+
+		// Check if clicking on a new location on the map first
+		if (this.isPointOverMinimap(this.mouse.position)) {
+
+			// Jump to cell at point
+			this.moveToMinimapClick(new Point(this.mouse.position.x - this.minimap.left, this.mouse.position.y - this.minimap.top));
+			
+		} else {
+
+			// Reset selected items
+			if (this.selectionRectangle.selectActive
+					&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 40) {
+				this.selected = [];
+				this.hoverItem = null;
+			}
+
+			// Set new rectangle selection coordinates
+			this.selectionRectangle.selectActive = true;
+			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
+			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-
-		// Set new rectangle selection coordinates
-		this.selectionRectangle.selectActive = true;
-		this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
-		this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
-
+		
 	} else {
 
 		// Run search for any selected units
@@ -797,6 +813,23 @@ Engine.prototype.stopBuildingAnimation = function(newObject) {
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_READY, buttonData.hudConstants.UNSELECTED);
 }
 
+Engine.prototype.isPointOverMinimap = function(checkPoint) {
+	return (checkPoint.x >= this.minimap.left && checkPoint.x <= this.minimap.right &&
+			checkPoint.y >= this.minimap.top && checkPoint.y <= this.minimap.bottom);
+}
+
+Engine.prototype.moveToMinimapClick = function(miniMapPoint) {
+
+	// Calculate cell under mouse on map
+	var minimapCellWidth = this.minimap.width * 1.0 / this.mapRender.width;
+	var minimapCellHeight = this.minimap.height * 1.0 / this.mapRender.height;
+	var cellAtMouse = new Cell(Math.floor(miniMapPoint.x / minimapCellWidth),
+			Math.floor(miniMapPoint.y / minimapCellHeight));
+	
+	// Jump to cell at point
+	this.positionCameraOverCell(cellAtMouse);
+}
+
 Engine.prototype.createGameScreen = function() {
 	
 	// Create reference to this
@@ -923,19 +956,6 @@ Engine.prototype.createGameScreen = function() {
 			singleCellWidth * this.mapRender.screenCellWidth - 1,
 			singleCellHeight * this.mapRender.screenCellHeight - 1);
 	
-	console.log(this.miniMapViewRectangle);
-
-//	var miniMapView = {
-//			left : this.minimap.x + this.phaserGame.camera.x / 100 * miniMapCell.width,
-//			right : this.minimap.x + this.phaserGame.camera.x / 100 * miniMapCell.width + miniMapCell.width * this.mapRender.screenCellWidth - 1,
-//			top : this.minimap.y + this.phaserGame.camera.y / 100 * miniMapCell.width,
-//			bottom : this.minimap.y + this.phaserGame.camera.y / 100 * miniMapCell.width + miniMapCell.height * this.mapRender.screenCellHeight - 1
-//		};
-//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.left, miniMapView.top, miniMapView.left, miniMapView.bottom), 'rgba(255,255,255,1)');
-//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.right, miniMapView.top, miniMapView.right, miniMapView.bottom), 'rgba(255,255,255,1)');
-//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.left, miniMapView.top, miniMapView.right, miniMapView.top), 'rgba(255,255,255,1)');
-//	this.phaserGame.debug.geom(new Phaser.Line(miniMapView.left, miniMapView.bottom, miniMapView.right, miniMapView.bottom), 'rgba(255,255,255,1)');
-
 	// Draw player money label
 	var style = {
 		font: "bold 12px Arial",
