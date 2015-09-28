@@ -78,8 +78,9 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		miniMapClickStart : false
 	};
 	this.middleClickScroll = {		//ROB
-		originX			: 0,
-		originY			: 0
+		isActive	: false,
+		originX		: 0,
+		originY		: 0
 	}
 	this.hoverItem = null;
 
@@ -236,7 +237,7 @@ Engine.prototype.create = function() {
 	this.engineLoading = false;
 }
 
-Engine.prototype.update = function() {		// ROB
+Engine.prototype.update = function() {
 
 	// Process any responses in buffer
 	if (!this.engineLoading && this.responseBuffer && this.responseBuffer.length > 0) {
@@ -266,6 +267,25 @@ Engine.prototype.update = function() {		// ROB
 
 	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
+
+	if (this.middleClickScroll.isActive) {		// ROB
+		console.log("ORIGIN: ", this.middleClickScroll.originX, " , ", this.middleClickScroll.originY);
+		console.log("CURRENT: ", (this.mouse.position.x - this.phaserGame.camera.x), " , " , (this.mouse.position.y - this.phaserGame.camera.y));
+		if (this.middleClickScroll.originX < (this.mouse.position.x - this.phaserGame.camera.x)) {
+			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED;
+		}
+		if (this.middleClickScroll.originX > (this.mouse.position.x - this.phaserGame.camera.x)) {
+			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
+		}
+		if (this.middleClickScroll.originY < (this.mouse.position.y - this.phaserGame.camera.y)) {
+			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
+		}
+		if (this.middleClickScroll.originY > (this.mouse.position.y - this.phaserGame.camera.y)) {
+			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
+		}
+	}
+	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 
 	// Update pointer position
 	this.updatePointerPosition();
@@ -390,6 +410,10 @@ Engine.prototype.onMouseDown = function(pointer) {
 		this.selectedJustSet = true;
 		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
+	
+	if (pointer.middleButton.isDown) { // ROB
+		this.middleClickScroll.isActive = true;
+	}
 
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
@@ -512,6 +536,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 			}
 		}
 	}
+	
+	if (pointer.middleButton.isDown) {		// ROB
+		this.middleClickScroll.isActive = false;
+	}
 
 	// Perform checks for right click
 	if (!clickHandled && pointer.rightButton.isDown) {
@@ -614,16 +642,19 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		}
 
 		// Mark selection as not active and reset
-		this.middleClickScroll.scrollActive = false;
 		this.selectionRectangle.selectActive = false;
-		this.middleClickScroll.originX = this.mouse.position.x;		//ROB
-		this.middleClickScroll.originY = this.mouse.position.y;		//ROB
+
 		this.selectionRectangle.rect.x = this.mouse.position.x;
 		this.selectionRectangle.rect.y = this.mouse.position.y;
 		this.selectionRectangle.originX = this.mouse.position.x;
 		this.selectionRectangle.originY = this.mouse.position.y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
+
+		if(!this.middleClickScroll.isActive) {
+			this.middleClickScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;		//ROB
+			this.middleClickScroll.originY = this.mouse.position.y - this.phaserGame.camera.y;		//ROB
+		}
 
 		// Select hover items
 		this.hoverItem = this.getItemAtPoint(this.mouse.position, true, true);
