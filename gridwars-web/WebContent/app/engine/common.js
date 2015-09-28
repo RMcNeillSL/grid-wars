@@ -195,3 +195,7 @@ Cell.prototype.toPoint = function() {
 Cell.prototype.toCenterPoint = function() {
 	return new Point(this.col * CONSTANTS.TILE_WIDTH + CONSTANTS.TILE_WIDTH / 2, this.row * CONSTANTS.TILE_HEIGHT + CONSTANTS.TILE_HEIGHT / 2);
 }
+
+Cell.prototype.distanceToCell = function(col, row) {
+	return Math.sqrt(Math.pow(parseFloat(this.col - col), 2) + Math.pow(parseFloat(this.row - row), 2)); 
+}
