@@ -498,6 +498,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 				}
 			}
 			
+			// Clear selected objects
 			if(this.selected.length < 1) {
 				 this.updateSelectedGameObjectDetails(null);
 			}
