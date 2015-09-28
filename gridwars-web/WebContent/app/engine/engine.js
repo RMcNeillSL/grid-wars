@@ -1818,8 +1818,12 @@ Engine.prototype.processObjectAttackObject = function(responseData) {
 		// Loop through all defences set to fire
 		var source = this.getObjectFromInstanceId(refObject.sourceId);
 		var target = this.getObjectFromInstanceId(refObject.targetId);
-		if (target != null && source != null) {
-			source.lockonAndShoot(target);
+		if (source != null) {
+			if (target == null) {
+				source.clearLockonTarget();
+			} else {
+				source.lockonAndShoot(target);
+			}
 		}
 	}
 }

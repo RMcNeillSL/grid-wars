@@ -221,6 +221,12 @@ Turret.prototype.shootAtXY = function(point) {
 	this.shootTarget.readyToFire = false;
 }
 
+Turret.prototype.clearLockonTarget = function() {
+	this.shootTarget.instanceId = null;
+	this.shootTarget.isFiring = false;
+	this.shootTarget.readyToFire = false;
+}
+
 Turret.prototype.lockonAndShoot = function(targetObject) {
 	
 	// Check if a target needs assigning
