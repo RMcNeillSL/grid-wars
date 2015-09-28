@@ -129,7 +129,6 @@
 
 		// Call connect debug methods
 		gameService.debugConnect();
-//		gameService.initialiseSockets();
 
 
 		// Wait until connections finished before proceeding - then run the game
