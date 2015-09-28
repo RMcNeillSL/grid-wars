@@ -91,7 +91,7 @@ public class Engine extends Thread {
 				for (int row = 0; row < this.staticMapRef.getHeight(); row ++) {
 					for (int col = 0; col < this.staticMapRef.getWidth(); col ++) {
 						if (!this.staticMapRef.isCellObstructed(col, row) &&
-							!this.dynamicMapRef.isCellObstructed(col, row)) {
+							!this.dynamicMapRef.isCellObstructed(new Coordinate(col, row))) {
 							currentCoord = new Coordinate(col, row);
 							tempHoldCell = new AStarCell(null, currentCoord, 99999, this.mCostToCell(currentCoord, endCoord));
 							if (tempHoldCell.coord.getCol() == startCoord.getCol() && tempHoldCell.coord.getRow() == startCoord.getRow()) {
@@ -638,6 +638,8 @@ public class Engine extends Thread {
 			response = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
 			for (DynGameUnit sourceUnit : sourceUnits) {
 				if (path != null) {
+					
+					// Add coordinates & unit data to response
 					for (Coordinate coord : path) {
 						response.addCoord(coord);
 						response.addSource(sourceUnit.getInstanceId());

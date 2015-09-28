@@ -24,6 +24,7 @@ public class GameDynamicMap {
 		}
 	}
 	
+	
 	// Map cell information
 	private int width = 0;
 	private int height = 0;
@@ -66,18 +67,17 @@ public class GameDynamicMap {
 	
 	
 	// Check cell has no obstruction
-	public boolean isCellObstructed(int cellX, int cellY) {
+	public boolean isCellObstructed(Coordinate coord, int futureTurnCount, DynGameUnit[] ignoreUnits) {
 		
 		// Declare local variables
-		boolean isObstructed = false;
-		Coordinate coord = null;
 		Coordinate[] coords = null;
 		
 		// Search through 'locked' cells
 		for (DynamicCell cell : this.cells) {
-			if (cell.cellX == cellX && cell.cellY == cellY) {
-				isObstructed = cell.isCellObstructed();
-				break;
+			if (cell.cellX == coord.getCol() &&
+					cell.cellY == coord.getRow() &&
+					cell.isCellObstructed()) {
+				return true;
 			}
 		}
 		
@@ -85,20 +85,32 @@ public class GameDynamicMap {
 		for (DynGameBuilding building : this.gameBuildings) {
 			coords = building.getCoordinates();
 			for (int index = 0; index < coords.length; index ++) {
-				if (coords[index] != null && coords[index].getCol() == cellX && coords[index].getRow() == cellY) {
-					isObstructed = true;
-					break;
+				if (coords[index] != null && coords[index].getCol() == coord.getCol() && coords[index].getRow() == coord.getRow()) {
+					return true;
 				}
 			}
 		}
 		
 		// Search through units -- ignore for now as units can travel over eachother
+		if (futureTurnCount >= 0) {
+			boolean shouldIgnoreUnit = false;
+			for (DynGameUnit unit : this.gameUnits) {
+				if (unit.getWaypoint(futureTurnCount).equals(coord)) {
+					shouldIgnoreUnit = false;
+					for (DynGameUnit ignoreUnit : ignoreUnits) {
+						shouldIgnoreUnit = true;
+						break;
+					}
+					if (shouldIgnoreUnit) { return true; }
+				}
+			}
+		}
 		
 		// Return empty
-		return isObstructed;
+		return false;
 	}
-	public boolean isCellObstructed(Coordinate coordinate) {
-		return this.isCellObstructed(coordinate.getCol(), coordinate.getRow());
+	public boolean isCellObstructed(Coordinate coord) {
+		return this.isCellObstructed(coord, -1, new DynGameUnit[0]);
 	}
 	
 }

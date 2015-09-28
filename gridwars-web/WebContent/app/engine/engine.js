@@ -449,15 +449,14 @@ Engine.prototype.onMouseUp = function(pointer) {
 			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
 
 				// Process selected tank
-				if (this.selected[selectedIndex].gameCore.identifier == "TANK") {
+				if (CONSTANTS.getObjectType(this.selected[selectedIndex].gameCore.identifier) == "UNIT") {
 					if (this.isSquareEmpty(cell.col, cell.row)) {
-						var targetUnit = this.selected[0];
-						if (targetUnit) {
+						if (this.selected[selectedIndex]) {
 							clickHandled = true;
 							if (ctrlDown) {
 //								targetUnit.shootAtXY(point);
 							} else {
-								this.serverAPI.requestUnitMoveCell(targetUnit, cell);
+								this.serverAPI.requestUnitMoveCell(this.selected[selectedIndex], cell);
 							}
 						}
 					} else {
