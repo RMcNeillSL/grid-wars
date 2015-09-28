@@ -726,9 +726,10 @@ Engine.prototype.moveUnitGroup = function(unitArray, targetCell) {
 		}
 		possibleCells.sort(function (cellA, cellB) { return cellA.distance - cellB.distance; });
 		
-		for (var index = 0; index < possibleCells.length; index ++) {
-			console.log("(" + possibleCells[index].cell.col + "," + possibleCells[index].cell.row + ") - " + possibleCells[index].distance);
-		}
+//		// Output ordered list of all possible cells
+//		for (var index = 0; index < possibleCells.length; index ++) {
+//			console.log("(" + possibleCells[index].cell.col + "," + possibleCells[index].cell.row + ") - " + possibleCells[index].distance);
+//		}
 		
 		// Generate list of cells for each unit to move to
 		for (var unitIndex = 1; unitIndex < unitArray.length; unitIndex ++) {
