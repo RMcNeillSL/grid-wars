@@ -229,7 +229,7 @@ public class RequestProcessor {
 				// Create new game lobby
 				if (!inGame) {
 					String lobbyName = generateValidLobbyName();
-					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(0), lobbyName);
+					GameLobby gameLobby = new GameLobby(GenerateUniqueGameLobbyId(), user, this.gameMaps.get(1), lobbyName);
 					LobbyUser lobbyUser = gameLobby.getLobbyUser(user.getId());
 					responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 					this.activeGameLobbys.add(gameLobby);

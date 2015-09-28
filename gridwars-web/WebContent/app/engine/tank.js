@@ -153,7 +153,7 @@ Tank.prototype.processTurretRotation = function() {
 
 	// Run calculations if a target is assigned
 	if (targetPoint && sourcePoint) {
-
+		
 		// Calculate rotation and point data
 		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.turretRotateSpeed);
 		
