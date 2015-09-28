@@ -200,14 +200,6 @@ Engine.prototype.create = function() {
 		}
 	};
 	
-//	//Adding information text to the game screen		-- IS THIS CODE NEEDED MATT?
-//	var style = {
-//		font: "bold 12px Arial", fill: "#fff", 
-//	    align: "left", // the alignment of the text is independent of the bounds, try changing to 'center' or 'right'
-//	    boundsAlignH: "left", 
-//	    boundsAlignV: "top"
-//	};
-
 	// Draw the gameframe
 	this.createGameScreen();
 
@@ -555,7 +547,8 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 			// Reset selected items
 			if (this.selectionRectangle.selectActive
-					&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 40) {
+					&& Math.abs(this.selectionRectangle.rect.width
+							* this.selectionRectangle.rect.height) > 40) {
 				this.selected = [];
 				this.hoverItem = null;
 			}
@@ -570,8 +563,8 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
-				&& this.selectionRectangle.rect.width
-						* this.selectionRectangle.rect.height > 40) {
+				&& Math.abs(this.selectionRectangle.rect.width
+						* this.selectionRectangle.rect.height) > 40) {
 			this.selected = this.getSelectionArray();
 		}
 
