@@ -200,14 +200,6 @@ Engine.prototype.create = function() {
 		}
 	};
 	
-//	//Adding information text to the game screen		-- IS THIS CODE NEEDED MATT?
-//	var style = {
-//		font: "bold 12px Arial", fill: "#fff", 
-//	    align: "left", // the alignment of the text is independent of the bounds, try changing to 'center' or 'right'
-//	    boundsAlignH: "left", 
-//	    boundsAlignV: "top"
-//	};
-
 	// Draw the gameframe
 	this.createGameScreen();
 
@@ -444,48 +436,52 @@ Engine.prototype.onMouseUp = function(pointer) {
 			// Calculate item at point
 			var enemyAtPoint = this.getItemAtPoint(point, false, true);
 			var friendlyAtPoint = this.getItemAtPoint(point, true, true);
+			
+			// Object reference variables
+			var objectRef = null;
+			var objectType = null;
+			var objectId = null;
+			
+			// Group API request objects
+			
+			// Flags for object click event
+			var cellEmpty = this.isSquareEmpty(cell.col, cell.row);
 
 			// Process selected items
 			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
-
-				// Process selected tank
-				if (CONSTANTS.getObjectType(this.selected[selectedIndex].gameCore.identifier) == "UNIT") {
-					if (this.isSquareEmpty(cell.col, cell.row)) {
-						if (this.selected[selectedIndex]) {
-							clickHandled = true;
-							if (ctrlDown) {
-//								targetUnit.shootAtXY(point);
-							} else {
-								this.serverAPI.requestUnitMoveCell(this.selected[selectedIndex], cell);
-							}
-						}
-					} else {
-						if (enemyAtPoint) {
-							clickHandled = true;
-							this.serverAPI.requestObjectAttackObject(this.selected[selectedIndex].gameCore.instanceId, enemyAtPoint.gameCore.instanceId);
-						}
-					}
-				}
-
-				// Process selected turret
-				if (this.selected[selectedIndex].gameCore.identifier == "TURRET") {
-					var sourceObjectId = this.selected[selectedIndex].gameCore.instanceId;
-					if (enemyAtPoint) {
-						clickHandled = true;
-						this.serverAPI.requestObjectAttackObject(sourceObjectId, enemyAtPoint.gameCore.instanceId);
-					}
-//					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
-//						clickHandled = true;
-//						this.selected[selectedIndex].shootAtXY(point);
-////						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
-//					}
-				}
 				
-				// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
-				if (!clickHandled && !this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) {
-					this.selected = [];
+				// Identify type of unit and create reference
+				objectRef = this.selected[selectedIndex];
+				objectType = CONSTANTS.getObjectType(objectRef.gameCore.identifier);
+				objectId = objectRef.gameCore.instanceId;
+				
+				// Make sure self is defined
+				if (objectRef) {
+					
+					// Process for units
+					if (objectType == "UNIT") {
+						if (cellEmpty && ctrlDown) 		{ clickHandled = true;	 } //targetUnit.shootAtXY(point); }
+						if (cellEmpty && !ctrlDown) 	{ clickHandled = true; 	this.serverAPI.requestUnitMoveCell(objectRef, cell); } 
+						if (!cellEmpty && enemyAtPoint) { clickHandled = true; 	this.serverAPI.requestObjectAttackObject(objectId, enemyAtPoint.gameCore.instanceId); }
+					}
+					
+					// Process for buildings
+					if (objectType == "BUILDING") { }
+					
+					// Process for defences
+					if (objectType == "DEFENCE") {
+						if (enemyAtPoint) 				{ clickHandled = true;	this.serverAPI.requestObjectAttackObject(objectId, enemyAtPoint.gameCore.instanceId); }
+//						if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
+//							clickHandled = true;
+//							this.selected[selectedIndex].shootAtXY(point);
+////							this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
+//						}
+					}
 				}
 			}
+			
+			// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
+			if (!clickHandled && !this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) { this.selected = []; }
 
 		// Select units/buildings under mouseXY
 		} else {
@@ -502,6 +498,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 				}
 			}
 			
+			// Clear selected objects
 			if(this.selected.length < 1) {
 				 this.updateSelectedGameObjectDetails(null);
 			}
@@ -555,7 +552,8 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 			// Reset selected items
 			if (this.selectionRectangle.selectActive
-					&& this.selectionRectangle.rect.width * this.selectionRectangle.rect.height > 40) {
+					&& Math.abs(this.selectionRectangle.rect.width
+							* this.selectionRectangle.rect.height) > 40) {
 				this.selected = [];
 				this.hoverItem = null;
 			}
@@ -570,8 +568,8 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
-				&& this.selectionRectangle.rect.width
-						* this.selectionRectangle.rect.height > 40) {
+				&& Math.abs(this.selectionRectangle.rect.width
+						* this.selectionRectangle.rect.height) > 40) {
 			this.selected = this.getSelectionArray();
 		}
 
@@ -866,11 +864,6 @@ Engine.prototype.getButtonAndConstants = function(gameObject) {
 	var isBuilding = (CONSTANTS.GAME_BUILDINGS.indexOf(gameObject) > -1 && (!gameObject.damage));
 	var isDefence = (CONSTANTS.GAME_BUILDINGS.indexOf(gameObject) > -1 && (gameObject.damage));
 
-	// Output type of object (debugging)
-	if (isUnit) { console.log("UNIT"); }
-	if (isDefence) { console.log("DEFENCE"); }
-	if (isBuilding) { console.log("BUILDING"); }
-	
 	// Set button to animate
 	var animateButton, hudConstants = null;
 	if (isUnit) { animateButton = this.tankButton; hudConstants = CONSTANTS.HUD.UNIT; }
@@ -1397,7 +1390,6 @@ Engine.prototype.isSquareEmpty = function(col, row) {
 		// Check if building deploy point is at cell
 		if (potentialObstructions[index].gameCore.identifier == "HUB") {
 			var hubRallyCell = potentialObstructions[index].getRallyCell();
-			console.log("Checking item " + index + " of " + potentialObstructions.length + ": (" + hubRallyCell.col + "," + hubRallyCell.row + ")");
 			if (hubRallyCell.col == col && hubRallyCell.row == row) {
 				return false;
 			}
