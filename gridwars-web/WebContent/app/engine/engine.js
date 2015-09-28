@@ -980,6 +980,8 @@ Engine.prototype.stopBuildingAnimation = function(newObject) {
 	// Stop all animations returning to unselected state
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_BUILDING, buttonData.hudConstants.UNSELECTED);
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_READY, buttonData.hudConstants.UNSELECTED);
+	
+	buttonData.animateButton.frame = buttonData.hudConstants.UNSELECTED;
 }
 
 Engine.prototype.isPointOverMinimap = function(checkPoint) {
