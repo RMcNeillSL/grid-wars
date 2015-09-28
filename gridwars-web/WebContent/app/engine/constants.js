@@ -135,7 +135,7 @@ CONSTANTS = {
 
 	// Camera constants
 	CAMERA_SPRITE : "camera",
-	CAMERA_VELOCITY : 10,
+	CAMERA_SPEED : 10,
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT 			: "tile_build",
@@ -203,7 +203,7 @@ CONSTANTS = {
 			DEFENCE 	:	{ UNSELECTED : 26,	SELECTED : 27,	A_BUILDING : "building_defence",	A_READY : "defence_ready",	BUILDING : [28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,27],	READY :	51 },
 			UNIT		:	{ UNSELECTED : 0,	SELECTED : 1,	A_BUILDING : "building_unit",		A_READY : "unit_ready",		BUILDING : [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1], 			READY : 25 }
 	},
-
+	
 	// Colour variation arrays
 	COLOUR : {
 		
