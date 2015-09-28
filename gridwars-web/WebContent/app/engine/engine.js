@@ -524,25 +524,6 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	// Update pointer position
 	this.updatePointerPosition();
 
-	if (pointer.middleButton.isDown) {		//ROB
-		if (x < this.mouse.position.x) {
-			x = this.mouse.position.x;
-			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; 
-		}
-		if (x > this.mouse.position.x) {
-			x = this.mouse.position.x;
-			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
-		}
-		if (y < this.mouse.position.y) {
-			y = this.mouse.position.y;
-			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
-		}
-		if (y > this.mouse.position.y) {
-			y = this.mouse.position.y;
-			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
-		}
-	}
-	
 	// Process updates for selection rectangle
 	if (pointer.isDown && pointer.leftButton.isDown) {
 		
@@ -567,9 +548,22 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
 			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-		
+	} else if (pointer.isDown && pointer.rightButton.isDown) {		//ROB
+		x = this.phaserGame.camera.x + x;
+		y = this.phaserGame.camera.y + y;
+		if (x < this.mouse.position.x) {
+			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; 
+		}
+		if (x > this.mouse.position.x) {
+			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
+		}
+		if (y < this.mouse.position.y) {
+			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
+		}
+		if (y > this.mouse.position.y) {
+			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
+		}
 	} else {
-
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
 				&& Math.abs(this.selectionRectangle.rect.width
@@ -597,7 +591,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			}
 		}
 	}
-	
+
 	// Process updates for mouse
 	this.processMouseFormUpdates();
 }
