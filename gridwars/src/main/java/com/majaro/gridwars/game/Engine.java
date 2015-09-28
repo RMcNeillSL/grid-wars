@@ -351,7 +351,7 @@ public class Engine extends Thread {
 		// Construct valid purchase complete response object
 		if (validUnitBuildComplete) {
 
-			// UNITS: Run building finished
+			// UNIT: Run building finished
 			if (purchaseRequest.getSourceObject() instanceof GameUnit) {
 
 				// Locate hub to deploy from
@@ -377,8 +377,27 @@ public class Engine extends Thread {
 				}
 			}
 
-			// BUILDINGS: Run building finished
-			if (purchaseRequest.getSourceObject() instanceof GameBuilding) {
+			// DEFENCE: Run building finished
+			else if (purchaseRequest.getSourceObject() instanceof GameDefence) {
+
+				// Construct new unit
+				Coordinate deployCoord = new Coordinate(0, 0);
+				DynGameDefence newDefence = new DynGameDefence(purchaseRequest.getObjectId(),
+						(GameDefence)purchaseRequest.getSourceObject(), player, deployCoord);
+				
+				// Construct response object
+				if (newDefence != null) {
+					this.buildings.add(newDefence);
+					finishedBuildResponse = new GameplayResponse(E_GameplayResponseCode.BUILDING_PURCHASE_FINISHED);
+					finishedBuildResponse.addSource(purchaseRequest.getSourceObject().getIdentifier());
+					finishedBuildResponse.addTarget(purchaseObjectId);
+					finishedBuildResponse.addMisc(player.getPlayerName());
+					finishedBuildResponse.addCoord(deployCoord);
+				}
+			}
+
+			// BUILDING: Run building finished
+			else if (purchaseRequest.getSourceObject() instanceof GameBuilding) {
 
 				// Construct new unit
 				Coordinate deployCoord = new Coordinate(0, 0);
@@ -668,6 +687,7 @@ public class Engine extends Thread {
 
 		// Set default result
 		GameplayResponse updateCellResponse = null;
+		GameplayResponse clearAttackResponse = null;
 		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
 		GameplayResponse[] objectAttackResponse = null;
 		
@@ -701,12 +721,15 @@ public class Engine extends Thread {
 			if (attackingDefences != null & attackingDefences.length > 0) {
 				removeDefences.clear();
 				for (DynGameDefence attackDefenceRef : attackingDefences) {
-					if (newCoordRef.distanceTo(attackDefenceRef.getCoordinate()) > attackDefenceRef.getRange()) {
+					if (newCoordRef.distanceTo(attackDefenceRef.getCoordinate()) > attackDefenceRef.getRange() / Const.cellSize) {
 						System.out.println("Defence added to cease fire: " + attackDefenceRef.getInstanceId());
 						removeDefences.add(attackDefenceRef.getInstanceId());
 					}
 				}
 				for (String instanceId : removeDefences) {
+					if (clearAttackResponse == null) { clearAttackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT); }
+					clearAttackResponse.addSource(instanceId);
+					clearAttackResponse.addTarget("");
 					this.removeAttackFromAttackPairs(instanceId);
 				}
 			}
@@ -748,12 +771,15 @@ public class Engine extends Thread {
 							updateCellResponse.addCoord(coord);
 							updateCellResponse.addSource(attackUnitRef.getInstanceId());
 						}
-						responseList.add(updateCellResponse);
 					}
 				}
 			}
 		}
 		
+		
+		// Add custom responses if they were constructed
+		if (clearAttackResponse != null) 	{ responseList.add(clearAttackResponse); }
+		if (updateCellResponse != null) 	{ responseList.add(updateCellResponse); }
 		
 		// Return calculated response as array
 		return responseList.toArray(new GameplayResponse[responseList.size()]);

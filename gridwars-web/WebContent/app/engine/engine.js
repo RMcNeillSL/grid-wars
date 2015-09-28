@@ -976,6 +976,8 @@ Engine.prototype.stopBuildingAnimation = function(newObject) {
 	// Stop all animations returning to unselected state
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_BUILDING, buttonData.hudConstants.UNSELECTED);
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_READY, buttonData.hudConstants.UNSELECTED);
+	
+	buttonData.animateButton.frame = buttonData.hudConstants.UNSELECTED;
 }
 
 Engine.prototype.isPointOverMinimap = function(checkPoint) {
@@ -1814,8 +1816,12 @@ Engine.prototype.processObjectAttackObject = function(responseData) {
 		// Loop through all defences set to fire
 		var source = this.getObjectFromInstanceId(refObject.sourceId);
 		var target = this.getObjectFromInstanceId(refObject.targetId);
-		if (target != null && source != null) {
-			source.lockonAndShoot(target);
+		if (source != null) {
+			if (target == null) {
+				source.clearLockonTarget();
+			} else {
+				source.lockonAndShoot(target);
+			}
 		}
 	}
 }
