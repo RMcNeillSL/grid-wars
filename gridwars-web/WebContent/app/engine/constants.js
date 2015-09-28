@@ -134,8 +134,8 @@ CONSTANTS = {
 	DEBRIS_TANK : "",
 
 	// Camera constants
-	CAMERA_SPRITE : "camera",
-	CAMERA_SPEED : 10,
+	CAMERA_SPRITE 	: "camera",
+	CAMERA_SPEED 	: 10,
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT 			: "tile_build",

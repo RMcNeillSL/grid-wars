@@ -77,6 +77,10 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originY : 0,
 		miniMapClickStart : false
 	};
+	this.middleClickScroll = {		//ROB
+		originX			: 0,
+		originY			: 0
+	}
 	this.hoverItem = null;
 
 	// Define sprite groups
@@ -232,7 +236,7 @@ Engine.prototype.create = function() {
 	this.engineLoading = false;
 }
 
-Engine.prototype.update = function() {
+Engine.prototype.update = function() {		// ROB
 
 	// Process any responses in buffer
 	if (!this.engineLoading && this.responseBuffer && this.responseBuffer.length > 0) {
@@ -386,7 +390,7 @@ Engine.prototype.onMouseDown = function(pointer) {
 		this.selectedJustSet = true;
 		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
-	
+
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
 }
@@ -524,25 +528,6 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	// Update pointer position
 	this.updatePointerPosition();
 
-	if (pointer.middleButton.isDown) {		//ROB
-		if (x < this.mouse.position.x) {
-			x = this.mouse.position.x;
-			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; 
-		}
-		if (x > this.mouse.position.x) {
-			x = this.mouse.position.x;
-			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
-		}
-		if (y < this.mouse.position.y) {
-			y = this.mouse.position.y;
-			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
-		}
-		if (y > this.mouse.position.y) {
-			y = this.mouse.position.y;
-			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
-		}
-	}
-	
 	// Process updates for selection rectangle
 	if (pointer.isDown && pointer.leftButton.isDown) {
 		
@@ -567,9 +552,60 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
 			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-		
-	} else {
+	} else if (pointer.rightButton.isDown) {		//ROB
+		x = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
+		y = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
 
+		if (x < this.mouse.position.x) {
+			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED;
+		}
+		if (x > this.mouse.position.x) {
+			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
+		}
+		if (y < this.mouse.position.y) {
+			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
+		}
+		if (y > this.mouse.position.y) {
+			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
+		}
+
+		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+				this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+
+	} 
+//	else if (pointer.middleButton.isDown) {
+//		if (!this.middleClickScroll.scrollActive) {
+//			this.middleClickScroll.originX = x;
+//			this.middleClickScroll.originY = y;
+//			this.middleClickScroll.scrollActive = true;
+//		}
+//		x = this.phaserGame.camera.x + this.middleClickScroll.originX;
+//		y = this.phaserGame.camera.y + this.middleClickScroll.originY;
+//
+//		console.log("COORDS");
+//		console.log(x);
+//		console.log(y);
+//		console.log(this.mouse.position.x);
+//		console.log(this.mouse.position.y);
+//
+//		if (x < this.mouse.position.x) {
+//			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED;
+//		}
+//		if (x > this.mouse.position.x) {
+//			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
+//		}
+//		if (y < this.mouse.position.y) {
+//			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
+//		}
+//		if (y > this.mouse.position.y) {
+//			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
+//		}
+//
+//		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+//				this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+//
+//	} 
+	else {
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
 				&& Math.abs(this.selectionRectangle.rect.width
@@ -578,7 +614,10 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		}
 
 		// Mark selection as not active and reset
+		this.middleClickScroll.scrollActive = false;
 		this.selectionRectangle.selectActive = false;
+		this.middleClickScroll.originX = this.mouse.position.x;		//ROB
+		this.middleClickScroll.originY = this.mouse.position.y;		//ROB
 		this.selectionRectangle.rect.x = this.mouse.position.x;
 		this.selectionRectangle.rect.y = this.mouse.position.y;
 		this.selectionRectangle.originX = this.mouse.position.x;
@@ -597,7 +636,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			}
 		}
 	}
-	
+
 	// Process updates for mouse
 	this.processMouseFormUpdates();
 }
