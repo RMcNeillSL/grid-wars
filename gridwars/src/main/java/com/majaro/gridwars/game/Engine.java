@@ -613,37 +613,51 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 	
-	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate coordinate) {
+	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] coordinates) {
 
 		// Set default result
 		GameplayResponse response = null;
 		boolean validConstruction = true;
-		ArrayList<Coordinate> path = null;	
-
+		
+		// Declare working variables
+		ArrayList<Coordinate[]> waypointPaths = new ArrayList<Coordinate[]>();
+		ArrayList<Coordinate> newUnitPath = null;
+		DynGameUnit unitRef = null;
+		Coordinate coordRef = null;
+		
 		// Check each object in turn
-		for (DynGameUnit sourceUnit : sourceUnits) {
+		for (int index = 0; index < Math.min(sourceUnits.length, coordinates.length); index ++) {
+			
+			// Save references
+			unitRef = sourceUnits[index];
+			coordRef = coordinates[index];
 			
 			// Run pathfinding search
-			path = this.aStarPathFinder.calculatePath(sourceUnit.getCoordinate(), coordinate);
+			newUnitPath = this.aStarPathFinder.calculatePath(unitRef.getCoordinate(), coordRef);
+			if (newUnitPath == null) {
+				waypointPaths.add(null);
+			} else {
+				waypointPaths.add(newUnitPath.toArray(new Coordinate[newUnitPath.size()]));
+			}
 			
 			// Link path to unit
-			sourceUnit.setWaypoints(path);
-			
-			// Only run this loop once for now
-			break;
+			unitRef.setWaypoints(newUnitPath);
 		}
 
-		// Construct valid response
+		// Construct valid response - list all units and their waypoint nodes
 		if (validConstruction) {
+			Coordinate[] unitWaypoints = null;
 			response = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
-			for (DynGameUnit sourceUnit : sourceUnits) {
-				if (path != null) {
-					
-					// Add coordinates & unit data to response
-					for (Coordinate coord : path) {
+			for (DynGameUnit unit : sourceUnits) {
+				unitWaypoints = unit.getWaypoints();
+				if (unitWaypoints != null) {
+					for (Coordinate coord : unitWaypoints) {
 						response.addCoord(coord);
-						response.addSource(sourceUnit.getInstanceId());
+						response.addSource(unit.getInstanceId());
 					}
+				} else {
+					response.addCoord(unit.getCoordinate());
+					response.addSource(unit.getInstanceId());
 				}
 			}
 		}
@@ -654,8 +668,10 @@ public class Engine extends Thread {
 	
 	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit sourceUnit, Coordinate coordinate) {
 		DynGameUnit[] unitsArray = new DynGameUnit[1];
+		Coordinate[] coordinates = new Coordinate[1];
 		unitsArray[0] = sourceUnit;
-		return this.processWaypointPathCoordsRequest(player, unitsArray, coordinate);
+		coordinates[0] = coordinate;
+		return this.processWaypointPathCoordsRequest(player, unitsArray, coordinates);
 	}
 	
 	private GameplayResponse processWaypointUpdateUnitCellRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] newCoordinates) {
@@ -788,6 +804,7 @@ public class Engine extends Thread {
 		GameplayResponse gameplayResponse = null;
 		GameplayResponse[] gameplayResponseArray = null;
 		ArrayList<GameplayResponse> gameplayResponseList = new ArrayList<GameplayResponse>();
+		ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
 
 		// Check minimum processing conditions
 		if (sender != null) {
@@ -824,16 +841,20 @@ public class Engine extends Thread {
 		        			gameplayRequest.getTargetString());
 		        	break;
 		        case WAYPOINT_PATH_COORDS:
-		        	gameplayResponse = this.processWaypointPathCoordsRequest(sender, 
+		        	for (int coordIndex = 0; (coordIndex+1) < gameplayRequest.getTargetString().length; coordIndex += 2) {
+		        		coordinates.add(new Coordinate(Integer.parseInt(gameplayRequest.getTargetString()[coordIndex]),
+		        				Integer.parseInt(gameplayRequest.getTargetString()[coordIndex+1])));
+		        	}
+		        	gameplayResponse = this.processWaypointPathCoordsRequest(sender,
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false), 
-		        			new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY()));
+		        			coordinates.toArray(new Coordinate[coordinates.size()]));
 		        	break;
 		        case WAYPOINT_UPDATE_UNIT_CELL:
-		        	Coordinate[] coordinates = new Coordinate[1];
-		        	coordinates[0] = new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY());
+		        	Coordinate[] coordinate = new Coordinate[1];
+		        	coordinate[0] = new Coordinate(gameplayRequest.getTargetCellX(), gameplayRequest.getTargetCellY());
 		        	gameplayResponse = this.processWaypointUpdateUnitCellRequest(sender, 
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false),
-		        			coordinates);
+		        			coordinate);
 		        	break;
 		        case DAMAGE_OBJECT:
 		        	gameplayResponse = this.processDamageRequest(sender,

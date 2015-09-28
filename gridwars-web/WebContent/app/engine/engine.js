@@ -405,7 +405,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 	// Positional values for cell and xy
 	var point = this.mouse.position;
-	var cell = point.toCell();
+	var mouseCell = point.toCell();
 	
 	// Flag for general pointer actions handled
 	var clickHandled = false;
@@ -423,8 +423,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 		} else if (this.newBuilding.active) {
 
 			// Render placement overlay
-			if (this.isSquareEmpty(cell.col, cell.row) && this.isSquareWithinBaseRange(cell.col, cell.row)) {
-				this.newBuilding.target.setPosition(cell);
+			if (this.isSquareEmpty(mouseCell.col, mouseCell.row) && this.isSquareWithinBaseRange(mouseCell.col, mouseCell.row)) {
+				this.newBuilding.target.setPosition(mouseCell);
 				this.serverAPI.requestBuildingPlacement(this.newBuilding);
 				this.newBuilding.active = false;
 				this.mapRender.clearPlacementHover();
@@ -440,12 +440,13 @@ Engine.prototype.onMouseUp = function(pointer) {
 			// Object reference variables
 			var objectRef = null;
 			var objectType = null;
-			var objectId = null;
+			var objectInstanceId = null;
 			
 			// Group API request objects
+			var unitsForMoveRequest = [];
 			
 			// Flags for object click event
-			var cellEmpty = this.isSquareEmpty(cell.col, cell.row);
+			var cellEmpty = this.isSquareEmpty(mouseCell.col, mouseCell.row);
 
 			// Process selected items
 			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
@@ -453,7 +454,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 				// Identify type of unit and create reference
 				objectRef = this.selected[selectedIndex];
 				objectType = CONSTANTS.getObjectType(objectRef.gameCore.identifier);
-				objectId = objectRef.gameCore.instanceId;
+				objectInstanceId = objectRef.gameCore.instanceId;
 				
 				// Make sure self is defined
 				if (objectRef) {
@@ -461,8 +462,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 					// Process for units
 					if (objectType == "UNIT") {
 						if (cellEmpty && ctrlDown) 		{ clickHandled = true;	 } //targetUnit.shootAtXY(point); }
-						if (cellEmpty && !ctrlDown) 	{ clickHandled = true; 	this.serverAPI.requestUnitMoveCell(objectRef, cell); } 
-						if (!cellEmpty && enemyAtPoint) { clickHandled = true; 	this.serverAPI.requestObjectAttackObject(objectId, enemyAtPoint.gameCore.instanceId); }
+						if (cellEmpty && !ctrlDown) 	{ clickHandled = true; 	unitsForMoveRequest.push(objectRef); } 
+						if (!cellEmpty && enemyAtPoint) { clickHandled = true; 	this.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
 					}
 					
 					// Process for buildings
@@ -470,7 +471,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 					
 					// Process for defences
 					if (objectType == "DEFENCE") {
-						if (enemyAtPoint) 				{ clickHandled = true;	this.serverAPI.requestObjectAttackObject(objectId, enemyAtPoint.gameCore.instanceId); }
+						if (enemyAtPoint) 				{ clickHandled = true;	this.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
 //						if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
 //							clickHandled = true;
 //							this.selected[selectedIndex].shootAtXY(point);
@@ -480,8 +481,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 				}
 			}
 			
+			// Process any units waiting for move request - generate set of end cells
+			if (unitsForMoveRequest.length > 0) { this.moveUnitGroup(unitsForMoveRequest, mouseCell); }
+				
 			// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
-			if (!clickHandled && !this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) { this.selected = []; }
+			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint) { this.selected = []; }
 
 		// Select units/buildings under mouseXY
 		} else {
@@ -695,6 +699,48 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.moveUnitGroup = function(unitArray, targetCell) {
+	
+	// Make sure units exist for processing
+	if (unitArray.length > 0) {
+
+		// Working variables
+		var targetCells = [new Cell(targetCell.col, targetCell.row)];
+		
+		// Possible cell class
+		var PossibleCell = function(col, row, distance) {
+			this.cell = new Cell(col, row);
+			this.distance = distance;
+		}
+		
+		// Generate usable cells list			-- optimise by using target cell (+-)searchRegion and increase if not enough cells for units have been found
+		var possibleCells = [];
+		for (var searchRow = 0; searchRow < this.mapRender.height; searchRow ++) {
+			for (var searchCol = 0; searchCol < this.mapRender.width; searchCol ++) {
+				if (this.isSquareEmpty(searchCol, searchRow) &&
+						!(searchCol == targetCell.col && searchRow == targetCell.row)) {
+					possibleCells.push(new PossibleCell(searchCol, searchRow, targetCell.distanceToCell(searchCol, searchRow)));
+				}
+			}
+		}
+		possibleCells.sort(function (cellA, cellB) { return cellA.distance - cellB.distance; });
+		
+		for (var index = 0; index < possibleCells.length; index ++) {
+			console.log("(" + possibleCells[index].cell.col + "," + possibleCells[index].cell.row + ") - " + possibleCells[index].distance);
+		}
+		
+		// Generate list of cells for each unit to move to
+		for (var unitIndex = 1; unitIndex < unitArray.length; unitIndex ++) {
+			targetCells.push(possibleCells[0].cell);
+			possibleCells.splice(0, 1);
+		}
+		
+		// Submit request for unit movement
+		this.serverAPI.requestUnitMoveCell(unitArray, targetCells);
+	}
+
+}
 
 Engine.prototype.purchaseObject = function(objectId) {
 	

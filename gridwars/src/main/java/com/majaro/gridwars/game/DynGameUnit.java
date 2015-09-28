@@ -59,6 +59,13 @@ public class DynGameUnit extends GameUnit implements DynGameObject {
 			return null;
 		}
 	}
+	public Coordinate[] getWaypoints() {
+		if (this.waypoints == null) {
+			return null;
+		} else {
+			return this.waypoints.toArray(new Coordinate[this.waypoints.size()]);
+		}
+	}
 	
 	// Setter methods
 	public void updateCoordinate(Coordinate newCoordinate) { this.coordinate = newCoordinate; }

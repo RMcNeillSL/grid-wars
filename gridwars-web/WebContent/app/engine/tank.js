@@ -328,11 +328,11 @@ Tank.prototype.getHealthRenderBounds = function() {
 		left : Math.min(absoluteBounds.left, absoluteBounds.left + absoluteBounds.width) + 15,
 		top : Math.min(absoluteBounds.top, absoluteBounds.top + absoluteBounds.height),
 		right : Math.max(absoluteBounds.left, absoluteBounds.left + absoluteBounds.width) - 15,
-		bottom : Math.min(absoluteBounds.top, absoluteBounds.top + absoluteBounds.height) + 5,
-		healthWidth : this.width
+		bottom : Math.min(absoluteBounds.top, absoluteBounds.top + absoluteBounds.height) + 5
 	};
 	
 	// Add width and height
+	healthBounds.healthWidth = this.width - 30;
 	healthBounds.width = healthBounds.right - healthBounds.left;
 	healthBounds.height = healthBounds.bottom - healthBounds.top;
 	
