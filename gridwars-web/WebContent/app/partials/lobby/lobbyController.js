@@ -88,6 +88,7 @@
 		getAllData();
 
 		this.$rootScope.mapName = this.$rootScope.gameConfig.mapName.toLowerCase();
+		this.$rootScope.mapName = this.$rootScope.mapName.split(' ').join('_');
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
 			if(self.$rootScope.currentlyInLobby) {
