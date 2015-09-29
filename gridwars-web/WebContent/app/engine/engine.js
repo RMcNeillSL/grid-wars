@@ -1320,7 +1320,8 @@ Engine.prototype.getSelectionArray = function() {
 		if (this.units[tankIndex].left > selRect.left
 				&& this.units[tankIndex].left < selRect.right
 				&& this.units[tankIndex].top > selRect.top
-				&& this.units[tankIndex].top < selRect.bottom) {
+				&& this.units[tankIndex].top < selRect.bottom
+				&& this.units[tankIndex].gameCore.playerId == this.currentPlayer.playerId) {
 			result.push(this.units[tankIndex]);
 		}
 	}
