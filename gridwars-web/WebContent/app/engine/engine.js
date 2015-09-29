@@ -77,7 +77,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originY : 0,
 		miniMapClickStart : false
 	};
-	this.middleClickScroll = {		//ROB
+	this.middleClickScroll = {
 		isActive	: false,
 		originX		: 0,
 		originY		: 0
@@ -86,6 +86,8 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		isActive	: false
 	}
 	this.hoverItem = null;
+	this.tankBuildInProgress = false;		// ROB
+	this.turretBuildInProgress = false;
 
 	// Define sprite groups
 	this.mapGroup = null;
@@ -659,10 +661,18 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 Engine.prototype.onKeyPressed = function(char) {
 
 	// Set active building object
-	if (char == '1') { this.purchaseObject("TURRET"); }
+	if (char == '1') {
+		if (!this.turretBuildInProgress) {
+			this.purchaseObject("TURRET"); 
+		}
+	}
 
 	// Submit request for tank purchase
-	if (char == '2') { this.purchaseObject("TANK"); }
+	if (char == '2') {
+		if(!this.tankBuildInProgress) {
+			this.purchaseObject("TANK");
+		}
+	}
 	
 	// Process mouse form updates
 	this.processMouseFormUpdates();
@@ -812,11 +822,13 @@ Engine.prototype.purchaseObject = function(objectId) {
 			var newDefenceCore = new GameCore(objectId, cell);
 			newDefenceCore.setPlayer(this.currentPlayer);
 			this.serverAPI.purchaseRequest(newDefenceCore);
+			this.turretBuildInProgress = true;
 			break;
 		case "TANK":
 			newUnitCore = new GameCore(objectId, cell);
 			newUnitCore.setPlayer(this.currentPlayer);
 			this.serverAPI.purchaseRequest(newUnitCore);
+			this.tankBuildInProgress = true;
 			break;
 	}
 	
@@ -1626,31 +1638,31 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 
 	// Start animation playing		-- { button: animateButton, hudConstants: hudConstants }
 	this.startBuildingAnimation(gameObject);
-	
+
 	// Purchase finished callback
 	var self = this;
 	var purchaseFinished = function() {
-		
+
 		// Locate purchase object from player and purchaseObjectId 
 		var purchaseObject = self.currentPlayer.getPurchase(responseData.target[0]);
-		
+
 		// Run purchase finished request
 		self.serverAPI.purchaseFinishedRequest(purchaseObject);
 	}
-	
+
 	// Begin purchase timer with appropriate callback
 	var purchaseTimeout = setTimeout(purchaseFinished, gameObject.buildTime);
-	
+
 	// Add item to list of purchased items
 	this.currentPlayer.addPurchase(gameObject.identifier, responseData.target[0], purchaseTimeout);
-	
+
 	// Deduct cash from player
 	this.currentPlayer.reduceCash(gameObject.cost);
 	this.moneyLabel.setText(this.currentPlayer.cash);
 }
 
 Engine.prototype.processPurchasePending = function(responseData) {
-	
+
 }
 
 Engine.prototype.processUnitPurchaseFinished = function(responseData, overridePurchase) {
@@ -1686,6 +1698,7 @@ Engine.prototype.processUnitPurchaseFinished = function(responseData, overridePu
 		switch (refObject.identifier) {
 			case "TANK":
 				newUnitObject = new Tank(this.engineCore, gameCore, this.mapGroup, this.tankGroup, spawnPoint, spawnCell.col, spawnCell.row, 100, 100);
+				this.tankBuildInProgress = false;
 				break;
 			default:
 				break;
@@ -1805,6 +1818,7 @@ Engine.prototype.processNewBuilding = function(responseData, keepCash) {
 				newBuilding = new Turret(this.engineCore, gameCore, this.mapGroup,
 						this.turretGroup, refObject.xy, refObject.cell.col, refObject.cell.row,
 						100, 100, false);
+				this.turretBuildInProgress = false;
 				break;
 		}
 
