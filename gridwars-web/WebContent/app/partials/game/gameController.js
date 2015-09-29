@@ -3,6 +3,20 @@
 (function() {
 	
 	function GameController($rootScope, $scope, $location, gameService) {
+//		document.onkeydown = function(){
+//			  switch (event.keyCode){
+//			        case 116 : 		//F5 button
+//			            event.returnValue = false;
+//			            alert("Refreshing will cause you to lose your game.");
+//			            return false;
+//			        case 82 : 		//R button
+//			            if (event.ctrlKey){ 
+//			                event.returnValue = false;
+//			                alert("Refreshing will cause you to lose your game.");
+//			                return false;
+//			            }
+//			    }
+//			}
 
 		// Save passed variables
 		this.$rootScope = $rootScope;
