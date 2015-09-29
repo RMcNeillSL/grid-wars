@@ -86,9 +86,8 @@
 			// Finished game callback
 			var gameFinished = function(playerResults) {
 				var callback = function() {
-					//self.changeView("/results");
+					self.changeView("/results");
 				}
-				
 				self.$rootScope.playerResults = playerResults;
 				self.gameService.gameComplete(callback);
 			}
@@ -121,9 +120,10 @@
 				console.log("LOG: Linked game sockets to socket manager.");
 
 				// Submit ready message
-				gameService.gameStartRequest();
-				console.log("LOG: Game start request has been sent.");
-
+				(new Waiter(function() { return !self.phaserGame.engineLoading; }, function() {
+					gameService.gameStartRequest();
+					console.log("LOG: Game start request has been sent.");
+				}, 50)).start();
 			}
 		}
 

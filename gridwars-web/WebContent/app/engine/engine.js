@@ -127,6 +127,8 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.image(CONSTANTS.MINI_MAP, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map.png');
 	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
+	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
+	
 	
 	// Load game object icons
 	for(var i = 0; i < 6; i++) {
@@ -289,7 +291,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -1105,7 +1107,20 @@ Engine.prototype.createGameScreen = function() {
 
 	// Create map map HUD, minimap image and button sprites
 	this.mapHUD = createHUDSprite(mapLeft, 0, CONSTANTS.MINI_MAP, 90, true);
-	this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
+	
+	// TODO: Update minimap sprites so that ID = mapId to ease load processing
+	switch(this.gameplayConfig.mapId) {
+		case "1":
+			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_HUNTING_GROUND, 92, true);
+			console.log(this.gameplayConfig.mapId);
+			break;
+			
+		case "2":
+			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
+			console.log(this.gameplayConfig.mapId + "wow");
+			break;
+	}
+	
 	this.homeButton = createGameButton(CONSTANTS.HUD.BUILDING, new Point(mapLeft + 65, 318), true);
 	this.defenceButton = createGameButton(CONSTANTS.HUD.DEFENCE, new Point(mapLeft + 120, 317), true);
 	this.tankButton = createGameButton(CONSTANTS.HUD.UNIT, new Point(mapLeft + 178, 318), true);
@@ -1208,9 +1223,7 @@ Engine.prototype.updatePlayerStatus = function() {
 			if (!playerAlreadyDead && self.playerResults.length < self.players.length) {
 				self.playerResults.push({
 					position : self.players.length - self.playerResults.length,
-					playerId : deadPlayers[i1].playerId,
-					feedback : deadPlayers[i1].playerId + " finished in place: "
-							+ (self.players.length - self.playerResults.length) + "."
+					playerId : deadPlayers[i1].playerId
 				});
 			}
 		}
@@ -1228,8 +1241,7 @@ Engine.prototype.updatePlayerStatus = function() {
 			if (!isDead && self.playerResults.length < self.players.length) {
 				self.playerResults.push({
 					position : 1,
-					playerId : self.players[index].playerId,
-					feedback : self.players[index].playerId + " finished in place: 1."
+					playerId : self.players[index].playerId
 				});
 				break;
 			}

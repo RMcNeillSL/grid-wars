@@ -29,19 +29,25 @@
 				"usernameAttempt" : username,
 				"passwordAttempt" : password
 			};
-			this.loginService.sendLogin(auth, function(response) {
-				_this.$scope.response = response;
-				if (response === 200) {
-					_this.$rootScope.currentUser = username;
-					_this.$window.sessionStorage.username = username;
-					_this.changeView('/servers');
-				} else if (response === 401) {
+			this.loginService.sendLogin(auth, function(res) {
+				_this.$scope.response = res;
+				if (res.status === 401) {
 					_this.$scope.loginError = "Invalid username or password entered.";
-				} else if (response === 409) {
+				} else if (res.status === 409) {
 					_this.$scope.loginError = "This user is already logged in.";
-				} else if (response === 500) {
+				} else if (res.status === 500) {
 					_this.$scope.loginError = "Internal server error.";
+				} else if (res.status === 200) {
+					if(res.responseText.toUpperCase() === username.toUpperCase()) {
+						console.log("200");
+						_this.$rootScope.currentUser = res.responseText;
+						_this.$window.sessionStorage.username = res.responseText;
+					}
+					
+					_this.changeView('/servers');
 				}
+				
+				_this.$scope.$apply();
 			});
 		},
 		goToRegister : function() {
