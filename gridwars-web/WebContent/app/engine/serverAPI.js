@@ -143,17 +143,25 @@ ServerAPI.prototype.requestObjectAttackObject = function(sourceObjectId, targetO
 	}
 }
 
-ServerAPI.prototype.requestUnitMoveCell = function(units, cell) {
+ServerAPI.prototype.requestUnitMoveCell = function(units, targetCells) {
 
 	// Make sure a required information is present
-	if (units && cell) {
+	if (units && targetCells) {
 
 		// Create request params
 		var params = {
-				source: [units.gameCore.instanceId],
-				targetCellX: cell.col,
-				targetCellY: cell.row
+				source: [],
+				target: []
 		};
+		
+		// Populate units list with target cells
+		for (var unitIndex = 0; unitIndex < units.length; unitIndex ++) {
+			params.source.push(units[unitIndex].gameCore.instanceId);
+		}
+		for (var cellIndex = 0; cellIndex < targetCells.length; cellIndex ++) {
+			params.target.push(targetCells[cellIndex].col);
+			params.target.push(targetCells[cellIndex].row);
+		}
 		
 		// Generate request object
 		var request = new GameplayRequest("WAYPOINT_PATH_COORDS", params);
@@ -163,7 +171,7 @@ ServerAPI.prototype.requestUnitMoveCell = function(units, cell) {
 	
 	} else {
 		if (!units) { console.log("ERROR: Attempted to move units to cell with missing units."); }
-		else if (!cell) { console.log("ERROR: Attempted to move units to cell with missing cell."); }
+		else if (!targetCells) { console.log("ERROR: Attempted to move units to targetCells with missing targetCells."); }
 		else { console.log("ERROR: Unable to move units to cell for unknown reason"); }
 	}	
 }

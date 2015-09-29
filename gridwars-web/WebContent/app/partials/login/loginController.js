@@ -12,8 +12,8 @@
 		this.$rootScope.pageName = "Login";
 
 		// Declare variables
-		//$scope.username = "TestUser"; // REMOVE LATER
-		//$scope.password = "password";
+		$scope.username = "TestUser"; // REMOVE LATER
+		$scope.password = "password";
 		if(this.$rootScope.newUsername && this.$rootScope.newPassword) {
 			this.login(this.$rootScope.newUsername, this.$rootScope.newPassword);
 			this.$rootScope.newUsername = "";

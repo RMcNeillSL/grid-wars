@@ -17,7 +17,6 @@ public class Coordinate {
 	}
 	
 	// Getters
-	
 	@JsonView(GameStaticMap.Views.Summary.class)
 	public int getCol() { return this.col; }
 	@JsonView(GameStaticMap.Views.Summary.class)
@@ -27,6 +26,11 @@ public class Coordinate {
 	public boolean equals(Coordinate compareCoord) {
 		return (this.col == compareCoord.col &&
 				this.row == compareCoord.row);
+	}
+	public double distanceTo(Coordinate toCoord) {
+		return Math.sqrt(
+				(toCoord.getCol() - this.getCol()) * (toCoord.getCol() - this.getCol()) +
+				(toCoord.getRow() - this.getRow()) * (toCoord.getRow() - this.getRow()) );
 	}
 	
 	// Class views

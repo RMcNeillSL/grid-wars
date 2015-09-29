@@ -121,15 +121,15 @@
 				console.log("LOG: Linked game sockets to socket manager.");
 
 				// Submit ready message
-				gameService.gameStartRequest();
-				console.log("LOG: Game start request has been sent.");
-
+				(new Waiter(function() { return self.phaserGame.engineLoading; }, function() {
+					gameService.gameStartRequest();
+					console.log("LOG: Game start request has been sent.");
+				}, 50)).start();
 			}
 		}
 
 		// Call connect debug methods
 //		gameService.debugConnect();
-
 
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method

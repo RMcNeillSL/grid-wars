@@ -77,6 +77,11 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originY : 0,
 		miniMapClickStart : false
 	};
+	this.middleClickScroll = {		//ROB
+		isActive	: false,
+		originX		: 0,
+		originY		: 0
+	}
 	this.hoverItem = null;
 
 	// Define sprite groups
@@ -263,6 +268,23 @@ Engine.prototype.update = function() {
 	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
 
+	if (this.middleClickScroll.isActive) {
+		if (this.middleClickScroll.originX < (this.mouse.position.x - this.phaserGame.camera.x)) {
+			this.phaserGame.camera.x += Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
+		}
+		if (this.middleClickScroll.originX > (this.mouse.position.x - this.phaserGame.camera.x)) {
+			this.phaserGame.camera.x -= Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
+		}
+		if (this.middleClickScroll.originY < (this.mouse.position.y - this.phaserGame.camera.y)) {
+			this.phaserGame.camera.y += Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
+		}
+		if (this.middleClickScroll.originY > (this.mouse.position.y - this.phaserGame.camera.y)) {
+			this.phaserGame.camera.y -= Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
+		}
+	}
+	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+
 	// Update pointer position
 	this.updatePointerPosition();
 
@@ -387,6 +409,10 @@ Engine.prototype.onMouseDown = function(pointer) {
 		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
 	
+	if (pointer.middleButton.isDown) {
+		this.middleClickScroll.isActive = true;
+	}
+
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
 }
@@ -405,7 +431,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 	// Positional values for cell and xy
 	var point = this.mouse.position;
-	var cell = point.toCell();
+	var mouseCell = point.toCell();
 	
 	// Flag for general pointer actions handled
 	var clickHandled = false;
@@ -423,8 +449,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 		} else if (this.newBuilding.active) {
 
 			// Render placement overlay
-			if (this.isSquareEmpty(cell.col, cell.row) && this.isSquareWithinBaseRange(cell.col, cell.row)) {
-				this.newBuilding.target.setPosition(cell);
+			if (this.isSquareEmpty(mouseCell.col, mouseCell.row) && this.isSquareWithinBaseRange(mouseCell.col, mouseCell.row)) {
+				this.newBuilding.target.setPosition(mouseCell);
 				this.serverAPI.requestBuildingPlacement(this.newBuilding);
 				this.newBuilding.active = false;
 				this.mapRender.clearPlacementHover();
@@ -440,12 +466,13 @@ Engine.prototype.onMouseUp = function(pointer) {
 			// Object reference variables
 			var objectRef = null;
 			var objectType = null;
-			var objectId = null;
+			var objectInstanceId = null;
 			
 			// Group API request objects
+			var unitsForMoveRequest = [];
 			
 			// Flags for object click event
-			var cellEmpty = this.isSquareEmpty(cell.col, cell.row);
+			var cellEmpty = this.isSquareEmpty(mouseCell.col, mouseCell.row);
 
 			// Process selected items
 			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
@@ -453,7 +480,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 				// Identify type of unit and create reference
 				objectRef = this.selected[selectedIndex];
 				objectType = CONSTANTS.getObjectType(objectRef.gameCore.identifier);
-				objectId = objectRef.gameCore.instanceId;
+				objectInstanceId = objectRef.gameCore.instanceId;
 				
 				// Make sure self is defined
 				if (objectRef) {
@@ -461,8 +488,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 					// Process for units
 					if (objectType == "UNIT") {
 						if (cellEmpty && ctrlDown) 		{ clickHandled = true;	 } //targetUnit.shootAtXY(point); }
-						if (cellEmpty && !ctrlDown) 	{ clickHandled = true; 	this.serverAPI.requestUnitMoveCell(objectRef, cell); } 
-						if (!cellEmpty && enemyAtPoint) { clickHandled = true; 	this.serverAPI.requestObjectAttackObject(objectId, enemyAtPoint.gameCore.instanceId); }
+						if (cellEmpty && !ctrlDown) 	{ clickHandled = true; 	unitsForMoveRequest.push(objectRef); } 
+						if (!cellEmpty && enemyAtPoint) { clickHandled = true; 	this.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
 					}
 					
 					// Process for buildings
@@ -470,7 +497,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 					
 					// Process for defences
 					if (objectType == "DEFENCE") {
-						if (enemyAtPoint) 				{ clickHandled = true;	this.serverAPI.requestObjectAttackObject(objectId, enemyAtPoint.gameCore.instanceId); }
+						if (enemyAtPoint) 				{ clickHandled = true;	this.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
 //						if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
 //							clickHandled = true;
 //							this.selected[selectedIndex].shootAtXY(point);
@@ -480,8 +507,11 @@ Engine.prototype.onMouseUp = function(pointer) {
 				}
 			}
 			
+			// Process any units waiting for move request - generate set of end cells
+			if (unitsForMoveRequest.length > 0) { this.moveUnitGroup(unitsForMoveRequest, mouseCell); }
+				
 			// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
-			if (!clickHandled && !this.selected[selectedIndex].gameCore.isUnit && !enemyAtPoint && !friendlyAtPoint) { this.selected = []; }
+			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint) { this.selected = []; }
 
 		// Select units/buildings under mouseXY
 		} else {
@@ -504,6 +534,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 			}
 		}
 	}
+	
+	if (pointer.middleButton.isDown) {
+		this.middleClickScroll.isActive = false;
+	}
 
 	// Perform checks for right click
 	if (!clickHandled && pointer.rightButton.isDown) {
@@ -520,25 +554,6 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	// Update pointer position
 	this.updatePointerPosition();
 
-	if (pointer.middleButton.isDown) {		//ROB
-		if (x < this.mouse.position.x) {
-			x = this.mouse.position.x;
-			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; 
-		}
-		if (x > this.mouse.position.x) {
-			x = this.mouse.position.x;
-			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
-		}
-		if (y < this.mouse.position.y) {
-			y = this.mouse.position.y;
-			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
-		}
-		if (y > this.mouse.position.y) {
-			y = this.mouse.position.y;
-			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
-		}
-	}
-	
 	// Process updates for selection rectangle
 	if (pointer.isDown && pointer.leftButton.isDown) {
 		
@@ -563,9 +578,27 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
 			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-		
-	} else {
+	} else if (pointer.rightButton.isDown) {
+		x = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
+		y = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
 
+		if (x < this.mouse.position.x) {
+			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED;
+		}
+		if (x > this.mouse.position.x) {
+			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
+		}
+		if (y < this.mouse.position.y) {
+			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
+		}
+		if (y > this.mouse.position.y) {
+			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
+		}
+
+		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+				this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+
+	} else {
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
 				&& Math.abs(this.selectionRectangle.rect.width
@@ -575,12 +608,18 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Mark selection as not active and reset
 		this.selectionRectangle.selectActive = false;
+
 		this.selectionRectangle.rect.x = this.mouse.position.x;
 		this.selectionRectangle.rect.y = this.mouse.position.y;
 		this.selectionRectangle.originX = this.mouse.position.x;
 		this.selectionRectangle.originY = this.mouse.position.y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
+
+		if(!this.middleClickScroll.isActive) {
+			this.middleClickScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
+			this.middleClickScroll.originY = this.mouse.position.y - this.phaserGame.camera.y;
+		}
 
 		// Select hover items
 		this.hoverItem = this.getItemAtPoint(this.mouse.position, true, true);
@@ -593,7 +632,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			}
 		}
 	}
-	
+
 	// Process updates for mouse
 	this.processMouseFormUpdates();
 }
@@ -695,6 +734,49 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
+
+Engine.prototype.moveUnitGroup = function(unitArray, targetCell) {
+	
+	// Make sure units exist for processing
+	if (unitArray.length > 0) {
+
+		// Working variables
+		var targetCells = [new Cell(targetCell.col, targetCell.row)];
+		
+		// Possible cell class
+		var PossibleCell = function(col, row, distance) {
+			this.cell = new Cell(col, row);
+			this.distance = distance;
+		}
+		
+		// Generate usable cells list			-- optimise by using target cell (+-)searchRegion and increase if not enough cells for units have been found
+		var possibleCells = [];
+		for (var searchRow = 0; searchRow < this.mapRender.height; searchRow ++) {
+			for (var searchCol = 0; searchCol < this.mapRender.width; searchCol ++) {
+				if (this.isSquareEmpty(searchCol, searchRow) &&
+						!(searchCol == targetCell.col && searchRow == targetCell.row)) {
+					possibleCells.push(new PossibleCell(searchCol, searchRow, targetCell.distanceToCell(searchCol, searchRow)));
+				}
+			}
+		}
+		possibleCells.sort(function (cellA, cellB) { return cellA.distance - cellB.distance; });
+		
+//		// Output ordered list of all possible cells
+//		for (var index = 0; index < possibleCells.length; index ++) {
+//			console.log("(" + possibleCells[index].cell.col + "," + possibleCells[index].cell.row + ") - " + possibleCells[index].distance);
+//		}
+		
+		// Generate list of cells for each unit to move to
+		for (var unitIndex = 1; unitIndex < unitArray.length; unitIndex ++) {
+			targetCells.push(possibleCells[0].cell);
+			possibleCells.splice(0, 1);
+		}
+		
+		// Submit request for unit movement
+		this.serverAPI.requestUnitMoveCell(unitArray, targetCells);
+	}
+
+}
 
 Engine.prototype.purchaseObject = function(objectId) {
 	
@@ -894,6 +976,8 @@ Engine.prototype.stopBuildingAnimation = function(newObject) {
 	// Stop all animations returning to unselected state
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_BUILDING, buttonData.hudConstants.UNSELECTED);
 	buttonData.animateButton.animations.stop(buttonData.hudConstants.A_READY, buttonData.hudConstants.UNSELECTED);
+	
+	buttonData.animateButton.frame = buttonData.hudConstants.UNSELECTED;
 }
 
 Engine.prototype.isPointOverMinimap = function(checkPoint) {
@@ -1729,8 +1813,12 @@ Engine.prototype.processObjectAttackObject = function(responseData) {
 		// Loop through all defences set to fire
 		var source = this.getObjectFromInstanceId(refObject.sourceId);
 		var target = this.getObjectFromInstanceId(refObject.targetId);
-		if (target != null && source != null) {
-			source.lockonAndShoot(target);
+		if (source != null) {
+			if (target == null) {
+				source.clearLockonTarget();
+			} else {
+				source.lockonAndShoot(target);
+			}
 		}
 	}
 }
