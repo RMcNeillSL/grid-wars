@@ -46,9 +46,9 @@ function SocketShiz () {
 		if (self.onUserJoinedGameLobby) { self.onUserJoinedGameLobby(response); }
 	});
 
-	this.sockets.on(CONSTANTS.SOCKET_REC_GAME_CONFIG, function (mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
+	this.sockets.on(CONSTANTS.SOCKET_REC_GAME_CONFIG, function (mapId, mapName, maxPlayers, gameType, mapMaxPlayers, startingCash, 
 			gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
-		if (self.onGameConfig) { self.onGameConfig(mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
+		if (self.onGameConfig) { self.onGameConfig(mapId, mapName, maxPlayers, gameType, mapMaxPlayers, startingCash, 
 				gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV); }
 	});
 

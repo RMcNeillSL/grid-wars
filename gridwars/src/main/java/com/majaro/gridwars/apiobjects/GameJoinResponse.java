@@ -19,6 +19,7 @@ public class GameJoinResponse {
 	private String lobbyId = null;
 	private String lobbyName = null;
 	private String mapId = null;
+	private String mapName = null;
 	private int maxPlayers = -1;
 	private int mapMaxPlayers = -1;
 	private E_GameType gameType = E_GameType.UNDEFINED;
@@ -70,11 +71,12 @@ public class GameJoinResponse {
 	}
 	
 	@JsonView(GameJoinResponse.Views.Summary.class)
-	public String getMapName() {
+	public String getMapName() { 
 		if (this.sourceGameLobby != null) {
 			return this.sourceGameLobby.getGameConfig().getMapName();
+		} else if (this.sourceGameLobby == null && this.mapName != null) {
+			return this.mapName;
 		}
-		
 		return "";
 	}
 

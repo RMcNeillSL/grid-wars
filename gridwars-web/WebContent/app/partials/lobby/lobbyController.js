@@ -106,7 +106,9 @@
 			},
 			changeMap: function (map) {
 				this.$rootScope.previousMapId = this.$rootScope.gameConfig.mapId;
+				this.$rootScope.previousMapName = this.$rootScope.gameConfig.mapName;
 				this.$rootScope.gameConfig.mapId = map.mapId;
+				this.$rootScope.gameConfig.mapName = map.mapName;
 				this.lobbyService.updateConfig();
 			},
 			changeCash: function (cash) {
