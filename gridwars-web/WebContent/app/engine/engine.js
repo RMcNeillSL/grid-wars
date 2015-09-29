@@ -267,7 +267,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -1124,9 +1124,7 @@ Engine.prototype.updatePlayerStatus = function() {
 			if (!playerAlreadyDead && self.playerResults.length < self.players.length) {
 				self.playerResults.push({
 					position : self.players.length - self.playerResults.length,
-					playerId : deadPlayers[i1].playerId,
-					feedback : deadPlayers[i1].playerId + " finished in place: "
-							+ (self.players.length - self.playerResults.length) + "."
+					playerId : deadPlayers[i1].playerId
 				});
 			}
 		}
@@ -1144,8 +1142,7 @@ Engine.prototype.updatePlayerStatus = function() {
 			if (!isDead && self.playerResults.length < self.players.length) {
 				self.playerResults.push({
 					position : 1,
-					playerId : self.players[index].playerId,
-					feedback : self.players[index].playerId + " finished in place: 1."
+					playerId : self.players[index].playerId
 				});
 				break;
 			}

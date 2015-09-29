@@ -353,8 +353,8 @@ public class RequestProcessor {
 		return authenticated;
 	}
 
-	public synchronized int authenticate(String sessionId, AuthRequest authRequest) {
-		int response = 401;
+	public synchronized String authenticate(String sessionId, AuthRequest authRequest) {
+		String response = "401";
 		
 		User user = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
 
@@ -370,9 +370,9 @@ public class RequestProcessor {
 
 			if (!userLoggedIn) {
 				addNewSession(sessionId, user);
-				response = 200;
+				response = user.getUsername();
 			} else {
-				response = 409;
+				response = "409";
 			}
 		}
 

@@ -22,6 +22,7 @@
 				this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME);
 			},
 			onGameJoin: function (userId) {
+				console.log(userId + ":" + this.$rootScope.currentUser);
 				this.$rootScope.socketsReady = (userId == this.$rootScope.currentUser || this.$rootScope.socketsReady);
 				console.log("UserId:" + userId);
 				console.log("currentUser:" + this.$rootScope.currentUser);

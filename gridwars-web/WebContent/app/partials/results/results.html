@@ -6,14 +6,12 @@
 		<tr>
 			<th>Position</th>
 			<th>Player</th>
-			<th>Feedback</th>
 		</tr>
 		<tr ng-repeat="result in playerResults | orderBy:'position'">
 			<td class="tdInfo"><p class="position-{{ result.position}}"><span class="glyphicon" ng-class="{'glyphicon-star' : (result.position != playerResults.length),
 			'glyphicon-thumbs-down' : (result.position == playerResults.length)}"></span>
 			{{ positions[result.position-1] }} place</p></td>
 			<td class="tdInfo">{{ result.playerId }}</td>
-			<td class="tdInfo">{{ result.feedback }}</td>
 		</tr>
 	</table>
 	<button type="button" class="btn btn-sm"
