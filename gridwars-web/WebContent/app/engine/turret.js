@@ -230,7 +230,7 @@ Turret.prototype.clearLockonTarget = function() {
 Turret.prototype.lockonAndShoot = function(targetObject) {
 	
 	// Check if a target needs assigning
-	if (targetObject) {
+	if (targetObject && this.shootTarget.instanceId != targetObject.gameCore.instanceId) {
 		
 		// Halt any target fire currently set
 		this.topSegment.animations.stop('fireAndCool', true);
