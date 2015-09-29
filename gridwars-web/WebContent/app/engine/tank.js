@@ -136,7 +136,7 @@ Tank.prototype.clearLockonTarget = function() {
 Tank.prototype.lockonAndShoot = function(targetObject) {
 
 	// Check if a target needs assigning
-	if (targetObject) {
+	if (targetObject && this.shootTarget.instanceId != targetObject.gameCore.instanceId) {
 
 		// Save target information
 		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
