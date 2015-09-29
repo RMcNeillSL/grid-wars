@@ -1,0 +1,116 @@
+diff --git a/gridwars-web/WebContent/app/app.js b/gridwars-web/WebContent/app/app.js
+index af6e614..fb7067f 100644
+--- a/gridwars-web/WebContent/app/app.js
++++ b/gridwars-web/WebContent/app/app.js
+@@ -20,44 +20,44 @@ config(['$routeProvider', function($routeProvider) {
+ 	$routeProvider.when('/servers', {template: '<gwa-servers></gwa-servers>'});
+ 	$routeProvider.when('/testing', {template: '<gwa-testing></gwa-testing>'});
+ 	$routeProvider.otherwise({redirectTo: '/login'});
+-}])
+-.run(function($rootScope, $location, $route) {
+-	$rootScope.$on("$routeChangeStart", function(event, next, current) {
+-		var nonAuthPages = [ "login", "register" ];
+-		var currPath = window.location.href;
+-	
+-		if (currPath.indexOf("?") > -1) {
+-			currPath = currPath.substring(0, currPath.indexOf("?"));
+-		}
+-	
+-		for (var i = 0; i < nonAuthPages.length; i++) {
+-			if (currPath.indexOf(nonAuthPages[i]) > -1) {
+-				return;
+-			}
+-		}
+-		
+-		var redirectToLogin = function(res) {
+-			if (res === null || res === undefined || res === "") {
+-				$location.path("/login");
+-				
+-				if ($rootScope.refresh) {
+-					clearInterval($rootScope.refresh);
+-				}
+-				
+-				if($rootScope.getData) {
+-					clearInterval($rootScope.getData);
+-				}
+-				
+-			}
+-		}
+-		
+-		var checkAuth = function(callback) {
+-			$.post("gridwars/rest/checkauth", function() {
+-			}).complete(function(res) {
+-				callback(res.responseText);
+-			});
+-		}
+-		
+-		checkAuth(redirectToLogin);
+-	});
+-});
++}]);
++//.run(function($rootScope, $location, $route) {
++//	$rootScope.$on("$routeChangeStart", function(event, next, current) {
++//		var nonAuthPages = [ "login", "register" ];
++//		var currPath = window.location.href;
++//	
++//		if (currPath.indexOf("?") > -1) {
++//			currPath = currPath.substring(0, currPath.indexOf("?"));
++//		}
++//	
++//		for (var i = 0; i < nonAuthPages.length; i++) {
++//			if (currPath.indexOf(nonAuthPages[i]) > -1) {
++//				return;
++//			}
++//		}
++//		
++//		var redirectToLogin = function(res) {
++//			if (res === null || res === undefined || res === "") {
++//				$location.path("/login");
++//				
++//				if ($rootScope.refresh) {
++//					clearInterval($rootScope.refresh);
++//				}
++//				
++//				if($rootScope.getData) {
++//					clearInterval($rootScope.getData);
++//				}
++//				
++//			}
++//		}
++//		
++//		var checkAuth = function(callback) {
++//			$.post("gridwars/rest/checkauth", function() {
++//			}).complete(function(res) {
++//				callback(res.responseText);
++//			});
++//		}
++//		
++//		checkAuth(redirectToLogin);
++//	});
++//});
+diff --git a/gridwars-web/WebContent/app/engine/engine.js b/gridwars-web/WebContent/app/engine/engine.js
+index 38a375b..2e29896 100644
+--- a/gridwars-web/WebContent/app/engine/engine.js
++++ b/gridwars-web/WebContent/app/engine/engine.js
+@@ -291,7 +291,7 @@ Engine.prototype.update = function() {
+ 	this.updatePointerPosition();
+ 
+ //	// Get state of players in game
+-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
++	//if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+ }
+ 
+ Engine.prototype.render = function() {
+diff --git a/gridwars-web/WebContent/app/partials/game/gameController.js b/gridwars-web/WebContent/app/partials/game/gameController.js
+index a87c566..9ee7a2a 100644
+--- a/gridwars-web/WebContent/app/partials/game/gameController.js
++++ b/gridwars-web/WebContent/app/partials/game/gameController.js
+@@ -128,7 +128,7 @@
+ 		}
+ 
+ 		// Call connect debug methods
+-//		gameService.debugConnect();
++		gameService.debugConnect();
+ 
+ 		// Wait until connections finished before proceeding - then run the game
+ 		// configuration method
