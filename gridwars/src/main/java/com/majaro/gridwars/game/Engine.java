@@ -263,7 +263,7 @@ public class Engine extends Thread {
 			
 			// Save convenient reference to spawn coordiante
 			spawnCoordinate = player.getSpawnCoordinate();
-			startTankFactoryCoordinate = new Coordinate(spawnCoordinate.getCol(), spawnCoordinate.getRow());
+			startTankFactoryCoordinate = new Coordinate(spawnCoordinate.getCol()-1, spawnCoordinate.getRow()-1);
 			
 			// Generate and add new building to response for player
 			newBuilding = new DynGameBuilding(this.generateInstanceId(player), startTankFactory, player, startTankFactoryCoordinate);

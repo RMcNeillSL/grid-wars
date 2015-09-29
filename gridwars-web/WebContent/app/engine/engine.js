@@ -1116,12 +1116,10 @@ Engine.prototype.createGameScreen = function() {
 	switch(this.gameplayConfig.mapId) {
 		case "1":
 			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_HUNTING_GROUND, 92, true);
-			console.log(this.gameplayConfig.mapId);
 			break;
 			
 		case "2":
 			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
-			console.log(this.gameplayConfig.mapId + "wow");
 			break;
 	}
 	
@@ -1444,8 +1442,8 @@ Engine.prototype.explosionCollisionCheck = function() {
 
 // REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
 Engine.prototype.isSquareWithinBaseRange = function(col, row) {
-	return (row <= (this.spawnPoint.row+6) && row >= (this.spawnPoint.row-6)
-			&& col <= (this.spawnPoint.col+6) && col >= (this.spawnPoint.col-6));
+	return (row <= (this.spawnPoint.row+5) && row >= (this.spawnPoint.row-2)
+			&& col <= (this.spawnPoint.col+5) && col >= (this.spawnPoint.col-2));
 }
 
 Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
@@ -1454,8 +1452,8 @@ Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
 	var withinRange = [];
 	
 	// Search for all cells in hub range
-	for (var rowIndex = this.spawnPoint.row-5; rowIndex < this.spawnPoint.row+5; rowIndex++) {
-		for (var colIndex = this.spawnPoint.col-5; colIndex < this.spawnPoint.col+5; colIndex++) {
+	for (var rowIndex = this.spawnPoint.row-2; rowIndex < this.spawnPoint.row+5; rowIndex++) {
+		for (var colIndex = this.spawnPoint.col-2; colIndex < this.spawnPoint.col+5; colIndex++) {
 			if (this.isSquareEmpty(colIndex, rowIndex)) {
 				withinRange.push(new Cell(colIndex, rowIndex));
 			}
