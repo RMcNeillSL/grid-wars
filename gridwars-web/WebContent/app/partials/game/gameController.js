@@ -88,7 +88,6 @@
 				var callback = function() {
 					self.changeView("/results");
 				}
-				
 				self.$rootScope.playerResults = playerResults;
 				self.gameService.gameComplete(callback);
 			}
