@@ -3,6 +3,7 @@ package com.majaro.gridwars.game;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.majaro.gridwars.apiobjects.GameplayRequest;
 import com.majaro.gridwars.apiobjects.GameplayResponse;
@@ -890,6 +891,33 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
+	private GameplayResponse[] processUserLeaveGame (Player sender, ArrayList<String> miscStrings) {		//ROB
+		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
+		List<String> instanceIds = new ArrayList<String>();
+		int maxHealth = 0;
+		
+		for (DynGameBuilding building : buildings) {
+			if (building.getOwner().getPlayerId() == sender.getPlayerId()) {
+				instanceIds.add(building.getInstanceId());
+				if (building.health > maxHealth) {
+					maxHealth = building.health;
+				}
+			}
+		}
+		for (DynGameUnit unit : units) {
+			if (unit.getOwner().getPlayerId() == sender.getPlayerId()) {
+				instanceIds.add(unit.getInstanceId());
+				if (unit.health > maxHealth) {
+					maxHealth = unit.health;
+				}
+			}
+		}
+
+		String[] instanceIdsAsStringArray = (String[]) instanceIds.toArray();
+
+		return this.processDamageRequest(sender, instanceIdsAsStringArray, maxHealth, miscStrings);
+		//return responseList.toArray(new GameplayResponse[responseList.size()]);
+	}
 
 	// Game request method
 
@@ -957,6 +985,10 @@ public class Engine extends Thread {
 		        			gameplayRequest.getSourceString(), 
 		        			Integer.parseInt(gameplayRequest.getTargetString()[0]),
 		        			gameplayRequest.getMisc());
+		        	break;
+		        case PLAYER_LEAVE_GAME:
+		        	gameplayResponseArray = this.processUserLeaveGame(sender, gameplayRequest.getMisc());
+		        	System.out.println("PLAYER LEAVE RECEIVED");
 		        	break;
 			    default:
 			    	gameplayResponse = new GameplayResponse();
