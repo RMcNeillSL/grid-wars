@@ -18,7 +18,8 @@ function GameplayRequest(requestCode, params) {
 	}
 	
 	// Debug output for console
-	var gameplayRequest = this; console.log(gameplayRequest);
+	var gameplayRequest = this;
+	console.log(gameplayRequest);
 }
 
 
