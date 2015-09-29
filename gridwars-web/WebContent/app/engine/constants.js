@@ -105,6 +105,7 @@ CONSTANTS = {
 	MINI_MAP : "mini_map",
 	MINI_MAP_BUTTONS : "mini_map_buttons",
 	UNIT_DETAILS : "unit_details",
+	UNIT_DETAILS_BUTTONS : "unit_details_buttons",
 	TANK_ICON : "tank_icon",
 	TURRET_ICON : "turret_icon",
 	

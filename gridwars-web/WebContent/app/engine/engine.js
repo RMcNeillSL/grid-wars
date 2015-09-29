@@ -118,21 +118,21 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 4);
-	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
 
 	// Load tile images
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
 
 	// Load particles
 	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
-	
-	// Load game frame images
+
+	// Load game HUD spritesheets / images
 	this.phaserGame.load.image(CONSTANTS.MINI_MAP, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map.png');
 	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
-	
-	
+	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
+	this.phaserGame.load.spritesheet(CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details_buttons.png', 36, 38, 9);
+
 	// Load game object icons
 	for(var i = 0; i < 6; i++) {
 		this.phaserGame.load.image(CONSTANTS.COLOUR["TANK"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_' + CONSTANTS.COLOUR["TANK"][i].COLOUR + '.png');
@@ -1027,13 +1027,13 @@ Engine.prototype.createGameScreen = function() {
 	var self = this;
 	
 	// Create game button
-	var createGameButton = function(spriteInfo) {
+	var createGameButton = function(spriteInfo, owner, left, top) {
 		
 		// Calculate sprite information
-		var left = mapLeft + spriteInfo.LEFT * CONSTANTS.HUD.MAP_CONTROL.WIDTH;
-		var top = spriteInfo.TOP * CONSTANTS.HUD.MAP_CONTROL.HEIGHT;
-		var width = spriteInfo.WIDTH * CONSTANTS.HUD.MAP_CONTROL.WIDTH;
-		var height = spriteInfo.HEIGHT * CONSTANTS.HUD.MAP_CONTROL.HEIGHT;
+		var left = left + spriteInfo.LEFT * owner.WIDTH;
+		var top = top + spriteInfo.TOP * owner.HEIGHT;
+		var width = spriteInfo.WIDTH * owner.WIDTH;
+		var height = spriteInfo.HEIGHT * owner.HEIGHT;
 		
 		// Create sprite variable
 		var newButton = self.phaserGame.add.sprite(left, top, CONSTANTS.MINI_MAP_BUTTONS);
@@ -1046,6 +1046,14 @@ Engine.prototype.createGameScreen = function() {
 		newButton.width = width;
 		newButton.height = height;
 		
+		// Return constructed sprite
+		return newButton;
+	};
+	var createMapGameButton = function(spriteData) {
+		
+		// Create button from generic button creation method
+		var newButton = createGameButton(spriteData, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0);
+
 		// Declare animations
 		var buildingAnim = newButton.animations.add(spriteInfo.A_BUILDING, spriteInfo.BUILDING);
 		var buildingComplete = newButton.animations.add(spriteInfo.A_READY, [spriteInfo.UNSELECTED, spriteInfo.SELECTED], 4, true);
@@ -1117,9 +1125,17 @@ Engine.prototype.createGameScreen = function() {
 			}
 		});
 		
-		// Return constructed sprite
+		// Return constructed button
 		return newButton;
-	}
+	};
+	var createDetailGameButton = function(spriteData) {
+		
+		// Create button from generic button creation method
+		var newButton = createGameButton(spriteData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop);
+		
+		// Return constructed button
+		return newButton;
+	};
 	
 	// Function to create simple HUD sprites
 	var createHUDSprite = function(spriteData, owner, leftStart, topStart, frame, zIndex, visible) {
@@ -1149,11 +1165,11 @@ Engine.prototype.createGameScreen = function() {
 		newLabel.fixedToCamera = true;
 		newLabel.visible = visible;
 		return newLabel;
-	}
-	var createMapHUDSprite = function(spriteData, frame, zIndex, visible) { return createHUDSprite(spriteData, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, frame, zIndex, visible); }
-	var createMapHUDText = function(textData, startingText, zIndex, visible) { return createHUDLabel(textData, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, startingText, zIndex, visible); }
-	var createObjectHUDSprite = function(spriteData, frame, zIndex, visible) { return createHUDSprite(spriteData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop, frame, zIndex, visible); }
-	var createObjectHUDText = function(textData, startingText, zIndex, visible) { return createHUDLabel(textData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop, startingText, zIndex, visible); }
+	};
+	var createMapHUDSprite = function(spriteData, frame, zIndex, visible) { return createHUDSprite(spriteData, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, frame, zIndex, visible); };
+	var createMapHUDText = function(textData, startingText, zIndex, visible) { return createHUDLabel(textData, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, startingText, zIndex, visible); };
+	var createObjectHUDSprite = function(spriteData, frame, zIndex, visible) { return createHUDSprite(spriteData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop, frame, zIndex, visible); };
+	var createObjectHUDText = function(textData, startingText, zIndex, visible) { return createHUDLabel(textData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop, startingText, zIndex, visible); };
 	
 	// Create map map HUD
 	this.mapHUD = this.phaserGame.add.sprite(mapLeft, 0, CONSTANTS.MINI_MAP);
@@ -1175,23 +1191,24 @@ Engine.prototype.createGameScreen = function() {
 		case "1":
 			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_HUNTING_GROUND, 92, true);
 			break;
-			
 		case "2":
 			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
 			break;
 	}
 	
-	this.homeButton 			= createGameButton(CONSTANTS.HUD.MAP_CONTROL.BUILDING);
-	this.defenceButton			= createGameButton(CONSTANTS.HUD.MAP_CONTROL.DEFENCE);
-	this.tankButton 			= createGameButton(CONSTANTS.HUD.MAP_CONTROL.UNIT);
-
-	// Create map control HUD sprites/text
+	// Create map control HUD sprites/text/buttons
 	this.moneyLabel 			= createMapHUDText(CONSTANTS.HUD.MAP_CONTROL.CASH, this.currentPlayer.cash, 92, true);
+	this.homeButton 			= createMapGameButton(CONSTANTS.HUD.MAP_CONTROL.BUILDING);
+	this.defenceButton			= createMapGameButton(CONSTANTS.HUD.MAP_CONTROL.DEFENCE);
+	this.tankButton 			= createMapGameButton(CONSTANTS.HUD.MAP_CONTROL.UNIT);
 	
-	// Create object details HUD sprites/text
+	// Create object details HUD sprites/text/buttons
 	this.gameObjectDetailsIcon 	= createObjectHUDSprite(CONSTANTS.HUD.OBJECT_CONTROL.ICON, CONSTANTS.COLOUR["TANK"][0].ICON, 92, false);
 	this.gameObjectDetailsText 	= createObjectHUDText(CONSTANTS.HUD.OBJECT_CONTROL.NAME, "Nothing Selected", 92, false);
 	this.gameObjectHealthText 	= createObjectHUDText(CONSTANTS.HUD.OBJECT_CONTROL.HEALTH, "--%", 92, false);
+	this.gameObjectSell			= createDetailGameButton();
+	
+	//CONSTANTS.UNIT_DETAILS_BUTTONS
 
 	// Draw player money label
 	var style = {
