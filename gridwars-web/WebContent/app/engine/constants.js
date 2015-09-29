@@ -110,6 +110,7 @@ CONSTANTS = {
 	
 	// Minimaps
 	MINIMAP_MAJARO : "minimap_majaro",
+	MINIMAP_HUNTING_GROUND : "minimap_hunting_ground",
 	
 	// Game frame properties
 	MINI_MAP_WIDTH : 377,

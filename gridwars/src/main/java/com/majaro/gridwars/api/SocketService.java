@@ -161,7 +161,7 @@ public class SocketService {
 		if (gameAndUserInfo != null) {
 			GameJoinResponse gameconfig = requestProcessor.getAllGAmeConfigBySocketId(sessionId);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
-			broadcastRoomState.sendEvent("gameConfig", gameconfig.getMapId(), gameconfig.getMaxPlayers(), gameconfig.getGameType(),
+			broadcastRoomState.sendEvent("gameConfig", gameconfig.getMapId(), gameconfig.getMapName(), gameconfig.getMaxPlayers(), gameconfig.getGameType(),
 					gameconfig.getMapMaxPlayers(), gameconfig.getStartingCash(), gameconfig.getGameSpeed(), gameconfig.getUnitHealth(), 
 					gameconfig.getBuildingHealth(), gameconfig.getTurretHealth(), gameconfig.isRandomCrates(), gameconfig.isRedeployableMCV());
 		}
@@ -211,7 +211,7 @@ public class SocketService {
 				if (updateComplete) {
 					BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 
-					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMaxPlayers(), data.getGameType(),
+					broadcastRoomState.sendEvent("gameConfig", data.getMapId(), data.getMapName(), data.getMaxPlayers(), data.getGameType(),
 							mapMaxPlayers, data.getStartingCash(), data.getGameSpeed(), data.getUnitHealth(), 
 							data.getBuildingHealth(), data.getTurretHealth(), data.isRandomCrates(), data.isRedeployableMCV());
 					requestProcessor.setAllNotReady(gameAndUserInfo.getLobbyId());

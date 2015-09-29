@@ -33,10 +33,11 @@
 			self.$rootScope.lobbyMessages.push(userJoinedMessage);
 			self.$rootScope.$apply();
 		},
-		newGameConfig: function (mapId, maxPlayers, gameType, mapMaxPlayers, startingCash, 
+		newGameConfig: function (mapId, mapName, maxPlayers, gameType, mapMaxPlayers, startingCash, 
 				gameSpeed, unitHealth, buildingHealth, turretHealth, randomCrates, redeployableMCV) {
 			self.$rootScope.gameConfig = {
 					"mapId" 			: mapId,
+					"mapName"			: mapName,
 					"maxPlayers" 		: maxPlayers,
 					"gameType" 			: gameType,
 					"mapMaxPlayers"		: mapMaxPlayers,
@@ -48,6 +49,8 @@
 					"randomCrates" 		: randomCrates,
 					"redeployableMCV" 	: redeployableMCV
 				}
+			self.$rootScope.mapName = self.$rootScope.gameConfig.mapName.toLowerCase();
+			self.$rootScope.mapName = self.$rootScope.mapName.split(' ').join('_');
 			self.$rootScope.$apply();
 		},
 		newUserList: function (lobbyUserList) {
@@ -93,6 +96,7 @@
 		},
 		mapChangeError: function (message) {
 			self.$rootScope.gameConfig.mapId = self.$rootScope.previousMapId;
+			self.$rootScope.gameConfig.mapName = self.$rootScope.previousMapName;
 			alert(message);
 			self.$rootScope.$apply();
 		},

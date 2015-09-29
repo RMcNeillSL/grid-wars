@@ -46,11 +46,16 @@ public class REST {
 	// and 401 if incorrect credentials were provided.
 	public Response Authenticate(AuthRequest authRequest) {
 		String sessionId = request.getSession(true).getId();
+		String authResponse = "";
 		if (!requestProcessor.isSessionAuthenticated(sessionId)) {
-			int authResponse = requestProcessor.authenticate(sessionId, authRequest);
-			return Response.status(authResponse).build();
+			authResponse = requestProcessor.authenticate(sessionId, authRequest);
+			if(authRequest.getUsernameAttempt().toUpperCase().equals(authResponse.toUpperCase())) {
+				return Response.ok(authResponse).build();
+			} else {
+				return Response.status(Integer.parseInt(authResponse)).build();
+			}
 		} else {
-			return Response.status(200).build();
+			return Response.ok().build();
 		}
 	}
 

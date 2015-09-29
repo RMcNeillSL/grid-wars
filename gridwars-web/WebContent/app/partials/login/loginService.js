@@ -7,11 +7,25 @@
 	}
 	LoginService.prototype = {
 			sendLogin: function (auth, callback) {
-				this.$http.post("/gridwars/rest/auth", auth).then(function (response) {
-					callback(response.status);
-				}, function (response) {
-					callback(response.status);
+				$.ajax({
+				    type: "POST",
+				    url: "/gridwars/rest/auth",
+				    data: JSON.stringify({
+				    	usernameAttempt: auth.usernameAttempt,
+				    	passwordAttempt: auth.passwordAttempt
+				    }),
+				    contentType: "application/json; charset=utf-8",
+				    dataType: "json",
+				    complete: function(res) {
+				    	console.log(res);
+				    	callback(res);
+				    }
 				});
+				
+//				this.$http.post("/gridwars/rest/auth", auth)
+//				.then(function(res) {
+//					console.log(res.data);
+//				});
 			}
 	}
 	

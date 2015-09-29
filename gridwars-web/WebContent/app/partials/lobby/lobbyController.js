@@ -88,6 +88,7 @@
 		getAllData();
 
 		this.$rootScope.mapName = this.$rootScope.gameConfig.mapName.toLowerCase();
+		this.$rootScope.mapName = this.$rootScope.mapName.split(' ').join('_');
 
 		$scope.$on('$locationChangeStart', function (event, next, current) {
 			if(self.$rootScope.currentlyInLobby) {
@@ -105,7 +106,9 @@
 			},
 			changeMap: function (map) {
 				this.$rootScope.previousMapId = this.$rootScope.gameConfig.mapId;
+				this.$rootScope.previousMapName = this.$rootScope.gameConfig.mapName;
 				this.$rootScope.gameConfig.mapId = map.mapId;
+				this.$rootScope.gameConfig.mapName = map.mapName;
 				this.lobbyService.updateConfig();
 			},
 			changeCash: function (cash) {
