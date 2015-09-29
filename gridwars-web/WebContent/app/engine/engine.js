@@ -77,10 +77,13 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originY : 0,
 		miniMapClickStart : false
 	};
-	this.middleClickScroll = {
+	this.middleClickScroll = {		//ROB
 		isActive	: false,
 		originX		: 0,
 		originY		: 0
+	}
+	this.rightClickScroll = {
+		isActive	: false
 	}
 	this.hoverItem = null;
 
@@ -272,16 +275,16 @@ Engine.prototype.update = function() {
 
 	if (this.middleClickScroll.isActive) {
 		if (this.middleClickScroll.originX < (this.mouse.position.x - this.phaserGame.camera.x)) {
-			this.phaserGame.camera.x += Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/10;
+			this.phaserGame.camera.x += Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
 		}
 		if (this.middleClickScroll.originX > (this.mouse.position.x - this.phaserGame.camera.x)) {
-			this.phaserGame.camera.x -= Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/10;
+			this.phaserGame.camera.x -= Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
 		}
 		if (this.middleClickScroll.originY < (this.mouse.position.y - this.phaserGame.camera.y)) {
-			this.phaserGame.camera.y += Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/10;
+			this.phaserGame.camera.y += Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
 		}
 		if (this.middleClickScroll.originY > (this.mouse.position.y - this.phaserGame.camera.y)) {
-			this.phaserGame.camera.y -= Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/10;
+			this.phaserGame.camera.y -= Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
 		}
 	}
 	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
@@ -414,6 +417,10 @@ Engine.prototype.onMouseDown = function(pointer) {
 	if (pointer.middleButton.isDown) {
 		this.middleClickScroll.isActive = true;
 	}
+	
+	if (pointer.rightButton.isDown) {
+		this.rightClickScroll.isActive = false;
+	}
 
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
@@ -543,8 +550,12 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 	// Perform checks for right click
 	if (!clickHandled && pointer.rightButton.isDown) {
-		this.selected = [];
-		this.setGameObjectDetailsVisibility(false);
+		if (!this.rightClickScroll.isActive) {
+			this.selected = [];
+			this.setGameObjectDetailsVisibility(false);
+		} else {
+			this.rightClickScroll.isActive = false;
+		}
 	}
 	
 	// Release mark as mouse down overminimap
@@ -583,6 +594,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	} else if (pointer.rightButton.isDown) {
 		x = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
 		y = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
+		this.rightClickScroll.isActive = true;
 
 		if (x < this.mouse.position.x) {
 			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED;
@@ -614,13 +626,14 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Mark selection as not active and reset
 		this.selectionRectangle.selectActive = false;
-
 		this.selectionRectangle.rect.x = this.mouse.position.x;
 		this.selectionRectangle.rect.y = this.mouse.position.y;
 		this.selectionRectangle.originX = this.mouse.position.x;
 		this.selectionRectangle.originY = this.mouse.position.y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
+
+		this.rightClickScroll.isActive = false;
 
 		if(!this.middleClickScroll.isActive) {
 			this.middleClickScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
@@ -1160,13 +1173,11 @@ Engine.prototype.createGameScreen = function() {
 	// TODO: Update minimap sprites so that ID = mapId to ease load processing
 	switch(this.gameplayConfig.mapId) {
 		case "1":
-			this.minimap = createMapHUDSprite(CONSTANTS.HUD.MAP_CONTROL.MINIMAP, CONSTANTS.MINIMAP_HUNTING_GROUND, 92, true);
-			console.log(this.gameplayConfig.mapId);
+			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_HUNTING_GROUND, 92, true);
 			break;
 			
 		case "2":
-			this.minimap = createMapHUDSprite(CONSTANTS.HUD.MAP_CONTROL.MINIMAP, CONSTANTS.MINIMAP_MAJARO, 92, true);
-			console.log(this.gameplayConfig.mapId + "wow");
+			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
 			break;
 	}
 	
@@ -1212,8 +1223,12 @@ Engine.prototype.createGameScreen = function() {
 Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) {
 	if(selectedGameObject != null) {
 		this.gameObjectDetailsText.setText(selectedGameObject.gameCore.identifier);
-		this.gameObjectHealthText.setText((Math.floor(selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100) + "%");
 		this.gameObjectDetailsIcon.loadTexture(selectedGameObject.gameCore.colour.ICON);
+		var healthPercentage = (Math.floor(selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
+		
+		if(healthPercentage > 0) {
+			this.gameObjectHealthText.setText(healthPercentage + "%");
+		}
 	}
 	
 	this.displayedGameObject = selectedGameObject;
@@ -1346,7 +1361,8 @@ Engine.prototype.getSelectionArray = function() {
 		if (this.units[tankIndex].left > selRect.left
 				&& this.units[tankIndex].left < selRect.right
 				&& this.units[tankIndex].top > selRect.top
-				&& this.units[tankIndex].top < selRect.bottom) {
+				&& this.units[tankIndex].top < selRect.bottom
+				&& this.units[tankIndex].gameCore.playerId == this.currentPlayer.playerId) {
 			result.push(this.units[tankIndex]);
 		}
 	}
@@ -1474,8 +1490,8 @@ Engine.prototype.explosionCollisionCheck = function() {
 
 // REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
 Engine.prototype.isSquareWithinBaseRange = function(col, row) {
-	return (row <= (this.spawnPoint.row+6) && row >= (this.spawnPoint.row-6)
-			&& col <= (this.spawnPoint.col+6) && col >= (this.spawnPoint.col-6));
+	return (row <= (this.spawnPoint.row+5) && row >= (this.spawnPoint.row-2)
+			&& col <= (this.spawnPoint.col+5) && col >= (this.spawnPoint.col-2));
 }
 
 Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
@@ -1484,8 +1500,8 @@ Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
 	var withinRange = [];
 	
 	// Search for all cells in hub range
-	for (var rowIndex = this.spawnPoint.row-5; rowIndex < this.spawnPoint.row+5; rowIndex++) {
-		for (var colIndex = this.spawnPoint.col-5; colIndex < this.spawnPoint.col+5; colIndex++) {
+	for (var rowIndex = this.spawnPoint.row-2; rowIndex < this.spawnPoint.row+5; rowIndex++) {
+		for (var colIndex = this.spawnPoint.col-2; colIndex < this.spawnPoint.col+5; colIndex++) {
 			if (this.isSquareEmpty(colIndex, rowIndex)) {
 				withinRange.push(new Cell(colIndex, rowIndex));
 			}
@@ -1946,7 +1962,7 @@ Engine.prototype.processUnitDamage = function(responseData) {
 			
 			// Update health on the game object details menu
 			if(gameObject.gameCore.health > 0) {
-				this.gameObjectHealthText.setText(Math.floor((gameObject.gameCore.health / gameObject.gameCore.maxHealth)*100) + "%");
+				this.gameObjectHealthText.setText(Math.floor((refObject.newHealth / gameObject.gameCore.maxHealth)*100) + "%");
 			} else {
 				this.setGameObjectDetailsVisibility(false);
 			}

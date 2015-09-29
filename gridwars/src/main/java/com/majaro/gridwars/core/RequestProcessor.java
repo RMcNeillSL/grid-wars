@@ -98,7 +98,7 @@ public class RequestProcessor {
 						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2 },
 				new Coordinate[] { new Coordinate(6, 12),
-				                   new Coordinate(18, 13) }));
+				                   new Coordinate(19, 13) }));
 
 		this.gameMaps.add(new GameStaticMap("2", "MaJaRo", 32, 32,
 				new int[] {	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,

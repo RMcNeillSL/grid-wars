@@ -70,6 +70,10 @@ public class Engine extends Thread {
 				// Debug information
 				System.out.println("Starting coordinate for pathfinding: (" + startCoord.getCol() + "," + startCoord.getRow() + ")");
 				System.out.println("Ending coordinate for pathfinding: (" + endCoord.getCol() + "," + endCoord.getRow() + ")");
+				if (this.staticMapRef.isCellObstructed(startCoord)) { System.out.println("Start point is marked as an obstructed cell on static map."); }
+				if (this.staticMapRef.isCellObstructed(endCoord)) { System.out.println("End point is marked as an obstructed cell on static map."); }
+				if (this.dynamicMapRef.isCellObstructed(startCoord)) { System.out.println("Start point is marked as an obstructed cell on dynamic map."); }
+				if (this.dynamicMapRef.isCellObstructed(endCoord)) { System.out.println("End point is marked as an obstructed cell on dynamic map."); }
 
 				// Define (and initialise) working variables
 				boolean isPathPossible = true;
@@ -152,11 +156,16 @@ public class Engine extends Thread {
 					if (currentCell.isCoord(endCoord) ||
 							acceptableDistance >= currentCell.mDistanceCost) {
 						ArrayList<Coordinate> formattedResult = new ArrayList<Coordinate>();
+						String debugPath = "";
 						for (AStarCell cell : path) {
 							formattedResult.add(0, cell.coord);
+							debugPath = debugPath + "(" + Integer.toString(cell.coord.getCol()) + "," + Integer.toString(cell.coord.getRow()) + ") ";
 						}
+						System.out.println("Calculated path: " + debugPath);
 						return formattedResult;
 					}
+				} else {
+					System.out.println("Unable to calculate path between start and end.");
 				}
 
 			}
@@ -268,7 +277,7 @@ public class Engine extends Thread {
 			
 			// Generate and add new building to response for player
 			newBuilding = new DynGameBuilding(this.generateInstanceId(player), startTankFactory, player, startTankFactoryCoordinate);
-			gameplayResponse.addCoord(spawnCoordinate);
+			gameplayResponse.addCoord(startTankFactoryCoordinate);
 			gameplayResponse.addSource(newBuilding.getIdentifier());
 			gameplayResponse.addTarget(newBuilding.getInstanceId());
 			gameplayResponse.addMisc(player.getPlayerName());
