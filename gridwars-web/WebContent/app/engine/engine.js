@@ -386,7 +386,10 @@ Engine.prototype.render = function() {
 // ------------------------------ INPUT EVENT METHODS ------------------------------ //
 
 Engine.prototype.onMouseDown = function(pointer) {
-
+	
+	// Jump out if the mouse is over a hud button
+	if (this.hud.mouseOverHudButton) { return; }
+	
 	// Search for potential under mouse selection
 	var itemAtPoint = this.getItemAtPoint(this.mouse.position, true, false);
 
@@ -406,6 +409,9 @@ Engine.prototype.onMouseDown = function(pointer) {
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
+
+	// Jump out if the mouse is over a hud button
+	if (this.hud.mouseOverHudButton) { return; }
 	
 	// Break if new unit has just been selected
 	if (this.selectedJustSet) {
@@ -1030,6 +1036,11 @@ Engine.prototype.createGameScreen = function() {
 	var mapLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.HUD.MAP_CONTROL.WIDTH;
 	var unitLeft = CONSTANTS.GAME_SCREEN_WIDTH - CONSTANTS.HUD.OBJECT_CONTROL.WIDTH;
 	var unitTop = CONSTANTS.GAME_SCREEN_HEIGHT - CONSTANTS.HUD.OBJECT_CONTROL.HEIGHT;
+	
+	// Define base HUD object
+	this.hud = {
+			mouseOverHudButton : false
+	};
 
 	// Create reference to this
 	var self = this;
@@ -1136,13 +1147,37 @@ Engine.prototype.createGameScreen = function() {
 		// Return constructed button
 		return newButton;
 	};
-	var createDetailGameButton = function(spriteData) {
+	var createDetailGameButton = function(spriteInfo) {
 		
 		// Create button from generic button creation method
-		var newButton = createGameButton(spriteData, CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop);
+		var newButton = createGameButton(spriteInfo, CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop);
 		
 		// Hide button by default
 		newButton.visible = false;
+
+		// Add listner events
+		newButton.events.onInputOver.add(function() {
+			newButton.frame = spriteInfo.SELECTED;
+			self.hud.mouseOverHudButton = true;
+		});
+		newButton.events.onInputOut.add(function() {
+			newButton.frame = spriteInfo.UNSELECTED;
+			self.hud.mouseOverHudButton = false;
+		});
+		newButton.events.onInputDown.add(function() {
+			
+			// Run procedure for sell button pressed
+			if (spriteInfo == CONSTANTS.HUD.OBJECT_CONTROL.SELL) {
+				console.log(self);
+				if (self.selected.length > 0) {
+					var objectType = CONSTANTS.getObjectType(self.selected[0].gameCore.identifier);
+					if (objectType == "BUILDING" || objectType == "DEFENCE") {
+						self.serverAPI.sellBuilding(self.selected[0]);
+					}
+				}
+			}
+			
+		});
 		
 		// Return constructed button
 		return newButton;

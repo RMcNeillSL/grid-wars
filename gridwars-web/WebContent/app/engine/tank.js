@@ -32,7 +32,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.turretRotateSpeed = 2;
 		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
-		this.waypointControl = { trackPlacementFrequency: 30, moveStepCount: 0, onComplete: null };
+		this.waypointControl = { trackPlacementFrequency: 15, moveStepCount: 0, onComplete: null };
 		
 		// Create turret base object
 		this.bodySegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TANK, this.gameCore.colour.BODY);
