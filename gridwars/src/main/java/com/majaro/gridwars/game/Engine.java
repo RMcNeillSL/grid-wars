@@ -188,6 +188,7 @@ public class Engine extends Thread {
 					checkInstanceId.equals(this.targetInstanceId));
 		}
 		public String getSourceInstanceId() { return this.sourceInstanceId; }
+		public String getTargetInstanceId() { return this.targetInstanceId; }
 	}
 	
 	// User specified waypoints
@@ -597,12 +598,10 @@ public class Engine extends Thread {
 				responseList.add(attackResponse);
 				
 				// Add new items recorded attack pair array
-				System.out.println("Adding attack pair of source & target.");
 				if (sourceCoord != null) { this.attackPairs.add(new AttackPair(sourceId, targetId)); }
 				
 				// Check if movement to bring target in range is needed
 				if (sourceUnit != null && sourceCoord.distanceTo(targetCoord) > sourceUnit.getRange() / Const.cellSize) {
-					System.out.println("Generating path for unit to follow in order to enter attack range.");
 					ArrayList<Coordinate> path = this.aStarPathFinder.calculatePath(sourceCoord, targetCoord, sourceUnit.getRange() / Const.cellSize);
 					if (path != null) {
 						waypointResponse = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
@@ -611,7 +610,6 @@ public class Engine extends Thread {
 							waypointResponse.addSource(sourceUnit.getInstanceId());
 						}
 						responseList.add(waypointResponse);
-						System.out.println("Added waypoint path to response for object attack object request.");
 					}
 				}
 				
@@ -693,14 +691,13 @@ public class Engine extends Thread {
 		
 		// Declare working variables
 		DynGameUnit unitRef = null;
-		DynGameDefence defence = null;
 		Coordinate newCoordRef = null;
 		DynGameUnit[] attackingUnits = null;
 		DynGameDefence[] attackingDefences = null;
 		ArrayList<Coordinate> path = null;
 		ArrayList<String> removeDefences = new ArrayList<String>();
-		ArrayList<String> buildingsToAttack = new ArrayList<String>();
 		ArrayList<String> targetIds = new ArrayList<String>();
+		String[] buildingsToAttack = null;
 		
 		// Process each unit update inturn
 		for (int index = 0; index < Math.min(sourceUnits.length, newCoordinates.length); index ++) {
@@ -717,12 +714,10 @@ public class Engine extends Thread {
 			unitRef.updateCoordinate(newCoordRef);
 			
 			// Check if any defences need to be unassigned from attacking moving unit				-- NOT COMPLETE
-			System.out.println("Calculating defences to cease firing...");
 			if (attackingDefences != null & attackingDefences.length > 0) {
 				removeDefences.clear();
 				for (DynGameDefence attackDefenceRef : attackingDefences) {
 					if (newCoordRef.distanceTo(attackDefenceRef.getCoordinate()) > attackDefenceRef.getRange() / Const.cellSize) {
-						System.out.println("Defence added to cease fire: " + attackDefenceRef.getInstanceId());
 						removeDefences.add(attackDefenceRef.getInstanceId());
 					}
 				}
@@ -735,26 +730,11 @@ public class Engine extends Thread {
 			}
 			
 			// Check if unit has entered attacking range of any idle turrets
-			buildingsToAttack.clear();
-			System.out.println("Calculating defences to begin attacking...");
-			for (int buildingIndex = 0; buildingIndex < this.buildings.size(); buildingIndex ++) {
-				if (this.buildings.get(buildingIndex) instanceof DynGameDefence) {
-					defence = (DynGameDefence)this.buildings.get(buildingIndex);
-					if (!this.isAttacking(defence.getInstanceId()) && 
-							!defence.getOwner().getPlayerName().equals(unitRef.getOwner().getPlayerName()) &&
-							newCoordRef.distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize ) {
-						System.out.println("Defence added to start firing list: " + defence.getInstanceId());
-						buildingsToAttack.add(defence.getInstanceId());
-					}
-				}
-			}
-			if (buildingsToAttack.size() > 0) {
+			buildingsToAttack = getDefencesRangeOverUnit(unitRef);
+			if (buildingsToAttack.length > 0) {
 				targetIds.clear();
-				System.out.println("Submitting objectAttackObject request.");
-				for (int targetIndex = 0; targetIndex < buildingsToAttack.size(); targetIndex ++) { targetIds.add(unitRef.getInstanceId()); }
-				objectAttackResponse = this.processObjectAttackObjectRequest(player,
-						buildingsToAttack.toArray(new String[buildingsToAttack.size()]), 
-						targetIds.toArray(new String[targetIds.size()]));
+				for (int targetIndex = 0; targetIndex < buildingsToAttack.length; targetIndex ++) { targetIds.add(unitRef.getInstanceId()); }
+				objectAttackResponse = this.processObjectAttackObjectRequest(player, buildingsToAttack, targetIds.toArray(new String[targetIds.size()]));
 				for (GameplayResponse response : objectAttackResponse) {
 					responseList.add(response);
 				}
@@ -762,7 +742,6 @@ public class Engine extends Thread {
 			
 			// Check if unit was involved in an attack pair as target - update source waypoints
 			if (attackingUnits != null && attackingUnits.length > 0) {
-				System.out.println("Updating all units who have moving unit as target.");
 				for (DynGameUnit attackUnitRef : attackingUnits) {
 					path = this.aStarPathFinder.calculatePath(attackUnitRef.getCoordinate(), unitRef.getCoordinate(), attackUnitRef.getRange() / Const.cellSize);
 					if (path != null) {
@@ -785,15 +764,24 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 	
-	private GameplayResponse processDamageRequest(Player player, String[] instanceIds, int damageAmount, ArrayList<String> miscStrings) {
+	private GameplayResponse[] processDamageRequest(Player player, String[] instanceIds, int damageAmount, ArrayList<String> miscStrings) {
 
 		// Set default result
-		GameplayResponse response = null;
+		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
+		GameplayResponse damageResponse = null;
+		GameplayResponse[] defenceAttackResponse = null;
 		boolean validConstruction = true;
+		
+		// Declare working variables
+		DynGameDefence attackingDefence = null;
+		String[] attackingDefences = null;
+		String[] unitsInAttackRange = null;
+		ArrayList<String> sourceIdsPendingAttack = new ArrayList<String>();
+		ArrayList<String> targetIdsPendingAttack = new ArrayList<String>();
 		
 		// Check if id's refer to units
 		DynGameUnit[] sourceUnits = this.getGameUnitsFromInstanceIds(instanceIds, false);
-		DynGameBuilding[] sourceBuildings = this.getGameBuildingsFromInstanceIds(instanceIds, false);		
+		DynGameBuilding[] sourceBuildings = this.getGameBuildingsFromInstanceIds(instanceIds, false);
 
 		// Calculate killer
 		Player killer = this.getPlayerFromPlayerId(miscStrings.get(0));
@@ -825,32 +813,51 @@ public class Engine extends Thread {
 		
 		// Construct valid response
 		if (validConstruction) {
-			response = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
+			damageResponse = new GameplayResponse(E_GameplayResponseCode.DAMAGE_OBJECT);
 			if (sourceUnits.length > 0) {
 				for (DynGameUnit targetUnit : sourceUnits) {
-					response.addSource(targetUnit.getInstanceId());
-					response.addTarget(Integer.toString(targetUnit.getHealth()));
-					response.addMisc(killer.getPlayerName());
+					damageResponse.addSource(targetUnit.getInstanceId());
+					damageResponse.addTarget(Integer.toString(targetUnit.getHealth()));
+					damageResponse.addMisc(killer.getPlayerName());
 				}
 			}
 			if (sourceBuildings.length > 0) {
 				for (DynGameBuilding sourceBuilding : sourceBuildings) {
-					response.addSource(sourceBuilding.getInstanceId());
-					response.addTarget(Integer.toString(sourceBuilding.getHealth()));
-					response.addMisc(killer.getPlayerName());
+					damageResponse.addSource(sourceBuilding.getInstanceId());
+					damageResponse.addTarget(Integer.toString(sourceBuilding.getHealth()));
+					damageResponse.addMisc(killer.getPlayerName());
 				}
 			}
+			responseList.add(damageResponse);
 		}
 		
-		// Clean up all units and buildings which have now been destroyed
+		// Clean up all units which have now been destroyed
 		for (DynGameUnit targetUnit : sourceUnits) {
 			if (targetUnit.getHealth() == 0) {
+
+				// Record all turrets attacking destroyed object and clear out any attacking pairs 
+				attackingDefences = this.getAttackSources(targetUnit.getInstanceId());
 				this.removeFromAttackPairs(targetUnit.getInstanceId());
+				
+				// Generate new targets
+				for (String defenceInstanceId : attackingDefences) {
+					attackingDefence = this.getGameDefenceFromInstanceId(defenceInstanceId);
+					if (attackingDefence != null) {
+						unitsInAttackRange = this.getUnitsInDefenceRange(attackingDefence);
+						if (unitsInAttackRange.length > 0) {
+							sourceIdsPendingAttack.add(attackingDefence.getInstanceId());
+							targetIdsPendingAttack.add(unitsInAttackRange[0]);
+						}
+					}
+				}
+				
+				// Destroy unit and give cash to the destroyer
 				this.destroyGameObject(targetUnit);
 				killer.addPlayerCash((int)Math.floor(targetUnit.getCost() * 1.2));
 			}
 		}
-		
+
+		// Clean up all units which have now been destroyed
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
 			if (targetBuilding.getHealth() == 0) {
 				this.removeFromAttackPairs(targetBuilding.getInstanceId());
@@ -858,9 +865,20 @@ public class Engine extends Thread {
 				killer.addPlayerCash((int)Math.floor(targetBuilding.getCost() * 1.2));
 			}
 		}
+		
+		// Run request for all new attack source/target pairs
+		if (sourceIdsPendingAttack.size() > 0 &&
+				targetIdsPendingAttack.size() > 0) {
+			defenceAttackResponse = this.processObjectAttackObjectRequest(player, 
+					sourceIdsPendingAttack.toArray(new String[sourceIdsPendingAttack.size()]), 
+					targetIdsPendingAttack.toArray(new String[targetIdsPendingAttack.size()]));
+			for (int index = 0; index < defenceAttackResponse.length; index ++) {
+				responseList.add(defenceAttackResponse[index]);
+			}
+		}
 
 		// Return calculated result
-		return response;
+		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
 
@@ -926,7 +944,7 @@ public class Engine extends Thread {
 		        			coordinate);
 		        	break;
 		        case DAMAGE_OBJECT:
-		        	gameplayResponse = this.processDamageRequest(sender,
+		        	gameplayResponseArray = this.processDamageRequest(sender,
 		        			gameplayRequest.getSourceString(), 
 		        			Integer.parseInt(gameplayRequest.getTargetString()[0]),
 		        			gameplayRequest.getMisc());
@@ -963,9 +981,62 @@ public class Engine extends Thread {
 	
 	// Utility methods
 	
+	private String[] getDefencesRangeOverUnit(DynGameUnit unit) {
+		
+		// Define working variables
+		ArrayList<String> buildingsToAttack = new ArrayList<String>();
+		DynGameDefence defence = null;
+		
+		// Locate all defences whose range covers unit
+		for (int buildingIndex = 0; buildingIndex < this.buildings.size(); buildingIndex ++) {
+			if (this.buildings.get(buildingIndex) instanceof DynGameDefence) {
+				defence = (DynGameDefence)this.buildings.get(buildingIndex);
+				if (!this.isAttacking(defence.getInstanceId()) &&
+						!defence.getOwner().getPlayerName().equals(unit.getOwner().getPlayerName()) &&
+						unit.getCoordinate().distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize ) {
+					buildingsToAttack.add(defence.getInstanceId());
+				}
+			}
+		}
+		
+		// Return calculated answer
+		return buildingsToAttack.toArray(new String[buildingsToAttack.size()]);
+	}
+	
+	private String[] getUnitsInDefenceRange(DynGameDefence defence) {
+		ArrayList<String> attackUnits = new ArrayList<String>();
+		for (DynGameUnit unit : this.units) {
+			if (!unit.getOwner().getPlayerName().equals(defence.getOwner().getPlayerName()) &&
+					unit.getCoordinate().distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize) {
+				attackUnits.add(unit.getInstanceId());
+			}
+		}		
+		return attackUnits.toArray(new String[attackUnits.size()]);
+	}
+	
+	private String[] getAttackSources(String targetInstanceId) {
+		ArrayList<String> sources = new ArrayList<String>();
+		for (AttackPair attackPair : this.attackPairs) {
+			if (attackPair.getTargetInstanceId().equals(targetInstanceId)) {
+				sources.add(attackPair.getSourceInstanceId());
+			}
+		}
+		return sources.toArray(new String[sources.size()]);
+	}
+	
 	private boolean isAttacking(String instanceId) {
 		for (AttackPair attackPair : this.attackPairs) {
 			if (attackPair.getSourceInstanceId().equals(instanceId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean isAttackingPair(String sourceInstanceId, String targetInstanceId) {
+		for (AttackPair attackPair : this.attackPairs) {
+			if (attackPair.getSourceInstanceId().equals(sourceInstanceId) &&
+					attackPair.getTargetInstanceId().equals(targetInstanceId)) {
 				return true;
 			}
 		}
@@ -1002,13 +1073,13 @@ public class Engine extends Thread {
 	
 	private void removeFromAttackPairs(String instanceId) {
 		ArrayList<AttackPair> removeList = new ArrayList<AttackPair>();
-		for (int index = 0; index < this.attackPairs.size(); index ++) {
-			if (this.attackPairs.get(index).containsInstanceId(instanceId)) {
-				removeList.add(this.attackPairs.get(index));
+		for (AttackPair attackPair : this.attackPairs) {
+			if (attackPair.containsInstanceId(instanceId)) {
+				removeList.add(attackPair);
 			}
 		}
-		for (int index = 0; index < removeList.size(); index ++) {
-			this.attackPairs.remove(removeList.get(index));
+		for (AttackPair removeInstanceId : removeList) {
+			this.attackPairs.remove(removeInstanceId);
 		}
 	}
 	
