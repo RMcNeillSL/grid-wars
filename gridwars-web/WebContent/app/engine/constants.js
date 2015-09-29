@@ -105,18 +105,13 @@ CONSTANTS = {
 	MINI_MAP : "mini_map",
 	MINI_MAP_BUTTONS : "mini_map_buttons",
 	UNIT_DETAILS : "unit_details",
+	UNIT_DETAILS_BUTTONS : "unit_details_buttons",
 	TANK_ICON : "tank_icon",
 	TURRET_ICON : "turret_icon",
 	
 	// Minimaps
 	MINIMAP_MAJARO : "minimap_majaro",
 	MINIMAP_HUNTING_GROUND : "minimap_hunting_ground",
-	
-	// Game frame properties
-	MINI_MAP_WIDTH : 377,
-	MINI_MAP_HEIGHT : 365,
-	UNIT_DETAILS_WIDTH : 274,
-	UNIT_DETAILS_HEIGHT : 226,
 	
 	// Loaded image(.png) names
 	SPRITE_HUB : "sprite_hub_anim",
@@ -198,11 +193,27 @@ CONSTANTS = {
 	MAP_DETAIL_GRASS_ITR		: 53,
 	MAP_DETAIL_GRASS_ITL		: 54,
 	MAP_DETAIL_GRASS_IBL		: 55,
-	
+
 	// Heads Up Display sprites
-	HUD : { BUILDING	:	{ UNSELECTED : 52, 	SELECTED : 53,	A_BUILDING : "building_building",	A_READY : "building_ready",	BUILDING : [54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,53], 	READY : 77 },
-			DEFENCE 	:	{ UNSELECTED : 26,	SELECTED : 27,	A_BUILDING : "building_defence",	A_READY : "defence_ready",	BUILDING : [28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,27],	READY :	51 },
-			UNIT		:	{ UNSELECTED : 0,	SELECTED : 1,	A_BUILDING : "building_unit",		A_READY : "unit_ready",		BUILDING : [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1], 			READY : 25 }
+	HUD : { 
+		MAP_CONTROL		: {
+			WIDTH 		: 377,
+			HEIGHT 		: 365,
+			MINIMAP		: { LEFT : 0.2328,	TOP : 0.0757,	WIDTH : 0.7041,	HEIGHT : 0.7197 },
+			CASH		: { LEFT : 0.6737,	TOP : 0.8922,	WIDTH : 0.2706,	HEIGHT : 0.0630 },
+			BUILDING	: { LEFT : 0.1724,	TOP : 0.8712,	WIDTH : 0.1353,	HEIGHT : 0.0767,	UNSELECTED : 52,	SELECTED : 53,	A_BUILDING : "building_building",	A_READY : "building_ready",	BUILDING : [54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,53], 	READY : 77 },
+			DEFENCE 	: { LEFT : 0.3210,	TOP : 0.8712,	WIDTH : 0.1353,	HEIGHT : 0.0767,	UNSELECTED : 26,	SELECTED : 27,	A_BUILDING : "building_defence",	A_READY : "defence_ready",	BUILDING : [28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,27],	READY :	51 },
+			UNIT		: { LEFT : 0.4721,	TOP : 0.8712,	WIDTH : 0.1353,	HEIGHT : 0.0767,	UNSELECTED : 0,		SELECTED : 1,	A_BUILDING : "building_unit",		A_READY : "unit_ready",		BUILDING : [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1], 			READY : 25 }
+		},
+		OBJECT_CONTROL	: {
+			WIDTH 		: 274,
+			HEIGHT 		: 226,
+			ICON		: { LEFT : 0.4627,	TOP : 0.2178,	WIDTH : 0.3650,	HEIGHT : 0.5310 },
+			NAME 		: { LEFT : 0.1350,	TOP : 0.1372,	WIDTH : 0.7445,	HEIGHT : 0.0619 },
+			HEALTH 		: { LEFT : 0.1095,	TOP : 0.2566,	WIDTH : 0.2555,	HEIGHT : 0.3097 },
+			SELL 		: { LEFT : 0.0000,	TOP : 0.0000,	WIDTH : 0.0000,	HEIGHT : 0.0000 },
+			STOP		: { LEFT : 0.0000,	TOP : 0.0000,	WIDTH : 0.0000,	HEIGHT : 0.0000 }
+		}
 	},
 	
 	// Colour variation arrays
