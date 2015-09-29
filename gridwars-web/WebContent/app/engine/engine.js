@@ -606,6 +606,10 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 				&& Math.abs(this.selectionRectangle.rect.width
 						* this.selectionRectangle.rect.height) > 40) {
 			this.selected = this.getSelectionArray();
+			
+			if(this.selected.length === 1) {
+				this.updateSelectedGameObjectDetails(this.selected[0]);
+			}
 		}
 
 		// Mark selection as not active and reset
