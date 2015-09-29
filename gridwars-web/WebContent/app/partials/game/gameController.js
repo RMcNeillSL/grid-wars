@@ -1,49 +1,7 @@
 'use strict';
 
 (function() {
-
-	// Waiting function to keep games synchronised
-	function Waiter(waitCondition, successMethod, interval) {
-
-		// Save passed variables
-		var running = false;
-		this.waitCondition = waitCondition;
-		this.successMethod = successMethod;
-		this.interval = interval;
-
-		// Save this reference for anonymous methods
-		var self = this;
-
-		// Local method for main waiting execution
-		var run = function() {
-			console.log("Waiting...");
-			if (running) {
-				if (self.waitCondition()) {
-					running = false;
-					self.successMethod();
-				} else {
-					setTimeout(run, interval);
-				}
-			} else {
-				running = false;
-			}
-		}
-
-		// Start waiter
-		this.start = function() {
-			if (!running) {
-				running = true;
-				run();
-			}
-		}
-
-		// Halt waiter
-		this.stop = function() {
-			running = false;
-		}
-
-	}
-
+	
 	function GameController($rootScope, $scope, $location, gameService) {
 
 		// Save passed variables
