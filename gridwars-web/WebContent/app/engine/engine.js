@@ -77,7 +77,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originY : 0,
 		miniMapClickStart : false
 	};
-	this.middleClickScroll = {
+	this.middleClickScroll = {		//ROB
 		isActive	: false,
 		originX		: 0,
 		originY		: 0
@@ -272,16 +272,16 @@ Engine.prototype.update = function() {
 
 	if (this.middleClickScroll.isActive) {
 		if (this.middleClickScroll.originX < (this.mouse.position.x - this.phaserGame.camera.x)) {
-			this.phaserGame.camera.x += Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/10;
+			this.phaserGame.camera.x += Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
 		}
 		if (this.middleClickScroll.originX > (this.mouse.position.x - this.phaserGame.camera.x)) {
-			this.phaserGame.camera.x -= Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/10;
+			this.phaserGame.camera.x -= Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
 		}
 		if (this.middleClickScroll.originY < (this.mouse.position.y - this.phaserGame.camera.y)) {
-			this.phaserGame.camera.y += Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/10;
+			this.phaserGame.camera.y += Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
 		}
 		if (this.middleClickScroll.originY > (this.mouse.position.y - this.phaserGame.camera.y)) {
-			this.phaserGame.camera.y -= Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/10;
+			this.phaserGame.camera.y -= Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
 		}
 	}
 	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
@@ -1182,8 +1182,12 @@ Engine.prototype.createGameScreen = function() {
 Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) {
 	if(selectedGameObject != null) {
 		this.gameObjectDetailsText.setText(selectedGameObject.gameCore.identifier);
-		this.gameObjectHealthText.setText((Math.floor(selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100) + "%");
 		this.gameObjectDetailsIcon.loadTexture(selectedGameObject.gameCore.colour.ICON);
+		var healthPercentage = (Math.floor(selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
+		
+		if(healthPercentage > 0) {
+			this.gameObjectHealthText.setText(healthPercentage + "%");
+		}
 	}
 	
 	this.displayedGameObject = selectedGameObject;
@@ -1916,7 +1920,7 @@ Engine.prototype.processUnitDamage = function(responseData) {
 			
 			// Update health on the game object details menu
 			if(gameObject.gameCore.health > 0) {
-				this.gameObjectHealthText.setText(Math.floor((gameObject.gameCore.health / gameObject.gameCore.maxHealth)*100) + "%");
+				this.gameObjectHealthText.setText(Math.floor((refObject.newHealth / gameObject.gameCore.maxHealth)*100) + "%");
 			} else {
 				this.setGameObjectDetailsVisibility(false);
 			}
