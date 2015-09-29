@@ -30,6 +30,27 @@ function ServerAPI(gameService) {
 	
 }
 
+ServerAPI.prototype.sellBuilding = function(building) {
+
+	// Make sure a building object is present
+	if (building) {
+
+		// Create request params
+		var params = {
+				source: [building.gameCore.instanceId]
+		};
+		
+		// Generate request object
+		var request = new GameplayRequest("SELL_BUILDING", params);
+
+		// Submit request
+		this.gameService.gameplayRequest(request);
+	
+	} else {
+		console.log("ERROR: Attempted to purchase new object with no object specified.");
+	}
+}
+
 ServerAPI.prototype.purchaseRequest = function(newObjectCore) {
 
 	// Make sure a building object is present

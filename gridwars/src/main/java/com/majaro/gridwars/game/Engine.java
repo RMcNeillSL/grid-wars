@@ -891,6 +891,7 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
+
 	private GameplayResponse[] processUserLeaveGame (Player sender, ArrayList<String> miscStrings) {		//ROB
 		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
 		List<String> instanceIds = new ArrayList<String>();
@@ -919,6 +920,48 @@ public class Engine extends Thread {
 		//return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
+	private GameplayResponse[] sellBuilding(Player player, DynGameBuilding building) {
+
+		// Set default result
+		GameplayResponse destroyBuildingResponse = null;
+		GameplayResponse updateFundsResponse = null;
+		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
+		boolean validConstruction = true;
+
+		// Check building exists
+		if (building == null) {
+			validConstruction = false;
+		}
+		
+		// Check player owns building
+		if (validConstruction && !building.getOwner().getPlayerName().equals(player.getPlayerName())) {
+			validConstruction = false;
+		}
+		
+		// Generate valid result
+		if (validConstruction) {
+			
+			// Alter player funds based on building health and cost / Destroy building
+			player.addPlayerCash((int)(building.getCost() * building.getHealth() * 1.0 / building.getMaxHealth()));
+			String destroyedInstanceId = building.getInstanceId();
+			this.destroyGameObject(building);
+			
+			// Generate funds alteration response
+			updateFundsResponse = new GameplayResponse(E_GameplayResponseCode.SELL_BUILDING);
+			updateFundsResponse.addSource(Integer.toString(player.getPlayerCash()));
+			updateFundsResponse.flagForSenderOnly();
+			responseList.add(updateFundsResponse);
+			
+			// Generate destroy building response
+			destroyBuildingResponse = new GameplayResponse(E_GameplayResponseCode.DESTROY_OBJECT);
+			destroyBuildingResponse.addSource(destroyedInstanceId);
+			responseList.add(destroyBuildingResponse);
+		}
+
+		// Return calculated result
+		return responseList.toArray(new GameplayResponse[responseList.size()]);
+	}
+
 	// Game request method
 
 	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
@@ -941,6 +984,10 @@ public class Engine extends Thread {
 				case PURCHASE_OBJECT:
 		        	gameplayResponse = this.processPurchaseRequest(sender, 
 		        			Const.getGameObjectFromString(gameplayRequest.getSourceString()[0]));
+					break;
+				case SELL_BUILDING:
+					gameplayResponseArray = this.sellBuilding(sender, 
+		        			this.getGameBuildingFromInstanceId(gameplayRequest.getSourceString()[0]));
 					break;
 				case PURCHASE_FINISHED:
 		        	gameplayResponse = this.processBuildFinishedRequest(sender, 
