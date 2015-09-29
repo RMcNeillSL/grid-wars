@@ -82,6 +82,9 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originX		: 0,
 		originY		: 0
 	}
+	this.rightClickScroll = {
+		isActive	: false
+	}
 	this.hoverItem = null;
 
 	// Define sprite groups
@@ -291,7 +294,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	//if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -413,6 +416,10 @@ Engine.prototype.onMouseDown = function(pointer) {
 	
 	if (pointer.middleButton.isDown) {
 		this.middleClickScroll.isActive = true;
+	}
+	
+	if (pointer.rightButton.isDown) {
+		this.rightClickScroll.isActive = false;
 	}
 
 	// Check if mouse down occured over minimap
@@ -543,8 +550,12 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 	// Perform checks for right click
 	if (!clickHandled && pointer.rightButton.isDown) {
-		this.selected = [];
-		this.setGameObjectDetailsVisibility(false);
+		if (!this.rightClickScroll.isActive) {
+			this.selected = [];
+			this.setGameObjectDetailsVisibility(false);
+		} else {
+			this.rightClickScroll.isActive = false;
+		}
 	}
 	
 	// Release mark as mouse down overminimap
@@ -583,6 +594,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 	} else if (pointer.rightButton.isDown) {
 		x = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
 		y = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
+		this.rightClickScroll.isActive = true;
 
 		if (x < this.mouse.position.x) {
 			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED;
@@ -614,13 +626,14 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 
 		// Mark selection as not active and reset
 		this.selectionRectangle.selectActive = false;
-
 		this.selectionRectangle.rect.x = this.mouse.position.x;
 		this.selectionRectangle.rect.y = this.mouse.position.y;
 		this.selectionRectangle.originX = this.mouse.position.x;
 		this.selectionRectangle.originY = this.mouse.position.y;
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
+
+		this.rightClickScroll.isActive = false;
 
 		if(!this.middleClickScroll.isActive) {
 			this.middleClickScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
