@@ -133,7 +133,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
 	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
-	this.phaserGame.load.spritesheet(CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details_buttons.png', 36, 38, 9);
+	this.phaserGame.load.spritesheet(CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details_buttons.png', 36, 38, 6);
 
 	// Load game object icons
 	for(var i = 0; i < 6; i++) {
@@ -261,8 +261,6 @@ Engine.prototype.update = function() {
 	if (this.newBuilding.active) {
 		var cell = this.mouse.position.toCell();
 		var canPlace = this.isSquareEmpty(cell.col, cell.row);
-		// build cells within range here
-
 		this.mapRender.clearPlacementHover();
 		this.mapRender.placementHover(cell, canPlace, this.getCellsWithinBuildRangeOfHub());
 	}
@@ -274,23 +272,6 @@ Engine.prototype.update = function() {
 
 	// Search for collisions between fireable objects
 	this.explosionCollisionCheck();
-
-	if (this.middleClickScroll.isActive) {
-		if (this.middleClickScroll.originX < (this.mouse.position.x - this.phaserGame.camera.x)) {
-			this.phaserGame.camera.x += Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
-		}
-		if (this.middleClickScroll.originX > (this.mouse.position.x - this.phaserGame.camera.x)) {
-			this.phaserGame.camera.x -= Math.abs(((this.mouse.position.x - this.phaserGame.camera.x) - this.middleClickScroll.originX))/30;
-		}
-		if (this.middleClickScroll.originY < (this.mouse.position.y - this.phaserGame.camera.y)) {
-			this.phaserGame.camera.y += Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
-		}
-		if (this.middleClickScroll.originY > (this.mouse.position.y - this.phaserGame.camera.y)) {
-			this.phaserGame.camera.y -= Math.abs(((this.mouse.position.y - this.phaserGame.camera.y) - this.middleClickScroll.originY))/30;
-		}
-	}
-	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
-			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 
 	// Update pointer position
 	this.updatePointerPosition();
@@ -410,19 +391,15 @@ Engine.prototype.onMouseDown = function(pointer) {
 	var itemAtPoint = this.getItemAtPoint(this.mouse.position, true, false);
 
 	// Set new selection if one does not already exist
-	if (itemAtPoint) {
+	if (itemAtPoint && pointer.leftButton.isDown) {
 		this.selected = [itemAtPoint];
 		this.selectedJustSet = true;
 		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
 	
-	if (pointer.middleButton.isDown) {
-		this.middleClickScroll.isActive = true;
-	}
-	
-	if (pointer.rightButton.isDown) {
-		this.rightClickScroll.isActive = false;
-	}
+	// Set mouse states for scrolling
+	if (pointer.middleButton.isDown) { this.middleClickScroll.isActive = true; }
+	if (pointer.rightButton.isDown) { this.rightClickScroll.isActive = false; }
 
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
@@ -522,7 +499,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 			if (unitsForMoveRequest.length > 0) { this.moveUnitGroup(unitsForMoveRequest, mouseCell); }
 				
 			// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
-			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint) { this.selected = []; }
+			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint) {
+				this.selected = [];
+				this.setGameObjectDetailsVisibility(false);
+			}
 
 		// Select units/buildings under mouseXY
 		} else {
@@ -546,9 +526,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 		}
 	}
 	
-	if (pointer.middleButton.isDown) {
-		this.middleClickScroll.isActive = false;
-	}
+	// Set scroll state for middle button
+	if (pointer.middleButton.isDown) { this.middleClickScroll.isActive = false; }
 
 	// Perform checks for right click
 	if (!clickHandled && pointer.rightButton.isDown) {
@@ -565,12 +544,32 @@ Engine.prototype.onMouseUp = function(pointer) {
 }
 
 Engine.prototype.onMouseMove = function(pointer, x, y) {
+	
+	// Perform right click map movement before pointer position is updated
+	if (pointer.rightButton.isDown) {
+		
+		// Create reference to mouse x and y
+		var relativeX = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
+		var relativeY = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
+		this.rightClickScroll.isActive = true;
+
+		// Move according to mouse movement from last recorded mouse position
+		if (relativeX < this.mouse.position.x) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
+		if (relativeX > this.mouse.position.x) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED; }
+		if (relativeY < this.mouse.position.y) { this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED; }
+		if (relativeY > this.mouse.position.y) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED; }
+
+		// Update the mouse position
+		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+				this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+
+	}
 
 	// Update pointer position
 	this.updatePointerPosition();
 
 	// Process updates for selection rectangle
-	if (pointer.isDown && pointer.leftButton.isDown) {
+	if (pointer.leftButton.isDown) {
 		
 		// Check if clicking on a new location on the map first
 		if (this.isPointOverMinimap(this.mouse.position)) {
@@ -593,34 +592,13 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
 			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-	} else if (pointer.rightButton.isDown) {
-		x = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
-		y = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
-		this.rightClickScroll.isActive = true;
-
-		if (x < this.mouse.position.x) {
-			this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED;
-		}
-		if (x > this.mouse.position.x) {
-			this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED;
-		}
-		if (y < this.mouse.position.y) {
-			this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED;
-		}
-		if (y > this.mouse.position.y) {
-			this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED;
-		}
-
-		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
-				this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
-
-	} else {
+	} else if (!this.rightClickScroll.isActive) {
+		
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
 				&& Math.abs(this.selectionRectangle.rect.width
 						* this.selectionRectangle.rect.height) > 40) {
 			this.selected = this.getSelectionArray();
-			
 			if(this.selected.length === 1) {
 				this.updateSelectedGameObjectDetails(this.selected[0]);
 			}
@@ -635,8 +613,10 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		this.selectionRectangle.rect.width = 0;
 		this.selectionRectangle.rect.height = 0;
 
+		// Flag right click scrolling as active
 		this.rightClickScroll.isActive = false;
 
+		// Record mouse origin X & Y for use with middle click scrolling
 		if(!this.middleClickScroll.isActive) {
 			this.middleClickScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
 			this.middleClickScroll.originY = this.mouse.position.y - this.phaserGame.camera.y;
@@ -931,7 +911,23 @@ Engine.prototype.processMouseFormUpdates = function() {
 }
 
 Engine.prototype.updatePointerPosition = function(point) {
+
+	// Manage middle click scrolling
+	if (this.middleClickScroll.isActive) {
+		
+		// Calculate mouse movement deltas
+		var deltaX = this.mouse.position.x - this.phaserGame.camera.x - this.middleClickScroll.originX;
+		var deltaY = this.mouse.position.y - this.phaserGame.camera.y - this.middleClickScroll.originY;
+		
+		// Perform map scrolling
+		if (Math.abs(deltaX) > 0) { this.phaserGame.camera.x = this.phaserGame.camera.x + deltaX/30; }
+		if (Math.abs(deltaY) > 0) { this.phaserGame.camera.y = this.phaserGame.camera.y + deltaY/30; }
+	}
 	
+	// Update mouse position
+	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+
 	// Check if point was passed (default to cursor)
 	if (!point) { point = this.mouse.position; }
 	
@@ -1039,7 +1035,7 @@ Engine.prototype.createGameScreen = function() {
 	var self = this;
 	
 	// Create game button
-	var createGameButton = function(spriteInfo, owner, left, top) {
+	var createGameButton = function(spriteInfo, spriteSheet, owner, left, top) {
 		
 		// Calculate sprite information
 		var left = left + spriteInfo.LEFT * owner.WIDTH;
@@ -1048,7 +1044,7 @@ Engine.prototype.createGameScreen = function() {
 		var height = spriteInfo.HEIGHT * owner.HEIGHT;
 		
 		// Create sprite variable
-		var newButton = self.phaserGame.add.sprite(left, top, CONSTANTS.MINI_MAP_BUTTONS);
+		var newButton = self.phaserGame.add.sprite(left, top, spriteSheet);
 		
 		// Setup common sprite settings
 		newButton.frame = spriteInfo.UNSELECTED;
@@ -1061,10 +1057,10 @@ Engine.prototype.createGameScreen = function() {
 		// Return constructed sprite
 		return newButton;
 	};
-	var createMapGameButton = function(spriteData) {
+	var createMapGameButton = function(spriteInfo) {
 		
 		// Create button from generic button creation method
-		var newButton = createGameButton(spriteData, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0);
+		var newButton = createGameButton(spriteInfo, CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0);
 
 		// Declare animations
 		var buildingAnim = newButton.animations.add(spriteInfo.A_BUILDING, spriteInfo.BUILDING);
@@ -1143,7 +1139,10 @@ Engine.prototype.createGameScreen = function() {
 	var createDetailGameButton = function(spriteData) {
 		
 		// Create button from generic button creation method
-		var newButton = createGameButton(spriteData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop);
+		var newButton = createGameButton(spriteData, CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop);
+		
+		// Hide button by default
+		newButton.visible = false;
 		
 		// Return constructed button
 		return newButton;
@@ -1199,14 +1198,10 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectDetailsMenu.visible = false;
 	
 	// TODO: Update minimap sprites so that ID = mapId to ease load processing
-	switch(this.gameplayConfig.mapId) {
-		case "1":
-			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_HUNTING_GROUND, 92, true);
-			break;
-		case "2":
-			this.minimap = createHUDSprite(mapLeft + 92, 31, CONSTANTS.MINIMAP_MAJARO, 92, true);
-			break;
-	}
+	var miniMapId = null;
+	if (this.gameplayConfig.mapId == "1") { miniMapId = CONSTANTS.MINIMAP_HUNTING_GROUND; }
+	if (this.gameplayConfig.mapId == "2") { miniMapId = CONSTANTS.MINIMAP_MAJARO; }
+	this.minimap = createHUDSprite(CONSTANTS.HUD.MAP_CONTROL.MINIMAP, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, miniMapId, 91, true);
 	
 	// Create map control HUD sprites/text/buttons
 	this.moneyLabel 			= createMapHUDText(CONSTANTS.HUD.MAP_CONTROL.CASH, this.currentPlayer.cash, 92, true);
@@ -1218,10 +1213,9 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectDetailsIcon 	= createObjectHUDSprite(CONSTANTS.HUD.OBJECT_CONTROL.ICON, CONSTANTS.COLOUR["TANK"][0].ICON, 92, false);
 	this.gameObjectDetailsText 	= createObjectHUDText(CONSTANTS.HUD.OBJECT_CONTROL.NAME, "Nothing Selected", 92, false);
 	this.gameObjectHealthText 	= createObjectHUDText(CONSTANTS.HUD.OBJECT_CONTROL.HEALTH, "--%", 92, false);
-	this.gameObjectSell			= createDetailGameButton();
+	this.gameObjectSell			= createDetailGameButton(CONSTANTS.HUD.OBJECT_CONTROL.SELL);
+	this.gameObjectStop			= createDetailGameButton(CONSTANTS.HUD.OBJECT_CONTROL.STOP);
 	
-	//CONSTANTS.UNIT_DETAILS_BUTTONS
-
 	// Draw player money label
 	var style = {
 		font: "bold 12px Arial",
@@ -1246,6 +1240,8 @@ Engine.prototype.createGameScreen = function() {
 	this.hudGroup.add(this.homeButton);
 	this.hudGroup.add(this.defenceButton);
 	this.hudGroup.add(this.tankButton);
+	this.hudGroup.add(this.gameObjectSell);
+	this.hudGroup.add(this.gameObjectStop);
 	this.hudGroup.add(this.gameObjectDetailsIcon);
 }
 
@@ -1269,6 +1265,8 @@ Engine.prototype.setGameObjectDetailsVisibility = function(show) {
 	this.gameObjectDetailsMenu.visible = show;
 	this.gameObjectDetailsIcon.visible = show;
 	this.gameObjectHealthText.visible = show;
+	this.gameObjectSell.visible = show;
+	this.gameObjectStop.visible = show;
 }
 
 Engine.prototype.updatePlayerStatus = function() {

@@ -110,8 +110,8 @@ CONSTANTS = {
 	TURRET_ICON : "turret_icon",
 	
 	// Minimaps
-	MINIMAP_MAJARO : "minimap_majaro",
-	MINIMAP_HUNTING_GROUND : "minimap_hunting_ground",
+	MINIMAP_MAJARO 			: "minimap_majaro",
+	MINIMAP_HUNTING_GROUND 	: "minimap_hunting_ground",
 	
 	// Loaded image(.png) names
 	SPRITE_HUB : "sprite_hub_anim",
@@ -211,8 +211,8 @@ CONSTANTS = {
 			ICON		: { LEFT : 0.4627,	TOP : 0.2178,	WIDTH : 0.3650,	HEIGHT : 0.5310 },
 			NAME 		: { LEFT : 0.1350,	TOP : 0.1372,	WIDTH : 0.7445,	HEIGHT : 0.0619 },
 			HEALTH 		: { LEFT : 0.1095,	TOP : 0.2566,	WIDTH : 0.2555,	HEIGHT : 0.3097 },
-			SELL 		: { LEFT : 0.0000,	TOP : 0.0000,	WIDTH : 0.0000,	HEIGHT : 0.0000 },
-			STOP		: { LEFT : 0.0000,	TOP : 0.0000,	WIDTH : 0.0000,	HEIGHT : 0.0000 }
+			SELL 		: { LEFT : 0.3139,	TOP : 0.7743,	WIDTH : 0.1314,	HEIGHT : 0.1681,	UNSELECTED : 0,		SELECTED : 1 },
+			STOP		: { LEFT : 0.4635,	TOP : 0.7743,	WIDTH : 0.1314,	HEIGHT : 0.1681,	UNSELECTED : 3,		SELECTED : 4 }
 		}
 	},
 	

@@ -50,7 +50,8 @@
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_START, 		function(response) { self.gameService.gameStart(response); });
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, 	function(response) { self.gameService.gameplayResponse(response); });
 		
-		if (self.$window.sessionStorage.gameInitialised == "false") {
+//		if (self.$window.sessionStorage.gameInitialised == "false") {
+			
 			// Join current game
 			this.gameService.joinGame();
 	
@@ -120,10 +121,10 @@
 		}, 100)).start();
 
 		self.$window.sessionStorage.gameInitialised = true;
-		} else {
-			alert("You refreshed in a game despite our warnings.  You deserve everything you get");
-			self.changeView("/servers");
-		}
+//		} else {
+//			alert("You refreshed in a game despite our warnings.  You deserve everything you get");
+//			self.changeView("/servers");
+//		}
 	} 
 
 	GameController.prototype = {
