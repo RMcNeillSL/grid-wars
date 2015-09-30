@@ -86,7 +86,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		isActive	: false
 	}
 	this.hoverItem = null;
-	this.tankBuildInProgress = false;		// ROB
+	this.tankBuildInProgress = false;
 	this.turretBuildInProgress = false;
 
 	// Define sprite groups
@@ -96,6 +96,9 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.buildingGroup = null;
 	this.tankGroup = null;
 	this.hudGroup = null;
+	
+	this.prevDeltaX = 0;
+	this.prevDeltaY = 0;
 
 	// Player results
 	this.playerResults = [];
@@ -277,7 +280,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	//if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -566,7 +569,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		if (relativeY > this.mouse.position.y) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED; }
 
 		// Update the mouse position
-		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// MOUSE
 				this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 
 	}
@@ -920,18 +923,18 @@ Engine.prototype.updatePointerPosition = function(point) {
 
 	// Manage middle click scrolling
 	if (this.middleClickScroll.isActive) {
-		
-		// Calculate mouse movement deltas
+
+	    // Calculate mouse movement deltas
 		var deltaX = this.mouse.position.x - this.phaserGame.camera.x - this.middleClickScroll.originX;
 		var deltaY = this.mouse.position.y - this.phaserGame.camera.y - this.middleClickScroll.originY;
-		
+	
 		// Perform map scrolling
 		if (Math.abs(deltaX) > 0) { this.phaserGame.camera.x = this.phaserGame.camera.x + deltaX/30; }
 		if (Math.abs(deltaY) > 0) { this.phaserGame.camera.y = this.phaserGame.camera.y + deltaY/30; }
 	}
 	
 	// Update mouse position
-	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// MOUSE
 			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 
 	// Check if point was passed (default to cursor)
@@ -943,14 +946,34 @@ Engine.prototype.updatePointerPosition = function(point) {
 }
 
 Engine.prototype.positionCameraOverCell = function(cell) {
-	
+
+	if (this.prevDeltaX == 0 || this.prevDeltaY == 0) {			//ROB
+		this.prevDeltaX = cell.row;
+		this.prevDeltaY = cell.col;
+	}
+	if (Math.abs(this.prevDeltaX - cell.row) > 5) {
+		console.log("");
+		console.log("POINTER X: ", this.pointer.sprite.x);
+		console.log("ERROR IN X: ", this.prevDeltaX - cell.row);
+		console.log("SHOULD HAVE BEEN: ", cell.col, ",", cell.row);
+	}
+	if (Math.abs(this.prevDeltaY - cell.col) > 5) {
+		console.log("");
+		console.log("POINTER Y: ", this.pointer.sprite.y);
+		console.log("ERROR IN Y: ", this.prevDeltaY - cell.col);
+		console.log("SHOULD HAVE BEEN: ", cell.col, ",", cell.row);
+	}
+
+	this.prevDeltaX = cell.row;
+	this.prevDeltaY = cell.col;
+
 	// Calculate map bounds
 	var mapBound = { x: this.mapRender.screenCellWidth / 2, y : this.mapRender.screenCellHeight / 2 };
-	
+
 	// Calculate centre cell
 	var moveAmount = { x: Math.min(this.mapRender.width - mapBound.x + (CONSTANTS.TILE_WIDTH / 2), Math.max(cell.col - mapBound.x, 0)),
 					   y: Math.min(this.mapRender.height - mapBound.y + (CONSTANTS.TILE_HEIGHT / 2), Math.max(cell.row - mapBound.y, 0)) };
-	
+
 	// Move camera to centralise cell
 	this.phaserGame.camera.x = (moveAmount.x * CONSTANTS.TILE_WIDTH);
 	this.phaserGame.camera.y = (moveAmount.y * CONSTANTS.TILE_HEIGHT);
@@ -965,7 +988,7 @@ Engine.prototype.manageMapMovement = function() {
 	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
 	
 	// Update mouse values
-	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
+	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// MOUSE
 			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 	
 	// Process updates for new map position
