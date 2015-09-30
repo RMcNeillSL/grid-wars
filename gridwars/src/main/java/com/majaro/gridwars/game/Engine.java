@@ -891,32 +891,20 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
-	private GameplayResponse[] processUserLeaveGame (Player sender, ArrayList<String> miscStrings) {		//ROB
-		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
-		List<String> instanceIds = new ArrayList<String>();
-		int maxHealth = 0;
-		
+	private GameplayResponse processUserLeaveGame (Player sender) {		//ROB
+		GameplayResponse destroyBuildingResponse = new GameplayResponse(E_GameplayResponseCode.DESTROY_OBJECT);
+
 		for (DynGameBuilding building : buildings) {
 			if (building.getOwner().getPlayerId() == sender.getPlayerId()) {
-				instanceIds.add(building.getInstanceId());
-				if (building.health > maxHealth) {
-					maxHealth = building.health;
-				}
+				destroyBuildingResponse.addSource(building.getInstanceId());
 			}
 		}
 		for (DynGameUnit unit : units) {
 			if (unit.getOwner().getPlayerId() == sender.getPlayerId()) {
-				instanceIds.add(unit.getInstanceId());
-				if (unit.health > maxHealth) {
-					maxHealth = unit.health;
-				}
+				destroyBuildingResponse.addSource(unit.getInstanceId());
 			}
 		}
-
-		String[] instanceIdsAsStringArray = (String[]) instanceIds.toArray();
-
-		return this.processDamageRequest(sender, instanceIdsAsStringArray, maxHealth, miscStrings);
-		//return responseList.toArray(new GameplayResponse[responseList.size()]);
+		return destroyBuildingResponse;
 	}
 
 	private GameplayResponse[] sellBuilding(Player player, DynGameBuilding building) {
@@ -1034,16 +1022,14 @@ public class Engine extends Thread {
 		        			gameplayRequest.getMisc());
 		        	break;
 		        case PLAYER_LEAVE_GAME:
-		        	gameplayResponseArray = this.processUserLeaveGame(sender, gameplayRequest.getMisc());
-		        	System.out.println("PLAYER LEAVE RECEIVED");
+		        	gameplayResponse = this.processUserLeaveGame(sender);
 		        	break;
 			    default:
 			    	gameplayResponse = new GameplayResponse();
 			        break;
 			}
-			
 		}
-		
+
 		// Add single response object to output list
 		if (gameplayResponse != null) {
 			gameplayResponseList.add(gameplayResponse);

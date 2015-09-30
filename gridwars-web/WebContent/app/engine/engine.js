@@ -277,7 +277,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -659,7 +659,7 @@ Engine.prototype.onKeyPressed = function(char) {
 			this.purchaseObject("TANK");
 		}
 	}
-	
+
 	// Process mouse form updates
 	this.processMouseFormUpdates();
 }

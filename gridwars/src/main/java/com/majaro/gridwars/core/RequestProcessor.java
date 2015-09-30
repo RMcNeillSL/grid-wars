@@ -410,7 +410,11 @@ public class RequestProcessor {
 
 	public void setAllNotReady (String lobbyId) {
 		GameLobby gameLobby = getGameLobbyFromLobbyId(lobbyId);
-		gameLobby.setAllNotReady();
+		if (gameLobby != null) {
+			gameLobby.setAllNotReady();
+		} else {
+			System.out.println("Attempted to set everyone as not ready in a gamelobby that no longer exists");
+		}
 	}
 
 	public boolean removeLobbyUserAndDeleteLobbyIfEmpty (String sessionId) {

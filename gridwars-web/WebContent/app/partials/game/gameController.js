@@ -3,8 +3,8 @@
 (function() {
 	
 	function GameController($rootScope, $scope, $location, $window, gameService) {
-//		document.onkeydown = function(){
-//			  switch (event.keyCode){
+		document.onkeydown = function(){
+			  switch (event.keyCode){
 //			        case 116 : 		//F5 button
 //			            event.returnValue = false;
 //			            alert("Refreshing will cause you to lose your game.");
@@ -15,8 +15,13 @@
 //			                alert("Refreshing will cause you to lose your game.");
 //			                return false;
 //			            }
-//			    }
-//			}
+			        case 27 :		// Escape button
+			        	alert("Leaving the game");
+			        	var params = {};
+			        	var request = new GameplayRequest("PLAYER_LEAVE_GAME", params);
+			        	self.gameService.gameplayRequest(request);
+			    }
+			}
 
 		// Save passed variables
 		this.$rootScope = $rootScope;
@@ -50,7 +55,7 @@
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_START, 		function(response) { self.gameService.gameStart(response); });
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, 	function(response) { self.gameService.gameplayResponse(response); });
 		
-		if (self.$window.sessionStorage.gameInitialised == "false") {
+//		if (self.$window.sessionStorage.gameInitialised == "false") {
 			
 			// Join current game
 			this.gameService.joinGame();
@@ -121,17 +126,17 @@
 		}, 100)).start();
 
 		self.$window.sessionStorage.gameInitialised = true;
-		} else {
-			alert("You refreshed in a game despite our warnings.  You deserve everything you get");
-			var params = {
-					source: [],
-					target: []
-			};
-			var request = new GameplayRequest("PLAYER_LEAVE_GAME",params);
-			console.log("CALLING LEAVE: ", request);
-			this.gameService.gameplayRequest(request);
-			self.changeView("/servers");
-		}
+//		} else {
+//			alert("You refreshed in a game despite our warnings.  You deserve everything you get");
+//			var params = {
+//					source: [],
+//					target: []
+//			};
+//			var request = new GameplayRequest("PLAYER_LEAVE_GAME",params);
+//			console.log("CALLING LEAVE: ", request);
+//			this.gameService.gameplayRequest(request);
+//			self.changeView("/servers");
+//		}
 	} 
 
 	GameController.prototype = {
