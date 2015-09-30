@@ -5,14 +5,11 @@ import javax.ws.rs.Path;
 import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.websocket.server.PathParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.codehaus.jackson.map.annotate.JsonView;
 
@@ -21,10 +18,6 @@ import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.apiobjects.RegRequest;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
-import com.majaro.gridwars.dao.EntityManager;
-import com.majaro.gridwars.entities.User;
-import com.majaro.gridwars.game.GameConfig;
-import com.majaro.gridwars.game.GameDynamicMap;
 import com.majaro.gridwars.game.GameStaticMap;
 
 @Produces("application/json")

@@ -2,7 +2,6 @@ package com.majaro.gridwars.api;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import javax.websocket.server.ServerEndpoint;
@@ -15,16 +14,13 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
 import com.corundumstudio.socketio.annotation.OnEvent;
+
 import com.majaro.gridwars.apiobjects.MessageRequest;
 import com.majaro.gridwars.apiobjects.RefreshGameLobbyRequest;
 import com.majaro.gridwars.core.GameAndUserInfo;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
-import com.majaro.gridwars.entities.User;
-import com.majaro.gridwars.game.GameStaticMap;
-
-import io.netty.channel.ChannelConfig;
-
+import com.majaro.gridwars.core.ServerGUI.E_LogLevel;
 import com.majaro.gridwars.apiobjects.BindSocketRequest;
 import com.majaro.gridwars.apiobjects.GameInitRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
@@ -51,7 +47,8 @@ public class SocketService {
 		// Generate config for socket server
 		socketServerConfig = new Configuration();
 		socketServerConfig.setPort(8080);
-		socketServerConfig.setUpgradeTimeout(1000000);
+		socketServerConfig.setUpgradeTimeout(5000);	// 5 sec timeout
+//		socketServerConfig.setUpgradeTimeout(300000);	// 5 minute timeout
 		socketServerConfig.setPingInterval(0);
 
 		// Construct socket server
@@ -63,16 +60,16 @@ public class SocketService {
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
 
-	// ENGINE - 
+	// ENGINE - Get information for game through GamplayConfigRequest object
 	@OnEvent("joinGame")
 	public void joinGame(SocketIOClient client) {
-		System.out.println("User has entered a game");
+		System.out.println("User has requested gameplay config data");
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 		broadcastRoomState.sendEvent("gameJoin", gameAndUserInfo.getUsername());
 	}
-	
+
 	// ENGINE - Returns lobby Id to lobby leader for a single start broadcast
 	@OnEvent("initGame")
 	public void initGame(SocketIOClient client, GameInitRequest data, AckRequest ackRequest) {
@@ -126,8 +123,7 @@ public class SocketService {
 
 		if(gameAndUserInfo != null) {
 			if (gameAndUserInfo.getUserId() > 0) {
-				if(requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId()
-				== gameAndUserInfo.getUserId()) {
+				if(requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId()) {
 					requestProcessor.deleteGameLobby(gameAndUserInfo.getLobbyId());
 				}
 			}
