@@ -87,7 +87,6 @@
 			},
 			gameplayRequest: function(data) {
 				this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GAMEPLAY_REQUEST, data);
-				console.log("SENT REQUEST: ", data);
 				//this.socket.emit("gameplayRequest", data);
 			},
 			leaveGame: function() {

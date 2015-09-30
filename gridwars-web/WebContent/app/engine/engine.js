@@ -245,7 +245,7 @@ Engine.prototype.create = function() {
 }
 
 Engine.prototype.update = function() {
-
+	
 	// Process any responses in buffer
 	if (!this.engineLoading && this.responseBuffer && this.responseBuffer.length > 0) {
 		this.processGameplayResponse(this.responseBuffer.splice(0, 1)[0]);
@@ -1332,7 +1332,6 @@ Engine.prototype.updatePlayerStatus = function() {
 			}
 
 			if (!playerAlreadyDead && self.playerResults.length < self.players.length) {
-				console.log("hey");
 				self.playerResults.push({
 					position : self.players.length - self.playerResults.length,
 					playerId : deadPlayers[i1].playerId
@@ -1360,7 +1359,7 @@ Engine.prototype.updatePlayerStatus = function() {
 		}
 		self.gameFinishedCallback(self.playerResults);
 		this.phaserGame.finished = true;
-		this.phaserGame.disableStep();
+		this.phaserGame.destroy();
 	}
 }
 

@@ -42,7 +42,7 @@ public class RequestProcessor {
 	private SocketService socketService;
 	
 	// GUI server application
-	private ServerGUI serverGUI = null;
+//	public static ServerGUI serverGUI = new ServerGUI();
 	
 	// Constants
 	private static final String DEFAULT_LOBBY_NAME = "Europe Server #";
@@ -141,9 +141,6 @@ public class RequestProcessor {
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
 
-		// Setup GUI for the server
-//		this.serverGUI = new ServerGUI();
-		
 		// Setup sessions and sockets
 //		initialiseSessionCleanUp();
 		this.socketService = new SocketService(this);

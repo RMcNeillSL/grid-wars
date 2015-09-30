@@ -108,7 +108,7 @@
 		}
 
 		// Call connect debug methods
-//		gameService.debugConnect();
+		//gameService.debugConnect();
 
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method
@@ -137,7 +137,7 @@
 //			this.gameService.gameplayRequest(request);
 //			self.changeView("/servers");
 //		}
-	} 
+	}
 
 	GameController.prototype = {
 		purchaseObject : function(item) {
