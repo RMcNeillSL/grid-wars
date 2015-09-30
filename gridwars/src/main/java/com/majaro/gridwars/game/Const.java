@@ -81,14 +81,16 @@ public final class Const {
 		protected int cost;
 		protected E_TechLevel techlv;
 		protected long buildTime;
+		protected int sightRange;
 		
 		// Constructor
-		public GameObject(String identifier, int health, int cost, E_TechLevel techlv, long buildTime) {
+ 		public GameObject(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int sightRange) {
 			this.identifier = identifier;
 			this.health = health;
 			this.cost = cost;
 			this.techlv = techlv;
 			this.buildTime = buildTime;
+			this.sightRange = sightRange;
 		}
 		
 		// Quick value checkers
@@ -112,6 +114,7 @@ public final class Const {
 		public int getCost() { return this.cost; }
 		public E_TechLevel getTechLv() { return this.techlv; }
 		public long getBuildTime() { return this.buildTime; }
+		public int getSightRange() { return this.sightRange; }
 
 		// Debugging methods
 		public String toString() {
@@ -120,7 +123,7 @@ public final class Const {
 		
 	}
 	
-	// Units in game     [identifier, health, cash, techlv, buildTime | range, speed, damage, ]
+	// Units in game     [identifier, health, cash, techlv, buildTime, sightRange | range, speed, damage, ]
 	public static class GameUnit extends GameObject {
 
 		// Unit variables
@@ -129,14 +132,14 @@ public final class Const {
 		private int damage;
 		
 		// Constructors
-		public GameUnit(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int range, int speed, int damage) {
-			super(identifier, health, cost, techlv, buildTime);
+		public GameUnit(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int sightRange, int range, int speed, int damage) {
+			super(identifier, health, cost, techlv, buildTime, sightRange);
 			this.range = range;
 			this.speed = speed;
 			this.damage = damage;
 		}
 		public GameUnit(GameUnit source) {
-			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getRange(), source.getSpeed(), source.getDamage());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getSightRange(), source.getRange(), source.getSpeed(), source.getDamage());
 		}
 		
 		// Getters
@@ -146,7 +149,7 @@ public final class Const {
 		
 	}
 	
-	// Buildings in game [identifier, health, cash, techlv, buildTime | power, widthCellCount, heightCellCount, ]
+	// Buildings in game [identifier, health, cash, techlv, buildTime, sightRange | power, widthCellCount, heightCellCount, ]
 	public static class GameBuilding extends GameObject {
 
 		// Building variables
@@ -155,14 +158,14 @@ public final class Const {
 		protected int heightCellCount;
 		
 		// Constructors
-		public GameBuilding(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int power, int widthCellCount, int heightCellCount) {
-			super(identifier, health, cost, techlv, buildTime);
+		public GameBuilding(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int sightRange, int power, int widthCellCount, int heightCellCount) {
+			super(identifier, health, cost, techlv, buildTime, sightRange);
 			this.power = power;
 			this.widthCellCount = widthCellCount;
 			this.heightCellCount = heightCellCount;
 		}
 		public GameBuilding(GameBuilding source) {
-			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getPower(), source.getWidthCellCount(), source.getHeightCellCount());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getSightRange(), source.getPower(), source.getWidthCellCount(), source.getHeightCellCount());
 		}
 		
 		// Getters
@@ -172,7 +175,7 @@ public final class Const {
 		
 	}
 
-	// Defences in game  [identifier, health, cash, techlv, buildTime | power, widthCellCount, heightCellCount, | range, damage, ]
+	// Defences in game  [identifier, health, cash, techlv, buildTime, sightRange | power, widthCellCount, heightCellCount, | range, damage, ]
 	public static class GameDefence extends GameBuilding {
 
 		// Building variables
@@ -180,13 +183,13 @@ public final class Const {
 		private int damage;
 		
 		// Constructors
-		public GameDefence(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int power, int widthCellCount, int heightCellCount, int range, int damage) {
-			super(identifier, health, cost, techlv, buildTime, power, widthCellCount, heightCellCount);
+		public GameDefence(String identifier, int health, int cost, E_TechLevel techlv, long buildTime, int sightRange, int power, int widthCellCount, int heightCellCount, int range, int damage) {
+			super(identifier, health, cost, techlv, buildTime, sightRange, power, widthCellCount, heightCellCount);
 			this.range = range;
 			this.damage = damage;
 		}
 		public GameDefence(GameDefence source) {
-			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getPower(), source.getWidthCellCount(), source.getHeightCellCount(), source.getRange(), source.getDamage());
+			this(source.getIdentifier(), source.getHealth(), source.getCost(), source.getTechLv(), source.getBuildTime(), source.getSightRange(), source.getPower(), source.getWidthCellCount(), source.getHeightCellCount(), source.getRange(), source.getDamage());
 		}
 		
 		// Getters
@@ -199,13 +202,15 @@ public final class Const {
 	
 	// Buildings in game
 	public static final GameBuilding[] BUILDINGS = {
-			new GameBuilding("HUB", 2000, 500, E_TechLevel.TECH_01, 3000, 2, 3, 3),
-			new GameDefence("TURRET", 500, 500, E_TechLevel.TECH_01, 10000, 2, 1, 1, 400, 50)
+			//					Name			Health		Cost		Tech Level				Build Time		Sight Range		Power		Width		Height		Range		Damage
+			new GameBuilding	("HUB", 		2000, 		500, 		E_TechLevel.TECH_01, 	3000, 			900,			2, 			3, 			3),
+			new GameDefence		("TURRET", 		500, 		500, 		E_TechLevel.TECH_01, 	10000, 			700,			2, 			1, 			1, 			400, 		50)
 		};
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
-			new GameUnit("TANK", 300, 400, E_TechLevel.TECH_01, 5000, 300, 2, 40)
+			//					Name			Health		Cost		Tech Level				Build Time		Sight Range		Range		Speed		Damage
+			new GameUnit		("TANK", 		300, 		400, 		E_TechLevel.TECH_01, 	5000, 			600,			300, 		2, 			40)
 		};
 	
 	

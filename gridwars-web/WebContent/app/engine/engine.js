@@ -415,6 +415,11 @@ Engine.prototype.onMouseDown = function(pointer) {
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
+	
+	// Cancel right scroll
+	this.mouse.rightScroll.direction = -1;
+	this.mouse.rightScroll.isActive = false;
+	this.processMouseFormUpdates();
 
 	// Jump out if the mouse is over a hud button
 	if (this.hud.mouseOverHudButton) { return; }
@@ -934,7 +939,7 @@ Engine.prototype.processMouseFormUpdates = function() {
 	
 	// Process selection for building
 	if (buildingSelected) {
-		
+		updatePointerForm(CONSTANTS.CURSOR_NORMAL);
 	}
 }
 
