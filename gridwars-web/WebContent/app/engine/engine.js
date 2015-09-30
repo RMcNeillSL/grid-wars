@@ -659,7 +659,7 @@ Engine.prototype.onKeyPressed = function(char) {
 			this.purchaseObject("TANK");
 		}
 	}
-
+	
 	// Process mouse form updates
 	this.processMouseFormUpdates();
 }
@@ -1284,7 +1284,7 @@ Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) 
 	if(selectedGameObject != null) {
 		this.gameObjectDetailsText.setText(selectedGameObject.gameCore.identifier);
 		this.gameObjectDetailsIcon.loadTexture(selectedGameObject.gameCore.colour.ICON);
-		var healthPercentage = Math.floor((selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
+		var healthPercentage = (Math.floor(selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
 		
 		if(healthPercentage > 0) {
 			this.gameObjectHealthText.setText(healthPercentage + "%");
@@ -2032,9 +2032,9 @@ Engine.prototype.processUnitDamage = function(responseData) {
 			gameObject.gameCore.setHealth(refObject.newHealth);
 			
 			// Update health on the game object details menu
-			if(gameObject.gameCore.health > 0 && this.displayedGameObject.gameCore.instanceId == gameObject.gameCore.instanceId) {
+			if(gameObject.gameCore.health > 0) {
 				this.gameObjectHealthText.setText(Math.floor((refObject.newHealth / gameObject.gameCore.maxHealth)*100) + "%");
-			} else if (gameObject.gameCore.health <= 0 && this.displayedGameObject.gameCore.instanceId == gameObject.gameCore.instanceId) {
+			} else {
 				this.setGameObjectDetailsVisibility(false);
 			}
 
