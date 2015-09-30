@@ -89,7 +89,10 @@
 				this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GAMEPLAY_REQUEST, data);
 				//this.socket.emit("gameplayRequest", data);
 			},
-			
+			leaveGame: function() {
+				this.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_GAME_LEAVE);
+				console.log("SENT LEAVE REQUEST");
+			},
 			
 			// Debug methods to make testing easier
 			debugConnect: function (callback) {

@@ -659,7 +659,7 @@ Engine.prototype.onKeyPressed = function(char) {
 			this.purchaseObject("TANK");
 		}
 	}
-	
+
 	// Process mouse form updates
 	this.processMouseFormUpdates();
 }
