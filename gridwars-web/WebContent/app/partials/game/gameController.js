@@ -3,8 +3,8 @@
 (function() {
 	
 	function GameController($rootScope, $scope, $location, $window, gameService) {
-//		document.onkeydown = function(){
-//			  switch (event.keyCode){
+		document.onkeydown = function(){
+			  switch (event.keyCode){
 //			        case 116 : 		//F5 button
 //			            event.returnValue = false;
 //			            alert("Refreshing will cause you to lose your game.");
@@ -15,8 +15,13 @@
 //			                alert("Refreshing will cause you to lose your game.");
 //			                return false;
 //			            }
-//			    }
-//			}
+			        case 27 :		// Escape button
+			        	alert("Leaving the game");
+			        	var params = {};
+			        	var request = new GameplayRequest("PLAYER_LEAVE_GAME", params);
+			        	self.gameService.gameplayRequest(request);
+			    }
+			}
 
 		// Save passed variables
 		this.$rootScope = $rootScope;
@@ -103,7 +108,7 @@
 		}
 
 		// Call connect debug methods
-		gameService.debugConnect();
+//		gameService.debugConnect();
 
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method
@@ -132,7 +137,7 @@
 //			this.gameService.gameplayRequest(request);
 //			self.changeView("/servers");
 //		}
-	} 
+	}
 
 	GameController.prototype = {
 		purchaseObject : function(item) {

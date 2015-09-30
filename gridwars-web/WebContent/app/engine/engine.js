@@ -251,7 +251,7 @@ Engine.prototype.create = function() {
 }
 
 Engine.prototype.update = function() {
-
+	
 	// Process any responses in buffer
 	if (!this.engineLoading && this.responseBuffer && this.responseBuffer.length > 0) {
 		this.processGameplayResponse(this.responseBuffer.splice(0, 1)[0]);
@@ -283,7 +283,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 //	// Get state of players in game
-//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -668,7 +668,7 @@ Engine.prototype.onKeyPressed = function(char) {
 			this.purchaseObject("TANK");
 		}
 	}
-	
+
 	// Process mouse form updates
 	this.processMouseFormUpdates();
 }
@@ -1324,7 +1324,7 @@ Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) 
 	if(selectedGameObject != null) {
 		this.gameObjectDetailsText.setText(selectedGameObject.gameCore.identifier);
 		this.gameObjectDetailsIcon.loadTexture(selectedGameObject.gameCore.colour.ICON);
-		var healthPercentage = (Math.floor(selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
+		var healthPercentage = Math.floor((selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
 		
 		if(healthPercentage > 0) {
 			this.gameObjectHealthText.setText(healthPercentage + "%");
@@ -1372,7 +1372,6 @@ Engine.prototype.updatePlayerStatus = function() {
 			}
 
 			if (!playerAlreadyDead && self.playerResults.length < self.players.length) {
-				console.log("hey");
 				self.playerResults.push({
 					position : self.players.length - self.playerResults.length,
 					playerId : deadPlayers[i1].playerId
@@ -1400,7 +1399,7 @@ Engine.prototype.updatePlayerStatus = function() {
 		}
 		self.gameFinishedCallback(self.playerResults);
 		this.phaserGame.finished = true;
-		this.phaserGame.disableStep();
+		this.phaserGame.destroy();
 	}
 }
 
@@ -2073,10 +2072,12 @@ Engine.prototype.processUnitDamage = function(responseData) {
 			gameObject.gameCore.setHealth(refObject.newHealth);
 			
 			// Update health on the game object details menu
-			if(gameObject.gameCore.health > 0) {
-				this.gameObjectHealthText.setText(Math.floor((refObject.newHealth / gameObject.gameCore.maxHealth)*100) + "%");
-			} else {
-				this.setGameObjectDetailsVisibility(false);
+			if(this.displayedGameObject) {
+				if(gameObject.gameCore.health > 0 && this.displayedGameObject.gameCore.instanceId == gameObject.gameCore.instanceId) {
+					this.gameObjectHealthText.setText(Math.floor((refObject.newHealth / gameObject.gameCore.maxHealth)*100) + "%");
+				} else if (gameObject.gameCore.health <= 0 && this.displayedGameObject.gameCore.instanceId == gameObject.gameCore.instanceId) {
+					this.setGameObjectDetailsVisibility(false);
+				}
 			}
 
 			// Determine if unit was destroyed
