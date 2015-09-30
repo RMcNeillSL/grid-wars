@@ -2088,10 +2088,12 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 		// Direct response to appropriate handler
 		switch (responseData.responseCode) {
 
+		
 			// ----- Startup responses
 			case "SETUP_SPAWN_OBJECTS":
 				this.processSetupSpawnObjects(responseData);
 				break;
+				
 				
 			// ----- Purchase responses
 			case "PURCHASE_OBJECT":
@@ -2106,24 +2108,34 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 			case "BUILDING_PURCHASE_FINISHED":
 				this.processBuildingPurchaseFinished(responseData);
 				break;
+				
 			
-			// ----- Construction of new building/defence responses
+			// ----- Building/defence responses
 			case "NEW_BUILDING":
 				this.processNewBuilding(responseData, false);
 				break;
+			case "SELL_BUILDING":
+//				this.processNewBuilding(responseData, false);
+				break;
 				
-			// ----- Object attack responses
+				
+			// ----- Attack/Damage responses
 			case "OBJECT_ATTACK_OBJECT":
 				this.processObjectAttackObject(responseData);
 				break;
 			case "DAMAGE_OBJECT":
 				this.processUnitDamage(responseData);
 				break;
+			case "DESTROY_OBJECT":
+//				this.processNewBuilding(responseData, false);
+				break;
+				
 				
 			// ----- Waypoint responses
 			case "WAYPOINT_PATH_COORDS":
 				this.processWaypoints(responseData);
 				break;
+				
 				
 			// ----- Error responses
 			case "INSUFFICIENT_FUNDS":
@@ -2131,8 +2143,7 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				break;
 				
 				
-				
-			// ----------------------	LEGACY METHODS TO REMOVE
+			// --------------------------------------------------	LEGACY METHODS TO REMOVE
 			case "DEFENCE_ATTACK_XY":
 				this.processDefenceAttackXY(responseData);
 				break;

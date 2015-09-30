@@ -891,7 +891,6 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
-
 	private GameplayResponse[] processUserLeaveGame (Player sender, ArrayList<String> miscStrings) {		//ROB
 		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
 		List<String> instanceIds = new ArrayList<String>();
@@ -962,6 +961,7 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
+	
 	// Game request method
 
 	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
