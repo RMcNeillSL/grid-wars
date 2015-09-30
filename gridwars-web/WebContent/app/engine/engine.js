@@ -94,9 +94,6 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.buildingGroup = null;
 	this.tankGroup = null;
 	this.hudGroup = null;
-	
-	this.prevDeltaX = 0;
-	this.prevDeltaY = 0;
 
 	// Player results
 	this.playerResults = [];
@@ -584,25 +581,24 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		if (relativeY > this.mouse.position.y) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED; }
 
 		// Update the mouse position
-		this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// MOUSE
-				this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+		//this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// Removed to reduce jitter
+		//		this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 
 	}
 
 	// Update pointer position
-	this.updatePointerPosition();
+	//this.updatePointerPosition();			//Removed for GW-191
 
 	// Process updates for selection rectangle
 	if (pointer.leftButton.isDown) {
 		
 		// Check if clicking on a new location on the map first
 		if (this.isPointOverMinimap(this.mouse.position)) {
-
 			// Jump to cell at point
 			this.moveToMinimapClick(new Point(this.mouse.position.x - this.minimap.left, this.mouse.position.y - this.minimap.top));
 			
 		} else if (!this.selectionRectangle.miniMapClickStart) {
-
+			this.updatePointerPosition();		// Added for GW-191
 			// Reset selected items
 			if (this.selectionRectangle.selectActive
 					&& Math.abs(this.selectionRectangle.rect.width
@@ -617,6 +613,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
 	} else if (!this.mouse.middleScroll.isActive) {
+		this.updatePointerPosition();	// Added for GW-191
 		
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
@@ -980,7 +977,7 @@ Engine.prototype.updatePointerPosition = function(point) {
 	}
 	
 	// Update mouse position
-	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// MOUSE
+	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,
 			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 
 	// Check if point was passed (default to cursor)
@@ -992,26 +989,6 @@ Engine.prototype.updatePointerPosition = function(point) {
 }
 
 Engine.prototype.positionCameraOverCell = function(cell) {
-
-	if (this.prevDeltaX == 0 || this.prevDeltaY == 0) {			//ROB
-		this.prevDeltaX = cell.row;
-		this.prevDeltaY = cell.col;
-	}
-	if (Math.abs(this.prevDeltaX - cell.row) > 5) {
-		console.log("");
-		console.log("POINTER X: ", this.pointer.sprite.x);
-		console.log("ERROR IN X: ", this.prevDeltaX - cell.row);
-		console.log("SHOULD HAVE BEEN: ", cell.col, ",", cell.row);
-	}
-	if (Math.abs(this.prevDeltaY - cell.col) > 5) {
-		console.log("");
-		console.log("POINTER Y: ", this.pointer.sprite.y);
-		console.log("ERROR IN Y: ", this.prevDeltaY - cell.col);
-		console.log("SHOULD HAVE BEEN: ", cell.col, ",", cell.row);
-	}
-
-	this.prevDeltaX = cell.row;
-	this.prevDeltaY = cell.col;
 
 	// Calculate map bounds
 	var mapBound = { x: this.mapRender.screenCellWidth / 2, y : this.mapRender.screenCellHeight / 2 };
@@ -1034,8 +1011,8 @@ Engine.prototype.manageMapMovement = function() {
 	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
 	
 	// Update mouse values
-	this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// MOUSE
-			this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+	//this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// Removed to reduce jitter
+	//		this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
 	
 	// Process updates for new map position
 	this.updatePointerPosition();
@@ -1094,7 +1071,7 @@ Engine.prototype.moveToMinimapClick = function(miniMapPoint) {
 	var minimapCellHeight = this.minimap.height * 1.0 / this.mapRender.height;
 	var cellAtMouse = new Cell(Math.floor(miniMapPoint.x / minimapCellWidth),
 			Math.floor(miniMapPoint.y / minimapCellHeight));
-	
+
 	// Jump to cell at point
 	this.positionCameraOverCell(cellAtMouse);
 }
