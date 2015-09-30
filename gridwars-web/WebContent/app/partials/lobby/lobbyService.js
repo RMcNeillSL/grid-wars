@@ -137,6 +137,7 @@
 		},
 		gameInitialising: function () {
 			self.$rootScope.lobbyMessages.push({user: "SERVER", message: "All users ready - initialising game"});
+			self.$window.sessionStorage.gameInitialised = false;
 			self.$location.path("/game");
 			self.$rootScope.$apply();
 		},
