@@ -12,6 +12,7 @@
 		var _this = this;
 
 		// Initialise variables
+		$rootScope.gameplayConfig = null;
 		$rootScope.currentUser = this.$window.sessionStorage.username;
 		$rootScope.lobbyMessages = [];
 		$rootScope.mapList = [];

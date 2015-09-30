@@ -56,7 +56,11 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.mapRender = null;
 	this.explosionManager = null;
 	this.gameplayConfig = gameplayConfig;
-	this.mouse = { position : new Point(0, 0) };
+	this.mouse= {
+			position : new Point(0, 0),
+			middleScroll : { direction : null, isActive : false },
+			rightScroll : { direction : null, isActive : false, origin : new Point(0,0) }
+		};
 
 	// Define game camera variables
 	this.cursors = null;
@@ -77,15 +81,9 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 		originY : 0,
 		miniMapClickStart : false
 	};
-	this.middleClickScroll = {
-		isActive	: false,
-		originX		: 0,
-		originY		: 0
-	}
-	this.rightClickScroll = {
-		isActive	: false
-	}
 	this.hoverItem = null;
+
+	// Build progress variables
 	this.tankBuildInProgress = false;
 	this.turretBuildInProgress = false;
 
@@ -115,7 +113,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_HUB, CONSTANTS.ROOT_SPRITES_LOC + 'tank_hub.png', 300, 300, 70);
 
 	// Load sprite sheets
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 28);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 36);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 50, 50, 10);
@@ -229,6 +227,14 @@ Engine.prototype.create = function() {
 	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, 	CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 	30, true);
 	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, 			CONSTANTS.CURSOR_SPRITE_MOVE, 			30, true);
 	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, 	CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 	30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_UP, 		CONSTANTS.CURSOR_SPRITE_SCROLL_UP, 		30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DOWN, 	CONSTANTS.CURSOR_SPRITE_SCROLL_DOWN, 	30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_LEFT, 	CONSTANTS.CURSOR_SPRITE_SCROLL_LEFT, 	30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_RIGHT, 	CONSTANTS.CURSOR_SPRITE_SCROLL_RIGHT, 	30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_LU, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_LU, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_LD, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_LD, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RU, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RU, 30, true);
+	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RD, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RD, 30, true);
 	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
 	this.highestGroup.add(this.pointer.sprite);
 
@@ -278,6 +284,7 @@ Engine.prototype.update = function() {
 
 	// Update pointer position
 	this.updatePointerPosition();
+
 
 //	// Get state of players in game
 	//if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
@@ -404,8 +411,8 @@ Engine.prototype.onMouseDown = function(pointer) {
 	}
 	
 	// Set mouse states for scrolling
-	if (pointer.middleButton.isDown) { this.middleClickScroll.isActive = true; }
-	if (pointer.rightButton.isDown) { this.rightClickScroll.isActive = false; }
+	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = true; }
+	if (pointer.middleButton.isDown) { this.mouse.middleScroll.isActive = false; }
 
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
@@ -535,32 +542,35 @@ Engine.prototype.onMouseUp = function(pointer) {
 		}
 	}
 	
-	// Set scroll state for middle button
-	if (pointer.middleButton.isDown) { this.middleClickScroll.isActive = false; }
+	// Set scroll state for right button
+	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = false; }
 
-	// Perform checks for right click
-	if (!clickHandled && pointer.rightButton.isDown) {
-		if (!this.rightClickScroll.isActive) {
+	// Perform checks for middle click
+	if (!clickHandled && pointer.middleButton.isDown) {
+		if (!this.mouse.middleScroll.isActive) {
 			this.selected = [];
 			this.setGameObjectDetailsVisibility(false);
 		} else {
-			this.rightClickScroll.isActive = false;
+			this.mouse.middleScroll.isActive = false;
 		}
 	}
 	
 	// Release mark as mouse down overminimap
 	this.selectionRectangle.miniMapClickStart = false;
+
+	// Process updates for mouse
+	this.processMouseFormUpdates();
 }
 
 Engine.prototype.onMouseMove = function(pointer, x, y) {
 	
 	// Perform right click map movement before pointer position is updated
-	if (pointer.rightButton.isDown) {
+	if (pointer.middleButton.isDown) {
 		
 		// Create reference to mouse x and y
 		var relativeX = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
 		var relativeY = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
-		this.rightClickScroll.isActive = true;
+		this.mouse.middleScroll.isActive = true;
 
 		// Move according to mouse movement from last recorded mouse position
 		if (relativeX < this.mouse.position.x) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
@@ -601,7 +611,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
 			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-	} else if (!this.rightClickScroll.isActive) {
+	} else if (!this.mouse.middleScroll.isActive) {
 		
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
@@ -623,12 +633,12 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		this.selectionRectangle.rect.height = 0;
 
 		// Flag right click scrolling as active
-		this.rightClickScroll.isActive = false;
+		this.mouse.middleScroll.isActive = false;
 
 		// Record mouse origin X & Y for use with middle click scrolling
-		if(!this.middleClickScroll.isActive) {
-			this.middleClickScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
-			this.middleClickScroll.originY = this.mouse.position.y - this.phaserGame.camera.y;
+		if(!this.mouse.rightScroll.isActive) {
+			this.mouse.rightScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
+			this.mouse.rightScroll.originY = this.mouse.position.y - this.phaserGame.camera.y;
 		}
 
 		// Select hover items
@@ -828,6 +838,25 @@ Engine.prototype.purchaseObject = function(objectId) {
 
 Engine.prototype.processMouseFormUpdates = function() {
 
+	// Update pointer form function
+	var self = this;
+	var updatePointerForm = function(formId) {
+		self.pointer.sprite.animations.play(formId);
+	}
+	
+	// Skip all logic if using middle click scroll
+	if (this.mouse.rightScroll.isActive) {
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_UP) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_UP); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DOWN) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DOWN); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_LEFT) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_LEFT); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_RIGHT) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_RIGHT); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_LU) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_LU); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_LD) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_LD); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_RU) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_RU); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_RD) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_RD); }
+		return;
+	}
+
 	// Selected flags
 	var nothingSelected = false;
 	var unitSelected = false;
@@ -859,12 +888,6 @@ Engine.prototype.processMouseFormUpdates = function() {
 	
 	// Get ctrl state
 	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
-	
-	// Update pointer form function
-	var self = this;
-	var updatePointerForm = function(formId) {
-		self.pointer.sprite.animations.play(formId);
-	}
 	
 	// Process selection for nothing
 	if (nothingSelected) {
@@ -922,15 +945,33 @@ Engine.prototype.processMouseFormUpdates = function() {
 Engine.prototype.updatePointerPosition = function(point) {
 
 	// Manage middle click scrolling
-	if (this.middleClickScroll.isActive) {
-
-	    // Calculate mouse movement deltas
-		var deltaX = this.mouse.position.x - this.phaserGame.camera.x - this.middleClickScroll.originX;
-		var deltaY = this.mouse.position.y - this.phaserGame.camera.y - this.middleClickScroll.originY;
-	
+	if (this.mouse.rightScroll.isActive) {
+		
+		// Calculate mouse movement deltas
+		var deltaX = this.mouse.position.x - this.phaserGame.camera.x - this.mouse.rightScroll.originX;
+		var deltaY = this.mouse.position.y - this.phaserGame.camera.y - this.mouse.rightScroll.originY;
+		var mouseAmount = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+		
+		// Manage cursor icon changes
+		if (mouseAmount > CONSTANTS.CURSOR_SCROLL_REDUCTION ) {
+			if ( (1/2 * Math.abs(deltaY) <= Math.abs(deltaX)) && (2 * Math.abs(deltaY) >= Math.abs(deltaX)) ) {
+				if (deltaX > 0 && deltaY > 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RD; }
+				if (deltaX > 0 && deltaY < 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RU; }
+				if (deltaX < 0 && deltaY > 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_LD; }
+				if (deltaX < 0 && deltaY < 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_LU; }
+			} else {
+				if (deltaY > 0 && Math.abs(deltaY) > Math.abs(deltaX))		{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DOWN; }
+				else if (deltaY < 0 && Math.abs(deltaY) > Math.abs(deltaX)) { this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_UP; }
+				else if (deltaX > 0 && Math.abs(deltaY) < Math.abs(deltaX)) { this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_RIGHT; }
+				else if (deltaX < 0 && Math.abs(deltaY) , Math.abs(deltaX)) { this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_LEFT; }
+			}
+		} else {
+			this.mouse.rightScroll.direction = -1;
+		}
+		
 		// Perform map scrolling
-		if (Math.abs(deltaX) > 0) { this.phaserGame.camera.x = this.phaserGame.camera.x + deltaX/30; }
-		if (Math.abs(deltaY) > 0) { this.phaserGame.camera.y = this.phaserGame.camera.y + deltaY/30; }
+		if (Math.abs(deltaX) > 0) { this.phaserGame.camera.x = this.phaserGame.camera.x + deltaX/CONSTANTS.CURSOR_SCROLL_REDUCTION; }
+		if (Math.abs(deltaY) > 0) { this.phaserGame.camera.y = this.phaserGame.camera.y + deltaY/CONSTANTS.CURSOR_SCROLL_REDUCTION; }
 	}
 	
 	// Update mouse position
