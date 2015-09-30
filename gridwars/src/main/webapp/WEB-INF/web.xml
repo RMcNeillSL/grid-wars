@@ -18,6 +18,7 @@
 
 	<listener>
 		<listener-class>org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+		<!--<listener-class>com.example.Listener</listener-class>-->
 	</listener>
 
 	<servlet>

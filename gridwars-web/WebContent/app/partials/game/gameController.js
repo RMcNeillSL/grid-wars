@@ -50,7 +50,7 @@
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAME_START, 		function(response) { self.gameService.gameStart(response); });
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_GAMEPLAY_RESPONSE, 	function(response) { self.gameService.gameplayResponse(response); });
 		
-		if (self.$window.sessionStorage.gameInitialised == "false") {
+//		if (self.$window.sessionStorage.gameInitialised == "false") {
 			
 			// Join current game
 			this.gameService.joinGame();
@@ -103,7 +103,7 @@
 		}
 
 		// Call connect debug methods
-//		gameService.debugConnect();
+		gameService.debugConnect();
 
 		// Wait until connections finished before proceeding - then run the game
 		// configuration method
@@ -121,17 +121,17 @@
 		}, 100)).start();
 
 		self.$window.sessionStorage.gameInitialised = true;
-		} else {
-			alert("You refreshed in a game despite our warnings.  You deserve everything you get");
-			var params = {
-					source: [],
-					target: []
-			};
-			var request = new GameplayRequest("PLAYER_LEAVE_GAME",params);
-			console.log("CALLING LEAVE: ", request);
-			this.gameService.gameplayRequest(request);
-			self.changeView("/servers");
-		}
+//		} else {
+//			alert("You refreshed in a game despite our warnings.  You deserve everything you get");
+//			var params = {
+//					source: [],
+//					target: []
+//			};
+//			var request = new GameplayRequest("PLAYER_LEAVE_GAME",params);
+//			console.log("CALLING LEAVE: ", request);
+//			this.gameService.gameplayRequest(request);
+//			self.changeView("/servers");
+//		}
 	} 
 
 	GameController.prototype = {
