@@ -63,6 +63,7 @@ public class SocketService {
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
 	}
 
+	// ENGINE - 
 	@OnEvent("joinGame")
 	public void joinGame(SocketIOClient client) {
 		System.out.println("User has entered a game");
@@ -72,7 +73,7 @@ public class SocketService {
 		broadcastRoomState.sendEvent("gameJoin", gameAndUserInfo.getUsername());
 	}
 	
-	// used to initialise the game engine
+	// ENGINE - Returns lobby Id to lobby leader for a single start broadcast
 	@OnEvent("initGame")
 	public void initGame(SocketIOClient client, GameInitRequest data, AckRequest ackRequest) {
 		String sessionId = client.getSessionId().toString();
@@ -86,7 +87,7 @@ public class SocketService {
 		}
 	}
 
-	// triggered by all players have finished initialising their game engine
+	// ENGINE - Ticks off users as their games finish loading and broadcasts out a start message
 	@OnEvent("startGame")
 	public void startGame(SocketIOClient client) {
 		String sessionId = client.getSessionId().toString();
@@ -100,7 +101,7 @@ public class SocketService {
 		}
 	}
 
-	// whenever you want to send any information off in game it uses this generic call.
+	// ENGINE - Submit any requests from client to server regarding gameplay
 	@OnEvent("gameplayRequest")
 	public void processGameplayRequest(SocketIOClient client, GameplayRequest gameplayRequest) {
 		String sessionId = client.getSessionId().toString();
