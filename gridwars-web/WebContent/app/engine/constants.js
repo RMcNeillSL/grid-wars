@@ -87,7 +87,7 @@ CONSTANTS = {
 	// ***************** CURSOR SPRITES AND IDS ****************** //
 	
 	// Sprite file and frame sequences
-	SPRITE_CURSORS : "sprite_cursors",
+	SPRITE_CURSORS 						: "sprite_cursors",
 	CURSOR_SPRITE_NORMAL 				: [0],
 	CURSOR_SPRITE_NORMAL_ENEMY 			: [1],
 	CURSOR_SPRITE_INVALID 				: [2],
