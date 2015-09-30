@@ -282,8 +282,8 @@ Engine.prototype.update = function() {
 	// Update pointer position
 	this.updatePointerPosition();
 
-//	// Get state of players in game
-	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	// Get state of players in game
+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -949,7 +949,7 @@ Engine.prototype.updatePointerPosition = function(point) {
 		var mouseAmount = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 		
 		// Manage cursor icon changes
-		if (mouseAmount > 30 ) {
+		if (mouseAmount > CONSTANTS.CURSOR_SCROLL_REDUCTION ) {
 			if ( (1/2 * Math.abs(deltaY) <= Math.abs(deltaX)) && (2 * Math.abs(deltaY) >= Math.abs(deltaX)) ) {
 				if (deltaX > 0 && deltaY > 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RD; }
 				if (deltaX > 0 && deltaY < 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RU; }
@@ -966,8 +966,8 @@ Engine.prototype.updatePointerPosition = function(point) {
 		}
 		
 		// Perform map scrolling
-		if (Math.abs(deltaX) > 0) { this.phaserGame.camera.x = this.phaserGame.camera.x + deltaX/30; }
-		if (Math.abs(deltaY) > 0) { this.phaserGame.camera.y = this.phaserGame.camera.y + deltaY/30; }
+		if (Math.abs(deltaX) > 0) { this.phaserGame.camera.x = this.phaserGame.camera.x + deltaX/CONSTANTS.CURSOR_SCROLL_REDUCTION; }
+		if (Math.abs(deltaY) > 0) { this.phaserGame.camera.y = this.phaserGame.camera.y + deltaY/CONSTANTS.CURSOR_SCROLL_REDUCTION; }
 	}
 	
 	// Update mouse position

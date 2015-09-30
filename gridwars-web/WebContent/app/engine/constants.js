@@ -71,6 +71,9 @@ CONSTANTS = {
 	// ***************** MOUSE CONSTANTS ****************** //
 	
 	// Mouse scrolling values
+	CURSOR_SCROLL_REDUCTION				: 10,
+	
+	// Mouse scrolling cursors
 	CURSOR_SCROLL_UP					: 0,
 	CURSOR_SCROLL_DOWN					: 1,
 	CURSOR_SCROLL_LEFT					: 2,
