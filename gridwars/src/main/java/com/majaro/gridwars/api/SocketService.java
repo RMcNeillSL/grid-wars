@@ -63,9 +63,9 @@ public class SocketService {
 	// ENGINE - Get information for game through GamplayConfigRequest object
 	@OnEvent("joinGame")
 	public void joinGame(SocketIOClient client) {
-		System.out.println("User has requested gameplay config data");
 		String sessionId = client.getSessionId().toString();
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
+		System.out.println("User has requested config data for lobby #" + gameAndUserInfo.getLobbyId());
 		BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 		broadcastRoomState.sendEvent("gameJoin", gameAndUserInfo.getUsername());
 	}

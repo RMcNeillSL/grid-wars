@@ -66,6 +66,19 @@ CONSTANTS = {
 	SOCKET_SEND_START_GAME				: "startGame",
 	SOCKET_SEND_GAMEPLAY_REQUEST		: "gameplayRequest",
 	SOCKET_SEND_GAME_COMPLETE			: "gameCompleted",
+	
+	
+	// ***************** MOUSE CONSTANTS ****************** //
+	
+	// Mouse scrolling values
+	CURSOR_SCROLL_UP					: 0,
+	CURSOR_SCROLL_DOWN					: 1,
+	CURSOR_SCROLL_LEFT					: 2,
+	CURSOR_SCROLL_RIGHT					: 3,
+	CURSOR_SCROLL_DIAG_LU				: 4,
+	CURSOR_SCROLL_DIAG_LD				: 5,
+	CURSOR_SCROLL_DIAG_RU				: 6,
+	CURSOR_SCROLL_DIAG_RD				: 7,
 
 	
 	// ***************** CURSOR SPRITES AND IDS ****************** //
@@ -79,6 +92,14 @@ CONSTANTS = {
 	CURSOR_SPRITE_FORCE_ATTACK 			: [3,4,5,6,7,8,9,8,7,6,5,4],
 	CURSOR_SPRITE_MOVE 					: [19,18,17,18,19,20],
 	CURSOR_SPRITE_MOVE_CLICK 			: [22,23,24,25,26,27,21],
+	CURSOR_SPRITE_SCROLL_UP				: [28],
+	CURSOR_SPRITE_SCROLL_RIGHT			: [29],
+	CURSOR_SPRITE_SCROLL_DOWN			: [30],
+	CURSOR_SPRITE_SCROLL_LEFT			: [31],
+	CURSOR_SPRITE_SCROLL_DIAG_RD		: [32],
+	CURSOR_SPRITE_SCROLL_DIAG_LD		: [33],
+	CURSOR_SPRITE_SCROLL_DIAG_LU		: [34],
+	CURSOR_SPRITE_SCROLL_DIAG_RU		: [35],
 	
 	// Cursor form ids
 	CURSOR_NORMAL 						: "cursor_normal",
@@ -88,6 +109,14 @@ CONSTANTS = {
 	CURSOR_FORCE_ATTACK 				: "cursor_force_attack",
 	CURSOR_MOVE 						: "cursor_move",
 	CURSOR_MOVE_CLICK 					: "cursor_move_click",
+	CURSOR_SCROLL_UP					: "cursor_move_up",
+	CURSOR_SCROLL_RIGHT					: "cursor_move_right",
+	CURSOR_SCROLL_DOWN					: "cursor_move_down",
+	CURSOR_SCROLL_LEFT					: "cursor_move_left",
+	CURSOR_SCROLL_DIAG_RD				: "cursor_move_diag_rd",
+	CURSOR_SCROLL_DIAG_LD				: "cursor_move_diag_ld",
+	CURSOR_SCROLL_DIAG_LU				: "cursor_move_diag_lu",
+	CURSOR_SCROLL_DIAG_RU				: "cursor_move_diag_ru",
 
 	// Core properties
 	GAME_NAME : "gridwars-engine",
