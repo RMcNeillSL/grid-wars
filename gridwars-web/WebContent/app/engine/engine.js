@@ -58,8 +58,8 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.gameplayConfig = gameplayConfig;
 	this.mouse= {
 			position : new Point(0, 0),
-			middleScroll : { direction : null, isActive : false, origin : new Point(0,0) },
-			rightScroll : { direction : null, isActive : false }
+			middleScroll : { direction : null, isActive : false },
+			rightScroll : { direction : null, isActive : false, origin : new Point(0,0) }
 		};
 
 	// Define game camera variables
@@ -407,8 +407,8 @@ Engine.prototype.onMouseDown = function(pointer) {
 	}
 	
 	// Set mouse states for scrolling
-	if (pointer.middleButton.isDown) { this.mouse.middleScroll.isActive = true; }
-	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = false; }
+	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = true; }
+	if (pointer.middleButton.isDown) { this.mouse.middleScroll.isActive = false; }
 
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
@@ -538,16 +538,16 @@ Engine.prototype.onMouseUp = function(pointer) {
 		}
 	}
 	
-	// Set scroll state for middle button
-	if (pointer.middleButton.isDown) { this.mouse.middleScroll.isActive = false; }
+	// Set scroll state for right button
+	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = false; }
 
-	// Perform checks for right click
-	if (!clickHandled && pointer.rightButton.isDown) {
-		if (!this.mouse.rightScroll.isActive) {
+	// Perform checks for middle click
+	if (!clickHandled && pointer.middleButton.isDown) {
+		if (!this.mouse.middleScroll.isActive) {
 			this.selected = [];
 			this.setGameObjectDetailsVisibility(false);
 		} else {
-			this.mouse.rightScroll.isActive = false;
+			this.mouse.middleScroll.isActive = false;
 		}
 	}
 	
@@ -561,12 +561,12 @@ Engine.prototype.onMouseUp = function(pointer) {
 Engine.prototype.onMouseMove = function(pointer, x, y) {
 	
 	// Perform right click map movement before pointer position is updated
-	if (pointer.rightButton.isDown) {
+	if (pointer.middleButton.isDown) {
 		
 		// Create reference to mouse x and y
 		var relativeX = this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x;
 		var relativeY = this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y;
-		this.mouse.rightScroll.isActive = true;
+		this.mouse.middleScroll.isActive = true;
 
 		// Move according to mouse movement from last recorded mouse position
 		if (relativeX < this.mouse.position.x) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
@@ -607,7 +607,7 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.selectionRectangle.rect.width = (this.mouse.position.x - this.selectionRectangle.originX);
 			this.selectionRectangle.rect.height = (this.mouse.position.y - this.selectionRectangle.originY);
 		}
-	} else if (!this.mouse.rightScroll.isActive) {
+	} else if (!this.mouse.middleScroll.isActive) {
 		
 		// Run search for any selected units
 		if (this.selectionRectangle.selectActive
@@ -629,12 +629,12 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		this.selectionRectangle.rect.height = 0;
 
 		// Flag right click scrolling as active
-		this.mouse.rightScroll.isActive = false;
+		this.mouse.middleScroll.isActive = false;
 
 		// Record mouse origin X & Y for use with middle click scrolling
-		if(!this.mouse.middleScroll.isActive) {
-			this.mouse.middleScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
-			this.mouse.middleScroll.originY = this.mouse.position.y - this.phaserGame.camera.y;
+		if(!this.mouse.rightScroll.isActive) {
+			this.mouse.rightScroll.originX = this.mouse.position.x - this.phaserGame.camera.x;
+			this.mouse.rightScroll.originY = this.mouse.position.y - this.phaserGame.camera.y;
 		}
 
 		// Select hover items
@@ -841,16 +841,15 @@ Engine.prototype.processMouseFormUpdates = function() {
 	}
 	
 	// Skip all logic if using middle click scroll
-	if (this.mouse.middleScroll.isActive) {
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_UP) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_UP); }
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_DOWN) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DOWN); }
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_LEFT) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_LEFT); }
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_RIGHT) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_RIGHT); }
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_LU) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_LU); }
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_LD) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_LD); }
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_RU) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_RU); }
-		if (this.mouse.middleScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_RD) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_RD); }
-		console.log(this.pointer.sprite.frame);
+	if (this.mouse.rightScroll.isActive) {
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_UP) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_UP); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DOWN) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DOWN); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_LEFT) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_LEFT); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_RIGHT) 		{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_RIGHT); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_LU) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_LU); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_LD) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_LD); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_RU) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_RU); }
+		if (this.mouse.rightScroll.direction == CONSTANTS.CURSOR_SCROLL_DIAG_RD) 	{ updatePointerForm(CONSTANTS.CURSOR_SCROLL_DIAG_RD); }
 		return;
 	}
 
@@ -942,28 +941,28 @@ Engine.prototype.processMouseFormUpdates = function() {
 Engine.prototype.updatePointerPosition = function(point) {
 
 	// Manage middle click scrolling
-	if (this.mouse.middleScroll.isActive) {
+	if (this.mouse.rightScroll.isActive) {
 		
 		// Calculate mouse movement deltas
-		var deltaX = this.mouse.position.x - this.phaserGame.camera.x - this.mouse.middleScroll.originX;
-		var deltaY = this.mouse.position.y - this.phaserGame.camera.y - this.mouse.middleScroll.originY;
+		var deltaX = this.mouse.position.x - this.phaserGame.camera.x - this.mouse.rightScroll.originX;
+		var deltaY = this.mouse.position.y - this.phaserGame.camera.y - this.mouse.rightScroll.originY;
 		var mouseAmount = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 		
 		// Manage cursor icon changes
 		if (mouseAmount > 30 ) {
 			if ( (1/2 * Math.abs(deltaY) <= Math.abs(deltaX)) && (2 * Math.abs(deltaY) >= Math.abs(deltaX)) ) {
-				if (deltaX > 0 && deltaY > 0) 	{ this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RD; }
-				if (deltaX > 0 && deltaY < 0) 	{ this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RU; }
-				if (deltaX < 0 && deltaY > 0) 	{ this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_LD; }
-				if (deltaX < 0 && deltaY < 0) 	{ this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_LU; }
+				if (deltaX > 0 && deltaY > 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RD; }
+				if (deltaX > 0 && deltaY < 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_RU; }
+				if (deltaX < 0 && deltaY > 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_LD; }
+				if (deltaX < 0 && deltaY < 0) 	{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DIAG_LU; }
 			} else {
-				if (deltaY > 0 && Math.abs(deltaY) > Math.abs(deltaX))		{ this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_DOWN; }
-				else if (deltaY < 0 && Math.abs(deltaY) > Math.abs(deltaX)) { this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_UP; }
-				else if (deltaX > 0 && Math.abs(deltaY) < Math.abs(deltaX)) { this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_RIGHT; }
-				else if (deltaX < 0 && Math.abs(deltaY) , Math.abs(deltaX)) { this.mouse.middleScroll.direction = CONSTANTS.CURSOR_SCROLL_LEFT; }
+				if (deltaY > 0 && Math.abs(deltaY) > Math.abs(deltaX))		{ this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_DOWN; }
+				else if (deltaY < 0 && Math.abs(deltaY) > Math.abs(deltaX)) { this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_UP; }
+				else if (deltaX > 0 && Math.abs(deltaY) < Math.abs(deltaX)) { this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_RIGHT; }
+				else if (deltaX < 0 && Math.abs(deltaY) , Math.abs(deltaX)) { this.mouse.rightScroll.direction = CONSTANTS.CURSOR_SCROLL_LEFT; }
 			}
 		} else {
-			this.mouse.middleScroll.direction = -1;
+			this.mouse.rightScroll.direction = -1;
 		}
 		
 		// Perform map scrolling
