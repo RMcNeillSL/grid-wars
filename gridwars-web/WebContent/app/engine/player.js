@@ -7,6 +7,7 @@ function Player(playerId, colour, team, isUser, startingCash) {
 	this.userBoolean = isUser;
 	this.purchases = [];			// Purchase object --> (gameObject: identifier of object, instanceId: instanceId for object, purchaseTimeout: timeout function, built: boolean)
 	this.cash = startingCash;
+	this.baseHasSpawned = false;
 
 	// Set player RGB value from colour string
 	switch (this.colour) {

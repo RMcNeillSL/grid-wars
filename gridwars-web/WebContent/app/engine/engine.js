@@ -1311,7 +1311,7 @@ Engine.prototype.updatePlayerStatus = function() {
 	var removeArray = [];
 	
 	for(var index = 0; index < deadPlayers.length; index++) {
-		if (self.getPlayerActiveHub(deadPlayers[index].playerId) != null) {
+		if (self.getPlayerActiveHub(deadPlayers[index].playerId) != null || !deadPlayers[index].baseHasSpawned) {
 			removeArray.push(index);
 		}
 	}
@@ -1325,13 +1325,14 @@ Engine.prototype.updatePlayerStatus = function() {
 			var playerAlreadyDead = false;
 
 			for (var i2 = 0; i2 < self.playerResults.length; i2++) {
-				if (self.playerResults[i2].player === deadPlayers[i1].playerId) {
+				if (self.playerResults[i2].playerId === deadPlayers[i1].playerId) {
 					playerAlreadyDead = true;
 					break;
 				}
 			}
 
 			if (!playerAlreadyDead && self.playerResults.length < self.players.length) {
+				console.log("hey");
 				self.playerResults.push({
 					position : self.players.length - self.playerResults.length,
 					playerId : deadPlayers[i1].playerId
@@ -1340,7 +1341,7 @@ Engine.prototype.updatePlayerStatus = function() {
 		}
 	}
 	
-	if (deadPlayers && deadPlayers.length === (self.players.length-1)) {
+	if (self.playerResults.length === (self.players.length-1)) {
 		for (var index = 0; index < self.players.length; index ++) {
 			var isDead = false;
 			for (var index2 = 0; index2 < self.playerResults.length; index2 ++) {
@@ -1349,7 +1350,7 @@ Engine.prototype.updatePlayerStatus = function() {
 					break;
 				}
 			}
-			if (!isDead && self.playerResults.length < self.players.length) {
+			if (!isDead) {
 				self.playerResults.push({
 					position : 1,
 					playerId : self.players[index].playerId
@@ -1703,6 +1704,13 @@ Engine.prototype.processSetupSpawnObjects = function(responseData) {
 			mockBuildingResponseData.misc.push(responseData.misc[index]);
 			mockBuildingResponseData.source.push(responseData.source[index]);
 			mockBuildingResponseData.target.push(responseData.target[index]);
+			
+			for(var i = 0; i < this.players.length; i++) {
+				if(responseData.misc[index] === this.players[i].playerId
+						&& !this.players[i].basHasSpawned) {
+					this.players[i].baseHasSpawned = true;
+				}
+			}
 		}
 	}
 
