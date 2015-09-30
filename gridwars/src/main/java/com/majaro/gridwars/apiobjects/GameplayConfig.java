@@ -41,18 +41,22 @@ public class GameplayConfig {
 		this.width = gameStaticMap.getWidth();
 		this.height = gameStaticMap.getHeight();
 		this.cells = gameStaticMap.getCells();
-		this.spawnCoordinates = gameStaticMap.getSpawnCoordinates();
+//		this.spawnCoordinates = gameStaticMap.getSpawnCoordinates();
 		
 		// Save user listing variables
 		this.userName = new ArrayList<String>();
 		this.userColour = new ArrayList<String>();
 		this.userTeam = new ArrayList<Integer>();
+		this.spawnCoordinates = new Coordinate[gameLobby.getConnectedLobbyUsers().size()];
 		
 		// Populate user settings
-		for (LobbyUser lobbyUser : gameLobby.getConnectedLobbyUsers()) {
-			this.userName.add(lobbyUser.getLinkedUser().getUsername());
-			this.userColour.add(lobbyUser.getPlayerColour());
-			this.userTeam.add(lobbyUser.getPlayerTeam());
+		LobbyUser lobbyUserRef = null;
+		for (int index = 0; index < gameLobby.getConnectedLobbyUsers().size(); index ++) {
+			lobbyUserRef = gameLobby.getConnectedLobbyUsers().get(index);
+			this.userName.add(lobbyUserRef.getLinkedUser().getUsername());
+			this.userColour.add(lobbyUserRef.getPlayerColour());
+			this.userTeam.add(lobbyUserRef.getPlayerTeam());
+			this.spawnCoordinates[index] = gameStaticMap.getSpawnCoordinates()[index];
 		}
 		
 		// Save game setup preferences
