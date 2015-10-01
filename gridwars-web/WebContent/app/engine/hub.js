@@ -159,7 +159,7 @@ Hub.prototype.resetTankHub = function() {
 	// Define callback functions
 	this.sinkComplete = function(sprite) {
 		self.hubSegment.frame = self.gameCore.colour.CLOSED;
-		self.setVisible(self.hubSegment.visible, false);
+		self.setVisible(true, false);
 		self.close.play();
 	}
 	this.closeComplete = function(sprite) {
