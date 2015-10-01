@@ -1,29 +1,164 @@
+diff --git a/apply_debug.txt b/apply_debug.txt
+index ac40642..e69de29 100644
+--- a/apply_debug.txt
++++ b/apply_debug.txt
+@@ -1,130 +0,0 @@
+-diff --git a/gridwars-web/WebContent/app/app.js b/gridwars-web/WebContent/app/app.js
+-index 38664d8..8cf730d 100644
+---- a/gridwars-web/WebContent/app/app.js
+-+++ b/gridwars-web/WebContent/app/app.js
+-@@ -20,50 +20,50 @@ config(['$routeProvider', function($routeProvider) {
+- 	$routeProvider.when('/servers', {template: '<gwa-servers></gwa-servers>'});
+- 	$routeProvider.when('/testing', {template: '<gwa-testing></gwa-testing>'});
+- 	$routeProvider.otherwise({redirectTo: '/login'});
+--}])
+--.run(function($rootScope, $location, $route) {
+--	$rootScope.$on("$routeChangeStart", function(event, next, current) {
+--		
+--		// Define list of pages not requiring authorisation
+--		var nonAuthPages = [ "login", "register" ];
+--		var currPath = window.location.href;
+--	
+--		// Extract path to first get variable if one exists
+--		if (currPath.indexOf("?") > -1) { currPath = currPath.substring(0, currPath.indexOf("?")); }
+--	
+--		// Find non-authorised required pages and break if auto is not required
+--		for (var i = 0; i < nonAuthPages.length; i++) {
+--			if (currPath.indexOf(nonAuthPages[i]) > -1) {
+--				return;
+--			}
+--		}
+--		
+--		// Run function to check authentication and redirect if necessary
+--		var loginRedirecter = function() {
+--			$.post("gridwars/rest/checkauth", function() {})
+--			.complete(function(res) {
+--				if (res.responseText === null ||
+--						res.responseText === undefined ||
+--						res.responseText === "") {
+--					
+--					// Redirect to login
+--					$location.path("/login");
+--					
+--					// Clear timers
+--					if ($rootScope.refresh) { clearInterval($rootScope.refresh); }
+--					if($rootScope.getData) { clearInterval($rootScope.getData); }
+--					
+--					// Clear all waiters
+--					if (existingWaiters) {
+--						for (var index = 0; index < existingWaiters.length; index ++) {
+--							existingWaiters[index].stop();
+--						}
+--					}
+--				}
+--			});
+--		};
+--		
+--		// Start redirect function
+--		loginRedirecter();
+--	});
+--});
+-+}]);
+-+//.run(function($rootScope, $location, $route) {
+-+//	$rootScope.$on("$routeChangeStart", function(event, next, current) {
+-+//		
+-+//		// Define list of pages not requiring authorisation
+-+//		var nonAuthPages = [ "login", "register" ];
+-+//		var currPath = window.location.href;
+-+//	
+-+//		// Extract path to first get variable if one exists
+-+//		if (currPath.indexOf("?") > -1) { currPath = currPath.substring(0, currPath.indexOf("?")); }
+-+//	
+-+//		// Find non-authorised required pages and break if auto is not required
+-+//		for (var i = 0; i < nonAuthPages.length; i++) {
+-+//			if (currPath.indexOf(nonAuthPages[i]) > -1) {
+-+//				return;
+-+//			}
+-+//		}
+-+//		
+-+//		// Run function to check authentication and redirect if necessary
+-+//		var loginRedirecter = function() {
+-+//			$.post("gridwars/rest/checkauth", function() {})
+-+//			.complete(function(res) {
+-+//				if (res.responseText === null ||
+-+//						res.responseText === undefined ||
+-+//						res.responseText === "") {
+-+//					
+-+//					// Redirect to login
+-+//					$location.path("/login");
+-+//					
+-+//					// Clear timers
+-+//					if ($rootScope.refresh) { clearInterval($rootScope.refresh); }
+-+//					if($rootScope.getData) { clearInterval($rootScope.getData); }
+-+//					
+-+//					// Clear all waiters
+-+//					if (existingWaiters) {
+-+//						for (var index = 0; index < existingWaiters.length; index ++) {
+-+//							existingWaiters[index].stop();
+-+//						}
+-+//					}
+-+//				}
+-+//			});
+-+//		};
+-+//		
+-+//		// Start redirect function
+-+//		loginRedirecter();
+-+//	});
+-+//});
+-diff --git a/gridwars-web/WebContent/app/engine/engine.js b/gridwars-web/WebContent/app/engine/engine.js
+-index 464a6e6..fd7c4c1 100644
+---- a/gridwars-web/WebContent/app/engine/engine.js
+-+++ b/gridwars-web/WebContent/app/engine/engine.js
+-@@ -293,8 +293,8 @@ Engine.prototype.update = function() {
+- 	// Update pointer position
+- 	this.updatePointerPosition();
+- 
+--//	// Get state of players in game
+--	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+-+	// Get state of players in game
+-+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+- }
+- 
+- Engine.prototype.render = function() {
+-diff --git a/gridwars-web/WebContent/app/partials/game/gameController.js b/gridwars-web/WebContent/app/partials/game/gameController.js
+-index 620ec65..573cbd4 100644
+---- a/gridwars-web/WebContent/app/partials/game/gameController.js
+-+++ b/gridwars-web/WebContent/app/partials/game/gameController.js
+-@@ -86,7 +86,7 @@
+- 		}
+- 
+- 		// Call connect debug methods
+--//		gameService.debugConnect();
+-+		gameService.debugConnect();
+- 
+- 		// Wait until connections finished before proceeding - then run the game
+- 		// configuration method
 diff --git a/gridwars-web/WebContent/app/app.js b/gridwars-web/WebContent/app/app.js
-index 38664d8..8cf730d 100644
+index 7861997..dc96340 100644
 --- a/gridwars-web/WebContent/app/app.js
 +++ b/gridwars-web/WebContent/app/app.js
-@@ -20,50 +20,50 @@ config(['$routeProvider', function($routeProvider) {
- 	$routeProvider.when('/servers', {template: '<gwa-servers></gwa-servers>'});
+@@ -21,49 +21,49 @@ config(['$routeProvider', function($routeProvider) {
  	$routeProvider.when('/testing', {template: '<gwa-testing></gwa-testing>'});
  	$routeProvider.otherwise({redirectTo: '/login'});
+ 
 -}])
 -.run(function($rootScope, $location, $route) {
 -	$rootScope.$on("$routeChangeStart", function(event, next, current) {
--		
+-
 -		// Define list of pages not requiring authorisation
 -		var nonAuthPages = [ "login", "register" ];
 -		var currPath = window.location.href;
--	
+-
 -		// Extract path to first get variable if one exists
 -		if (currPath.indexOf("?") > -1) { currPath = currPath.substring(0, currPath.indexOf("?")); }
--	
+-
 -		// Find non-authorised required pages and break if auto is not required
 -		for (var i = 0; i < nonAuthPages.length; i++) {
 -			if (currPath.indexOf(nonAuthPages[i]) > -1) {
 -				return;
 -			}
 -		}
--		
+-
 -		// Run function to check authentication and redirect if necessary
 -		var loginRedirecter = function() {
 -			$.post("gridwars/rest/checkauth", function() {})
@@ -31,14 +166,14 @@ index 38664d8..8cf730d 100644
 -				if (res.responseText === null ||
 -						res.responseText === undefined ||
 -						res.responseText === "") {
--					
+-
 -					// Redirect to login
 -					$location.path("/login");
--					
+-
 -					// Clear timers
 -					if ($rootScope.refresh) { clearInterval($rootScope.refresh); }
 -					if($rootScope.getData) { clearInterval($rootScope.getData); }
--					
+-
 -					// Clear all waiters
 -					if (existingWaiters) {
 -						for (var index = 0; index < existingWaiters.length; index ++) {
@@ -48,7 +183,6 @@ index 38664d8..8cf730d 100644
 -				}
 -			});
 -		};
--		
 -		// Start redirect function
 -		loginRedirecter();
 -	});
@@ -56,21 +190,21 @@ index 38664d8..8cf730d 100644
 +}]);
 +//.run(function($rootScope, $location, $route) {
 +//	$rootScope.$on("$routeChangeStart", function(event, next, current) {
-+//		
++//
 +//		// Define list of pages not requiring authorisation
 +//		var nonAuthPages = [ "login", "register" ];
 +//		var currPath = window.location.href;
-+//	
++//
 +//		// Extract path to first get variable if one exists
 +//		if (currPath.indexOf("?") > -1) { currPath = currPath.substring(0, currPath.indexOf("?")); }
-+//	
++//
 +//		// Find non-authorised required pages and break if auto is not required
 +//		for (var i = 0; i < nonAuthPages.length; i++) {
 +//			if (currPath.indexOf(nonAuthPages[i]) > -1) {
 +//				return;
 +//			}
 +//		}
-+//		
++//
 +//		// Run function to check authentication and redirect if necessary
 +//		var loginRedirecter = function() {
 +//			$.post("gridwars/rest/checkauth", function() {})
@@ -78,14 +212,14 @@ index 38664d8..8cf730d 100644
 +//				if (res.responseText === null ||
 +//						res.responseText === undefined ||
 +//						res.responseText === "") {
-+//					
++//
 +//					// Redirect to login
 +//					$location.path("/login");
-+//					
++//
 +//					// Clear timers
 +//					if ($rootScope.refresh) { clearInterval($rootScope.refresh); }
 +//					if($rootScope.getData) { clearInterval($rootScope.getData); }
-+//					
++//
 +//					// Clear all waiters
 +//					if (existingWaiters) {
 +//						for (var index = 0; index < existingWaiters.length; index ++) {
@@ -95,31 +229,28 @@ index 38664d8..8cf730d 100644
 +//				}
 +//			});
 +//		};
-+//		
 +//		// Start redirect function
 +//		loginRedirecter();
 +//	});
 +//});
 diff --git a/gridwars-web/WebContent/app/engine/engine.js b/gridwars-web/WebContent/app/engine/engine.js
-index 464a6e6..fd7c4c1 100644
+index ae00a2d..b4dfaec 100644
 --- a/gridwars-web/WebContent/app/engine/engine.js
 +++ b/gridwars-web/WebContent/app/engine/engine.js
-@@ -293,8 +293,8 @@ Engine.prototype.update = function() {
- 	// Update pointer position
+@@ -277,7 +277,7 @@ Engine.prototype.update = function() {
  	this.updatePointerPosition();
  
--//	// Get state of players in game
+ //	// Get state of players in game
 -	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
-+	// Get state of players in game
-+//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
++	//if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
  }
  
  Engine.prototype.render = function() {
 diff --git a/gridwars-web/WebContent/app/partials/game/gameController.js b/gridwars-web/WebContent/app/partials/game/gameController.js
-index 620ec65..573cbd4 100644
+index 2e44a2c..a5301c4 100644
 --- a/gridwars-web/WebContent/app/partials/game/gameController.js
 +++ b/gridwars-web/WebContent/app/partials/game/gameController.js
-@@ -86,7 +86,7 @@
+@@ -108,7 +108,7 @@
  		}
  
  		// Call connect debug methods
