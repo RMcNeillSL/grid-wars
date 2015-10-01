@@ -164,6 +164,20 @@ CONSTANTS = {
 	// Camera constants
 	CAMERA_SPRITE 	: "camera",
 	CAMERA_SPEED 	: 10,
+	
+	// Fog of war sprites and key frames
+	MAP_TILE_FOG_OF_WAR			: "fog_of_war",
+	MAP_FOW_VISIBLE				: -1,
+	MAP_FOW_FULL				: 0,
+	MAP_FOW_SIDE_ONE			: 1,
+	MAP_FOW_CORNER_OUTER		: 2,
+	MAP_FOW_CORNER_INNER_ONE	: 3,
+	MAP_FOW_CORNER_INNER_TWO	: 4,
+	MAP_FOW_CORNER_INNER_THREE	: 5,
+	MAP_FOW_CORNER_INNER_FOUR	: 6,
+	MAP_FOW_ALONE				: 7,
+	MAP_FOW_SIDE_TWO			: 8,
+	MAP_FOW_SIDE_THREE			: 9,
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT 			: "tile_build",

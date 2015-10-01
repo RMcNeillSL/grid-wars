@@ -93,7 +93,9 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.turretGroup = null;
 	this.buildingGroup = null;
 	this.tankGroup = null;
+	this.fogOfWarGroup = null;
 	this.hudGroup = null;
+	this.highestGroup = null;
 
 	// Player results
 	this.playerResults = [];
@@ -105,39 +107,40 @@ Engine.prototype.preload = function() {
 	this.phaserGame.stage.disableVisibilityChange = true;
 	
 	// Load game object sprite sheets
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_HUB, CONSTANTS.ROOT_SPRITES_LOC + 'tank_hub.png', 300, 300, 70);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TURRET, 			CONSTANTS.ROOT_SPRITES_LOC + 'turret.png', 100, 100, 78);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK, 			CONSTANTS.ROOT_SPRITES_LOC + 'tank.png', 100, 100, 41);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_HUB, 				CONSTANTS.ROOT_SPRITES_LOC + 'tank_hub.png', 300, 300, 70);
 
 	// Load sprite sheets
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 36);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 50, 50, 10);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
-	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 4);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_CURSORS, 			CONSTANTS.ROOT_SPRITES_LOC + 'cursors.png', 32, 32, 36);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, 		CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, 	CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 50, 50, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, 		CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 4);
 
 	// Load tile images
-	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_SPRITESHEET, 	CONSTANTS.ROOT_SPRITES_LOC + 'map_tiles.png', 100, 100, 64);
+	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_FOG_OF_WAR, 	CONSTANTS.ROOT_SPRITES_LOC + 'fog_of_war.png', 100, 100, 10);
 
 	// Load particles
-	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
+	this.phaserGame.load.image(CONSTANTS.PARTICLE_YELLOW_SHOT, 			CONSTANTS.ROOT_SPRITES_LOC + 'p_yellowShot.png');
 
 	// Load game HUD spritesheets / images
-	this.phaserGame.load.image(CONSTANTS.MINI_MAP, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map.png');
-	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
-	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
-	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
-	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
-	this.phaserGame.load.spritesheet(CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.ROOT_SPRITES_LOC + 'unit_details_buttons.png', 36, 38, 6);
+	this.phaserGame.load.image(CONSTANTS.MINI_MAP, 						CONSTANTS.ROOT_SPRITES_LOC + 'mini_map.png');
+	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, 					CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
+	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, 				CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
+	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, 		CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
+	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, 		CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
+	this.phaserGame.load.spritesheet(CONSTANTS.UNIT_DETAILS_BUTTONS, 	CONSTANTS.ROOT_SPRITES_LOC + 'unit_details_buttons.png', 36, 38, 6);
 
 	// Load game object icons
 	for(var i = 0; i < 6; i++) {
-		this.phaserGame.load.image(CONSTANTS.COLOUR["TANK"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_' + CONSTANTS.COLOUR["TANK"][i].COLOUR + '.png');
-		this.phaserGame.load.image(CONSTANTS.COLOUR["TURRET"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/turret_' + CONSTANTS.COLOUR["TURRET"][i].COLOUR + '.png');
-		this.phaserGame.load.image(CONSTANTS.COLOUR["HUB"][i].ICON, CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_hub_' + CONSTANTS.COLOUR["HUB"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR["TANK"][i].ICON, 	CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_' + CONSTANTS.COLOUR["TANK"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR["TURRET"][i].ICON, 	CONSTANTS.ROOT_SPRITES_LOC + 'icons/turret_' + CONSTANTS.COLOUR["TURRET"][i].COLOUR + '.png');
+		this.phaserGame.load.image(CONSTANTS.COLOUR["HUB"][i].ICON, 	CONSTANTS.ROOT_SPRITES_LOC + 'icons/tank_hub_' + CONSTANTS.COLOUR["HUB"][i].COLOUR + '.png');
 	}
 }
 
@@ -155,6 +158,7 @@ Engine.prototype.create = function() {
 	this.turretGroup = this.phaserGame.add.group();
 	this.buildingGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
+	this.fogOfWarGroup = this.phaserGame.add.group();
 	this.hudGroup = this.phaserGame.add.group();
 	this.highestGroup = this.phaserGame.add.group();
 	
@@ -172,9 +176,13 @@ Engine.prototype.create = function() {
 	this.explosionManager = new ExplosionManager(this.phaserGame);
 
 	// Construct map renderer
-	this.mapRender = new MapRenderer(this.phaserGame, this.mapGroup,
-			this.mapOverlayGroup, this.gameplayConfig.width,
-			this.gameplayConfig.height, this.gameplayConfig.cells,
+	this.mapRender = new MapRenderer(this.phaserGame,
+			this.mapGroup,
+			this.mapOverlayGroup,
+			this.fogOfWarGroup,
+			this.gameplayConfig.width,
+			this.gameplayConfig.height,
+			this.gameplayConfig.cells,
 			this.phaserGame.width / CONSTANTS.TILE_WIDTH,
 			this.phaserGame.height / CONSTANTS.TILE_HEIGHT);
 
@@ -575,14 +583,10 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		this.mouse.middleScroll.isActive = true;
 
 		// Move according to mouse movement from last recorded mouse position
-		if (relativeX < this.mouse.position.x) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
-		if (relativeX > this.mouse.position.x) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED; }
-		if (relativeY < this.mouse.position.y) { this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED; }
-		if (relativeY > this.mouse.position.y) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED; }
-
-		// Update the mouse position
-		//this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// Removed to reduce jitter
-		//		this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+		if (relativeX < this.mouse.position.x) { this.setCameraPoition(this.phaserGame.camera.x + CONSTANTS.CAMERA_SPEED, this.phaserGame.camera.y); }
+		if (relativeX > this.mouse.position.x) { this.setCameraPoition(this.phaserGame.camera.x - CONSTANTS.CAMERA_SPEED, this.phaserGame.camera.y); }
+		if (relativeY < this.mouse.position.y) { this.setCameraPoition(this.phaserGame.camera.x, this.phaserGame.camera.y + CONSTANTS.CAMERA_SPEED); }
+		if (relativeY > this.mouse.position.y) { this.setCameraPoition(this.phaserGame.camera.x, this.phaserGame.camera.y - CONSTANTS.CAMERA_SPEED); }
 
 	}
 
@@ -972,8 +976,8 @@ Engine.prototype.updatePointerPosition = function(point) {
 		}
 		
 		// Perform map scrolling
-		if (Math.abs(deltaX) > 0) { this.phaserGame.camera.x = this.phaserGame.camera.x + deltaX/CONSTANTS.CURSOR_SCROLL_REDUCTION; }
-		if (Math.abs(deltaY) > 0) { this.phaserGame.camera.y = this.phaserGame.camera.y + deltaY/CONSTANTS.CURSOR_SCROLL_REDUCTION; }
+		if (Math.abs(deltaX) > 0) { this.setCameraPoition(this.phaserGame.camera.x + deltaX/CONSTANTS.CURSOR_SCROLL_REDUCTION, this.phaserGame.camera.y); }
+		if (Math.abs(deltaY) > 0) { this.setCameraPoition(this.phaserGame.camera.x, this.phaserGame.camera.y + deltaY/CONSTANTS.CURSOR_SCROLL_REDUCTION); }
 	}
 	
 	// Update mouse position
@@ -998,24 +1002,95 @@ Engine.prototype.positionCameraOverCell = function(cell) {
 					   y: Math.min(this.mapRender.height - mapBound.y + (CONSTANTS.TILE_HEIGHT / 2), Math.max(cell.row - mapBound.y, 0)) };
 
 	// Move camera to centralise cell
-	this.phaserGame.camera.x = (moveAmount.x * CONSTANTS.TILE_WIDTH);
-	this.phaserGame.camera.y = (moveAmount.y * CONSTANTS.TILE_HEIGHT);
+	this.setCameraPoition(moveAmount.x * CONSTANTS.TILE_WIDTH, moveAmount.y * CONSTANTS.TILE_HEIGHT);
 }
 
 Engine.prototype.manageMapMovement = function() {
 
 	// Update camera with up, down, left and right keys
-	if (this.cursors.up.isDown) { this.phaserGame.camera.y -= CONSTANTS.CAMERA_SPEED; }
-	if (this.cursors.down.isDown) { this.phaserGame.camera.y += CONSTANTS.CAMERA_SPEED; }
-	if (this.cursors.left.isDown) { this.phaserGame.camera.x -= CONSTANTS.CAMERA_SPEED; }
-	if (this.cursors.right.isDown) { this.phaserGame.camera.x += CONSTANTS.CAMERA_SPEED; }
-	
-	// Update mouse values
-	//this.mouse.position = new Point(this.phaserGame.camera.x + this.phaserGame.input.mousePointer.x,		// Removed to reduce jitter
-	//		this.phaserGame.camera.y + this.phaserGame.input.mousePointer.y);
+	if (this.cursors.up.isDown) { this.setCameraPoition(this.phaserGame.camera.x, this.phaserGame.camera.y - CONSTANTS.CAMERA_SPEED); }
+	if (this.cursors.down.isDown) { this.setCameraPoition(this.phaserGame.camera.x, this.phaserGame.camera.y + CONSTANTS.CAMERA_SPEED); }
+	if (this.cursors.left.isDown) { this.setCameraPoition(this.phaserGame.camera.x - CONSTANTS.CAMERA_SPEED, this.phaserGame.camera.y); }
+	if (this.cursors.right.isDown) { this.setCameraPoition(this.phaserGame.camera.x + CONSTANTS.CAMERA_SPEED, this.phaserGame.camera.y); }
 	
 	// Process updates for new map position
 	this.updatePointerPosition();
+}
+
+Engine.prototype.setCameraPoition = function(xPosition, yPosition) {
+	
+	// Update camera position
+	this.phaserGame.camera.x = xPosition;
+	this.phaserGame.camera.y = yPosition;
+	
+	// Update FoW position
+	this.updateFogOfWar(xPosition, yPosition);
+}
+
+Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
+	
+	// Local map position values
+	var mapPoint = new Point(this.phaserGame.camera.x, this.phaserGame.camera.y);
+	var mapCell = mapPoint.toCell();
+
+	// Update the FoW sprites to the screen
+	this.mapRender.repositionFogOfWarWithMap(mapPoint);
+	
+	// Reset FoW visibility map
+	var foWVisibilityMap = [];
+	for (var rowIndex = 0; rowIndex < this.mapRender.height; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.mapRender.width; colIndex ++) {
+			foWVisibilityMap.push(CONSTANTS.MAP_FOW_FULL);
+		}
+	}
+	
+	// Set all cells in unit/building range as visible
+	var gameObjects = this.buildings.concat(this.units);
+	for (var index = 0; index < gameObjects.length; index ++) {
+		if (gameObjects[index].gameCore.playerId == this.currentPlayer.playerId) {
+			
+			// Calculate object centre
+			var widthCellCount = 1; 	if (gameObjects[index].gameCore.widthCellCount) { widthCellCount = gameObjects[index].gameCore.widthCellCount; }
+			var heightCellCount = 1; 	if (gameObjects[index].gameCore.heightCellCount) { heightCellCount = gameObjects[index].gameCore.heightCellCount; }
+			var objectCentrePoint = new Point(gameObjects[index].gameCore.cell.col * CONSTANTS.TILE_WIDTH + widthCellCount * CONSTANTS.TILE_WIDTH / 2,
+												gameObjects[index].gameCore.cell.row * CONSTANTS.TILE_HEIGHT + heightCellCount * CONSTANTS.TILE_HEIGHT / 2);
+			var objectCentreCell = objectCentrePoint.toCell();
+			
+			// Calculate visibility range
+			var checkCellRadius = Math.ceil(gameObjects[index].gameCore.sightRange / 2 / CONSTANTS.TILE_WIDTH);
+			var rowMin = Math.max(objectCentreCell.row - checkCellRadius, 0);
+			var rowMax = Math.min(objectCentreCell.row + checkCellRadius + 1, this.mapRender.height);
+			var colMin = Math.max(objectCentreCell.col - checkCellRadius, 0);
+			var colMax = Math.min(objectCentreCell.col + checkCellRadius + 1, this.mapRender.width);
+			
+			// Iterate over objects within potential visibility range
+			for (var rowCheckIndex = rowMin; rowCheckIndex < rowMax; rowCheckIndex ++) {
+				for (var colCheckIndex = colMin; colCheckIndex < colMax; colCheckIndex ++) {
+					var deltaX = colCheckIndex - objectCentreCell.col;
+					var deltaY = rowCheckIndex - objectCentreCell.row;
+					if (Math.sqrt(deltaX*deltaX + deltaY*deltaY) <= checkCellRadius) {
+						foWVisibilityMap[rowCheckIndex * this.mapRender.width + colCheckIndex] = CONSTANTS.MAP_FOW_VISIBLE;
+					}
+				}
+			}
+		}
+	}
+	
+	// Process fog of war smoothing
+
+//	MAP_FOW_FULL				: 0,
+//	MAP_FOW_SIDE_ONE			: 1,
+//	MAP_FOW_CORNER_OUTER		: 2,
+//	MAP_FOW_CORNER_INNER_ONE	: 3,
+//	MAP_FOW_CORNER_INNER_TWO	: 4,
+//	MAP_FOW_CORNER_INNER_THREE	: 5,
+//	MAP_FOW_CORNER_INNER_FOUR	: 6,
+//	MAP_FOW_ALONE				: 7,
+//	MAP_FOW_SIDE_TWO			: 8,
+//	MAP_FOW_SIDE_THREE			: 9,
+
+	// Update FoW tile sprite frames
+	this.mapRender.updateFoWTileFrames(mapCell, foWVisibilityMap);
 }
 
 Engine.prototype.getButtonAndConstants = function(gameObject) {

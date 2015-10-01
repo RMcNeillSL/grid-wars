@@ -210,7 +210,7 @@ public final class Const {
 	// Units in game
 	public static final GameUnit[] UNITS = {
 			//					Name			Health		Cost		Tech Level				Build Time		Sight Range		Range		Speed		Damage
-			new GameUnit		("TANK", 		300, 		400, 		E_TechLevel.TECH_01, 	5000, 			600,			300, 		2, 			40)
+			new GameUnit		("TANK", 		300, 		400, 		E_TechLevel.TECH_01, 	5000, 			700,			300, 		2, 			40)
 		};
 	
 	
