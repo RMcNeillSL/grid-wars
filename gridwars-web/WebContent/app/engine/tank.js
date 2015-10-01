@@ -105,6 +105,8 @@ Tank.prototype.update = function() {
 	}
 }
 
+Tank.prototype.setFOWVisible = function() { }
+
 Tank.prototype.setVisible = function(visible) {
 	this.bodySegment.visible = visible;
 	this.turretSegment.visible = visible;

@@ -131,6 +131,8 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 	
 }
 
+Turret.prototype.setFOWVisible = function() { }
+
 Turret.prototype.setVisible = function(visible) {
 	this.baseSegment.visible = visible;
 	this.topSegment.visible = visible;

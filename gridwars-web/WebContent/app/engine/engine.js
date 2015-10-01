@@ -1182,7 +1182,23 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 	}
 	
 	// Set correct enemy buildings to visible
-	
+	for (var index = 0; index < gameObjects.length; index ++) {
+		
+		// Save reference to game object cells
+		var cells = gameObjects[index].gameCore.getCells();
+		
+		// Check if any part of the object is in a visible cell
+		var shouldBeVisible = false;
+		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
+			if (!cells[index] || this.foWVisibilityMap[cells[index].row * this.mapRender.width + cells[index].col].isVisible == 0) {
+				shouldBeVisible = true;
+				break;
+			};
+		}
+		
+		// Show or hide object based on visibility boolean
+		gameObjects[index].setFOWVisible(shouldBeVisible);
+	}
 
 	// Update FoW tile sprite frames
 	this.mapRender.updateFoWTileFrames(mapCell, this.foWVisibilityMap);

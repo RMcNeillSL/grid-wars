@@ -61,21 +61,57 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 		this.close.onComplete.add(function(sprite, animation) { if (self.closeComplete) { self.closeComplete(sprite, animation); } });
 		this.rise.onComplete.add(function(sprite, animation) { if (self.riseComplete) { self.riseComplete(sprite, animation); } });
 		this.sink.onComplete.add(function(sprite, animation) { if (self.sinkComplete) { self.sinkComplete(sprite, animation); } });
+
+		// Hide shadow segment initially
+		this.setVisible(true, false);
 		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
-		
-		// Hide shadow segment initially
-		this.shadowSegment.visible = false;
 		
 	} else {
 		if (!this.engineCore.phaserEngine) { console.log("ERROR: Failed to construct tank hub, missing phaserRef."); }
 	}
 }
 
-Hub.prototype.setVisible = function(visible) {
-	this.hubSegment.visible = visible;
-	this.shadowSegment.visible = visible;
+Hub.prototype.setFOWVisible = function(active) {
+	
+	// Set to fog of war
+	if (active) {
+		
+		// Check if saving values
+		if (!this.gameCore.fogOfWar.isActive) {
+			
+			// Mark FoW as active
+			this.gameCore.fogOfWar.isActive = true;
+			
+			// Save original visibility;
+			this.gameCore.fogOfWar.hubVisible = this.hubSegment.visible;
+			this.gameCore.fogOfWar.shadowVisible = this.shadowSegment.visible;
+			
+			// Set new visibility
+			this.hubSegment.visible = false;
+			this.shadowSegment.visible = false;
+		}
+	} else {
+		this.gameCore.fogOfWar.isActive = false;
+		this.hubSegment.visible = this.gameCore.fogOfWar.hubVisible;
+		this.shadowSegment.visible = this.gameCore.fogOfWar.shadowVisible;
+	}
+}
+
+Hub.prototype.setVisible = function(hubVisible, shadowVisible) {
+
+	// Update for fog of war
+	if (!this.gameCore.fogOfWar.isActive) {
+
+		// Save for future updates
+		this.hubSegment.visible = hubVisible;
+		this.shadowSegment.visible = shadowVisible;
+	}
+
+	// Set new state
+	this.gameCore.fogOfWar.hubVisible = hubVisible;
+	this.gameCore.fogOfWar.shadowVisible = shadowVisible;
 }
 
 Hub.prototype.getRallyCell = function() {
@@ -92,7 +128,7 @@ Hub.prototype.animateTankCreate = function(newUnitObject) {
 		
 		// Set visibility state once risen
 		self.shadowSegment.frame = self.gameCore.colour.SHADOW;
-		self.shadowSegment.visible = false;
+		self.setVisible(self.hubSegment.visible, false);
 		
 		// Set waypoints for unit
 		var refCell = newUnitObject.gameCore.cell;
@@ -106,7 +142,7 @@ Hub.prototype.animateTankCreate = function(newUnitObject) {
 		newUnitObject.setVisible(true);
 		
 		// Setup to run rise animation
-		self.shadowSegment.visible = true;
+		self.setVisible(self.hubSegment.visible, true);
 		self.hubSegment.frame = self.gameCore.colour.OPEN;
 		self.rise.play();
 	}
@@ -123,7 +159,7 @@ Hub.prototype.resetTankHub = function() {
 	// Define callback functions
 	this.sinkComplete = function(sprite, animation) {
 		self.hubSegment.frame = self.gameCore.colour.CLOSED;
-		self.shadowSegment.visible = false;
+		self.setVisible(self.hubSegment.visible, false);
 		self.close.play();
 	}
 	this.closeComplete = function(sprite, animation) {
@@ -131,7 +167,7 @@ Hub.prototype.resetTankHub = function() {
 	}
 
 	// Run hub open animation
-	this.shadowSegment.visible = true;
+	this.setVisible(this.hubSegment.visible, this.shadowSegment.visible);
 	this.sink.play();
 }
 
@@ -160,11 +196,9 @@ Hub.prototype.getCollisionLayers = function() {
 Hub.prototype.setBuildingMode = function(inBuildingMode) {
 	
 	if (inBuildingMode) {
-		this.hubSegment.visible = false;
-		this.shadowSegment.visible = false; 
+		this.setVisible(false, false);
 	} else {
-		this.hubSegment.visible = true;
-		this.shadowSegment.visible = true; 		
+		this.setVisible(true, false);
 	}
 	
 }
