@@ -790,6 +790,9 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 		// Debugging output
 		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
 	}
+	
+	// Update fog of war
+	this.updateFogOfWar();
 }
 
 
