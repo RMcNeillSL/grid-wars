@@ -519,7 +519,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 			if (unitsForMoveRequest.length > 0) { this.moveUnitGroup(unitsForMoveRequest, mouseCell); }
 				
 			// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
-			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint) {
+			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint && this.displayedGameObject.gameCore.identifier !== "TANK") {
 				this.selected = [];
 				this.setGameObjectDetailsVisibility(false);
 			}
