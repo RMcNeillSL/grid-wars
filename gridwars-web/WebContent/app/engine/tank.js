@@ -215,7 +215,7 @@ Tank.prototype.progressWaypoints = function() {
 	
 	// Get next waypoint to move to and save current state
 	var nextWaypoint = this.waypoints[0];
-	var currentCell = this.gameCore.cell;
+	var currentCell = new Cell(this.gameCore.cell.col, this.gameCore.cell.row);
 	var currentPoint = this.gameCore.point;
 	
 	// Calculate XY increment to target
@@ -265,10 +265,10 @@ Tank.prototype.progressWaypoints = function() {
 	var newCell = (new Point(this.left, this.top)).toCell();
 	this.gameCore.point = new Point(this.left, this.top);
 	if (newCell.col != currentCell.col || newCell.row != currentCell.row) {
+		this.gameCore.cell = this.gameCore.point.toCell();
 		if (!this.inProductionMode) {
 			this.engineCore.func_UpdateNewUnitCell(this, currentCell, newCell);
 		}
-		this.gameCore.cell = this.gameCore.point.toCell();
 	}
 	
 	// Update waypoint list by removing first item is point is hit

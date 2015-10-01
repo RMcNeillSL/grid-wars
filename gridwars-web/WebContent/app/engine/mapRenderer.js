@@ -354,15 +354,17 @@ MapRenderer.prototype.updateFoWTileFrames = function(screenCell, foWVisibilityMa
 			// Create references to screen tile
 			var screenCellCol = colIndex + screenCell.col;
 			var screenCellRow = rowIndex + screenCell.row;
-			var newFrameState = foWVisibilityMap[screenCellRow * this.width + screenCellCol];
-			
-			// Set new frame
-			if (newFrameState.frame != CONSTANTS.MAP_FOW_VISIBLE) {
-				fogOfWarTileRef.frame = newFrameState.frame;
-				fogOfWarTileRef.angle = newFrameState.angle;
-				fogOfWarTileRef.visible = true;
-			} else {
-				fogOfWarTileRef.visible = false;
+			if (screenCellCol < this.width && screenCellRow < this.height) {
+				var newFrameState = foWVisibilityMap[screenCellRow * this.width + screenCellCol];
+				
+				// Set new frame
+				if (newFrameState.frame != CONSTANTS.MAP_FOW_VISIBLE) {
+					fogOfWarTileRef.frame = newFrameState.frame;
+					fogOfWarTileRef.angle = newFrameState.angle;
+					fogOfWarTileRef.visible = true;
+				} else {
+					fogOfWarTileRef.visible = false;
+				}
 			}
 		}
 	}

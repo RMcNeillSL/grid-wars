@@ -73,6 +73,11 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 	}
 }
 
+Hub.prototype.setVisible = function(visible) {
+	this.hubSegment.visible = visible;
+	this.shadowSegment.visible = visible;
+}
+
 Hub.prototype.getRallyCell = function() {
 	return new Cell(this.gameCore.cell.col + 1, this.gameCore.cell.row - 1);
 }

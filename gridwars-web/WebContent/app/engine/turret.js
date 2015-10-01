@@ -131,6 +131,11 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 	
 }
 
+Turret.prototype.setVisible = function(visible) {
+	this.baseSegment.visible = visible;
+	this.topSegment.visible = visible;
+}
+
 Turret.prototype.markDamage = function(explosionInstanceId) {
 	
 	// Add new damage instance to log

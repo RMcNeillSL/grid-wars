@@ -380,10 +380,15 @@ Engine.prototype.render = function() {
 	// Run through all objects outputting square for each
 	var potentialObstructions = this.buildings.concat(this.units);
 	for (var index = 0; index < potentialObstructions.length; index ++) {
-		if (potentialObstructions[index].gameCore.playerId == this.currentPlayer.playerId) {
-			var cells = potentialObstructions[index].gameCore.getCells();
-			for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
-				
+		var cells = potentialObstructions[index].gameCore.getCells();
+		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
+			
+			// Check if cell can be seen
+			var canSeeCell = (potentialObstructions[index].gameCore.playerId == this.currentPlayer.playerId ||
+					this.foWVisibilityMap[cells[cellIndex].row * this.mapRender.width + cells[cellIndex].col].isVisible == 1);
+			
+			// Determine if block on radar should be shown
+			if (canSeeCell) {
 				this.phaserGame.debug.geom(new Phaser.Rectangle(
 						this.minimap.x + cells[cellIndex].col * miniMapCellWidth,
 						this.minimap.y + cells[cellIndex].row * miniMapCellHeight,
@@ -396,6 +401,18 @@ Engine.prototype.render = function() {
 	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * miniMapCellWidth;
 	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * miniMapCellHeight;
 	this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
+	
+	// Output radar fog of war
+	for (var rowIndex = 0; rowIndex < this.mapRender.width; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.mapRender.height; colIndex ++) {
+			if (this.foWVisibilityMap[rowIndex * this.mapRender.width + colIndex].isVisible == 0) {
+				this.phaserGame.debug.geom(new Phaser.Rectangle(
+						this.minimap.x + colIndex * miniMapCellWidth,
+						this.minimap.y + rowIndex * miniMapCellHeight,
+						miniMapCellWidth, miniMapCellHeight), 'rgba(0,0,0,0.5)');
+			}
+		}
+	}
 }
 
 
@@ -766,13 +783,13 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 
 		// Submit update message to server
 		this.serverAPI.requestUpdateUnitCell(sender, newCell);
+		
+		// Update fog of war
+		this.updateFogOfWar();
 
 		// Debugging output
 		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
 	}
-	
-	// Update fog of war
-	this.updateFogOfWar();
 }
 
 
@@ -1160,17 +1177,9 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 			}
 		}
 	}
-
-//	MAP_FOW_FULL				: 0,
-//	MAP_FOW_SIDE_ONE			: 1,
-//	MAP_FOW_CORNER_OUTER		: 2,
-//	MAP_FOW_CORNER_INNER_ONE	: 3,
-//	MAP_FOW_CORNER_INNER_TWO	: 4,
-//	MAP_FOW_CORNER_INNER_THREE	: 5,
-//	MAP_FOW_CORNER_INNER_FOUR	: 6,
-//	MAP_FOW_ALONE				: 7,
-//	MAP_FOW_SIDE_TWO			: 8,
-//	MAP_FOW_SIDE_THREE			: 9,
+	
+	// Set correct enemy buildings to visible
+	
 
 	// Update FoW tile sprite frames
 	this.mapRender.updateFoWTileFrames(mapCell, this.foWVisibilityMap);
