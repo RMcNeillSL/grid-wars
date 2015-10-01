@@ -1190,16 +1190,16 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 		var cells = gameObjects[index].gameCore.getCells();
 		
 		// Check if any part of the object is in a visible cell
-		var shouldBeVisible = false;
+		var fogOfWarActive = true;
 		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
-			if (!cells[index] || this.foWVisibilityMap[cells[index].row * this.mapRender.width + cells[index].col].isVisible == 0) {
-				shouldBeVisible = true;
+			if (cells[cellIndex] && this.foWVisibilityMap[cells[cellIndex].row * this.mapRender.width + cells[cellIndex].col].isVisible == 1) {
+				fogOfWarActive = false;
 				break;
 			};
 		}
 		
 		// Show or hide object based on visibility boolean
-		gameObjects[index].setFOWVisible(shouldBeVisible);
+		gameObjects[index].setFOWVisible(fogOfWarActive);
 	}
 
 	// Update FoW tile sprite frames

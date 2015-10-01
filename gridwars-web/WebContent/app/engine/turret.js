@@ -122,6 +122,9 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 			self.bulletParticle02.on = true;
 		});
 		
+		// Set standard visibility
+		this.setVisible(true, true);
+		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
 
@@ -131,11 +134,45 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 	
 }
 
-Turret.prototype.setFOWVisible = function() { }
+Turret.prototype.setFOWVisible = function(active) {
+	
+	// Set to fog of war
+	if (active) {
+		
+		// Check if saving values
+		if (!this.gameCore.fogOfWar.isActive) {
+			
+			// Mark FoW as active
+			this.gameCore.fogOfWar.isActive = true;
+			
+			// Save original visibility;
+			this.gameCore.fogOfWar.baseVisible = this.baseSegment.visible;
+			this.gameCore.fogOfWar.topVisible = this.topSegment.visible;
+			
+			// Set new visibility
+			this.baseSegment.visible = false;
+			this.topSegment.visible = false;
+		}
+	} else {
+		this.gameCore.fogOfWar.isActive = false;
+		this.baseSegment.visible = this.gameCore.fogOfWar.baseVisible;
+		this.topSegment.visible = this.gameCore.fogOfWar.topVisible;
+	}
+}
 
-Turret.prototype.setVisible = function(visible) {
-	this.baseSegment.visible = visible;
-	this.topSegment.visible = visible;
+Turret.prototype.setVisible = function(baseVisible, topVisible) {
+
+	// Update for fog of war
+	if (!this.gameCore.fogOfWar.isActive) {
+
+		// Save for future updates
+		this.baseSegment.visible = baseVisible;
+		this.topSegment.visible = topVisible;
+	}
+
+	// Set new state
+	this.gameCore.fogOfWar.baseVisible = baseVisible;
+	this.gameCore.fogOfWar.topVisible = topVisible;
 }
 
 Turret.prototype.markDamage = function(explosionInstanceId) {
@@ -163,11 +200,9 @@ Turret.prototype.getCollisionLayers = function() {
 Turret.prototype.setBuildingMode = function(inBuildingMode) {
 	
 	if (inBuildingMode) {
-		this.baseSegment.visible = false;
-		this.topSegment.visible = false; 
+		this.setVisible(false, false);
 	} else {
-		this.baseSegment.visible = true;
-		this.topSegment.visible = true; 		
+		this.setVisible(true, true);		
 	}
 	
 }

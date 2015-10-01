@@ -105,11 +105,48 @@ Tank.prototype.update = function() {
 	}
 }
 
-Tank.prototype.setFOWVisible = function() { }
+Tank.prototype.setFOWVisible = function(active) {
+	
+	// Set to fog of war
+	if (active) {
+		
+		// Check if saving values
+		if (!this.gameCore.fogOfWar.isActive) {
+			
+			// Mark FoW as active
+			this.gameCore.fogOfWar.isActive = true;
+			
+			// Save original visibility;
+			this.gameCore.fogOfWar.bodyVisible = this.bodySegment.visible;
+			this.gameCore.fogOfWar.turretVisible = this.turretSegment.visible;
+			
+			// Set new visibility
+			this.bodySegment.visible = false;
+			this.turretSegment.visible = false;
+		}
+	} else {
+		this.gameCore.fogOfWar.isActive = false;
+		this.bodySegment.visible = this.gameCore.fogOfWar.bodyVisible;
+		this.turretSegment.visible = this.gameCore.fogOfWar.turretVisible;
+	}
+}
 
-Tank.prototype.setVisible = function(visible) {
-	this.bodySegment.visible = visible;
-	this.turretSegment.visible = visible;
+Tank.prototype.setVisible = function(bodyVisible, turretVisible) {
+	
+	// Populate all params if some are missing
+	if (!turretVisible) { turretVisible = bodyVisible; }
+
+	// Update for fog of war
+	if (!this.gameCore.fogOfWar.isActive) {
+
+		// Save for future updates
+		this.bodySegment.visible = bodyVisible;
+		this.turretSegment.visible = turretVisible;
+	}
+
+	// Set new state
+	this.gameCore.fogOfWar.bodyVisible = bodyVisible;
+	this.gameCore.fogOfWar.turretVisible = turretVisible;
 }
 
 Tank.prototype.removeFromProduction = function() {
