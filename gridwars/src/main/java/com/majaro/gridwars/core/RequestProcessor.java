@@ -135,8 +135,8 @@ public class RequestProcessor {
 						2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
 				new Coordinate[] { new Coordinate(6, 5),
 								   new Coordinate(22, 24),
-						           new Coordinate(8, 27),
-				                   new Coordinate(25, 8) }));
+						           new Coordinate(7, 24),
+				                   new Coordinate(23, 5) }));
 
 		// Construct DB link
 		this.dao = new EntityManager(PERSISTENCE_UNIT);
