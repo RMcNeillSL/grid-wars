@@ -49,13 +49,13 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.tankGroup.add(this.turretSegment);
 		
 		// Animations
-		this.fire = this.turretSegment.animations.add('fire', this.gameCore.colour.FIRE, 30, false);
+		this.fire = new CustomAnimation(this.turretSegment, this.gameCore.colour.FIRE, 30);
 
 		// Create reference to 'this' for below functions
 		var self = this;
 		
 		// Create fire callback function
-		this.fire.onComplete.add(function(sprite, animation) {
+		this.fire.onComplete = function(sprite) {
 			setTimeout(function() { self.shootTarget.isFiring = false; }, 2000);
 			if (self.shootTarget.instanceId) {
 				var target = self.engineCore.func_GetObjectFromInstanceId(self.shootTarget.instanceId);
@@ -77,7 +77,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 						self.shootTarget.point.x,
 						self.shootTarget.point.y);
 			}
-		});
+		};
 
 	} else {
 		if (!phaserRef) { console.log("ERROR: Failed to construct tank, missing phaserRef."); }

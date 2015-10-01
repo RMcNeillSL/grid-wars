@@ -42,10 +42,10 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 		this.highestGroup.add(this.shadowSegment);
 		
 		// Animations
-		this.open = this.hubSegment.animations.add('open', this.gameCore.colour.OPENING, 10, false);
-		this.close = this.hubSegment.animations.add('close', this.gameCore.colour.CLOSING, 10, false);
-		this.rise = this.shadowSegment.animations.add('rise', this.gameCore.colour.RISE, 10, false);
-		this.sink = this.shadowSegment.animations.add('sink', this.gameCore.colour.SINK, 10, false);
+		this.open = new CustomAnimation(this.hubSegment, this.gameCore.colour.OPENING, 10);
+		this.close = new CustomAnimation(this.hubSegment, this.gameCore.colour.CLOSING, 10);
+		this.rise = new CustomAnimation(this.shadowSegment, this.gameCore.colour.RISE, 10);
+		this.sink = new CustomAnimation(this.shadowSegment, this.gameCore.colour.SINK, 10);
 		
 		// Create self reference for local functions
 		var self = this;
@@ -57,10 +57,10 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 		this.sinkComplete = null;
 		
 		// Link events to methods
-		this.open.onComplete.add(function(sprite, animation) { if (self.openComplete) { self.openComplete(sprite, animation); } });
-		this.close.onComplete.add(function(sprite, animation) { if (self.closeComplete) { self.closeComplete(sprite, animation); } });
-		this.rise.onComplete.add(function(sprite, animation) { if (self.riseComplete) { self.riseComplete(sprite, animation); } });
-		this.sink.onComplete.add(function(sprite, animation) { if (self.sinkComplete) { self.sinkComplete(sprite, animation); } });
+		this.open.onComplete = function(sprite) { if (self.openComplete) { self.openComplete(sprite); } };
+		this.close.onComplete = function(sprite) { if (self.closeComplete) { self.closeComplete(sprite); } };
+		this.rise.onComplete = function(sprite) { if (self.riseComplete) { self.riseComplete(sprite); } };
+		this.sink.onComplete = function(sprite) { if (self.sinkComplete) { self.sinkComplete(sprite); } };
 
 		// Hide shadow segment initially
 		this.setVisible(true, false);
@@ -124,7 +124,7 @@ Hub.prototype.animateTankCreate = function(newUnitObject) {
 	var self = this;
 	
 	// Define callback functions
-	this.riseComplete = function(sprite, animation) {
+	this.riseComplete = function(sprite) {
 		
 		// Set visibility state once risen
 		self.shadowSegment.frame = self.gameCore.colour.SHADOW;
@@ -136,7 +136,7 @@ Hub.prototype.animateTankCreate = function(newUnitObject) {
 		    (new Cell(refCell.col, refCell.row - 1)).toCenterPoint(),
 			(new Cell(refCell.col, refCell.row - 2)).toCenterPoint()];
 	}
-	this.openComplete = function(sprite, animation) {
+	this.openComplete = function(sprite) {
 		
 		// Make tank visible
 		newUnitObject.setVisible(true);
@@ -157,17 +157,17 @@ Hub.prototype.resetTankHub = function() {
 	var self = this;
 
 	// Define callback functions
-	this.sinkComplete = function(sprite, animation) {
+	this.sinkComplete = function(sprite) {
 		self.hubSegment.frame = self.gameCore.colour.CLOSED;
 		self.setVisible(self.hubSegment.visible, false);
 		self.close.play();
 	}
-	this.closeComplete = function(sprite, animation) {
+	this.closeComplete = function(sprite) {
 		self.hubSegment.frame = self.gameCore.colour.HUB;
 	}
 
-	// Run hub open animation
-	this.setVisible(this.hubSegment.visible, this.shadowSegment.visible);
+	// Run hub close animation
+	this.setVisible(this.hubSegment.visible, true);
 	this.sink.play();
 }
 
@@ -194,13 +194,11 @@ Hub.prototype.getCollisionLayers = function() {
 }
 
 Hub.prototype.setBuildingMode = function(inBuildingMode) {
-	
 	if (inBuildingMode) {
 		this.setVisible(false, false);
 	} else {
 		this.setVisible(true, false);
 	}
-	
 }
 
 Hub.prototype.setPosition = function(cell) {
