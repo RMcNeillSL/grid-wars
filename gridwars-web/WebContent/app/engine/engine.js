@@ -710,6 +710,9 @@ Engine.prototype.registerNewGameObject = function(gameObject) {
 	} else if (objectType == "UNIT") {
 		this.units.push(gameObject);
 	}
+	
+	// Update fog of war
+	this.updateFogOfWar();
 }
 
 Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
@@ -751,6 +754,9 @@ Engine.prototype.deleteItemWithInstanceId = function(instanceId) {
 	if (searchObject) {
 		searchObject.destroy();
 	}
+	
+	// Update fog of war
+	this.updateFogOfWar();
 }
 
 Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old cell is not currently used - may check to make sure request is not corrupt
@@ -764,7 +770,9 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 		// Debugging output
 		// console.log("UpdateCell (" + newCell.col + "," + newCell.row + ")");
 	}
-
+	
+	// Update fog of war
+	this.updateFogOfWar();
 }
 
 
@@ -1029,6 +1037,12 @@ Engine.prototype.setCameraPoition = function(xPosition, yPosition) {
 }
 
 Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
+	
+	// Use camera x&y if not set
+	if (!xPosition && !yPosition) {
+		xPosition = this.phaserGame.camera.x;
+		yPosition = this.phaserGame.camera.y;
+	}
 	
 	// Local map position values
 	var mapPoint = new Point(this.phaserGame.camera.x, this.phaserGame.camera.y);
