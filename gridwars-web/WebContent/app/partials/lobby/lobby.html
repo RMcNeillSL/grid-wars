@@ -297,13 +297,12 @@
 						<span class="glyphicon glyphicon-remove" ng-if="!lobbyUser.ready"></span>
 					</div>
 				</td>
-				<td class="textCentral" ng-if="$root.gameLeader===true"><input
-					type="button" class="btn btn-success btn-sm"
+				<td class="textCentral" ng-if="$root.gameLeader===true">
+					<input type="button" class="btn btn-success btn-sm" 
 					ng-if="$root.notReadyCount==0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase) && $root.connectedUsers!=1"
 					value="Start Game" ng-click="controller.callStartGame()"
-					id="start-game"> <input type="button"
-					class="btn btn-sm disabled"
-					ng-disabled="$root.notReadyCount!=0 || $root.connectedUsers==1"
+					id="start-game">
+					<input type="button" class="btn btn-sm disabled" ng-disabled="$root.notReadyCount!=0 || $root.connectedUsers==1"
 					ng-if="($root.notReadyCount!=0 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase)) || ($root.connectedUsers==1 && (lobbyUser.linkedUser.username | uppercase) == ($root.currentUser | uppercase))"
 					value="Start Game" ng-click="controller.callStartGame()"
 					id="start-game">
@@ -317,13 +316,12 @@
 	</section>
 	<div class="col-md-12" ng-if="$root.gameLobbyLoaded===true">
 		<button ng-click="controller.callLeaveGame()"
-			class="btn btn-default btn-sm" style="float: right">
-			<span class="glyphicon glyphicon-globe"></span> Return to server
-			lobby
+			class="btn btn-danger">
+			<span class="glyphicon glyphicon-globe"></span> Leave Game Lobby
 		</button>
-		<button class="btn btn-default btn-sm" data-toggle="modal"
-			data-target="#myModal">
-			<span class="glyphicon glyphicon-info-sign"></span> How to play
+		<button class="btn btn-default" data-toggle="modal"
+			data-target="#myModal" style="float: right">
+			<span class="glyphicon glyphicon-info-sign"></span> How to Play
 		</button>
 	</div>
 
@@ -369,17 +367,28 @@
 				</div>
 				<div class="modal-header">
 					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
-					data-target="#info4">4) Gaining Resource</button>
+					data-target="#info4">4) Control</button>
 				</div>
 				<div id="info4" class="modal-body collapse">
-					<img src="app/assets/instructions/resource.png">
-					<p>In each game you start with an amount of starter cash, this can be used to setup your initial game objects. Each time you kill an enemy you gain some resource ready to spend on your own fleet.</p>
+					<img src="app/assets/instructions/control.png">
+					<p>For tanks you have the ability to highlight multiple of them by holding the left click down and dragging over your units, you can then assign an action to a group of tanks. Alternatively you can click on tanks individually to give commands to a particular tank.<br /><br />
+					Unlike tanks, turrets can only be selected individually and once selected you can click on the enemy object you want them to lock onto. By default turrets lock onto anything that comes within their range provided they aren't already assigned a target.<br /><br />
+					Selecting individual game objects will bring up the object details menu containing information about the selected object, it also provides the option for you to sell the selected object or cancel any actions that it is currently doing.</p>
 				</div>
 				<div class="modal-header">
 					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
-					data-target="#info5">5) How to Win</button>
+					data-target="#info5">5) Gaining Resource</button>
 				</div>
 				<div id="info5" class="modal-body collapse">
+					<img src="app/assets/instructions/resource.png">
+					<p>In each game you start with an amount of starter cash, this can be used to setup your initial game objects. Each time you kill an enemy you gain some resource ready to spend on your own fleet.<br /><br />
+					You can also regain resource by selling one of your game objects, the money received will be proportionate to the amount of health the object had at the time of being sold. </p>
+				</div>
+				<div class="modal-header">
+					<button type="button" class="btn btn-info btn-lg" data-toggle="collapse"
+					data-target="#info6">6) How to Win</button>
+				</div>
+				<div id="info6" class="modal-body collapse">
 					<img src="app/assets/instructions/winning.png">
 					<p>The purpose of each game is to be the last base standing, it is up to you whether you want to spend your resource defending your base, attacking the enemy base or taking a more balanced approach.<br /><br />
 					Ultimately this will determine who wins the game. Once your game is complete you will reach the results screen to outline how players performed.</p>

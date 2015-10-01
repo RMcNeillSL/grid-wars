@@ -32,11 +32,6 @@
 					Player Count </a><span ng-show="orderByField == 'playerCount'"><span
 					ng-show="!reverseSort">&#x25B4;</span><span ng-show="reverseSort">&#x25BE;</span></span>
 			</th>
-			<th><a
-				ng-click="orderByField='gameType'; reverseSort = !reverseSort">
-					Game Type </a><span ng-show="orderByField == 'gameType'"><span
-					ng-show="!reverseSort">&#x25B4;</span><span ng-show="reverseSort">&#x25BE;</span></span>
-			</th>
 			<th>Actions</th>
 		</tr>
 		<tr ng-repeat="server in servers | filter:filterText | orderBy:orderByField:reverseSort">
@@ -44,8 +39,6 @@
 			<td class="tdInfo">{{ server.mapName }}</td>
 			<td class="tdInfo textCentral">{{ server.playerCount }} / {{
 				server.maxPlayers }}</td>
-			<td class="tdInfo">{{ controller.formatGameType(server.gameType)
-				}}</td>
 			<td class="textCentral"><button type="button" class="btn btn-xs"
 					ng-click="controller.joinGame(server.lobbyId)"
 					ng-disabled="server.playerCount == server.maxPlayers">{{

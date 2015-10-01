@@ -61,6 +61,9 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 			middleScroll : { direction : null, isActive : false },
 			rightScroll : { direction : null, isActive : false, origin : new Point(0,0) }
 		};
+	
+	// Monitor if game map features are in focus
+	this.gameMapInFocus = false;
 
 	// Define game camera variables
 	this.cursors = null;
@@ -283,7 +286,7 @@ Engine.prototype.update = function() {
 	this.updatePointerPosition();
 
 	// Get state of players in game
-//	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
+	if (!this.phaserGame.finished) { this.updatePlayerStatus(); }
 }
 
 Engine.prototype.render = function() {
@@ -1122,12 +1125,13 @@ Engine.prototype.createGameScreen = function() {
 			buildingComplete.play();
 		});
 
-		// Add listner events
+		// Add listener events
 		newButton.events.onInputOver.add(function() {
 			
 			// Get state of button animation
 			var buildingPlaying = buildingAnim.isPlaying;
 			var completePlaying = buildingComplete.isPlaying;
+			self.hud.mouseOverHudButton = true;
 			
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.SELECTED; }
@@ -1137,6 +1141,7 @@ Engine.prototype.createGameScreen = function() {
 			// Get state of button animation
 			var buildingPlaying = buildingAnim.isPlaying;
 			var completePlaying = buildingComplete.isPlaying;
+			self.hud.mouseOverHudButton = false;
 			
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.UNSELECTED; }
@@ -1277,6 +1282,13 @@ Engine.prototype.createGameScreen = function() {
 	if (this.gameplayConfig.mapId == "1") { miniMapId = CONSTANTS.MINIMAP_HUNTING_GROUND; }
 	if (this.gameplayConfig.mapId == "2") { miniMapId = CONSTANTS.MINIMAP_MAJARO; }
 	this.minimap = createHUDSprite(CONSTANTS.HUD.MAP_CONTROL.MINIMAP, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, miniMapId, 91, true);
+	this.minimap.events.onInputOver.add(function() {
+		if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = true; }
+	});
+	
+	this.minimap.events.onInputOut.add(function() {
+		if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = false; }
+	});
 	
 	// Create map control HUD sprites/text/buttons
 	this.moneyLabel 			= createMapHUDText(CONSTANTS.HUD.MAP_CONTROL.CASH, this.currentPlayer.cash, 92, true);
