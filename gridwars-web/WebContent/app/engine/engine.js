@@ -382,7 +382,19 @@ Engine.prototype.render = function() {
 	// Run through all objects outputting square for each
 	var potentialObstructions = this.buildings.concat(this.units);
 	for (var index = 0; index < potentialObstructions.length; index ++) {
+
+		// Get player colour information
+		var RGB = { red: 255, green: 255, blue: 255 };
+		for (var playerIndex = 0; playerIndex < this.players.length; playerIndex ++) {
+			if (this.players[playerIndex].playerId == potentialObstructions[index].gameCore.playerId) {
+				RGB = this.players[playerIndex].RGB;
+			}
+		}
+		
+		// Generate list of object cells
 		var cells = potentialObstructions[index].gameCore.getCells();
+		
+		// Process all object cells
 		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
 			
 			// Check if cell can be seen
@@ -391,18 +403,15 @@ Engine.prototype.render = function() {
 			
 			// Determine if block on radar should be shown
 			if (canSeeCell) {
+				
+				// Output item to radar
 				this.phaserGame.debug.geom(new Phaser.Rectangle(
 						this.minimap.x + cells[cellIndex].col * miniMapCellWidth,
 						this.minimap.y + cells[cellIndex].row * miniMapCellHeight,
-						miniMapCellWidth, miniMapCellHeight), 'rgba(' + this.currentPlayer.RGB.red + ',' + this.currentPlayer.RGB.green + ',' + this.currentPlayer.RGB.blue + ',0.5)');
+						miniMapCellWidth, miniMapCellHeight), 'rgba(' + RGB.red + ',' + RGB.green + ',' + RGB.blue + ',0.5)');
 			}
 		}
 	}
-
-	// Render current map square in minimap
-	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * miniMapCellWidth;
-	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * miniMapCellHeight;
-	this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
 	
 	// Output radar fog of war
 	for (var rowIndex = 0; rowIndex < this.mapRender.width; rowIndex ++) {
@@ -415,6 +424,11 @@ Engine.prototype.render = function() {
 			}
 		}
 	}
+
+	// Render current map square in minimap
+	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * miniMapCellWidth;
+	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * miniMapCellHeight;
+	this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
 }
 
 
