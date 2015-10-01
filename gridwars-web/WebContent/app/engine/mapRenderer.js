@@ -357,8 +357,9 @@ MapRenderer.prototype.updateFoWTileFrames = function(screenCell, foWVisibilityMa
 			var newFrameState = foWVisibilityMap[screenCellRow * this.width + screenCellCol];
 			
 			// Set new frame
-			if (newFrameState != CONSTANTS.MAP_FOW_VISIBLE) {
-				fogOfWarTileRef.frame = newFrameState;
+			if (newFrameState.frame != CONSTANTS.MAP_FOW_VISIBLE) {
+				fogOfWarTileRef.frame = newFrameState.frame;
+				fogOfWarTileRef.angle = newFrameState.angle;
 				fogOfWarTileRef.visible = true;
 			} else {
 				fogOfWarTileRef.visible = false;

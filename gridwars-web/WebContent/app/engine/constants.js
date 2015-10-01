@@ -153,31 +153,59 @@ CONSTANTS = {
 	PARTICLE_YELLOW_SHOT : "particle_yellow_shot",
 
 	// Explosion and impact decal images
-	EXPLOSION_DAMAGE_TIMEOUT : 500,
-	SPRITE_IMPACT_DECALS : "impact_decals",
-	SPRITE_EXPLOSION_A : "sprite_explosion_a",
-	SPRITE_EXPLOSION_B : "sprite_explosion_b",
-	SPRITE_EXPLOSION_C : "sprite_explosion_c",
-	SPRITE_EXPLOSION_D : "sprite_explosion_d",
-	DEBRIS_TANK : "",
+	EXPLOSION_DAMAGE_TIMEOUT 	: 500,
+	SPRITE_IMPACT_DECALS 		: "impact_decals",
+	SPRITE_EXPLOSION_A 			: "sprite_explosion_a",
+	SPRITE_EXPLOSION_B 			: "sprite_explosion_b",
+	SPRITE_EXPLOSION_C 			: "sprite_explosion_c",
+	SPRITE_EXPLOSION_D 			: "sprite_explosion_d",
+	DEBRIS_TANK 				: "",
 
 	// Camera constants
-	CAMERA_SPRITE 	: "camera",
-	CAMERA_SPEED 	: 10,
+	CAMERA_SPRITE 				: "camera",
+	CAMERA_SPEED 				: 10,
 	
 	// Fog of war sprites and key frames
 	MAP_TILE_FOG_OF_WAR			: "fog_of_war",
 	MAP_FOW_VISIBLE				: -1,
 	MAP_FOW_FULL				: 0,
-	MAP_FOW_SIDE_ONE			: 1,
-	MAP_FOW_CORNER_OUTER		: 2,
-	MAP_FOW_CORNER_INNER_ONE	: 3,
+	MAP_FOW_SIDE_ONE			: 1,				// -
+	MAP_FOW_CORNER_OUTER		: 2,				// -
+	MAP_FOW_CORNER_INNER_ONE	: 3,				// -
 	MAP_FOW_CORNER_INNER_TWO	: 4,
 	MAP_FOW_CORNER_INNER_THREE	: 5,
 	MAP_FOW_CORNER_INNER_FOUR	: 6,
-	MAP_FOW_ALONE				: 7,
-	MAP_FOW_SIDE_TWO			: 8,
-	MAP_FOW_SIDE_THREE			: 9,
+	MAP_FOW_ALONE				: 7,				// -
+	MAP_FOW_SIDE_TWO			: 8,				// -
+	MAP_FOW_SIDE_THREE			: 9,				// -
+	
+	// Fog of war tile states
+	MAP_FOW_FOGS 				: [{	frame:	0,	angle:	0,		surrounding: [0, 0, 0,   0, 0, 0,   0, 0, 0] },
+	             				   
+	             				   {	frame:	1,	angle:	0,		surrounding: [0, 0, 0,   0, 0, 0,   2, 1, 2] },
+	             				   {	frame:	1,	angle:	-90,	surrounding: [0, 0, 2,   0, 0, 1,   0, 0, 2] },
+	             				   {	frame:	1,	angle:	180,	surrounding: [2, 1, 2,   0, 0, 0,   0, 0, 0] },
+	             				   {	frame:	1,	angle:	90,		surrounding: [2, 0, 0,   1, 0, 0,   2, 0, 0] },
+	             				   
+	             				   {	frame:	2,	angle:	0,		surrounding: [0, 0, 2,   0, 0, 1,   2, 1, 1] },
+	             				   {	frame:	2,	angle:	90,		surrounding: [2, 0, 0,   1, 0, 0,   1, 1, 2] },
+	             				   {	frame:	2,	angle:	180,	surrounding: [1, 1, 2,   1, 0, 0,   2, 0, 0] },
+	             				   {	frame:	2,	angle:	-90,	surrounding: [2, 1, 1,   0, 0, 1,   0, 0, 2] },
+	             				   
+	             				   {	frame:	3,	angle:	0,		surrounding: [0, 0, 0,   0, 0, 0,   0, 0, 1] },
+	             				   {	frame:	3,	angle:	90,		surrounding: [0, 0, 0,   0, 0, 0,   1, 0, 0] },
+	             				   {	frame:	3,	angle:	180,	surrounding: [1, 0, 0,   0, 0, 0,   0, 0, 0] },
+	             				   {	frame:	3,	angle:	-90,	surrounding: [0, 0, 1,   0, 0, 0,   0, 0, 0] },
+
+	             				   {	frame:	7,	angle:	0,		surrounding: [2, 1, 2,   1, 0, 1,   2, 1, 2] },
+	             				   
+	             				   {	frame:	8,	angle:	0,		surrounding: [2, 1, 2,   0, 0, 0,   2, 1, 2] },
+	             				   {	frame:	8,	angle:	90,		surrounding: [2, 0, 2,   1, 0, 1,   2, 0, 2] },
+	             				   
+	             				   {	frame:	9,	angle:	0,		surrounding: [2, 1, 1,   0, 0, 1,   2, 1, 1] },
+	             				   {	frame:	9,	angle:	90,		surrounding: [2, 0, 2,   1, 0, 1,   1, 1, 1] },
+	             				   {	frame:	9,	angle:	180,	surrounding: [1, 1, 2,   1, 0, 0,   1, 1, 2] },
+	             				   {	frame:	9,	angle:	-90,	surrounding: [1, 1, 1,   1, 0, 1,   2, 0, 2] }],
 
 	// Map tile image references
 	MAP_TILE_PLACEMENT 			: "tile_build",

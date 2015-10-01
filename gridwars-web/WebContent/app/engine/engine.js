@@ -69,6 +69,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.units = [];
 	this.productionUnits = [];
 	this.buildings = [];
+	this.foWVisibilityMap = [];
 	
 	// Define selection variables
 	this.selected = [];
@@ -170,7 +171,7 @@ Engine.prototype.create = function() {
 
 	// Start physics engine and disable mouse right event
 	this.phaserGame.physics.startSystem(Phaser.Physics.P2JS);
-	this.phaserGame.canvas.oncontextmenu = function(e) { e.preventDefault(); }
+	this.phaserGame.canvas.oncontextmenu = function(event) { event.preventDefault(); }
 
 	// Construct explosion manager
 	this.explosionManager = new ExplosionManager(this.phaserGame);
@@ -1037,10 +1038,10 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 	this.mapRender.repositionFogOfWarWithMap(mapPoint);
 	
 	// Reset FoW visibility map
-	var foWVisibilityMap = [];
+	this.foWVisibilityMap = [];
 	for (var rowIndex = 0; rowIndex < this.mapRender.height; rowIndex ++) {
 		for (var colIndex = 0; colIndex < this.mapRender.width; colIndex ++) {
-			foWVisibilityMap.push(CONSTANTS.MAP_FOW_FULL);
+			this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 0 });
 		}
 	}
 	
@@ -1069,14 +1070,82 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 					var deltaX = colCheckIndex - objectCentreCell.col;
 					var deltaY = rowCheckIndex - objectCentreCell.row;
 					if (Math.sqrt(deltaX*deltaX + deltaY*deltaY) <= checkCellRadius) {
-						foWVisibilityMap[rowCheckIndex * this.mapRender.width + colCheckIndex] = CONSTANTS.MAP_FOW_VISIBLE;
+						this.foWVisibilityMap[rowCheckIndex * this.mapRender.width + colCheckIndex].isVisible = 1;
 					}
 				}
 			}
 		}
 	}
 	
+	// Function to add item to surrounding items array
+	var self = this;
+	var surroundingArray = [];
+	var addToSurrounding = function(colIndex, rowIndex) {
+		if (colIndex >= 0 && colIndex < self.mapRender.width &&
+				rowIndex >= 0 && rowIndex < self.mapRender.height) {
+			surroundingArray.push(self.foWVisibilityMap[rowIndex * self.mapRender.width + colIndex].isVisible);
+		} else {
+			surroundingArray.push(0);
+		}
+	}
+	
+	// Function to compare array to sprite frame
+	var compareSurroundingArray = function(compareArray, isVisible) {
+		
+		// Declare default result
+		var result = { frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: isVisible };
+		
+		// Check if fog exists for tile
+		for (var fogIndex = 0; fogIndex < CONSTANTS.MAP_FOW_FOGS.length; fogIndex ++) {
+			
+			// Check if array matches with fog border
+			var matchesBorder = true;
+			for (var index = 0; index < compareArray.length; index ++) {
+				if (compareArray[index] != CONSTANTS.MAP_FOW_FOGS[fogIndex].surrounding[index] &&
+						CONSTANTS.MAP_FOW_FOGS[fogIndex].surrounding[index] != 2) {
+					matchesBorder = false;
+					break;
+				}
+			}
+			
+			// Apply border
+			if (matchesBorder) {
+				result.frame = CONSTANTS.MAP_FOW_FOGS[fogIndex].frame;
+				result.angle = CONSTANTS.MAP_FOW_FOGS[fogIndex].angle;
+				return result;
+			}
+		}
+
+		// Return calculated result
+		return result;
+	}
+	
 	// Process fog of war smoothing
+	for (var rowIndex = 0; rowIndex < this.mapRender.height; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.mapRender.width; colIndex ++) {
+			
+			// Save index of current FoW item
+			var foWIndex = rowIndex * this.mapRender.width + colIndex;
+			
+			// Check if current cell is visible
+			if (this.foWVisibilityMap[foWIndex].isVisible == 1) {
+				this.foWVisibilityMap[foWIndex].frame = CONSTANTS.MAP_FOW_VISIBLE;
+			} else {
+				
+				// Clear surrounding visibiltiy array
+				surroundingArray = [];
+				for (var surroundingRowIndex = 0; surroundingRowIndex < 3; surroundingRowIndex ++) {
+					for (var surroundingColIndex = 0; surroundingColIndex < 3; surroundingColIndex ++) {
+						addToSurrounding(colIndex + surroundingColIndex - 1, rowIndex + surroundingRowIndex - 1);
+					}
+				}
+				
+				//  Set value for fog frame
+				this.foWVisibilityMap[rowIndex * this.mapRender.width + colIndex] =
+					compareSurroundingArray(surroundingArray, this.foWVisibilityMap[foWIndex].isVisible);
+			}
+		}
+	}
 
 //	MAP_FOW_FULL				: 0,
 //	MAP_FOW_SIDE_ONE			: 1,
@@ -1090,7 +1159,7 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 //	MAP_FOW_SIDE_THREE			: 9,
 
 	// Update FoW tile sprite frames
-	this.mapRender.updateFoWTileFrames(mapCell, foWVisibilityMap);
+	this.mapRender.updateFoWTileFrames(mapCell, this.foWVisibilityMap);
 }
 
 Engine.prototype.getButtonAndConstants = function(gameObject) {
