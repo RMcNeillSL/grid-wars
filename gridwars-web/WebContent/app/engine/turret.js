@@ -109,8 +109,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 			self.bullets.incUnitY = -self.bullets.speed * Math.cos((self.topSegment.angle) * (Math.PI/180));
 			
 			// Call firing animation
-			self.fireAndCool.stop();
-			self.topSegment.animations.frame = 1;
+			self.fireAndCool.stop(1);
 			self.fireAndCool.play();
 			
 			// Show particle emitters
@@ -247,8 +246,7 @@ Turret.prototype.update = function() {
 Turret.prototype.shootAtXY = function(point) {
 
 	// Halt any target fire currently set
-	this.fireAndCool.stop();
-	this.topSegment.animations.frame = this.gameCore.colour.TOP;
+	this.fireAndCool.stop(this.gameCore.colour.TOP);
 	
 	// Generate angle information
 	var rotationData = this.gameCore.calculateRotateToPointData(this.topSegment.angle, new Point(this.left, this.top), point, this.rotateSpeed);
@@ -273,8 +271,7 @@ Turret.prototype.lockonAndShoot = function(targetObject) {
 	if (targetObject && this.shootTarget.instanceId != targetObject.gameCore.instanceId) {
 		
 		// Halt any target fire currently set
-		this.fireAndCool.stop();
-		this.topSegment.animations.frame = this.gameCore.colour.TOP;
+		this.fireAndCool.stop(this.gameCore.colour.TOP);
 		
 		// Save target information
 		this.shootTarget.instanceId = targetObject.gameCore.instanceId;

@@ -30,6 +30,9 @@ CustomAnimation.prototype.play = function() {
 	// Save reference to this
 	var self = this;
 	
+	// Reset to animation start
+	this.currentFrameIndex = 0;
+	
 	// Function to run animation
 	var animate = function() {
 		if (self.playing) {
@@ -43,11 +46,11 @@ CustomAnimation.prototype.play = function() {
 				if (self.currentFrameIndex == self.frames.length && self.onComplete) {
 					self.onComplete(self.sender);
 				}
-				self.currentFrameIndex = this.frames[0];
+				self.currentFrameIndex = self.frames[0];
 			}
 		} else {
 			self.sender.frame = 0;
-			self.currentFrameIndex = this.frames[0];
+			self.currentFrameIndex = self.frames[0];
 			clearTimeout(self.animationTimer);
 		}
 	}
@@ -59,9 +62,9 @@ CustomAnimation.prototype.play = function() {
 	animate();
 }
 
-CustomAnimation.prototype.stop = function() {
+CustomAnimation.prototype.stop = function(stopFrame) {
 	this.playing = false;
-	this.sender.frame = 0;
-	this.currentFrameIndex = this.frames[0];
+	this.sender.frame = stopFrame;
+	this.currentFrameIndex = stopFrame;
 	clearTimeout(this.animationTimer);
 }
