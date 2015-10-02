@@ -826,6 +826,16 @@ Engine.prototype.updateNewUnitCell = function(sender, oldCell, newCell) { // Old
 	this.updateFogOfWar();
 }
 
+Engine.prototype.destructionExplosionAtXY = function(xPosition, yPosition) {
+
+	// Create explosion and record in overlay array
+	var miscOverlay = this.explosionManager.requestDestruction(this.mapGroup, CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C, xPosition, yPosition);
+	this.miscOverlays.push(miscOverlay);
+
+	// Set initial visibility
+	miscOverlay.setVisible(this.foWVisibilityMap[miscOverlay.centreCell.row * this.mapRender.width + miscOverlay.centreCell.col].isVisible == 1);
+}
+
 
 // ------------------------------ UTILITY METHODS ------------------------------ //
 
@@ -2040,6 +2050,8 @@ Engine.prototype.processPurchaseObject = function(responseData) {
 }
 
 Engine.prototype.processPurchasePending = function(responseData) {
+	
+	// TODO: Complete method
 
 }
 
@@ -2338,19 +2350,12 @@ Engine.prototype.processUnitDamage = function(responseData) {
 				removeList.push(refObject.instanceId);
 				
 				// Create explosion and record in overlay array
-				var miscOverlay = this.explosionManager.requestDestruction(this.mapGroup,
-						CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C,
-						gameObject.left, gameObject.top);
-				this.miscOverlays.push(miscOverlay);
-
-				// Set initial visibility
-				miscOverlay.setVisible(this.foWVisibilityMap[miscOverlay.centreCell.row * this.mapRender.width + miscOverlay.centreCell.col].isVisible == 1);
+				this.destructionExplosionAtXY(gameObject.left, gameObject.top);
 				
+				// Increment killers cash
 				if(refObject.killer == this.currentPlayer.playerId) {
-
 					this.currentPlayer.cash += Math.floor(gameObject.gameCore.cost*1.2);
 					this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label
-
 				}
 			}
 
@@ -2378,9 +2383,45 @@ Engine.prototype.processInsufficientFunds = function(responseData) {
 
 			this.currentPlayer.cash = parseInt(refObject.cash);
 			this.moneyLabel.setText(this.currentPlayer.cash); // Redraw player money label						merge conflickt
-
 		}
 	}
+}
+
+Engine.prototype.processSellBuilding = function(responseData) {
+	
+	// Save reference to new cash level for current player
+	var newCash = parseInt(responseData.source[0]);
+	
+	// Save cash in current player
+	this.currentPlayer.cash = parseInt(newCash);
+	this.moneyLabel.setText(this.currentPlayer.cash);
+}
+
+Engine.prototype.processDestroyObject = function(responseData) {
+	
+	// Define working variables
+	var destroyId = null;
+	var gameObject = null;
+	var removeList = [];
+	
+	// Interate over all objects to be destroyed
+	for (var index = 0; index < responseData.source.length; index ++) {
+		
+		// Save Id to destroy
+		destroyId = responseData.source[index];
+		gameObject = this.getObjectFromInstanceId(destroyId);
+
+		// Add object to remove list
+		removeList.push(destroyId);
+		
+		// Create explosion and record in overlay array
+		this.destructionExplosionAtXY(gameObject.left, gameObject.top);
+	}
+
+	// Delete all items from remove list
+	for (var removeIndex = 0; removeIndex < removeList.length; removeIndex++) {
+		this.deleteItemWithInstanceId(removeList[removeIndex]);
+	}	
 }
 
 
@@ -2423,7 +2464,7 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processNewBuilding(responseData, false);
 				break;
 			case "SELL_BUILDING":
-//				this.processNewBuilding(responseData, false);
+				this.processSellBuilding(responseData, false);
 				break;
 				
 				
@@ -2435,7 +2476,7 @@ Engine.prototype.processGameplayResponse = function(responseData) {
 				this.processUnitDamage(responseData);
 				break;
 			case "DESTROY_OBJECT":
-//				this.processNewBuilding(responseData, false);
+				this.processDestroyObject(responseData, false);
 				break;
 				
 				

@@ -909,7 +909,7 @@ public class Engine extends Thread {
 		GameplayResponse updateFundsResponse = null;
 		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
 		boolean validConstruction = true;
-
+		
 		// Check building exists
 		if (building == null) {
 			validConstruction = false;
