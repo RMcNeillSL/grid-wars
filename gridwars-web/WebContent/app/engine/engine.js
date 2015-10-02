@@ -394,56 +394,59 @@ Engine.prototype.render = function() {
 	var miniMapCellWidth = (this.minimap.width * 1.0 / this.mapRender.width);
 	var miniMapCellHeight = (this.minimap.height * 1.0 / this.mapRender.height);
 	
-	// Run through all objects outputting square for each
-	var potentialObstructions = this.buildings.concat(this.units);
-	for (var index = 0; index < potentialObstructions.length; index ++) {
-
-		// Get player colour information
-		var RGB = { red: 255, green: 255, blue: 255 };
-		for (var playerIndex = 0; playerIndex < this.players.length; playerIndex ++) {
-			if (this.players[playerIndex].playerId == potentialObstructions[index].gameCore.playerId) {
-				RGB = this.players[playerIndex].RGB;
-			}
-		}
-		
-		// Generate list of object cells
-		var cells = potentialObstructions[index].gameCore.getCells();
-		
-		// Process all object cells
-		for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
-			
-			// Check if cell can be seen
-			var canSeeCell = (potentialObstructions[index].gameCore.playerId == this.currentPlayer.playerId ||
-					this.foWVisibilityMap[cells[cellIndex].row * this.mapRender.width + cells[cellIndex].col].isVisible == 1);
-			
-			// Determine if block on radar should be shown
-			if (canSeeCell) {
-				
-				// Output item to radar
-				this.phaserGame.debug.geom(new Phaser.Rectangle(
-						this.minimap.x + cells[cellIndex].col * miniMapCellWidth,
-						this.minimap.y + cells[cellIndex].row * miniMapCellHeight,
-						miniMapCellWidth, miniMapCellHeight), 'rgba(' + RGB.red + ',' + RGB.green + ',' + RGB.blue + ',0.5)');
-			}
-		}
-	}
+	if(this.mapHUD.visible) {
 	
-	// Output radar fog of war
-	for (var rowIndex = 0; rowIndex < this.mapRender.width; rowIndex ++) {
-		for (var colIndex = 0; colIndex < this.mapRender.height; colIndex ++) {
-			if (this.foWVisibilityMap[rowIndex * this.mapRender.width + colIndex].isVisible == 0) {
-				this.phaserGame.debug.geom(new Phaser.Rectangle(
-						this.minimap.x + colIndex * miniMapCellWidth,
-						this.minimap.y + rowIndex * miniMapCellHeight,
-						miniMapCellWidth, miniMapCellHeight), 'rgba(0,0,0,0.5)');
+		// Run through all objects outputting square for each
+		var potentialObstructions = this.buildings.concat(this.units);
+		for (var index = 0; index < potentialObstructions.length; index ++) {
+	
+			// Get player colour information
+			var RGB = { red: 255, green: 255, blue: 255 };
+			for (var playerIndex = 0; playerIndex < this.players.length; playerIndex ++) {
+				if (this.players[playerIndex].playerId == potentialObstructions[index].gameCore.playerId) {
+					RGB = this.players[playerIndex].RGB;
+				}
+			}
+			
+			// Generate list of object cells
+			var cells = potentialObstructions[index].gameCore.getCells();
+			
+			// Process all object cells
+			for (var cellIndex = 0; cellIndex < cells.length; cellIndex ++) {
+				
+				// Check if cell can be seen
+				var canSeeCell = (potentialObstructions[index].gameCore.playerId == this.currentPlayer.playerId ||
+						this.foWVisibilityMap[cells[cellIndex].row * this.mapRender.width + cells[cellIndex].col].isVisible == 1);
+				
+				// Determine if block on radar should be shown
+				if (canSeeCell) {
+					
+					// Output item to radar
+					this.phaserGame.debug.geom(new Phaser.Rectangle(
+							this.minimap.x + cells[cellIndex].col * miniMapCellWidth,
+							this.minimap.y + cells[cellIndex].row * miniMapCellHeight,
+							miniMapCellWidth, miniMapCellHeight), 'rgba(' + RGB.red + ',' + RGB.green + ',' + RGB.blue + ',0.5)');
+				}
 			}
 		}
+	
+		// Output radar fog of war
+		for (var rowIndex = 0; rowIndex < this.mapRender.width; rowIndex ++) {
+			for (var colIndex = 0; colIndex < this.mapRender.height; colIndex ++) {
+				if (this.foWVisibilityMap[rowIndex * this.mapRender.width + colIndex].isVisible == 0) {
+					this.phaserGame.debug.geom(new Phaser.Rectangle(
+							this.minimap.x + colIndex * miniMapCellWidth,
+							this.minimap.y + rowIndex * miniMapCellHeight,
+							miniMapCellWidth, miniMapCellHeight), 'rgba(0,0,0,0.5)');
+				}
+			}
+		}
+		
+		// Render current map square in minimap
+		this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * miniMapCellWidth;
+		this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * miniMapCellHeight;
+		this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
 	}
-
-	// Render current map square in minimap
-	this.miniMapViewRectangle.x = this.minimap.x + (this.phaserGame.camera.x / 100) * miniMapCellWidth;
-	this.miniMapViewRectangle.y = this.minimap.y + (this.phaserGame.camera.y / 100) * miniMapCellHeight;
-	this.phaserGame.debug.geom(this.miniMapViewRectangle, 'rgba(255,255,255,1)', false);
 }
 
 
@@ -715,14 +718,14 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 Engine.prototype.onKeyPressed = function(char) {
 
 	// Set active building object
-	if (char == '1') {
+	if (char == '1' && this.defenceButton.visible) {
 		if (!this.turretBuildInProgress) {
 			this.purchaseObject("TURRET"); 
 		}
 	}
 
 	// Submit request for tank purchase
-	if (char == '2') {
+	if (char == '2' && this.tankButton.visible) {
 		if(!this.tankBuildInProgress) {
 			this.purchaseObject("TANK");
 		}
@@ -1116,7 +1119,11 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 	this.foWVisibilityMap = [];
 	for (var rowIndex = 0; rowIndex < this.mapRender.height; rowIndex ++) {
 		for (var colIndex = 0; colIndex < this.mapRender.width; colIndex ++) {
-			this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 0 });
+			if (!this.mapHUD.visible) {
+				this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 1 });
+			} else {
+				this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 0 });
+			}
 		}
 	}
 	
@@ -1610,6 +1617,16 @@ Engine.prototype.setGameObjectDetailsVisibility = function(show) {
 	this.gameObjectStop.visible = show;
 }
 
+Engine.prototype.setMinimapVisibility = function(show) {
+	this.mapHUD.visible = show;
+	this.minimap.visible = show;
+	this.tankButton.visible = show;
+	this.homeButton.visible = show;
+	this.defenceButton.visible = show;
+	this.moneyLabel.visible = show;
+	this.miniMapViewRectangle.visible = show;
+}
+
 Engine.prototype.updatePlayerStatus = function() {
 	var self = this;
 	var deadPlayers = self.players.slice();
@@ -1642,6 +1659,12 @@ Engine.prototype.updatePlayerStatus = function() {
 					position : self.players.length - self.playerResults.length,
 					playerId : deadPlayers[i1].playerId
 				});
+				
+				if(deadPlayers[i1].playerId == self.currentPlayer.playerId) {
+					self.setMinimapVisibility(false);
+					self.setGameObjectDetailsVisibility(false);
+					self.updateFogOfWar();
+				}
 			}
 		}
 	}
@@ -2415,7 +2438,9 @@ Engine.prototype.processDestroyObject = function(responseData) {
 		removeList.push(destroyId);
 		
 		// Create explosion and record in overlay array
-		this.destructionExplosionAtXY(gameObject.left, gameObject.top);
+		if(gameObject) {
+			this.destructionExplosionAtXY(gameObject.left, gameObject.top);
+		}
 	}
 
 	// Delete all items from remove list
