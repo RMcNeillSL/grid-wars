@@ -138,6 +138,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, 					CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, 				CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, 		CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
+	this.phaserGame.load.image(CONSTANTS.HINT_SELL, 					CONSTANTS.ROOT_SPRITES_LOC + 'hint_sell.png');
 	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, 		CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
 	this.phaserGame.load.spritesheet(CONSTANTS.UNIT_DETAILS_BUTTONS, 	CONSTANTS.ROOT_SPRITES_LOC + 'unit_details_buttons.png', 36, 38, 6);
 
@@ -1465,10 +1466,12 @@ Engine.prototype.createGameScreen = function() {
 		// Add listner events
 		newButton.events.onInputOver.add(function() {
 			newButton.frame = spriteInfo.SELECTED;
+			self.gameObjectHintSell.visible = true;
 			self.hud.mouseOverHudButton = true;
 		});
 		newButton.events.onInputOut.add(function() {
 			newButton.frame = spriteInfo.UNSELECTED;
+			self.gameObjectHintSell.visible = false;
 			self.hud.mouseOverHudButton = false;
 		});
 		newButton.events.onInputDown.add(function() {
@@ -1508,7 +1511,7 @@ Engine.prototype.createGameScreen = function() {
 				leftStart + owner.WIDTH * spriteData.LEFT,
 				topStart + owner.HEIGHT * spriteData.TOP,
 				startingText,
-				{	font: "bold 12px Arial",
+				{	font: "bold 12px Consolas",
 					fill: "#fff", 
 					boundsAlignH: "center",
 					boundsAlignV: "middle"
@@ -1546,6 +1549,14 @@ Engine.prototype.createGameScreen = function() {
 	this.minimap = createHUDSprite(CONSTANTS.HUD.MAP_CONTROL.MINIMAP, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, miniMapId, 91, true);
 	this.minimap.events.onInputOver.add(function() { if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = true; } });
 	this.minimap.events.onInputOut.add(function() { if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = false; } });
+
+	// Create hint labels
+	this.gameObjectHintSell	= self.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 420, CONSTANTS.GAME_SCREEN_HEIGHT - 94, CONSTANTS.HINT_SELL);
+	this.gameObjectHintSell.width = 220;
+	this.gameObjectHintSell.height = 99;
+	this.gameObjectHintSell.fixedToCamera = true;
+	this.gameObjectHintSell.z = 92;
+	this.gameObjectHintSell.visible = false;
 	
 	// Create map control HUD sprites/text/buttons
 	this.moneyLabel 			= createMapHUDText(CONSTANTS.HUD.MAP_CONTROL.CASH, this.currentPlayer.cash, 92, true);
@@ -1559,15 +1570,7 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectHealthText 	= createObjectHUDText(CONSTANTS.HUD.OBJECT_CONTROL.HEALTH, "--%", 92, false);
 	this.gameObjectSell			= createDetailGameButton(CONSTANTS.HUD.OBJECT_CONTROL.SELL);
 	this.gameObjectStop			= createDetailGameButton(CONSTANTS.HUD.OBJECT_CONTROL.STOP);
-	
-	// Draw player money label
-	var style = {
-		font: "bold 12px Arial",
-		fill: "#fff", 
-		boundsAlignH: "center",
-		boundsAlignV: "middle"
-	};
-	
+
 	// Create minimap rectangle
 	var singleCellWidth = this.minimap.width * 1.0 / this.mapRender.width;
 	var singleCellHeight = this.minimap.height * 1.0 / this.mapRender.height;

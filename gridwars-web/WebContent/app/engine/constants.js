@@ -122,62 +122,62 @@ CONSTANTS = {
 	CURSOR_SCROLL_DIAG_RU				: "cursor_move_diag_ru",
 
 	// Core properties
-	GAME_NAME : "gridwars-engine",
-	GAME_SCREEN_WIDTH: 1000,
-	GAME_SCREEN_HEIGHT: 800,
-	TILE_WIDTH : 100,
-	TILE_HEIGHT : 100,
-	GAME_BUILDINGS : [],
-	GAME_UNITS : [],
+	GAME_NAME 							: "gridwars-engine",
+	GAME_SCREEN_WIDTH					: 1000,
+	GAME_SCREEN_HEIGHT					: 800,
+	TILE_WIDTH 							: 100,
+	TILE_HEIGHT 						: 100,
+	GAME_BUILDINGS 						: [],
+	GAME_UNITS 							: [],
 
 	// Directory locations
-	ROOT_SPRITES_LOC : "app/assets/",
+	ROOT_SPRITES_LOC 					: "app/assets/",
 	
 	// Game frame sprites
-	MINI_MAP : "mini_map",
-	MINI_MAP_BUTTONS : "mini_map_buttons",
-	UNIT_DETAILS : "unit_details",
-	UNIT_DETAILS_BUTTONS : "unit_details_buttons",
-	TANK_ICON : "tank_icon",
-	TURRET_ICON : "turret_icon",
+	MINI_MAP 							: "mini_map",
+	MINI_MAP_BUTTONS 					: "mini_map_buttons",
+	UNIT_DETAILS 						: "unit_details",
+	UNIT_DETAILS_BUTTONS 				: "unit_details_buttons",
+	TANK_ICON 							: "tank_icon",
+	TURRET_ICON 						: "turret_icon",
 	
 	// Minimaps
-	MINIMAP_MAJARO 			: "minimap_majaro",
-	MINIMAP_HUNTING_GROUND 	: "minimap_hunting_ground",
+	MINIMAP_MAJARO 						: "minimap_majaro",
+	MINIMAP_HUNTING_GROUND 				: "minimap_hunting_ground",
 	
 	// Loaded image(.png) names
-	SPRITE_HUB : "sprite_hub_anim",
-	SPRITE_TURRET : "sprite_turret_anim",
-	SPRITE_TANK : "sprite_tank_anim",
-	SPRITE_TANK_TRACKS : "sprite_tank_tracks",
-	PARTICLE_YELLOW_SHOT : "particle_yellow_shot",
+	SPRITE_HUB 							: "sprite_hub_anim",
+	SPRITE_TURRET 						: "sprite_turret_anim",
+	SPRITE_TANK 						: "sprite_tank_anim",
+	SPRITE_TANK_TRACKS 					: "sprite_tank_tracks",
+	PARTICLE_YELLOW_SHOT 				: "particle_yellow_shot",
 
 	// Explosion and impact decal images
-	EXPLOSION_DAMAGE_TIMEOUT 	: 500,
-	SPRITE_IMPACT_DECALS 		: "impact_decals",
-	SPRITE_EXPLOSION_A 			: "sprite_explosion_a",
-	SPRITE_EXPLOSION_B 			: "sprite_explosion_b",
-	SPRITE_EXPLOSION_C 			: "sprite_explosion_c",
-	SPRITE_EXPLOSION_D 			: "sprite_explosion_d",
-	DEBRIS_TANK 				: "",
+	EXPLOSION_DAMAGE_TIMEOUT 			: 500,
+	SPRITE_IMPACT_DECALS 				: "impact_decals",
+	SPRITE_EXPLOSION_A 					: "sprite_explosion_a",
+	SPRITE_EXPLOSION_B 					: "sprite_explosion_b",
+	SPRITE_EXPLOSION_C 					: "sprite_explosion_c",
+	SPRITE_EXPLOSION_D 					: "sprite_explosion_d",
+	DEBRIS_TANK 						: "",
 
 	// Camera constants
-	CAMERA_SPRITE 				: "camera",
-	CAMERA_SPEED 				: 10,
+	CAMERA_SPRITE 						: "camera",
+	CAMERA_SPEED 						: 10,
 	
 	// Fog of war sprites and key frames
-	MAP_TILE_FOG_OF_WAR			: "fog_of_war",
-	MAP_FOW_VISIBLE				: -1,
-	MAP_FOW_FULL				: 0,
-	MAP_FOW_SIDE_ONE			: 1,				// -
-	MAP_FOW_CORNER_OUTER		: 2,				// -
-	MAP_FOW_CORNER_INNER_ONE	: 3,				// -
-	MAP_FOW_CORNER_INNER_TWO	: 4,
-	MAP_FOW_CORNER_INNER_THREE	: 5,
-	MAP_FOW_CORNER_INNER_FOUR	: 6,
-	MAP_FOW_ALONE				: 7,				// -
-	MAP_FOW_SIDE_TWO			: 8,				// -
-	MAP_FOW_SIDE_THREE			: 9,				// -
+	MAP_TILE_FOG_OF_WAR					: "fog_of_war",
+	MAP_FOW_VISIBLE						: -1,
+	MAP_FOW_FULL						: 0,
+	MAP_FOW_SIDE_ONE					: 1,				// -
+	MAP_FOW_CORNER_OUTER				: 2,				// -
+	MAP_FOW_CORNER_INNER_ONE			: 3,				// -
+	MAP_FOW_CORNER_INNER_TWO			: 4,
+	MAP_FOW_CORNER_INNER_THREE			: 5,
+	MAP_FOW_CORNER_INNER_FOUR			: 6,
+	MAP_FOW_ALONE						: 7,				// -
+	MAP_FOW_SIDE_TWO					: 8,				// -
+	MAP_FOW_SIDE_THREE					: 9,				// -
 	
 	// Fog of war tile states
 	MAP_FOW_FOGS 				: [{	frame:	0,	angle:	0,		surrounding: [0, 0, 0,   0, 0, 0,   0, 0, 0] },
@@ -267,6 +267,9 @@ CONSTANTS = {
 	MAP_DETAIL_GRASS_ITR		: 53,
 	MAP_DETAIL_GRASS_ITL		: 54,
 	MAP_DETAIL_GRASS_IBL		: 55,
+	
+	// Hud last minute sprites
+	HINT_SELL					: "hint_sell",
 
 	// Heads Up Display sprites
 	HUD : { 
