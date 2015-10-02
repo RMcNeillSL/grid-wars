@@ -16,20 +16,32 @@ ExplosionManager.prototype.requestDestruction = function(mapGroup, debrisId, exp
 		// Save reference to this for local calls
 		var self = this;
 
+		// Destroyed flag
+		var destroyed = false;
+
 		// Create explosion sprite
 		var localExplosion = this.phaserRef.add.sprite(x, y, explosionId, 0);
 		localExplosion.anchor.setTo(0.5, 0.5);
 		localExplosion.z = 100;
 		
 		// Create explode animation
-		var explode = localExplosion.animations.add('localExplode');
-		explode.onComplete.add(function(sprite, animation) {
+		var explode = new CustomAnimation(localExplosion, null, 100);
+		explode.onComplete = function(sprite) {
 			sprite.animations.destroy();
 			sprite.destroy();
-		});
+		};
 		
 		// Run explosion animation
-		explode.play(100, false, null);
+		explode.play();
+		
+		// Return function to update visibility state
+		return {
+			centreCell : (new Point(localExplosion.x, localExplosion.y)).toCell(),
+			setVisible : function(visible) { 
+					if (!destroyed) { localExplosion.visible = visible; }
+					return destroyed;
+				}
+		}
 	}
 }
 
@@ -40,6 +52,9 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, ow
 		
 		// Save reference to this for local calls
 		var self = this;
+
+		// Destroyed flag
+		var destroyed = false;
 
 		// Create impact decal sprite
 		var localImpact = this.phaserRef.add.sprite(x, y, CONSTANTS.SPRITE_IMPACT_DECALS, 0);
@@ -58,24 +73,39 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, ow
 		this.registerExplosion(localExplosion);
 		
 		// Create fade out animation
-		var fadeOut = localImpact.animations.add('localImpaceFade');
-		fadeOut.onComplete.add(function(sprite, animation) {
+		var fadeOut = new CustomAnimation(localImpact, null, 0.25);
+		fadeOut.onComplete = function(sprite) {
 			sprite.animations.destroy();
 			sprite.destroy();
-		});
+		};
 		
 		// Create explode animation
-		var explode = localExplosion.animations.add('localExplode');
-		explode.onComplete.add(function(sprite, animation) {
+		var explode = new CustomAnimation(localExplosion, null, 30);
+		explode.onComplete = function(sprite) {
 			var targetIndex = self.explosionRegister.indexOf(sprite);
 			self.explosionRegister.splice(targetIndex, 1);
 			sprite.animations.destroy();
 			sprite.destroy();
-			fadeOut.play(0.25, false, null);
-		});
+			fadeOut.play();
+		};
 		
 		// Run explosion animation
-		explode.play(30, false, null);
+		explode.play();
+
+		// Return function to update visibility state
+		return [{
+					centreCell : (new Point(localImpact.x, localImpact.y)).toCell(),
+					setVisible : function(visible) { 
+						if (!destroyed) { localImpact.visible = visible; }
+						return destroyed;
+					}
+				}, {
+					centreCell : (new Point(localExplosion.x, localExplosion.y)).toCell(),
+					setVisible : function(visible) {
+							if (!destroyed) { localExplosion.visible = visible; }
+							return destroyed;
+					}
+				}];
 	}
 }
 

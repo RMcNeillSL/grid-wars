@@ -42,10 +42,10 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 		this.highestGroup.add(this.shadowSegment);
 		
 		// Animations
-		this.open = this.hubSegment.animations.add('open', this.gameCore.colour.OPENING, 10, false);
-		this.close = this.hubSegment.animations.add('close', this.gameCore.colour.CLOSING, 10, false);
-		this.rise = this.shadowSegment.animations.add('rise', this.gameCore.colour.RISE, 10, false);
-		this.sink = this.shadowSegment.animations.add('sink', this.gameCore.colour.SINK, 10, false);
+		this.open = new CustomAnimation(this.hubSegment, this.gameCore.colour.OPENING, 10);
+		this.close = new CustomAnimation(this.hubSegment, this.gameCore.colour.CLOSING, 10);
+		this.rise = new CustomAnimation(this.shadowSegment, this.gameCore.colour.RISE, 10);
+		this.sink = new CustomAnimation(this.shadowSegment, this.gameCore.colour.SINK, 10);
 		
 		// Create self reference for local functions
 		var self = this;
@@ -57,20 +57,65 @@ function Hub(engineCore, gameCore, mapGroup, highestGroup, buildingGroup, xy, co
 		this.sinkComplete = null;
 		
 		// Link events to methods
-		this.open.onComplete.add(function(sprite, animation) { if (self.openComplete) { self.openComplete(sprite, animation); } });
-		this.close.onComplete.add(function(sprite, animation) { if (self.closeComplete) { self.closeComplete(sprite, animation); } });
-		this.rise.onComplete.add(function(sprite, animation) { if (self.riseComplete) { self.riseComplete(sprite, animation); } });
-		this.sink.onComplete.add(function(sprite, animation) { if (self.sinkComplete) { self.sinkComplete(sprite, animation); } });
+		this.open.onComplete = function(sprite) { if (self.openComplete) { self.openComplete(sprite); } };
+		this.close.onComplete = function(sprite) { if (self.closeComplete) { self.closeComplete(sprite); } };
+		this.rise.onComplete = function(sprite) { if (self.riseComplete) { self.riseComplete(sprite); } };
+		this.sink.onComplete = function(sprite) { if (self.sinkComplete) { self.sinkComplete(sprite); } };
+
+		// Hide shadow segment initially
+		this.setVisible(true, false);
 		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
 		
-		// Hide shadow segment initially
-		this.shadowSegment.visible = false;
-		
 	} else {
 		if (!this.engineCore.phaserEngine) { console.log("ERROR: Failed to construct tank hub, missing phaserRef."); }
 	}
+}
+
+Hub.prototype.setFOWVisible = function(active) {
+	
+	// Set to fog of war
+	if (active) {
+		
+		// Check if saving values
+		if (!this.gameCore.fogOfWar.isActive) {
+			
+			// Mark FoW as active
+			this.gameCore.fogOfWar.isActive = true;
+			
+			// Save original visibility;
+			this.gameCore.fogOfWar.hubVisible = this.hubSegment.visible;
+			this.gameCore.fogOfWar.shadowVisible = this.shadowSegment.visible;
+			
+			// Set new visibility
+			this.hubSegment.visible = false;
+			this.shadowSegment.visible = false;
+		}
+	} else {
+		this.gameCore.fogOfWar.isActive = false;
+		this.hubSegment.visible = this.gameCore.fogOfWar.hubVisible;
+		this.shadowSegment.visible = this.gameCore.fogOfWar.shadowVisible;
+	}
+}
+
+Hub.prototype.isVisible = function() {
+	return this.hubSegment.visible;
+}
+
+Hub.prototype.setVisible = function(hubVisible, shadowVisible) {
+
+	// Update for fog of war
+	if (!this.gameCore.fogOfWar.isActive) {
+
+		// Save for future updates
+		this.hubSegment.visible = hubVisible;
+		this.shadowSegment.visible = shadowVisible;
+	}
+
+	// Set new state
+	this.gameCore.fogOfWar.hubVisible = hubVisible;
+	this.gameCore.fogOfWar.shadowVisible = shadowVisible;
 }
 
 Hub.prototype.getRallyCell = function() {
@@ -83,11 +128,11 @@ Hub.prototype.animateTankCreate = function(newUnitObject) {
 	var self = this;
 	
 	// Define callback functions
-	this.riseComplete = function(sprite, animation) {
+	this.riseComplete = function(sprite) {
 		
 		// Set visibility state once risen
 		self.shadowSegment.frame = self.gameCore.colour.SHADOW;
-		self.shadowSegment.visible = false;
+		self.setVisible(self.hubSegment.visible, false);
 		
 		// Set waypoints for unit
 		var refCell = newUnitObject.gameCore.cell;
@@ -95,13 +140,13 @@ Hub.prototype.animateTankCreate = function(newUnitObject) {
 		    (new Cell(refCell.col, refCell.row - 1)).toCenterPoint(),
 			(new Cell(refCell.col, refCell.row - 2)).toCenterPoint()];
 	}
-	this.openComplete = function(sprite, animation) {
+	this.openComplete = function(sprite) {
 		
 		// Make tank visible
 		newUnitObject.setVisible(true);
 		
 		// Setup to run rise animation
-		self.shadowSegment.visible = true;
+		self.setVisible(self.hubSegment.visible, true);
 		self.hubSegment.frame = self.gameCore.colour.OPEN;
 		self.rise.play();
 	}
@@ -116,17 +161,17 @@ Hub.prototype.resetTankHub = function() {
 	var self = this;
 
 	// Define callback functions
-	this.sinkComplete = function(sprite, animation) {
+	this.sinkComplete = function(sprite) {
 		self.hubSegment.frame = self.gameCore.colour.CLOSED;
-		self.shadowSegment.visible = false;
+		self.setVisible(true, false);
 		self.close.play();
 	}
-	this.closeComplete = function(sprite, animation) {
+	this.closeComplete = function(sprite) {
 		self.hubSegment.frame = self.gameCore.colour.HUB;
 	}
 
-	// Run hub open animation
-	this.shadowSegment.visible = true;
+	// Run hub close animation
+	this.setVisible(this.hubSegment.visible, true);
 	this.sink.play();
 }
 
@@ -153,15 +198,11 @@ Hub.prototype.getCollisionLayers = function() {
 }
 
 Hub.prototype.setBuildingMode = function(inBuildingMode) {
-	
 	if (inBuildingMode) {
-		this.hubSegment.visible = false;
-		this.shadowSegment.visible = false; 
+		this.setVisible(false, false);
 	} else {
-		this.hubSegment.visible = true;
-		this.shadowSegment.visible = true; 		
+		this.setVisible(true, false);
 	}
-	
 }
 
 Hub.prototype.setPosition = function(cell) {

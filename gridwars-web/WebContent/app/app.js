@@ -20,9 +20,8 @@ config(['$routeProvider', function($routeProvider) {
 	$routeProvider.when('/servers', {template: '<gwa-servers></gwa-servers>'});
 	$routeProvider.when('/testing', {template: '<gwa-testing></gwa-testing>'});
 	$routeProvider.otherwise({redirectTo: '/login'});
-
-}]).
-run(function($rootScope, $location, $route) {
+}])
+.run(function($rootScope, $location, $route) {
 	$rootScope.$on("$routeChangeStart", function(event, next, current) {
 
 		// Define list of pages not requiring authorisation

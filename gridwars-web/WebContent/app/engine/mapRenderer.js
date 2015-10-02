@@ -1,4 +1,4 @@
-function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells, screenCellWidth, screenCellHeight) {
+function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, fogOfWarGroup, width, height, cells, screenCellWidth, screenCellHeight) {
 	
 	// Save passed phaser reference
 	this.phaserRef = phaserRef;
@@ -128,8 +128,31 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, width, height, cells,
 	// building - any building taking up square
 	//
 
+	// Generate fog of war tiles for the screen
+	this.fogOfWarTiles = [];
+	for (var rowIndex = 0; rowIndex < this.screenCellHeight + 1; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.screenCellWidth + 1; colIndex ++) {
+			
+			// Create new fog of war tile
+			var newFogOfWarTile = this.phaserRef.add.sprite(
+					CONSTANTS.TILE_WIDTH * colIndex + (CONSTANTS.TILE_WIDTH / 2), 
+					CONSTANTS.TILE_HEIGHT * rowIndex + (CONSTANTS.TILE_HEIGHT / 2),
+					CONSTANTS.MAP_TILE_FOG_OF_WAR,
+					CONSTANTS.MAP_FOW_FULL);
+			newFogOfWarTile.anchor.setTo(0.5, 0.5);
+			newFogOfWarTile.width = CONSTANTS.TILE_WIDTH;
+			newFogOfWarTile.height = CONSTANTS.TILE_HEIGHT;
+			fogOfWarGroup.add(newFogOfWarTile);
+
+			// Add new FOW tile to array
+			this.fogOfWarTiles.push(newFogOfWarTile);
+		}
+	}
+
 	// Save local reference to this
 	var self = this;
+	
+	// Function to create a single map tile at specified col/row
 	var createMapTile = function(cellId, col, row) {
 
 		// Create sprite for current tile
@@ -270,6 +293,9 @@ MapRenderer.prototype.placeTankTrack = function(mapGroup, sender, point, angle) 
 
 		// Save reference to this for local calls
 		var self = this;
+		
+		// Destroyed flag
+		var destroyed = false;
 
 		// Create tank track sprite
 		var tankTracks = this.phaserRef.add.sprite(point.x, point.y, CONSTANTS.SPRITE_TANK_TRACKS, 0);
@@ -279,14 +305,24 @@ MapRenderer.prototype.placeTankTrack = function(mapGroup, sender, point, angle) 
 		mapGroup.add(tankTracks);
 		
 		// Set animation completed event
-		var fadeOut = tankTracks.animations.add('localTankTracks');
-		fadeOut.onComplete.add(function(sprite, animation) {
+		var fadeOut = new CustomAnimation(tankTracks, null, 0.25);
+		fadeOut.onComplete = function(sprite) {
+			destroyed = true;
 			sprite.animations.destroy();
 			sprite.destroy();
-		});
+		};
 		
 		// Play fade out animation
-		fadeOut.play(0.25, false, null);
+		fadeOut.play();
+		
+		// Return function to update visibility state
+		return {
+			centreCell : (new Point(tankTracks.x, tankTracks.y)).toCell(),
+			setVisible : function(visible) { 
+					if (!destroyed) { tankTracks.visible = visible; }
+					return destroyed;
+				}
+		}
 	}
 }
 
@@ -302,6 +338,49 @@ MapRenderer.prototype.isCellObstructed = function(cell) {
 				invalidDetailIds.indexOf(checkCell.detailId) > -1);
 	}
 	return false;
+}
+
+MapRenderer.prototype.repositionFogOfWarWithMap = function(screenPoint) {
+	
+	// Get top cell coordiantes of map visible in screen
+	var cellPoint = screenPoint.toCell().toPoint();
+	
+	// Generate fog of war tiles for the screen
+	for (var rowIndex = 0; rowIndex < this.screenCellHeight + 1; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.screenCellWidth + 1; colIndex ++) {
+			var fogOfWarTileRef = this.fogOfWarTiles[rowIndex * (this.screenCellWidth + 1) + colIndex];
+			fogOfWarTileRef.x = cellPoint.x + CONSTANTS.TILE_WIDTH * colIndex + (CONSTANTS.TILE_WIDTH / 2);
+			fogOfWarTileRef.y = cellPoint.y + CONSTANTS.TILE_HEIGHT * rowIndex + (CONSTANTS.TILE_HEIGHT / 2);
+		}
+	}
+}
+
+MapRenderer.prototype.updateFoWTileFrames = function(screenCell, foWVisibilityMap) {
+	
+	// Generate fog of war tiles for the screen
+	for (var rowIndex = 0; rowIndex < this.screenCellHeight + 1; rowIndex ++) {
+		for (var colIndex = 0; colIndex < this.screenCellWidth + 1; colIndex ++) {
+			
+			// Save reference to FoW tile and new frame state
+			var fogOfWarTileRef = this.fogOfWarTiles[rowIndex * (this.screenCellWidth + 1) + colIndex];
+			
+			// Create references to screen tile
+			var screenCellCol = colIndex + screenCell.col;
+			var screenCellRow = rowIndex + screenCell.row;
+			if (screenCellCol < this.width && screenCellRow < this.height) {
+				var newFrameState = foWVisibilityMap[screenCellRow * this.width + screenCellCol];
+				
+				// Set new frame
+				if (newFrameState.frame != CONSTANTS.MAP_FOW_VISIBLE) {
+					fogOfWarTileRef.frame = newFrameState.frame;
+					fogOfWarTileRef.angle = newFrameState.angle;
+					fogOfWarTileRef.visible = true;
+				} else {
+					fogOfWarTileRef.visible = false;
+				}
+			}
+		}
+	}
 }
 
 MapRenderer.prototype.renderMap = function() {

@@ -49,13 +49,13 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.tankGroup.add(this.turretSegment);
 		
 		// Animations
-		this.fire = this.turretSegment.animations.add('fire', this.gameCore.colour.FIRE, 30, false);
+		this.fire = new CustomAnimation(this.turretSegment, this.gameCore.colour.FIRE, 30);
 
 		// Create reference to 'this' for below functions
 		var self = this;
 		
 		// Create fire callback function
-		this.fire.onComplete.add(function(sprite, animation) {
+		this.fire.onComplete = function(sprite) {
 			setTimeout(function() { self.shootTarget.isFiring = false; }, 2000);
 			if (self.shootTarget.instanceId) {
 				var target = self.engineCore.func_GetObjectFromInstanceId(self.shootTarget.instanceId);
@@ -77,7 +77,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 						self.shootTarget.point.x,
 						self.shootTarget.point.y);
 			}
-		});
+		};
 
 	} else {
 		if (!phaserRef) { console.log("ERROR: Failed to construct tank, missing phaserRef."); }
@@ -105,9 +105,52 @@ Tank.prototype.update = function() {
 	}
 }
 
-Tank.prototype.setVisible = function(visible) {
-	this.bodySegment.visible = visible;
-	this.turretSegment.visible = visible;
+Tank.prototype.setFOWVisible = function(active) {
+	
+	// Set to fog of war
+	if (active) {
+		
+		// Check if saving values
+		if (!this.gameCore.fogOfWar.isActive) {
+			
+			// Mark FoW as active
+			this.gameCore.fogOfWar.isActive = true;
+			
+			// Save original visibility;
+			this.gameCore.fogOfWar.bodyVisible = this.bodySegment.visible;
+			this.gameCore.fogOfWar.turretVisible = this.turretSegment.visible;
+			
+			// Set new visibility
+			this.bodySegment.visible = false;
+			this.turretSegment.visible = false;
+		}
+	} else {
+		this.gameCore.fogOfWar.isActive = false;
+		this.bodySegment.visible = this.gameCore.fogOfWar.bodyVisible;
+		this.turretSegment.visible = this.gameCore.fogOfWar.turretVisible;
+	}
+}
+
+Tank.prototype.isVisible = function() {
+	return this.bodySegment.visible;
+}
+
+Tank.prototype.setVisible = function(bodyVisible, turretVisible) {
+	
+	// Populate all params if some are missing
+	if (!turretVisible) { turretVisible = bodyVisible; }
+
+	// Update for fog of war
+	if (!this.gameCore.fogOfWar.isActive) {
+
+		// Save for future updates
+		this.bodySegment.visible = bodyVisible;
+		this.turretSegment.visible = turretVisible;
+	}
+
+	// Set new state
+	this.gameCore.fogOfWar.bodyVisible = bodyVisible;
+	this.gameCore.fogOfWar.turretVisible = turretVisible;
 }
 
 Tank.prototype.removeFromProduction = function() {
@@ -215,7 +258,7 @@ Tank.prototype.progressWaypoints = function() {
 	
 	// Get next waypoint to move to and save current state
 	var nextWaypoint = this.waypoints[0];
-	var currentCell = this.gameCore.cell;
+	var currentCell = new Cell(this.gameCore.cell.col, this.gameCore.cell.row);
 	var currentPoint = this.gameCore.point;
 	
 	// Calculate XY increment to target
@@ -265,10 +308,10 @@ Tank.prototype.progressWaypoints = function() {
 	var newCell = (new Point(this.left, this.top)).toCell();
 	this.gameCore.point = new Point(this.left, this.top);
 	if (newCell.col != currentCell.col || newCell.row != currentCell.row) {
+		this.gameCore.cell = this.gameCore.point.toCell();
 		if (!this.inProductionMode) {
 			this.engineCore.func_UpdateNewUnitCell(this, currentCell, newCell);
 		}
-		this.gameCore.cell = this.gameCore.point.toCell();
 	}
 	
 	// Update waypoint list by removing first item is point is hit

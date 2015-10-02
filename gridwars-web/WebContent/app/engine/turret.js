@@ -45,13 +45,9 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		this.turretGroup.add(this.topSegment);
 		
 		// Animations
-		this.charge = this.topSegment.animations.add('charge', this.gameCore.colour.CHARGE, 5, false);
-		this.cool = this.topSegment.animations.add('cool', this.gameCore.colour.COOL, 15, false);
-		this.fireAndCool = this.topSegment.animations.add('fireAndCool', this.gameCore.colour.FIREANDCOOL, 35, false);
-		
-		// Link events to methods
-		this.charge.onComplete.add(function(sprite, animation) { sprite.animations.play('fireAndCool'); });
-		this.fireAndCool.onComplete.add(function(sprite, animation) { });
+		this.charge = new CustomAnimation(this.topSegment, this.gameCore.colour.CHARGE, 5);
+		this.cool = new CustomAnimation(this.topSegment, this.gameCore.colour.COOL, 15);
+		this.fireAndCool = new CustomAnimation(this.topSegment, this.gameCore.colour.FIREANDCOOL, 35);
 		
 		// Particle creation function
 		var self = this;
@@ -72,7 +68,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		this.bulletParticle02.start(false, 50, 10); this.bulletParticle02.on = false;
 
 		// Charge onComplete function
-		this.charge.onComplete.add(function(sprite, animation) {
+		this.charge.onComplete = function(sprite) {
 			
 			// Define shoot targetXY
 			var targetXY = new Point(0, 0);
@@ -113,14 +109,17 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 			self.bullets.incUnitY = -self.bullets.speed * Math.cos((self.topSegment.angle) * (Math.PI/180));
 			
 			// Call firing animation
-			self.topSegment.animations.stop('fireAndCool', true);
+			self.fireAndCool.stop();
 			self.topSegment.animations.frame = 1;
-			sprite.animations.play('fireAndCool');
+			self.fireAndCool.play();
 			
 			// Show particle emitters
 			self.bulletParticle01.on = true;
 			self.bulletParticle02.on = true;
-		});
+		};
+		
+		// Set standard visibility
+		this.setVisible(true, true);
 		
 		// Set current mode based on build flag
 		this.setBuildingMode(inBuildingMode);
@@ -129,6 +128,51 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		if (!this.engineCore.phaserEngine) { console.log("ERROR: Failed to construct turret, missing phaserRef."); }
 	}
 	
+}
+
+Turret.prototype.setFOWVisible = function(active) {
+	
+	// Set to fog of war
+	if (active) {
+		
+		// Check if saving values
+		if (!this.gameCore.fogOfWar.isActive) {
+			
+			// Mark FoW as active
+			this.gameCore.fogOfWar.isActive = true;
+			
+			// Save original visibility;
+			this.gameCore.fogOfWar.baseVisible = this.baseSegment.visible;
+			this.gameCore.fogOfWar.topVisible = this.topSegment.visible;
+			
+			// Set new visibility
+			this.baseSegment.visible = false;
+			this.topSegment.visible = false;
+		}
+	} else {
+		this.gameCore.fogOfWar.isActive = false;
+		this.baseSegment.visible = this.gameCore.fogOfWar.baseVisible;
+		this.topSegment.visible = this.gameCore.fogOfWar.topVisible;
+	}
+}
+
+Turret.prototype.isVisible = function() {
+	return this.baseSegment.visible;
+}
+
+Turret.prototype.setVisible = function(baseVisible, topVisible) {
+
+	// Update for fog of war
+	if (!this.gameCore.fogOfWar.isActive) {
+
+		// Save for future updates
+		this.baseSegment.visible = baseVisible;
+		this.topSegment.visible = topVisible;
+	}
+
+	// Set new state
+	this.gameCore.fogOfWar.baseVisible = baseVisible;
+	this.gameCore.fogOfWar.topVisible = topVisible;
 }
 
 Turret.prototype.markDamage = function(explosionInstanceId) {
@@ -154,15 +198,11 @@ Turret.prototype.getCollisionLayers = function() {
 }
 
 Turret.prototype.setBuildingMode = function(inBuildingMode) {
-	
 	if (inBuildingMode) {
-		this.baseSegment.visible = false;
-		this.topSegment.visible = false; 
+		this.setVisible(false, false);
 	} else {
-		this.baseSegment.visible = true;
-		this.topSegment.visible = true; 		
+		this.setVisible(true, true);		
 	}
-	
 }
 
 Turret.prototype.setPosition = function(cell) {
@@ -207,7 +247,7 @@ Turret.prototype.update = function() {
 Turret.prototype.shootAtXY = function(point) {
 
 	// Halt any target fire currently set
-	this.topSegment.animations.stop('fireAndCool', true);
+	this.fireAndCool.stop();
 	this.topSegment.animations.frame = this.gameCore.colour.TOP;
 	
 	// Generate angle information
@@ -233,7 +273,7 @@ Turret.prototype.lockonAndShoot = function(targetObject) {
 	if (targetObject && this.shootTarget.instanceId != targetObject.gameCore.instanceId) {
 		
 		// Halt any target fire currently set
-		this.topSegment.animations.stop('fireAndCool', true);
+		this.fireAndCool.stop();
 		this.topSegment.animations.frame = this.gameCore.colour.TOP;
 		
 		// Save target information

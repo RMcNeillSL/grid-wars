@@ -15,6 +15,9 @@ function GameCore(identifier, cell) {
 	this.playerId = null;
 	this.colour = null;
 	
+	// FoW variables
+	this.fogOfWar = { isActive: false };
+	
 	// FLag properties (not existing in all objects)
 	this.isDefence = false;
 
