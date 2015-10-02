@@ -471,7 +471,7 @@ Engine.prototype.onMouseDown = function(pointer) {
 	}
 	
 	// Set mouse states for scrolling
-	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = true; }
+	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = false; }
 	if (pointer.middleButton.isDown) { this.mouse.middleScroll.isActive = false; }
 
 	// Check if mouse down occured over minimap
@@ -648,6 +648,10 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 		if (relativeY < this.mouse.position.y) { this.setCameraPoition(this.phaserGame.camera.x, this.phaserGame.camera.y + CONSTANTS.CAMERA_SPEED); }
 		if (relativeY > this.mouse.position.y) { this.setCameraPoition(this.phaserGame.camera.x, this.phaserGame.camera.y - CONSTANTS.CAMERA_SPEED); }
 
+	}
+
+	if (pointer.rightButton.isDown) {
+		this.mouse.rightScroll.isActive = true;
 	}
 
 	// Update pointer position
