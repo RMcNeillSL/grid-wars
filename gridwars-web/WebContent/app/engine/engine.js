@@ -602,7 +602,14 @@ Engine.prototype.onMouseUp = function(pointer) {
 	}
 	
 	// Set scroll state for right button
-	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = false; }
+	if (pointer.rightButton.isDown) {
+		if (!this.mouse.rightScroll.isActive) {
+			this.selected = [];
+			this.setGameObjectDetailsVisibility(false);
+		} else {
+			this.mouse.rightScroll.isActive = false;
+		}
+	}
 
 	// Perform checks for middle click
 	if (!clickHandled && pointer.middleButton.isDown) {
