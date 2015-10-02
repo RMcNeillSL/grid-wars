@@ -210,7 +210,15 @@ Engine.prototype.create = function() {
 	this.engineCore = {
 		phaserEngine : this.phaserGame,
 		func_RequestExplosion : function(mapGroup, explosionId, ownerId, explosionInstanceId, x, y) {
-			self.explosionManager.requestExplosion(mapGroup, explosionId, ownerId, explosionInstanceId, x, y)
+			
+			// Create explosion and record in overlay array
+			var multipleMiscOverlay = self.explosionManager.requestExplosion(mapGroup, explosionId, ownerId, explosionInstanceId, x, y);
+			
+			// Set initial visibility
+			for (var index = 0; index < multipleMiscOverlay.length; index ++) {
+				self.miscOverlays.push(multipleMiscOverlay[index]);
+				multipleMiscOverlay[index].setVisible(self.foWVisibilityMap[multipleMiscOverlay[index].centreCell.row * self.mapRender.width + multipleMiscOverlay[index].centreCell.col].isVisible == 1);
+			}
 		},
 		func_UpdateNewUnitCell : function(sender, oldCell, newCell) {
 			self.updateNewUnitCell(sender, oldCell, newCell);
@@ -1227,13 +1235,21 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 	var overlayIndex = 0;
 	while (overlayIndex < this.miscOverlays.length) {
 		
-		// Set visible state for overlay
-		var showOverlay = this.foWVisibilityMap[this.miscOverlays[overlayIndex].centreCell.row * this.mapRender.width + this.miscOverlays[overlayIndex].centreCell.col].isVisible == 1;
-		var overlayDestroyed = this.miscOverlays[overlayIndex].setVisible(showOverlay);
-		
-		// Increment or drop overlay from overlay record
-		if (overlayDestroyed) {
-			overlayIndex ++;
+		// Check overlay is defined
+		if (this.miscOverlays[overlayIndex]) {
+			
+			// Set visible state for overlay
+			var showOverlay = this.foWVisibilityMap[this.miscOverlays[overlayIndex].centreCell.row * this.mapRender.width + 
+			                                        this.miscOverlays[overlayIndex].centreCell.col                          ].isVisible == 1;
+			var overlayDestroyed = this.miscOverlays[overlayIndex].setVisible(showOverlay);
+			
+			// Increment or drop overlay from overlay record
+			if (overlayDestroyed) {
+				overlayIndex ++;
+			} else {
+				this.miscOverlays.splice(overlayIndex, 1);
+			}
+			
 		} else {
 			this.miscOverlays.splice(overlayIndex, 1);
 		}
@@ -2322,11 +2338,19 @@ Engine.prototype.processUnitDamage = function(responseData) {
 
 			// Determine if unit was destroyed
 			if (gameObject.gameCore.health == 0) {
-				this.explosionManager.requestDestruction(this.mapGroup,
+
+				// Add object to remove list
+				removeList.push(refObject.instanceId);
+				
+				// Create explosion and record in overlay array
+				var miscOverlay = this.explosionManager.requestDestruction(this.mapGroup,
 						CONSTANTS.DEBRIS_TANK, CONSTANTS.SPRITE_EXPLOSION_C,
 						gameObject.left, gameObject.top);
-				removeList.push(refObject.instanceId);
+				this.miscOverlays.push(miscOverlay);
 
+				// Set initial visibility
+				miscOverlay.setVisible(this.foWVisibilityMap[miscOverlay.centreCell.row * this.mapRender.width + miscOverlay.centreCell.col].isVisible == 1);
+				
 				if(refObject.killer == this.currentPlayer.playerId) {
 
 					this.currentPlayer.cash += Math.floor(gameObject.gameCore.cost*1.2);

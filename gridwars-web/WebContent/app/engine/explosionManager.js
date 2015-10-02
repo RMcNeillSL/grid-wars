@@ -16,6 +16,9 @@ ExplosionManager.prototype.requestDestruction = function(mapGroup, debrisId, exp
 		// Save reference to this for local calls
 		var self = this;
 
+		// Destroyed flag
+		var destroyed = false;
+
 		// Create explosion sprite
 		var localExplosion = this.phaserRef.add.sprite(x, y, explosionId, 0);
 		localExplosion.anchor.setTo(0.5, 0.5);
@@ -30,6 +33,15 @@ ExplosionManager.prototype.requestDestruction = function(mapGroup, debrisId, exp
 		
 		// Run explosion animation
 		explode.play();
+		
+		// Return function to update visibility state
+		return {
+			centreCell : (new Point(localExplosion.x, localExplosion.y)).toCell(),
+			setVisible : function(visible) { 
+					if (!destroyed) { localExplosion.visible = visible; }
+					return destroyed;
+				}
+		}
 	}
 }
 
@@ -40,6 +52,9 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, ow
 		
 		// Save reference to this for local calls
 		var self = this;
+
+		// Destroyed flag
+		var destroyed = false;
 
 		// Create impact decal sprite
 		var localImpact = this.phaserRef.add.sprite(x, y, CONSTANTS.SPRITE_IMPACT_DECALS, 0);
@@ -76,6 +91,21 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, ow
 		
 		// Run explosion animation
 		explode.play();
+
+		// Return function to update visibility state
+		return [{
+					centreCell : (new Point(localImpact.x, localImpact.y)).toCell(),
+					setVisible : function(visible) { 
+						if (!destroyed) { localImpact.visible = visible; }
+						return destroyed;
+					}
+				}, {
+					centreCell : (new Point(localExplosion.x, localExplosion.y)).toCell(),
+					setVisible : function(visible) {
+							if (!destroyed) { localExplosion.visible = visible; }
+							return destroyed;
+					}
+				}];
 	}
 }
 
