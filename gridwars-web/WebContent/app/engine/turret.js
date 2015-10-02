@@ -156,6 +156,10 @@ Turret.prototype.setFOWVisible = function(active) {
 	}
 }
 
+Turret.prototype.isVisible = function() {
+	return this.baseSegment.visible;
+}
+
 Turret.prototype.setVisible = function(baseVisible, topVisible) {
 
 	// Update for fog of war

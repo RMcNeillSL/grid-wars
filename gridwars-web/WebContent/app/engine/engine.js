@@ -1665,28 +1665,23 @@ Engine.prototype.getItemAtPoint = function(point, playerOwned, enemyOwned) {
 	var itemUnderMouse = null;
 	var tempBounds = null;
 	var checkBounds = null;
-
-	// Search for unit at XY
-	for (var unitIndex = 0; unitIndex < this.units.length; unitIndex++) {
-		checkBounds = this.units[unitIndex].getBounds();
-		if (checkBounds.left < point.x && checkBounds.right > point.x
-				&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
-				( (this.units[unitIndex].gameCore.playerId == this.currentPlayer.playerId && playerOwned) ||
-				  (this.units[unitIndex].gameCore.playerId != this.currentPlayer.playerId && enemyOwned) ) ) {
-			itemUnderMouse = this.units[unitIndex];
-		}
-	}
-
-	// Search for building at XY
-	if (itemUnderMouse == null) {
-		for (var buildingIndex = 0; buildingIndex < this.buildings.length; buildingIndex++) {
-			checkBounds = this.buildings[buildingIndex].getBounds();
-			if (checkBounds.left < point.x && checkBounds.right > point.x
-					&& checkBounds.top < point.y && checkBounds.bottom > point.y &&
-					( (this.buildings[buildingIndex].gameCore.playerId == this.currentPlayer.playerId && playerOwned) ||
-					  (this.buildings[buildingIndex].gameCore.playerId != this.currentPlayer.playerId && enemyOwned) ) ) {
-				itemUnderMouse = this.buildings[buildingIndex];
-			}
+	var checkCell = null;
+	
+	// Search for game object at XY
+	var gameObjects = this.buildings.concat(this.units);
+	for (var index = 0; index < gameObjects.length; index ++) {
+		
+		// Get check values of item
+		checkBounds = gameObjects[index].getBounds();
+		
+		// Compare bounds and make sure cell is visible (FoW)
+		if (gameObjects[index].isVisible() &&
+				checkBounds.left < point.x && checkBounds.right > point.x &&
+				checkBounds.top < point.y && checkBounds.bottom > point.y &&
+				( (gameObjects[index].gameCore.playerId == this.currentPlayer.playerId && playerOwned) ||
+				  (gameObjects[index].gameCore.playerId != this.currentPlayer.playerId && enemyOwned) ) ) {
+			itemUnderMouse = gameObjects[index];
+			break;
 		}
 	}
 

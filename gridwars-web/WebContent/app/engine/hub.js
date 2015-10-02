@@ -99,6 +99,10 @@ Hub.prototype.setFOWVisible = function(active) {
 	}
 }
 
+Hub.prototype.isVisible = function() {
+	return this.hubSegment.visible;
+}
+
 Hub.prototype.setVisible = function(hubVisible, shadowVisible) {
 
 	// Update for fog of war

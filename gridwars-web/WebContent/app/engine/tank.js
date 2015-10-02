@@ -131,6 +131,10 @@ Tank.prototype.setFOWVisible = function(active) {
 	}
 }
 
+Tank.prototype.isVisible = function() {
+	return this.bodySegment.visible;
+}
+
 Tank.prototype.setVisible = function(bodyVisible, turretVisible) {
 	
 	// Populate all params if some are missing
