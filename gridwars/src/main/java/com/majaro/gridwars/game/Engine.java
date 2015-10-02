@@ -843,7 +843,7 @@ public class Engine extends Thread {
 		
 		// Clean up all units which have now been destroyed
 		for (DynGameUnit targetUnit : sourceUnits) {
-			if (targetUnit.getHealth() == 0) {
+			if (targetUnit.getHealth() <= 0) {
 
 				// Record all turrets attacking destroyed object and clear out any attacking pairs 
 				attackingDefences = this.getAttackSources(targetUnit.getInstanceId());
@@ -862,17 +862,20 @@ public class Engine extends Thread {
 				}
 				
 				// Destroy unit and give cash to the destroyer
+				int awardedMoney = (int)Math.floor(targetUnit.getCost() * 1.2);
+				killer.addPlayerCash(awardedMoney);
 				this.destroyGameObject(targetUnit);
-				killer.addPlayerCash((int)Math.floor(targetUnit.getCost() * 1.2));
 			}
 		}
 
 		// Clean up all units which have now been destroyed
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
-			if (targetBuilding.getHealth() == 0) {
+			if (targetBuilding.getHealth() <= 0) {
 				this.removeFromAttackPairs(targetBuilding.getInstanceId());
+				int awardedMoney = (int)Math.floor(targetBuilding.getCost() * 1.2);
+				killer.addPlayerCash(awardedMoney);
+				System.out.println("A TURRET WAS KILLED BY " + killer.getPlayerName() + " THEY WERE AWARDED $" + awardedMoney);
 				this.destroyGameObject(targetBuilding);
-				killer.addPlayerCash((int)Math.floor(targetBuilding.getCost() * 1.2));
 			}
 		}
 		
