@@ -480,14 +480,6 @@ public class Engine extends Thread {
 				validConstruction = false;
 				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.DYNAMIC_MAP_OBSTRUCTION);
 			}
-
-			// Check user has appropriate funds
-			if (validConstruction && !player.playerHasCash(sourceBuildings[0])) {
-				validConstruction = false;
-				newBuildingResponse = new GameplayResponse(E_GameplayResponseCode.INSUFFICIENT_FUNDS);
-				newBuildingResponse.addTarget(player.getPlayerName());
-				newBuildingResponse.addSource(Integer.toString(player.getPlayerCash()));
-			}
 			
 			// Make sure building was purchases by player
 			
@@ -868,7 +860,7 @@ public class Engine extends Thread {
 			}
 		}
 
-		// Clean up all units which have now been destroyed
+		// Clean up all buildings which have now been destroyed
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
 			if (targetBuilding.getHealth() <= 0) {
 				this.removeFromAttackPairs(targetBuilding.getInstanceId());
