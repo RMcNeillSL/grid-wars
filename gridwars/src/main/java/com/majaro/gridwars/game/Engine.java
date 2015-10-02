@@ -862,8 +862,9 @@ public class Engine extends Thread {
 				}
 				
 				// Destroy unit and give cash to the destroyer
+				int awardedMoney = (int)Math.floor(targetUnit.getCost() * 1.2);
+				killer.addPlayerCash(awardedMoney);
 				this.destroyGameObject(targetUnit);
-				killer.addPlayerCash((int)Math.floor(targetUnit.getCost() * 1.2));
 			}
 		}
 
@@ -871,8 +872,10 @@ public class Engine extends Thread {
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
 			if (targetBuilding.getHealth() <= 0) {
 				this.removeFromAttackPairs(targetBuilding.getInstanceId());
+				int awardedMoney = (int)Math.floor(targetBuilding.getCost() * 1.2);
+				killer.addPlayerCash(awardedMoney);
+				System.out.println("A TURRET WAS KILLED BY " + killer.getPlayerName() + " THEY WERE AWARDED $" + awardedMoney);
 				this.destroyGameObject(targetBuilding);
-				killer.addPlayerCash((int)Math.floor(targetBuilding.getCost() * 1.2));
 			}
 		}
 		
