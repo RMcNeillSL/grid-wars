@@ -164,8 +164,9 @@ Engine.prototype.create = function() {
 	this.buildingGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
 	this.fogOfWarGroup = this.phaserGame.add.group();
-	this.hudGroup = this.phaserGame.add.group();
 	this.highestGroup = this.phaserGame.add.group();
+	this.hudGroup = this.phaserGame.add.group();
+	this.cursorGroup = this.phaserGame.add.group();
 	
 	// Set map dimensions
 	this.phaserGame.world.setBounds(0, 0, this.gameplayConfig.width*CONSTANTS.TILE_WIDTH, this.gameplayConfig.height*CONSTANTS.TILE_HEIGHT);
@@ -260,7 +261,7 @@ Engine.prototype.create = function() {
 	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RU, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RU, 30, true);
 	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RD, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RD, 30, true);
 	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
-	this.highestGroup.add(this.pointer.sprite);
+	this.cursorGroup.add(this.pointer.sprite);
 
 	// Position camera over spawn point
 	for (var index = 0; index < this.players.length; index++) {
@@ -605,7 +606,14 @@ Engine.prototype.onMouseUp = function(pointer) {
 	}
 	
 	// Set scroll state for right button
-	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = false; }
+	if (pointer.rightButton.isDown) {
+		if (!this.mouse.rightScroll.isActive) {
+			this.selected = [];
+			this.setGameObjectDetailsVisibility(false);
+		} else {
+			this.mouse.rightScroll.isActive = false;
+		}
+	}
 
 	// Perform checks for middle click
 	if (!clickHandled && pointer.middleButton.isDown) {
@@ -1538,18 +1546,13 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectDetailsMenu.z = 90;
 	this.gameObjectDetailsMenu.visible = false;
 	
-	// TODO: Update minimap sprites so that ID = mapId to ease load processing
+	// Construct minimap sprite
 	var miniMapId = null;
 	if (this.gameplayConfig.mapId == "1") { miniMapId = CONSTANTS.MINIMAP_HUNTING_GROUND; }
 	if (this.gameplayConfig.mapId == "2") { miniMapId = CONSTANTS.MINIMAP_MAJARO; }
 	this.minimap = createHUDSprite(CONSTANTS.HUD.MAP_CONTROL.MINIMAP, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, miniMapId, 91, true);
-	this.minimap.events.onInputOver.add(function() {
-		if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = true; }
-	});
-	
-	this.minimap.events.onInputOut.add(function() {
-		if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = false; }
-	});
+	this.minimap.events.onInputOver.add(function() { if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = true; } });
+	this.minimap.events.onInputOut.add(function() { if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = false; } });
 	
 	// Create map control HUD sprites/text/buttons
 	this.moneyLabel 			= createMapHUDText(CONSTANTS.HUD.MAP_CONTROL.CASH, this.currentPlayer.cash, 92, true);
@@ -1594,27 +1597,42 @@ Engine.prototype.createGameScreen = function() {
 }
 
 Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) {
+	
+	// 
 	if(selectedGameObject != null) {
+		
+		// 
 		this.gameObjectDetailsText.setText(selectedGameObject.gameCore.identifier);
 		this.gameObjectDetailsIcon.loadTexture(selectedGameObject.gameCore.colour.ICON);
 		var healthPercentage = Math.floor((selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
 		
+		// 
 		if(healthPercentage > 0) {
 			this.gameObjectHealthText.setText(healthPercentage + "%");
 		}
 	}
 	
+	// 
 	this.displayedGameObject = selectedGameObject;
 	this.setGameObjectDetailsVisibility(selectedGameObject != null);
+
+	// Set functionality for buttons
+	if (selectedGameObject.gameCore.identifier == "TURRET") { this.gameObjectSell.visible = true; this.gameObjectStop.visible = false; }
+	if (selectedGameObject.gameCore.identifier == "HUB") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
+	if (selectedGameObject.gameCore.identifier == "TANK") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
 }
 
 Engine.prototype.setGameObjectDetailsVisibility = function(show) {
+	
+	// Set core HUD sprites to show
 	this.gameObjectDetailsText.visible = show;
 	this.gameObjectDetailsMenu.visible = show;
 	this.gameObjectDetailsIcon.visible = show;
 	this.gameObjectHealthText.visible = show;
-	this.gameObjectSell.visible = show;
-	this.gameObjectStop.visible = show;
+	
+	// Set unit buttons to show
+	this.gameObjectSell.visible = false;
+	this.gameObjectStop.visible = false;
 }
 
 Engine.prototype.setMinimapVisibility = function(show) {
@@ -1876,8 +1894,8 @@ Engine.prototype.explosionCollisionCheck = function() {
 
 // REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
 Engine.prototype.isSquareWithinBaseRange = function(col, row) {
-	return (row <= (this.spawnPoint.row+5) && row >= (this.spawnPoint.row-2)
-			&& col <= (this.spawnPoint.col+5) && col >= (this.spawnPoint.col-2));
+	return (row <= (this.spawnPoint.row+5) && row >= (this.spawnPoint.row-3)
+			&& col <= (this.spawnPoint.col+5) && col >= (this.spawnPoint.col-3));
 }
 
 Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
@@ -1886,8 +1904,8 @@ Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
 	var withinRange = [];
 	
 	// Search for all cells in hub range
-	for (var rowIndex = this.spawnPoint.row-2; rowIndex < this.spawnPoint.row+5; rowIndex++) {
-		for (var colIndex = this.spawnPoint.col-2; colIndex < this.spawnPoint.col+5; colIndex++) {
+	for (var rowIndex = this.spawnPoint.row-3; rowIndex <= this.spawnPoint.row+5; rowIndex++) {
+		for (var colIndex = this.spawnPoint.col-3; colIndex <= this.spawnPoint.col+5; colIndex++) {
 			if (this.isSquareEmpty(colIndex, rowIndex)) {
 				withinRange.push(new Cell(colIndex, rowIndex));
 			}
@@ -2363,11 +2381,12 @@ Engine.prototype.processUnitDamage = function(responseData) {
 					this.gameObjectHealthText.setText(Math.floor((refObject.newHealth / gameObject.gameCore.maxHealth)*100) + "%");
 				} else if (gameObject.gameCore.health <= 0 && this.displayedGameObject.gameCore.instanceId == gameObject.gameCore.instanceId) {
 					this.setGameObjectDetailsVisibility(false);
+					this.updateSelectedGameObjectDetails(null);
 				}
 			}
 
 			// Determine if unit was destroyed
-			if (gameObject.gameCore.health == 0) {
+			if (gameObject.gameCore.health <= 0) {
 
 				// Add object to remove list
 				removeList.push(refObject.instanceId);
@@ -2433,6 +2452,8 @@ Engine.prototype.processDestroyObject = function(responseData) {
 		// Save Id to destroy
 		destroyId = responseData.source[index];
 		gameObject = this.getObjectFromInstanceId(destroyId);
+		this.updateSelectedGameObjectDetails(null);
+		this.setGameObjectDetailsVisibility(false);
 
 		// Add object to remove list
 		removeList.push(destroyId);

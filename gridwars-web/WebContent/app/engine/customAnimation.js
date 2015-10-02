@@ -43,11 +43,11 @@ CustomAnimation.prototype.play = function() {
 				if (self.currentFrameIndex == self.frames.length && self.onComplete) {
 					self.onComplete(self.sender);
 				}
-				self.currentFrameIndex = 0;
+				self.currentFrameIndex = this.frames[0];
 			}
 		} else {
 			self.sender.frame = 0;
-			self.currentFrameIndex = 0;
+			self.currentFrameIndex = this.frames[0];
 			clearTimeout(self.animationTimer);
 		}
 	}
@@ -62,6 +62,6 @@ CustomAnimation.prototype.play = function() {
 CustomAnimation.prototype.stop = function() {
 	this.playing = false;
 	this.sender.frame = 0;
-	this.currentFrameIndex = 0;
+	this.currentFrameIndex = this.frames[0];
 	clearTimeout(this.animationTimer);
 }
