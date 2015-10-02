@@ -123,7 +123,7 @@ CONSTANTS = {
 
 	// Core properties
 	GAME_NAME 							: "gridwars-engine",
-	GAME_SCREEN_WIDTH					: 1000,
+	GAME_SCREEN_WIDTH					: 800,
 	GAME_SCREEN_HEIGHT					: 800,
 	TILE_WIDTH 							: 100,
 	TILE_HEIGHT 						: 100,

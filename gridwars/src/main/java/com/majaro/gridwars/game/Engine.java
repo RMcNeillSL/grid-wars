@@ -8,6 +8,7 @@ import java.util.List;
 import com.majaro.gridwars.apiobjects.GameplayRequest;
 import com.majaro.gridwars.apiobjects.GameplayResponse;
 import com.majaro.gridwars.core.LobbyUser;
+import com.majaro.gridwars.game.AttackPairList.AttackPair;
 import com.majaro.gridwars.game.Const.E_GameplayResponseCode;
 import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameDefence;
@@ -185,22 +186,6 @@ public class Engine extends Thread {
 		
 	}
 
-	// Attack pair objects
-	private class AttackPair {
-		private String sourceInstanceId = null;
-		private String targetInstanceId = null;
-		public AttackPair(String sourceInstanceId, String targetInstanceId) {
-			this.sourceInstanceId = sourceInstanceId;
-			this.targetInstanceId = targetInstanceId;
-		}
-		public boolean containsInstanceId(String checkInstanceId) {
-			return (checkInstanceId.equals(this.sourceInstanceId) ||
-					checkInstanceId.equals(this.targetInstanceId));
-		}
-		public String getSourceInstanceId() { return this.sourceInstanceId; }
-		public String getTargetInstanceId() { return this.targetInstanceId; }
-	}
-	
 	// User specified waypoints
 	
 	
@@ -217,7 +202,8 @@ public class Engine extends Thread {
 	// In-game object lists
 	private ArrayList<DynGameBuilding> buildings;
 	private ArrayList<DynGameUnit> units;
-	private ArrayList<AttackPair> attackPairs;
+	private AttackPairList pursueAttackPairs;
+	private AttackPairList holdGroundAttackPairs;
 	
 	// Path finding object
 	private AStarPathFinder aStarPathFinder;
@@ -236,7 +222,8 @@ public class Engine extends Thread {
 		// Initialise in-game object lists
 		this.buildings = new ArrayList<DynGameBuilding>();
 		this.units = new ArrayList<DynGameUnit>();
-		this.attackPairs = new ArrayList<AttackPair>();
+		this.pursueAttackPairs = new AttackPairList(this.buildings, this.units);
+		this.holdGroundAttackPairs = new AttackPairList(this.buildings, this.units);
 
 		// Construct map objects
 		this.staticMap = gameMap;
@@ -599,9 +586,6 @@ public class Engine extends Thread {
 				if (targetBuilding != null) { attackResponse.addTarget(targetBuilding.getInstanceId());		targetCoord = targetBuilding.getCoordinate();	targetId = targetBuilding.getInstanceId(); }
 				responseList.add(attackResponse);
 				
-				// Add new items recorded attack pair array
-				if (sourceCoord != null) { this.attackPairs.add(new AttackPair(sourceId, targetId)); }
-				
 				// Check if movement to bring target in range is needed
 				if (sourceUnit != null && sourceCoord.distanceTo(targetCoord) > sourceUnit.getRange() / Const.cellSize) {
 					ArrayList<Coordinate> path = this.aStarPathFinder.calculatePath(sourceCoord, targetCoord, sourceUnit.getRange() / Const.cellSize);
@@ -614,7 +598,9 @@ public class Engine extends Thread {
 						responseList.add(waypointResponse);
 					}
 				}
-				
+
+				// Add new items to attack pair array
+				if (sourceCoord != null) { this.pursueAttackPairs.add(sourceId, targetId); }
 			}
 		}
 
@@ -640,6 +626,8 @@ public class Engine extends Thread {
 			// Save references
 			unitRef = sourceUnits[index];
 			coordRef = coordinates[index];
+			
+			// Remove any currently listed attacks for the unit
 			
 			// Run pathfinding search
 			newUnitPath = this.aStarPathFinder.calculatePath(unitRef.getCoordinate(), coordRef);
@@ -709,8 +697,8 @@ public class Engine extends Thread {
 			newCoordRef = newCoordinates[index];
 			
 			// Determine units or defences currently locked onto moved unit
-			attackingUnits = this.getUnitsAttackingInstance(sourceUnits[index].getInstanceId());
-			attackingDefences = this.getDefencesAttackingInstance(sourceUnits[index].getInstanceId());
+			attackingUnits = this.pursueAttackPairs.getUnitsAttackingInstance(sourceUnits[index].getInstanceId());
+			attackingDefences = this.pursueAttackPairs.getDefencesAttackingInstance(sourceUnits[index].getInstanceId());
 			
 			// Update cell of unit
 			unitRef.updateCoordinate(newCoordRef);
@@ -727,7 +715,7 @@ public class Engine extends Thread {
 					if (clearAttackResponse == null) { clearAttackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT); }
 					clearAttackResponse.addSource(instanceId);
 					clearAttackResponse.addTarget("");
-					this.removeAttackFromAttackPairs(instanceId);
+					this.pursueAttackPairs.removeAttacker(instanceId);
 				}
 			}
 			
@@ -838,8 +826,8 @@ public class Engine extends Thread {
 			if (targetUnit.getHealth() <= 0) {
 
 				// Record all turrets attacking destroyed object and clear out any attacking pairs 
-				attackingDefences = this.getAttackSources(targetUnit.getInstanceId());
-				this.removeFromAttackPairs(targetUnit.getInstanceId());
+				attackingDefences = this.pursueAttackPairs.getAttackSources(targetUnit.getInstanceId());
+				this.pursueAttackPairs.removeEither(targetUnit.getInstanceId());
 				
 				// Generate new targets
 				for (String defenceInstanceId : attackingDefences) {
@@ -863,7 +851,7 @@ public class Engine extends Thread {
 		// Clean up all buildings which have now been destroyed
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
 			if (targetBuilding.getHealth() <= 0) {
-				this.removeFromAttackPairs(targetBuilding.getInstanceId());
+				this.pursueAttackPairs.removeEither(targetBuilding.getInstanceId());
 				int awardedMoney = (int)Math.floor(targetBuilding.getCost() * 1.2);
 				killer.addPlayerCash(awardedMoney);
 				System.out.println("A TURRET WAS KILLED BY " + killer.getPlayerName() + " THEY WERE AWARDED $" + awardedMoney);
@@ -1049,7 +1037,7 @@ public class Engine extends Thread {
 	
 	
 	// Utility methods
-	
+
 	private String[] getDefencesRangeOverUnit(DynGameUnit unit) {
 		
 		// Define working variables
@@ -1060,7 +1048,7 @@ public class Engine extends Thread {
 		for (int buildingIndex = 0; buildingIndex < this.buildings.size(); buildingIndex ++) {
 			if (this.buildings.get(buildingIndex) instanceof DynGameDefence) {
 				defence = (DynGameDefence)this.buildings.get(buildingIndex);
-				if (!this.isAttacking(defence.getInstanceId()) &&
+				if (!this.pursueAttackPairs.isAttacking(defence.getInstanceId()) &&
 						!defence.getOwner().getPlayerName().equals(unit.getOwner().getPlayerName()) &&
 						unit.getCoordinate().distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize ) {
 					buildingsToAttack.add(defence.getInstanceId());
@@ -1081,87 +1069,6 @@ public class Engine extends Thread {
 			}
 		}		
 		return attackUnits.toArray(new String[attackUnits.size()]);
-	}
-	
-	private String[] getAttackSources(String targetInstanceId) {
-		ArrayList<String> sources = new ArrayList<String>();
-		for (AttackPair attackPair : this.attackPairs) {
-			if (attackPair.getTargetInstanceId().equals(targetInstanceId)) {
-				sources.add(attackPair.getSourceInstanceId());
-			}
-		}
-		return sources.toArray(new String[sources.size()]);
-	}
-	
-	private boolean isAttacking(String instanceId) {
-		for (AttackPair attackPair : this.attackPairs) {
-			if (attackPair.getSourceInstanceId().equals(instanceId)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private boolean isAttackingPair(String sourceInstanceId, String targetInstanceId) {
-		for (AttackPair attackPair : this.attackPairs) {
-			if (attackPair.getSourceInstanceId().equals(sourceInstanceId) &&
-					attackPair.getTargetInstanceId().equals(targetInstanceId)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	private DynGameUnit[] getUnitsAttackingInstance(String instanceId) {
-		ArrayList<DynGameUnit> attackingUnits = new ArrayList<DynGameUnit>();
-		DynGameUnit attackingUnit = null;
-		for (int index = 0; index < this.attackPairs.size(); index ++) {
-			if (this.attackPairs.get(index).targetInstanceId.equals(instanceId)) {
-				attackingUnit = this.getGameUnitFromInstanceId(this.attackPairs.get(index).sourceInstanceId);
-				if (attackingUnit != null) {
-					attackingUnits.add(attackingUnit);
-				}
-			}
-		}
-		return attackingUnits.toArray(new DynGameUnit[attackingUnits.size()]);
-	}
-	
-	private DynGameDefence[] getDefencesAttackingInstance(String instanceId) {
-		ArrayList<DynGameDefence> attackingDefences = new ArrayList<DynGameDefence>();
-		DynGameDefence attackingDefence = null;
-		for (int index = 0; index < this.attackPairs.size(); index ++) {
-			if (this.attackPairs.get(index).targetInstanceId.equals(instanceId)) {
-				attackingDefence = this.getGameDefenceFromInstanceId(this.attackPairs.get(index).sourceInstanceId);
-				if (attackingDefence != null) {
-					attackingDefences.add(attackingDefence);
-				}
-			}
-		}
-		return attackingDefences.toArray(new DynGameDefence[attackingDefences.size()]);
-	}
-	
-	private void removeFromAttackPairs(String instanceId) {
-		ArrayList<AttackPair> removeList = new ArrayList<AttackPair>();
-		for (AttackPair attackPair : this.attackPairs) {
-			if (attackPair.containsInstanceId(instanceId)) {
-				removeList.add(attackPair);
-			}
-		}
-		for (AttackPair removeInstanceId : removeList) {
-			this.attackPairs.remove(removeInstanceId);
-		}
-	}
-	
-	private void removeAttackFromAttackPairs(String instanceId) {
-		ArrayList<AttackPair> removeList = new ArrayList<AttackPair>();
-		for (int index = 0; index < this.attackPairs.size(); index ++) {
-			if (this.attackPairs.get(index).getSourceInstanceId().equals(instanceId)) {
-				removeList.add(this.attackPairs.get(index));
-			}
-		}
-		for (int index = 0; index < removeList.size(); index ++) {
-			this.attackPairs.remove(removeList.get(index));
-		}
 	}
 	
 	private DynGameBuilding getPlayerDeployHub(Player player) {
