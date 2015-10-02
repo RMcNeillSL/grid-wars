@@ -1588,7 +1588,7 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectHintSell.fixedToCamera = true;
 	this.gameObjectHintSell.z = 92;
 	this.gameObjectHintSell.visible = false;
-	this.purchaseDetailsBackground = this.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 260, this.mapHUD.top + this.mapHUD.height + 5, CONSTANTS.DETAILS_DIALOG);
+	this.purchaseDetailsBackground = this.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 260, this.mapHUD.top + this.mapHUD.height, CONSTANTS.DETAILS_DIALOG);
 	this.purchaseDetailsBackground.width = 262;
 	this.purchaseDetailsBackground.height = 116;
 	this.purchaseDetailsBackground.fixedToCamera = true;
@@ -1599,7 +1599,7 @@ Engine.prototype.createGameScreen = function() {
 	for (var index = 0; index < 4; index ++) {
 		var newLabel = this.phaserGame.add.text(
 				CONSTANTS.GAME_SCREEN_WIDTH - 240,
-				this.mapHUD.top + this.mapHUD.height + 21 + index * 20,
+				this.mapHUD.top + this.mapHUD.height + 16 + index * 20,
 				"",
 				{	font: "bold 12px Consolas",
 					fill: "#fff", 
