@@ -843,7 +843,7 @@ public class Engine extends Thread {
 		
 		// Clean up all units which have now been destroyed
 		for (DynGameUnit targetUnit : sourceUnits) {
-			if (targetUnit.getHealth() == 0) {
+			if (targetUnit.getHealth() <= 0) {
 
 				// Record all turrets attacking destroyed object and clear out any attacking pairs 
 				attackingDefences = this.getAttackSources(targetUnit.getInstanceId());
@@ -867,9 +867,9 @@ public class Engine extends Thread {
 			}
 		}
 
-		// Clean up all units which have now been destroyed
+		// Clean up all buildings which have now been destroyed
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
-			if (targetBuilding.getHealth() == 0) {
+			if (targetBuilding.getHealth() <= 0) {
 				this.removeFromAttackPairs(targetBuilding.getInstanceId());
 				this.destroyGameObject(targetBuilding);
 				killer.addPlayerCash((int)Math.floor(targetBuilding.getCost() * 1.2));
