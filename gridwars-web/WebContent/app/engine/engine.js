@@ -508,7 +508,6 @@ Engine.prototype.onMouseUp = function(pointer) {
 		
 		// Check if clicking on a new location on the map first
 		if (this.isPointOverMinimap(point)) {
-
 			// Jump to cell at point
 			this.moveToMinimapClick(new Point(point.x - this.minimap.left, point.y - this.minimap.top));
 			
@@ -975,6 +974,9 @@ Engine.prototype.processMouseFormUpdates = function() {
 	
 	// Get ctrl state
 	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
+	
+	// Display normal cursor if the mouse if over a HUD button
+	if (this.hud.mouseOverHudButton) { updatePointerForm(CONSTANTS.CURSOR_NORMAL); return; }		// ROB
 	
 	// Process selection for nothing
 	if (nothingSelected) {
