@@ -203,14 +203,14 @@ public final class Const {
 	// Buildings in game
 	public static final GameBuilding[] BUILDINGS = {
 			//					Name			Health		Cost		Tech Level				Build Time		Sight Range		Power		Width		Height		Range		Damage
-			new GameBuilding	("HUB", 		2000, 		500, 		E_TechLevel.TECH_01, 	3000, 			1100,			2, 			3, 			3),
-			new GameDefence		("TURRET", 		500, 		500, 		E_TechLevel.TECH_01, 	10000, 			700,			2, 			1, 			1, 			400, 		50)
+			new GameBuilding	("HUB", 		2000, 		5000, 		E_TechLevel.TECH_01, 	3000, 			1100,			2, 			3, 			3),
+			new GameDefence		("TURRET", 		500, 		1200, 		E_TechLevel.TECH_01, 	10000, 			700,			2, 			1, 			1, 			400, 		50)
 		};
 
 	// Units in game
 	public static final GameUnit[] UNITS = {
 			//					Name			Health		Cost		Tech Level				Build Time		Sight Range		Range		Speed		Damage
-			new GameUnit		("TANK", 		300, 		400, 		E_TechLevel.TECH_01, 	5000, 			700,			300, 		2, 			40)
+			new GameUnit		("TANK", 		300, 		700, 		E_TechLevel.TECH_01, 	5000, 			700,			300, 		2, 			40)
 		};
 	
 	

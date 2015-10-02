@@ -139,6 +139,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, 				CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, 		CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
 	this.phaserGame.load.image(CONSTANTS.HINT_SELL, 					CONSTANTS.ROOT_SPRITES_LOC + 'hint_sell.png');
+	this.phaserGame.load.image(CONSTANTS.DETAILS_DIALOG, 				CONSTANTS.ROOT_SPRITES_LOC + 'details_dialog.png');
 	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, 		CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
 	this.phaserGame.load.spritesheet(CONSTANTS.UNIT_DETAILS_BUTTONS, 	CONSTANTS.ROOT_SPRITES_LOC + 'unit_details_buttons.png', 36, 38, 6);
 
@@ -1398,6 +1399,27 @@ Engine.prototype.createGameScreen = function() {
 			
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.SELECTED; }
+			
+			// Show purchase details
+			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.DEFENCE) {
+				self.purchaseDetailsText[0].setText("Plasma Cannon - $1200");
+				self.purchaseDetailsText[1].setText("");
+				self.purchaseDetailsText[2].setText("Health: 500hp");
+				self.purchaseDetailsText[3].setText("Damage: 50 per plasma ball");
+			}
+			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.UNIT) {
+				self.purchaseDetailsText[0].setText("Rhino Tank - $700");
+				self.purchaseDetailsText[1].setText("");
+				self.purchaseDetailsText[2].setText("Health: 300hp");
+				self.purchaseDetailsText[3].setText("Damage: 40 per shell");
+			}
+			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.DEFENCE ||
+					spriteInfo == CONSTANTS.HUD.MAP_CONTROL.UNIT) {
+				self.purchaseDetailsBackground.visible = true;
+				for (var index = 0; index < self.purchaseDetailsText.length; index ++) {
+					self.purchaseDetailsText[index].visible = true;
+				}
+			}
 		});
 		newButton.events.onInputOut.add(function() {
 			
@@ -1408,6 +1430,15 @@ Engine.prototype.createGameScreen = function() {
 			
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.UNSELECTED; }
+			
+			// Hide purchase details
+			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.DEFENCE ||
+					spriteInfo == CONSTANTS.HUD.MAP_CONTROL.UNIT) {
+				self.purchaseDetailsBackground.visible = false;
+				for (var index = 0; index < self.purchaseDetailsText.length; index ++) {
+					self.purchaseDetailsText[index].visible = false;
+				}
+			}
 		});
 		newButton.events.onInputUp.add(function() {
 			
@@ -1557,6 +1588,30 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectHintSell.fixedToCamera = true;
 	this.gameObjectHintSell.z = 92;
 	this.gameObjectHintSell.visible = false;
+	this.purchaseDetailsBackground = this.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 260, this.mapHUD.top + this.mapHUD.height + 5, CONSTANTS.DETAILS_DIALOG);
+	this.purchaseDetailsBackground.width = 262;
+	this.purchaseDetailsBackground.height = 116;
+	this.purchaseDetailsBackground.fixedToCamera = true;
+	this.purchaseDetailsBackground.z = 90;
+	this.purchaseDetailsBackground.visible = false;
+	
+	this.purchaseDetailsText = [];
+	for (var index = 0; index < 4; index ++) {
+		var newLabel = this.phaserGame.add.text(
+				CONSTANTS.GAME_SCREEN_WIDTH - 240,
+				this.mapHUD.top + this.mapHUD.height + 21 + index * 20,
+				"",
+				{	font: "bold 12px Consolas",
+					fill: "#fff", 
+					boundsAlignH: "left",
+					boundsAlignV: "middle"
+				});
+		newLabel.setTextBounds(0, 0, 200, 20);
+		newLabel.z = 92;
+		newLabel.fixedToCamera = true;
+		newLabel.visible = false;
+		this.purchaseDetailsText.push(newLabel);
+	}
 	
 	// Create map control HUD sprites/text/buttons
 	this.moneyLabel 			= createMapHUDText(CONSTANTS.HUD.MAP_CONTROL.CASH, this.currentPlayer.cash, 92, true);
@@ -1606,16 +1661,16 @@ Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) 
 		if(healthPercentage > 0) {
 			this.gameObjectHealthText.setText(healthPercentage + "%");
 		}
+
+		// Set functionality for buttons
+		if (selectedGameObject.gameCore.identifier == "TURRET") { this.gameObjectSell.visible = true; this.gameObjectStop.visible = false; }
+		if (selectedGameObject.gameCore.identifier == "HUB") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
+		if (selectedGameObject.gameCore.identifier == "TANK") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
 	}
 	
 	// 
 	this.displayedGameObject = selectedGameObject;
 	this.setGameObjectDetailsVisibility(selectedGameObject != null);
-
-	// Set functionality for buttons
-	if (selectedGameObject.gameCore.identifier == "TURRET") { this.gameObjectSell.visible = true; this.gameObjectStop.visible = false; }
-	if (selectedGameObject.gameCore.identifier == "HUB") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
-	if (selectedGameObject.gameCore.identifier == "TANK") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
 }
 
 Engine.prototype.setGameObjectDetailsVisibility = function(show) {

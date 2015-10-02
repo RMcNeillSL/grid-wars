@@ -270,6 +270,7 @@ CONSTANTS = {
 	
 	// Hud last minute sprites
 	HINT_SELL					: "hint_sell",
+	DETAILS_DIALOG				: "details_dialog",
 
 	// Heads Up Display sprites
 	HUD : { 
