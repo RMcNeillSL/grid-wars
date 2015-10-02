@@ -166,6 +166,7 @@ Engine.prototype.create = function() {
 	this.fogOfWarGroup = this.phaserGame.add.group();
 	this.highestGroup = this.phaserGame.add.group();
 	this.hudGroup = this.phaserGame.add.group();
+	this.cursorGroup = this.phaserGame.add.group();
 	
 	// Set map dimensions
 	this.phaserGame.world.setBounds(0, 0, this.gameplayConfig.width*CONSTANTS.TILE_WIDTH, this.gameplayConfig.height*CONSTANTS.TILE_HEIGHT);
@@ -260,7 +261,7 @@ Engine.prototype.create = function() {
 	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RU, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RU, 30, true);
 	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RD, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RD, 30, true);
 	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
-	this.highestGroup.add(this.pointer.sprite);
+	this.cursorGroup.add(this.pointer.sprite);
 
 	// Position camera over spawn point
 	for (var index = 0; index < this.players.length; index++) {
