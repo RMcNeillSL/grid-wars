@@ -2,6 +2,14 @@
 
 function CustomAnimation(sender, frames, fps) {
 	
+	// Construct frames if none were passed
+	if (frames == null) {
+		frames = [];
+		for (var index = 0; index < sender.animations.frameTotal; index ++) {
+			frames.push(index);
+		}
+	}
+	
 	// Save passed variables
 	this.sender = sender;
 	this.frames = frames;

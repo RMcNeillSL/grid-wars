@@ -293,6 +293,9 @@ MapRenderer.prototype.placeTankTrack = function(mapGroup, sender, point, angle) 
 
 		// Save reference to this for local calls
 		var self = this;
+		
+		// Destroyed flag
+		var destroyed = false;
 
 		// Create tank track sprite
 		var tankTracks = this.phaserRef.add.sprite(point.x, point.y, CONSTANTS.SPRITE_TANK_TRACKS, 0);
@@ -302,14 +305,24 @@ MapRenderer.prototype.placeTankTrack = function(mapGroup, sender, point, angle) 
 		mapGroup.add(tankTracks);
 		
 		// Set animation completed event
-		var fadeOut = tankTracks.animations.add('localTankTracks');
-		fadeOut.onComplete.add(function(sprite, animation) {
+		var fadeOut = new CustomAnimation(tankTracks, null, 0.25);
+		fadeOut.onComplete = function(sprite) {
+			destroyed = true;
 			sprite.animations.destroy();
 			sprite.destroy();
-		});
+		};
 		
 		// Play fade out animation
-		fadeOut.play(0.25, false, null);
+		fadeOut.play();
+		
+		// Return function to update visibility state
+		return {
+			centreCell : (new Point(tankTracks.x, tankTracks.y)).toCell(),
+			setVisible : function(visible) { 
+					if (!destroyed) { tankTracks.visible = visible; }
+					return destroyed;
+				}
+		}
 	}
 }
 

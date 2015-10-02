@@ -22,14 +22,14 @@ ExplosionManager.prototype.requestDestruction = function(mapGroup, debrisId, exp
 		localExplosion.z = 100;
 		
 		// Create explode animation
-		var explode = localExplosion.animations.add('localExplode');
-		explode.onComplete.add(function(sprite, animation) {
+		var explode = new CustomAnimation(localExplosion, null, 100);
+		explode.onComplete = function(sprite) {
 			sprite.animations.destroy();
 			sprite.destroy();
-		});
+		};
 		
 		// Run explosion animation
-		explode.play(100, false, null);
+		explode.play();
 	}
 }
 
@@ -58,24 +58,24 @@ ExplosionManager.prototype.requestExplosion = function(mapGroup, explosionId, ow
 		this.registerExplosion(localExplosion);
 		
 		// Create fade out animation
-		var fadeOut = localImpact.animations.add('localImpaceFade');
-		fadeOut.onComplete.add(function(sprite, animation) {
+		var fadeOut = new CustomAnimation(localImpact, null, 0.25);
+		fadeOut.onComplete = function(sprite) {
 			sprite.animations.destroy();
 			sprite.destroy();
-		});
+		};
 		
 		// Create explode animation
-		var explode = localExplosion.animations.add('localExplode');
-		explode.onComplete.add(function(sprite, animation) {
+		var explode = new CustomAnimation(localExplosion, null, 30);
+		explode.onComplete = function(sprite) {
 			var targetIndex = self.explosionRegister.indexOf(sprite);
 			self.explosionRegister.splice(targetIndex, 1);
 			sprite.animations.destroy();
 			sprite.destroy();
-			fadeOut.play(0.25, false, null);
-		});
+			fadeOut.play();
+		};
 		
 		// Run explosion animation
-		explode.play(30, false, null);
+		explode.play();
 	}
 }
 

@@ -73,6 +73,7 @@ function Engine(gameplayConfig, playerId, serverAPI, func_GameFinished) {
 	this.productionUnits = [];
 	this.buildings = [];
 	this.foWVisibilityMap = [];
+	this.miscOverlays = [];
 	
 	// Define selection variables
 	this.selected = [];
@@ -215,7 +216,13 @@ Engine.prototype.create = function() {
 			self.updateNewUnitCell(sender, oldCell, newCell);
 		},
 		func_PlaceTankTrack : function(sender, point, angle) {
-			self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
+			
+			// Create track and record in overlay array
+			var miscOverlay = self.mapRender.placeTankTrack(self.mapGroup, sender, point, angle);
+			self.miscOverlays.push(miscOverlay);
+			
+			// Set initial visibility
+			miscOverlay.setVisible(self.foWVisibilityMap[miscOverlay.centreCell.row * self.mapRender.width + miscOverlay.centreCell.col].isVisible == 1);
 		},
 		func_GetObjectFromInstanceId : function(instanceId) {
 			return self.getObjectFromInstanceId(instanceId);
@@ -1214,6 +1221,22 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 		
 		// Show or hide object based on visibility boolean
 		gameObjects[index].setFOWVisible(fogOfWarActive);
+	}
+	
+	// Run through misc overlays setting visible state
+	var overlayIndex = 0;
+	while (overlayIndex < this.miscOverlays.length) {
+		
+		// Set visible state for overlay
+		var showOverlay = this.foWVisibilityMap[this.miscOverlays[overlayIndex].centreCell.row * this.mapRender.width + this.miscOverlays[overlayIndex].centreCell.col].isVisible == 1;
+		var overlayDestroyed = this.miscOverlays[overlayIndex].setVisible(showOverlay);
+		
+		// Increment or drop overlay from overlay record
+		if (overlayDestroyed) {
+			overlayIndex ++;
+		} else {
+			this.miscOverlays.splice(overlayIndex, 1);
+		}
 	}
 
 	// Update FoW tile sprite frames
