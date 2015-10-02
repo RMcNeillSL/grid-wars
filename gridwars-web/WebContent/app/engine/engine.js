@@ -1871,8 +1871,8 @@ Engine.prototype.explosionCollisionCheck = function() {
 
 // REMOVE THIS ONCE SERVER SIDE RANGE CHECK IS DONE
 Engine.prototype.isSquareWithinBaseRange = function(col, row) {
-	return (row <= (this.spawnPoint.row+5) && row >= (this.spawnPoint.row-2)
-			&& col <= (this.spawnPoint.col+5) && col >= (this.spawnPoint.col-2));
+	return (row <= (this.spawnPoint.row+5) && row >= (this.spawnPoint.row-3)
+			&& col <= (this.spawnPoint.col+5) && col >= (this.spawnPoint.col-3));
 }
 
 Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
@@ -1881,8 +1881,8 @@ Engine.prototype.getCellsWithinBuildRangeOfHub = function () {
 	var withinRange = [];
 	
 	// Search for all cells in hub range
-	for (var rowIndex = this.spawnPoint.row-2; rowIndex < this.spawnPoint.row+5; rowIndex++) {
-		for (var colIndex = this.spawnPoint.col-2; colIndex < this.spawnPoint.col+5; colIndex++) {
+	for (var rowIndex = this.spawnPoint.row-3; rowIndex <= this.spawnPoint.row+5; rowIndex++) {
+		for (var colIndex = this.spawnPoint.col-3; colIndex <= this.spawnPoint.col+5; colIndex++) {
 			if (this.isSquareEmpty(colIndex, rowIndex)) {
 				withinRange.push(new Cell(colIndex, rowIndex));
 			}
