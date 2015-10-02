@@ -47,8 +47,7 @@ public class SocketService {
 		// Generate config for socket server
 		socketServerConfig = new Configuration();
 		socketServerConfig.setPort(8080);
-		socketServerConfig.setUpgradeTimeout(5000);	// 5 sec timeout
-//		socketServerConfig.setUpgradeTimeout(300000);	// 5 minute timeout
+		socketServerConfig.setUpgradeTimeout(300000);	// 5 minute timeout
 		socketServerConfig.setPingInterval(0);
 
 		// Construct socket server
