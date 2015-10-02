@@ -164,8 +164,8 @@ Engine.prototype.create = function() {
 	this.buildingGroup = this.phaserGame.add.group();
 	this.tankGroup = this.phaserGame.add.group();
 	this.fogOfWarGroup = this.phaserGame.add.group();
-	this.hudGroup = this.phaserGame.add.group();
 	this.highestGroup = this.phaserGame.add.group();
+	this.hudGroup = this.phaserGame.add.group();
 	
 	// Set map dimensions
 	this.phaserGame.world.setBounds(0, 0, this.gameplayConfig.width*CONSTANTS.TILE_WIDTH, this.gameplayConfig.height*CONSTANTS.TILE_HEIGHT);
