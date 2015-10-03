@@ -693,9 +693,12 @@ public class Engine extends Thread {
 		DynGameDefence[] holdGroundDefences = null;
 		
 		// Declare working variables
-		DynGameUnit unitRef = null;
-		Coordinate newCoordRef = null;
-		ArrayList<Coordinate> path = null;
+		DynGameUnit unitRef = null;												// Holds reference to unit currently moving
+		ArrayList<Coordinate> path = null;										// Waypoint path for any enemy which has locked on to current unit and needs updating its location
+		String targetId = null;													// Holds Id of target of currently moving unit
+		DynGameUnit targetUnit = null;											// Holds referece to unit currently targeted by moving unit
+		DynGameBuilding targetBuilding = null;									// Holds referece to building currently targeted by moving unit
+		Coordinate targetCoord = null;											// Holds the coordinate of the object targeted by currently moving unit
 		
 		// Declare arrays hold instanceIds of objects halting their attack
 		ArrayList<String> removeInstanceIds = new ArrayList<String>();
@@ -710,7 +713,6 @@ public class Engine extends Thread {
 			
 			// Set new references
 			unitRef = sourceUnits[index];
-			newCoordRef = newCoordinates[index];
 			
 			// Determine units or defences currently locked onto moved unit
 			pursueUnits = this.pursueAttackPairs.getUnitsAttackingInstance(sourceUnits[index].getInstanceId());
@@ -718,7 +720,7 @@ public class Engine extends Thread {
 			holdGroundDefences = this.holdGroundAttackPairs.getDefencesAttackingInstance(sourceUnits[index].getInstanceId());
 			
 			// Update cell of unit
-			unitRef.updateCoordinate(newCoordRef);
+			unitRef.updateCoordinate(newCoordinates[index]);
 			
 			// -- DEFENCE [holdGround] : unassignment and reassignment of targets
 			
@@ -726,7 +728,7 @@ public class Engine extends Thread {
 				if (holdGroundDefences != null && holdGroundDefences.length > 0) {
 					removeInstanceIds.clear();
 					for (DynGameDefence defence : holdGroundDefences) {
-						if (newCoordRef.distanceTo(defence.getCoordinate()) > defence.getRange() / Const.cellSize) {
+						if (unitRef.getCoordinate().distanceTo(defence.getCoordinate()) > defence.getRange() / Const.cellSize) {
 							removeInstanceIds.add(defence.getInstanceId());
 						}
 					}
@@ -753,7 +755,7 @@ public class Engine extends Thread {
 				if (holdGroundUnits != null && holdGroundUnits.length > 0) {
 					removeInstanceIds.clear();
 					for (DynGameUnit unit : holdGroundUnits) {
-						if (newCoordRef.distanceTo(unit.getCoordinate()) > unit.getRange() / Const.cellSize) {
+						if (unitRef.getCoordinate().distanceTo(unit.getCoordinate()) > unit.getRange() / Const.cellSize) {
 							removeInstanceIds.add(unit.getInstanceId());
 						}
 					}
@@ -794,7 +796,29 @@ public class Engine extends Thread {
 			// SELF [holdGround] : provide a new target for moving unit if they do not already have one
 				
 				// Make sure unit has no pursue attack
-//				if 
+				if (this.pursueAttackPairs.getSourceAttacks(unitRef.getInstanceId()) == null) {
+					
+					// Check if target is out of range and remove item
+					targetId = this.holdGroundAttackPairs.getSourceAttacks(unitRef.getInstanceId());
+					if (targetId != null) {
+						targetCoord = null;
+						targetUnit = this.getGameUnitFromInstanceId(targetId);
+						targetBuilding = this.getGameBuildingFromInstanceId(targetId);
+						if (targetUnit != null) { targetCoord = targetUnit.getCoordinate(); }
+						if (targetBuilding != null) { targetCoord = targetBuilding.getCoordinate(); }
+						if (targetCoord != null) {
+							if (unitRef.getCoordinate().distanceTo(targetCoord) > unitRef.getRange() / Const.cellSize) {
+								if (clearAttackResponse == null) { clearAttackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT); }
+								clearAttackResponse.addSource(unitRef.getInstanceId());
+								clearAttackResponse.addTarget("");
+								this.holdGroundAttackPairs.removeAttacker(unitRef.getInstanceId());
+							}
+						}
+					}
+					
+					// Check if new targets are now in range
+					
+				}
 		}
 		
 		
