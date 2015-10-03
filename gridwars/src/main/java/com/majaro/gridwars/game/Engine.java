@@ -703,6 +703,7 @@ public class Engine extends Thread {
 		// Declare arrays hold instanceIds of objects halting their attack
 		ArrayList<String> removeInstanceIds = new ArrayList<String>();
 		ArrayList<String> targetIds = new ArrayList<String>();
+		ArrayList<String> sourceIds = new ArrayList<String>();
 		
 		// Declare arrays to hold instance Ids of object starting an attack
 		String[] buildingsToAttack = null;
@@ -817,10 +818,21 @@ public class Engine extends Thread {
 					}
 					
 					// Check if new targets are now in range
-					
+					unitsToAttack = this.getUnitsInUnitRange(unitRef, true);
+					if (unitsToAttack.length > 0) {
+						sourceIds.clear(); sourceIds.add(unitRef.getInstanceId());
+						objectAttackResponse = this.processObjectAttackObjectRequest(null, sourceIds.toArray(new String[sourceIds.size()]), unitsToAttack);
+						for (GameplayResponse response : objectAttackResponse) { responseList.add(response); }
+					} else {
+						buildingsToAttack = this.getBuildingsInUnitRange(unitRef, false, true);
+						if (buildingsToAttack.length > 0) {
+							sourceIds.clear(); sourceIds.add(unitRef.getInstanceId());
+							objectAttackResponse = this.processObjectAttackObjectRequest(null, sourceIds.toArray(new String[sourceIds.size()]), buildingsToAttack);
+							for (GameplayResponse response : objectAttackResponse) { responseList.add(response); }
+						}
+					}
 				}
 		}
-		
 		
 		// Add custom responses if they were constructed
 		if (clearAttackResponse != null) 	{ responseList.add(clearAttackResponse); }
@@ -1127,7 +1139,7 @@ public class Engine extends Thread {
 				if (!this.pursueAttackPairs.isAttacking(defence.getInstanceId()) &&
 						!this.holdGroundAttackPairs.isAttacking(defence.getInstanceId()) &&
 						!defence.getOwner().getPlayerName().equals(targetUnit.getOwner().getPlayerName()) &&
-						targetUnit.getCoordinate().distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize ) {
+						targetUnit.getCoordinate().distanceTo(defence.getCoordinate()) <= defence.getRange() / Const.cellSize ) {
 					buildingsToAttack.add(defence.getInstanceId());
 				}
 			}
@@ -1149,7 +1161,7 @@ public class Engine extends Thread {
 			if (!this.pursueAttackPairs.isAttacking(unit.getInstanceId()) &&
 					!this.holdGroundAttackPairs.isAttacking(unit.getInstanceId()) &&
 					!unit.getOwner().getPlayerName().equals(targetUnit.getOwner().getPlayerName()) &&
-					targetUnit.getCoordinate().distanceTo(unit.getCoordinate()) < unit.getRange() / Const.cellSize ) {
+					targetUnit.getCoordinate().distanceTo(unit.getCoordinate()) <= unit.getRange() / Const.cellSize ) {
 				unitsToAttack.add(unit.getInstanceId());
 			}
 		}
@@ -1157,16 +1169,46 @@ public class Engine extends Thread {
 		// Return calculated answer
 		return unitsToAttack.toArray(new String[unitsToAttack.size()]);
 	}
-	
+
 	private String[] getUnitsInDefenceRange(DynGameDefence defence) {
 		ArrayList<String> attackUnits = new ArrayList<String>();
 		for (DynGameUnit unit : this.units) {
 			if (!unit.getOwner().getPlayerName().equals(defence.getOwner().getPlayerName()) &&
-					unit.getCoordinate().distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize) {
+					unit.getCoordinate().distanceTo(defence.getCoordinate()) <= defence.getRange() / Const.cellSize) {
 				attackUnits.add(unit.getInstanceId());
 			}
 		}		
 		return attackUnits.toArray(new String[attackUnits.size()]);
+	}
+
+	private String[] getBuildingsInUnitRange(DynGameUnit unitRef, boolean defencesOnly, boolean onlyFirst) {
+		ArrayList<String> buildingsInRange = new ArrayList<String>();
+		for (DynGameBuilding building : this.buildings) {
+			if (building instanceof DynGameDefence || !defencesOnly) {
+				if (!unitRef.getOwner().getPlayerName().equals(building.getOwner().getPlayerName()) &&
+						unitRef.getCoordinate().distanceTo(building.getCoordinate()) <= unitRef.getRange() / Const.cellSize) {
+					if (building instanceof DynGameDefence) {
+						buildingsInRange.add(0, building.getInstanceId());
+					} else {
+						buildingsInRange.add(building.getInstanceId());
+					}
+					if (onlyFirst) { break; }
+				}
+			}
+		}		
+		return buildingsInRange.toArray(new String[buildingsInRange.size()]);
+	}
+
+	private String[] getUnitsInUnitRange(DynGameUnit unitRef, boolean onlyFirst) {
+		ArrayList<String> unitsInRange = new ArrayList<String>();
+		for (DynGameUnit unit : this.units) {
+			if (!unitRef.getOwner().getPlayerName().equals(unit.getOwner().getPlayerName()) &&
+					unitRef.getCoordinate().distanceTo(unit.getCoordinate()) <= unitRef.getRange() / Const.cellSize) {
+				unitsInRange.add(unit.getInstanceId());
+				if (onlyFirst) { break; }
+			}
+		}		
+		return unitsInRange.toArray(new String[unitsInRange.size()]);
 	}
 	
 	private DynGameBuilding getPlayerDeployHub(Player player) {
