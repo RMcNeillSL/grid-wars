@@ -122,47 +122,48 @@ public class GameplayRequest {
 	// Debugging methods
 	public String toString() {
 		
-		// Declare string objects
-		String newLine = System.getProperty("line.separator") + "    ";
-		String sourceString = "";
-		String targetString = "";
-		String outputString = "";
-
-		// Populate source string
-		ArrayList<GameObject> tempSource = this.getSource();
-		if (tempSource != null && tempSource.size() > 0) {
-			for (GameObject gameObject : tempSource) {
-				if (gameObject != null ) {
-					sourceString = sourceString + "(" + gameObject.toString() + "), ";
-				} else {
-					sourceString = sourceString + "(null)";
-				}
-			}
-			sourceString.substring(0, sourceString.length()-2);
-		}
-
-		// Populate target string
-		ArrayList<GameObject> tempTarget = this.getTarget();
-		if (tempTarget != null && tempTarget.size() > 0) {
-			for (GameObject gameObject : tempTarget) {
-				if (gameObject != null ) {
-					targetString = targetString + "(" + gameObject.toString() + "), ";
-				} else {
-					targetString = targetString + "(null)";
-				}
-			}
-			targetString.substring(0, targetString.length()-2);
-		}
-
-		// Compile output string
-		outputString = "Gameplay Request:" +
-			newLine + "Request Code: " + this.requestCode.toString() +
-			newLine + "Target (X,Y): (" + Integer.toString(this.targetCellX) + "," + Integer.toString(this.targetCellY) + ")" +
-			newLine + "Source Game Objects: [" + sourceString + "]" +
-			newLine + "Target Game Objects: [" + targetString + "]";
+//		// Declare string objects
+//		String newLine = System.getProperty("line.separator") + "    ";
+//		String sourceString = "";
+//		String targetString = "";
+//		String outputString = "";
+//
+//		// Populate source string
+//		ArrayList<GameObject> tempSource = this.getSource();
+//		if (tempSource != null && tempSource.size() > 0) {
+//			for (GameObject gameObject : tempSource) {
+//				if (gameObject != null ) {
+//					sourceString = sourceString + "(" + gameObject.toString() + "), ";
+//				} else {
+//					sourceString = sourceString + "(null)";
+//				}
+//			}
+//			sourceString.substring(0, sourceString.length()-2);
+//		}
+//
+//		// Populate target string
+//		ArrayList<GameObject> tempTarget = this.getTarget();
+//		if (tempTarget != null && tempTarget.size() > 0) {
+//			for (GameObject gameObject : tempTarget) {
+//				if (gameObject != null ) {
+//					targetString = targetString + "(" + gameObject.toString() + "), ";
+//				} else {
+//					targetString = targetString + "(null)";
+//				}
+//			}
+//			targetString.substring(0, targetString.length()-2);
+//		}
+//
+//		// Compile output string
+//		outputString = "Gameplay Request:" +
+//			newLine + "Request Code: " + this.requestCode.toString() +
+//			newLine + "Target (X,Y): (" + Integer.toString(this.targetCellX) + "," + Integer.toString(this.targetCellY) + ")" +
+//			newLine + "Source Game Objects: [" + sourceString + "]" +
+//			newLine + "Target Game Objects: [" + targetString + "]";
 
 		// Return generated response
-		return outputString;
+//		return outputString;
+		return "Request: " + this.requestCode.toString();
 	}
 
 }

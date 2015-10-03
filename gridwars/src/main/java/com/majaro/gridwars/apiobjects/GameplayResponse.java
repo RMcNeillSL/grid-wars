@@ -137,16 +137,15 @@ public class GameplayResponse {
 	// To string debug methods
 	public String toString() {
 		
-		// Declare string objects
-		String newLine = System.getProperty("line.separator") + "    ";
-		String outputString = "";
-		
-		// Compile output string
-		outputString = this.responseCode.toString();
+//		// Declare string objects
+//		String newLine = System.getProperty("line.separator") + "    ";
+//		String outputString = "";
+//		
+//		// Compile output string
+//		outputString = this.responseCode.toString();
 		
 		// Return generated response
-		return "Gameplay Response: " + 
-			newLine + "Response Code: " + outputString;
+		return "Response: " + this.responseCode.toString();
 	}
 
 }

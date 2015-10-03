@@ -54,20 +54,32 @@ public class AttackPairList {
 		}
 	}
 	
-	public void removeAttacker(String instanceId) {
+	public String removeAttacker(String instanceId) {
+		String returnInstanceId = null;
 		ArrayList<AttackPair> removeList = new ArrayList<AttackPair>();
 		for (int index = 0; index < this.attackPairs.size(); index ++) {
 			if (this.attackPairs.get(index).getSourceInstanceId().equals(instanceId)) {
 				removeList.add(this.attackPairs.get(index));
+				returnInstanceId = this.attackPairs.get(index).getTargetInstanceId();
 			}
 		}
 		for (int index = 0; index < removeList.size(); index ++) {
 			this.attackPairs.remove(removeList.get(index));
 		}
+		return returnInstanceId;
 	}
 
 	
 	// Getters
+	
+	public String getSourceAttacks(String sourceInstanceId) {
+		for (AttackPair attackPair : this.attackPairs) {
+			if (attackPair.getSourceInstanceId().equals(sourceInstanceId)) {
+				return attackPair.getTargetInstanceId();
+			}
+		}
+		return null;
+	}
 
 	public String[] getAttackSources(String targetInstanceId) {
 		ArrayList<String> sources = new ArrayList<String>();

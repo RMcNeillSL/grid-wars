@@ -427,7 +427,7 @@ public class Engine extends Thread {
 		// Declare response variables
 		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
 		GameplayResponse newBuildingResponse = null;
-		GameplayResponse waypointUpdateResponse = null;
+		GameplayResponse[] waypointUpdateResponse = null;
 		boolean validConstruction = true;
 
 		// Declare local working variables
@@ -503,8 +503,8 @@ public class Engine extends Thread {
 				unitWaypointEnd = effectedUnit.getWaypointEndCoordinate();
 				if (unitWaypointEnd != null) {
 					waypointUpdateResponse = this.processWaypointPathCoordsRequest(player, effectedUnit, unitWaypointEnd);
-					if (waypointUpdateResponse != null) {
-						responseList.add(waypointUpdateResponse);
+					for (GameplayResponse response : waypointUpdateResponse) {
+						responseList.add(response);
 					}
 				}
 			}
@@ -585,24 +585,26 @@ public class Engine extends Thread {
 				if (targetBuilding != null) { attackResponse.addTarget(targetBuilding.getInstanceId());		targetCoord = targetBuilding.getCoordinate();	targetId = targetBuilding.getInstanceId(); }
 				responseList.add(attackResponse);
 				
-				// Check if movement to bring target in range is needed
-				if (sourceUnit != null && sourceCoord.distanceTo(targetCoord) > sourceUnit.getRange() / Const.cellSize) {
-					ArrayList<Coordinate> path = this.aStarPathFinder.calculatePath(sourceCoord, targetCoord, sourceUnit.getRange() / Const.cellSize);
-					if (path != null) {
-						waypointResponse = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
-						for (Coordinate coord : path) {
-							waypointResponse.addCoord(coord);
-							waypointResponse.addSource(sourceUnit.getInstanceId());
+				// Check if movement to bring target in range is needed (only if specified to attack by player)
+				if (player != null) {
+					if (sourceUnit != null && sourceCoord.distanceTo(targetCoord) > sourceUnit.getRange() / Const.cellSize) {
+						ArrayList<Coordinate> path = this.aStarPathFinder.calculatePath(sourceCoord, targetCoord, sourceUnit.getRange() / Const.cellSize);
+						if (path != null) {
+							waypointResponse = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
+							for (Coordinate coord : path) {
+								waypointResponse.addCoord(coord);
+								waypointResponse.addSource(sourceUnit.getInstanceId());
+							}
+							responseList.add(waypointResponse);
 						}
-						responseList.add(waypointResponse);
 					}
 				}
 
 				// Add new items to attack pair array
 				if ((sourceUnit != null || sourceBuilding != null) && targetId != null) {
 					if (sourceUnit != null && player != null) 	{ this.pursueAttackPairs.add(sourceUnit.getInstanceId(), targetId); }
-					if (sourceBuilding != null ||
-							sourceUnit != null && player == null) { this.holdGroundAttackPairs.add(sourceBuilding.getInstanceId(), targetId); }
+					if (sourceBuilding != null && player == null) { this.holdGroundAttackPairs.add(sourceBuilding.getInstanceId(), targetId); }
+					if (sourceUnit != null && player == null) { this.holdGroundAttackPairs.add(sourceUnit.getInstanceId(), targetId); }
 				}
 			}
 		}
@@ -611,10 +613,11 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 	
-	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] coordinates) {
+	private GameplayResponse[] processWaypointPathCoordsRequest(Player player, DynGameUnit[] sourceUnits, Coordinate[] coordinates) {
 
 		// Set default result
-		GameplayResponse response = null;
+		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
+		GameplayResponse waypointResponse = null;
 		boolean validConstruction = true;
 		
 		// Declare working variables
@@ -631,7 +634,7 @@ public class Engine extends Thread {
 			coordRef = coordinates[index];
 			
 			// Remove any currently listed pursue attacks for the unit
-			
+			this.pursueAttackPairs.removeAttacker(unitRef.getInstanceId());
 			
 			// Run pathfinding search
 			newUnitPath = this.aStarPathFinder.calculatePath(unitRef.getCoordinate(), coordRef);
@@ -648,26 +651,27 @@ public class Engine extends Thread {
 		// Construct valid response - list all units and their waypoint nodes
 		if (validConstruction) {
 			Coordinate[] unitWaypoints = null;
-			response = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
+			waypointResponse = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS);
 			for (DynGameUnit unit : sourceUnits) {
 				unitWaypoints = unit.getWaypoints();
 				if (unitWaypoints != null) {
 					for (Coordinate coord : unitWaypoints) {
-						response.addCoord(coord);
-						response.addSource(unit.getInstanceId());
+						waypointResponse.addCoord(coord);
+						waypointResponse.addSource(unit.getInstanceId());
 					}
 				} else {
-					response.addCoord(unit.getCoordinate());
-					response.addSource(unit.getInstanceId());
+					waypointResponse.addCoord(unit.getCoordinate());
+					waypointResponse.addSource(unit.getInstanceId());
 				}
 			}
+			responseList.add(waypointResponse);
 		}
-
+		
 		// Return calculated result
-		return response;
+		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 	
-	private GameplayResponse processWaypointPathCoordsRequest(Player player, DynGameUnit sourceUnit, Coordinate coordinate) {
+	private GameplayResponse[] processWaypointPathCoordsRequest(Player player, DynGameUnit sourceUnit, Coordinate coordinate) {
 		DynGameUnit[] unitsArray = new DynGameUnit[1];
 		Coordinate[] coordinates = new Coordinate[1];
 		unitsArray[0] = sourceUnit;
@@ -682,16 +686,24 @@ public class Engine extends Thread {
 		GameplayResponse clearAttackResponse = null;
 		ArrayList<GameplayResponse> responseList = new ArrayList<GameplayResponse>();
 		GameplayResponse[] objectAttackResponse = null;
+
+		// Declare variables to hold current attack pairs
+		DynGameUnit[] pursueUnits = null;
+		DynGameUnit[] holdGroundUnits = null;
+		DynGameDefence[] holdGroundDefences = null;
 		
 		// Declare working variables
 		DynGameUnit unitRef = null;
 		Coordinate newCoordRef = null;
-		DynGameUnit[] attackingUnits = null;
-		DynGameDefence[] attackingDefences = null;
 		ArrayList<Coordinate> path = null;
-		ArrayList<String> removeDefences = new ArrayList<String>();
+		
+		// Declare arrays hold instanceIds of objects halting their attack
+		ArrayList<String> removeInstanceIds = new ArrayList<String>();
 		ArrayList<String> targetIds = new ArrayList<String>();
+		
+		// Declare arrays to hold instance Ids of object starting an attack
 		String[] buildingsToAttack = null;
+		String[] unitsToAttack = null;
 		
 		// Process each unit update inturn
 		for (int index = 0; index < Math.min(sourceUnits.length, newCoordinates.length); index ++) {
@@ -701,52 +713,88 @@ public class Engine extends Thread {
 			newCoordRef = newCoordinates[index];
 			
 			// Determine units or defences currently locked onto moved unit
-			attackingUnits = this.pursueAttackPairs.getUnitsAttackingInstance(sourceUnits[index].getInstanceId());
-			attackingDefences = this.holdGroundAttackPairs.getDefencesAttackingInstance(sourceUnits[index].getInstanceId());
+			pursueUnits = this.pursueAttackPairs.getUnitsAttackingInstance(sourceUnits[index].getInstanceId());
+			holdGroundUnits = this.holdGroundAttackPairs.getUnitsAttackingInstance(sourceUnits[index].getInstanceId());
+			holdGroundDefences = this.holdGroundAttackPairs.getDefencesAttackingInstance(sourceUnits[index].getInstanceId());
 			
 			// Update cell of unit
 			unitRef.updateCoordinate(newCoordRef);
 			
-			// Check if any defences need to be unassigned from attacking moving unit				-- TODO: ADD UNITS
-			if (attackingDefences != null & attackingDefences.length > 0) {
-				removeDefences.clear();
-				for (DynGameDefence attackDefenceRef : attackingDefences) {
-					if (newCoordRef.distanceTo(attackDefenceRef.getCoordinate()) > attackDefenceRef.getRange() / Const.cellSize) {
-						removeDefences.add(attackDefenceRef.getInstanceId());
+			// -- DEFENCE [holdGround] : unassignment and reassignment of targets
+			
+				// Check if any defences need to be unassigned from attacking moving unit
+				if (holdGroundDefences != null && holdGroundDefences.length > 0) {
+					removeInstanceIds.clear();
+					for (DynGameDefence defence : holdGroundDefences) {
+						if (newCoordRef.distanceTo(defence.getCoordinate()) > defence.getRange() / Const.cellSize) {
+							removeInstanceIds.add(defence.getInstanceId());
+						}
+					}
+					for (String instanceId : removeInstanceIds) {
+						if (clearAttackResponse == null) { clearAttackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT); }
+						clearAttackResponse.addSource(instanceId);
+						clearAttackResponse.addTarget("");
+						this.holdGroundAttackPairs.removeAttacker(instanceId);
 					}
 				}
-				for (String instanceId : removeDefences) {
-					if (clearAttackResponse == null) { clearAttackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT); }
-					clearAttackResponse.addSource(instanceId);
-					clearAttackResponse.addTarget("");
-					this.holdGroundAttackPairs.removeAttacker(instanceId);
+				
+				// Check if unit has entered attacking range of any idle defences
+				buildingsToAttack = this.getIdleDefencesRangeOverUnit(unitRef);
+				if (buildingsToAttack.length > 0) {
+					targetIds.clear();
+					for (int targetIndex = 0; targetIndex < buildingsToAttack.length; targetIndex ++) { targetIds.add(unitRef.getInstanceId()); }
+					objectAttackResponse = this.processObjectAttackObjectRequest(null, buildingsToAttack, targetIds.toArray(new String[targetIds.size()]));
+					for (GameplayResponse response : objectAttackResponse) { responseList.add(response); }
 				}
-			}
 			
-			// Check if unit has entered attacking range of any idle defences
-			buildingsToAttack = this.getIdleDefencesRangeOverUnit(unitRef);
-			if (buildingsToAttack.length > 0) {
-				targetIds.clear();
-				for (int targetIndex = 0; targetIndex < buildingsToAttack.length; targetIndex ++) { targetIds.add(unitRef.getInstanceId()); }
-				objectAttackResponse = this.processObjectAttackObjectRequest(null, buildingsToAttack, targetIds.toArray(new String[targetIds.size()]));
-				for (GameplayResponse response : objectAttackResponse) {
-					responseList.add(response);
+			// -- UNIT [holdGround] : remove any attackers out of range and add new target in range
+			
+				// Check if any units are holding ground and need their target removed
+				if (holdGroundUnits != null && holdGroundUnits.length > 0) {
+					removeInstanceIds.clear();
+					for (DynGameUnit unit : holdGroundUnits) {
+						if (newCoordRef.distanceTo(unit.getCoordinate()) > unit.getRange() / Const.cellSize) {
+							removeInstanceIds.add(unit.getInstanceId());
+						}
+					}
+					for (String instanceId : removeInstanceIds) {
+						if (clearAttackResponse == null) { clearAttackResponse = new GameplayResponse(E_GameplayResponseCode.OBJECT_ATTACK_OBJECT); }
+						clearAttackResponse.addSource(instanceId);
+						clearAttackResponse.addTarget("");
+						this.holdGroundAttackPairs.removeAttacker(instanceId);
+					}
 				}
-			}
+				
+				// Check to see if unit has entered range of any idle units
+				unitsToAttack = this.getIdleUnitsRangeOverUnit(unitRef);
+				if (unitsToAttack.length > 0) {
+					targetIds.clear();
+					for (int targetIndex = 0; targetIndex < unitsToAttack.length; targetIndex ++) { targetIds.add(unitRef.getInstanceId()); }
+					objectAttackResponse = this.processObjectAttackObjectRequest(null, unitsToAttack, targetIds.toArray(new String[targetIds.size()]));
+					for (GameplayResponse response : objectAttackResponse) { responseList.add(response); }
+				}
+				
 			
-			// Check if unit was involved in an attack pair as target - update source waypoints
-			if (attackingUnits != null && attackingUnits.length > 0) {
-				for (DynGameUnit attackUnitRef : attackingUnits) {
-					path = this.aStarPathFinder.calculatePath(attackUnitRef.getCoordinate(), unitRef.getCoordinate(), attackUnitRef.getRange() / Const.cellSize);
-					if (path != null) {
-						if (updateCellResponse == null) { updateCellResponse = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS); }
-						for (Coordinate coord : path) {
-							updateCellResponse.addCoord(coord);
-							updateCellResponse.addSource(attackUnitRef.getInstanceId());
+			// -- UNIT [pursue] : pursue attacking updating waypoint paths to get to target
+			
+				// Check if unit was involved in an attack pair as target - update source waypoints
+				if (pursueUnits != null && pursueUnits.length > 0) {
+					for (DynGameUnit attackUnitRef : pursueUnits) {
+						path = this.aStarPathFinder.calculatePath(attackUnitRef.getCoordinate(), unitRef.getCoordinate(), attackUnitRef.getRange() / Const.cellSize);
+						if (path != null) {
+							if (updateCellResponse == null) { updateCellResponse = new GameplayResponse(E_GameplayResponseCode.WAYPOINT_PATH_COORDS); }
+							for (Coordinate coord : path) {
+								updateCellResponse.addCoord(coord);
+								updateCellResponse.addSource(attackUnitRef.getInstanceId());
+							}
 						}
 					}
 				}
-			}
+				
+			// SELF [holdGround] : provide a new target for moving unit if they do not already have one
+				
+				// Make sure unit has no pursue attack
+//				if 
 		}
 		
 		
@@ -991,7 +1039,7 @@ public class Engine extends Thread {
 		        		coordinates.add(new Coordinate(Integer.parseInt(gameplayRequest.getTargetString()[coordIndex]),
 		        				Integer.parseInt(gameplayRequest.getTargetString()[coordIndex+1])));
 		        	}
-		        	gameplayResponse = this.processWaypointPathCoordsRequest(sender,
+		        	gameplayResponseArray = this.processWaypointPathCoordsRequest(sender,
 		        			this.getGameUnitsFromInstanceIds(gameplayRequest.getSourceString(), false), 
 		        			coordinates.toArray(new Coordinate[coordinates.size()]));
 		        	break;
@@ -1042,7 +1090,7 @@ public class Engine extends Thread {
 	
 	// Utility methods
 
-	private String[] getIdleDefencesRangeOverUnit(DynGameUnit unit) {
+	private String[] getIdleDefencesRangeOverUnit(DynGameUnit targetUnit) {
 		
 		// Define working variables
 		ArrayList<String> buildingsToAttack = new ArrayList<String>();
@@ -1054,8 +1102,8 @@ public class Engine extends Thread {
 				defence = (DynGameDefence)this.buildings.get(buildingIndex);
 				if (!this.pursueAttackPairs.isAttacking(defence.getInstanceId()) &&
 						!this.holdGroundAttackPairs.isAttacking(defence.getInstanceId()) &&
-						!defence.getOwner().getPlayerName().equals(unit.getOwner().getPlayerName()) &&
-						unit.getCoordinate().distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize ) {
+						!defence.getOwner().getPlayerName().equals(targetUnit.getOwner().getPlayerName()) &&
+						targetUnit.getCoordinate().distanceTo(defence.getCoordinate()) < defence.getRange() / Const.cellSize ) {
 					buildingsToAttack.add(defence.getInstanceId());
 				}
 			}
@@ -1063,6 +1111,27 @@ public class Engine extends Thread {
 		
 		// Return calculated answer
 		return buildingsToAttack.toArray(new String[buildingsToAttack.size()]);
+	}
+
+	private String[] getIdleUnitsRangeOverUnit(DynGameUnit targetUnit) {
+		
+		// Define working variables
+		ArrayList<String> unitsToAttack = new ArrayList<String>();
+		DynGameUnit unit = null;
+		
+		// Locate all defences whose range covers unit
+		for (int unitIndex = 0; unitIndex < this.units.size(); unitIndex ++) {
+			unit = (DynGameUnit)this.units.get(unitIndex);
+			if (!this.pursueAttackPairs.isAttacking(unit.getInstanceId()) &&
+					!this.holdGroundAttackPairs.isAttacking(unit.getInstanceId()) &&
+					!unit.getOwner().getPlayerName().equals(targetUnit.getOwner().getPlayerName()) &&
+					targetUnit.getCoordinate().distanceTo(unit.getCoordinate()) < unit.getRange() / Const.cellSize ) {
+				unitsToAttack.add(unit.getInstanceId());
+			}
+		}
+		
+		// Return calculated answer
+		return unitsToAttack.toArray(new String[unitsToAttack.size()]);
 	}
 	
 	private String[] getUnitsInDefenceRange(DynGameDefence defence) {
