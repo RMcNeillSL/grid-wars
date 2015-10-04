@@ -242,26 +242,32 @@ Engine.prototype.create = function() {
 	
 	// Draw the gameframe
 	this.createGameScreen();
+	
+	// Function to create cursor animations
+	var createCursorForm = function(name, frames, offsetX, offsetY) {
+		var newFormAnim = self.pointer.sprite.animations.add(name, frames, 30, true);
+		newFormAnim.onStart.add(function() { self.pointer.sprite.anchor.setTo(offsetX, offsetY); });
+	}
 
 	// Create cursor object
 	this.pointer = { sprite : null, point : new Point(0, 0) };
 	this.pointer.sprite = this.phaserGame.add.sprite(0, 0, CONSTANTS.SPRITE_CURSORS, 0);
 	this.pointer.sprite.z = 100;
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL, 		CONSTANTS.CURSOR_SPRITE_NORMAL, 		30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_NORMAL_ENEMY, 	CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY, 	30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_INVALID, 		CONSTANTS.CURSOR_SPRITE_INVALID, 		30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_ATTACK, 		CONSTANTS.CURSOR_SPRITE_ATTACK, 		30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_FORCE_ATTACK, 	CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK, 	30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE, 			CONSTANTS.CURSOR_SPRITE_MOVE, 			30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_MOVE_CLICK, 	CONSTANTS.CURSOR_SPRITE_MOVE_CLICK, 	30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_UP, 		CONSTANTS.CURSOR_SPRITE_SCROLL_UP, 		30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DOWN, 	CONSTANTS.CURSOR_SPRITE_SCROLL_DOWN, 	30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_LEFT, 	CONSTANTS.CURSOR_SPRITE_SCROLL_LEFT, 	30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_RIGHT, 	CONSTANTS.CURSOR_SPRITE_SCROLL_RIGHT, 	30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_LU, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_LU, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_LD, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_LD, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RU, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RU, 30, true);
-	this.pointer.sprite.animations.add(CONSTANTS.CURSOR_SCROLL_DIAG_RD, CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RD, 30, true);
+	createCursorForm(CONSTANTS.CURSOR_NORMAL, 			CONSTANTS.CURSOR_SPRITE_NORMAL,				0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_NORMAL_ENEMY, 	CONSTANTS.CURSOR_SPRITE_NORMAL_ENEMY,		0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_INVALID, 			CONSTANTS.CURSOR_SPRITE_INVALID,			0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_ATTACK, 			CONSTANTS.CURSOR_SPRITE_ATTACK,				0.5, 	0.5);
+	createCursorForm(CONSTANTS.CURSOR_FORCE_ATTACK, 	CONSTANTS.CURSOR_SPRITE_FORCE_ATTACK,		0.5,	0.5);
+	createCursorForm(CONSTANTS.CURSOR_MOVE, 			CONSTANTS.CURSOR_SPRITE_MOVE,				0.5, 	0.5);
+	createCursorForm(CONSTANTS.CURSOR_MOVE_CLICK, 		CONSTANTS.CURSOR_SPRITE_MOVE_CLICK,			0.5, 	0.5);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_UP, 		CONSTANTS.CURSOR_SPRITE_SCROLL_UP,			0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_DOWN, 		CONSTANTS.CURSOR_SPRITE_SCROLL_DOWN,		0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_LEFT, 		CONSTANTS.CURSOR_SPRITE_SCROLL_LEFT,		0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_RIGHT, 	CONSTANTS.CURSOR_SPRITE_SCROLL_RIGHT,		0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_DIAG_LU, 	CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_LU,		0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_DIAG_LD, 	CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_LD,		0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_DIAG_RU, 	CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RU,		0, 		0);
+	createCursorForm(CONSTANTS.CURSOR_SCROLL_DIAG_RD, 	CONSTANTS.CURSOR_SPRITE_SCROLL_DIAG_RD,		0, 		0);
 	this.pointer.sprite.animations.play(CONSTANTS.CURSOR_NORMAL);
 	this.cursorGroup.add(this.pointer.sprite);
 
@@ -397,7 +403,7 @@ Engine.prototype.render = function() {
 	var miniMapCellWidth = (this.minimap.width * 1.0 / this.mapRender.width);
 	var miniMapCellHeight = (this.minimap.height * 1.0 / this.mapRender.height);
 	
-	if(this.hud.map_control.sprite.visible) {
+	if(this.hud.mapControl.sprite.visible) {
 	
 		// Run through all objects outputting square for each
 		var potentialObstructions = this.buildings.concat(this.units);
@@ -672,7 +678,9 @@ Engine.prototype.onMouseMove = function(pointer, x, y) {
 			this.moveToMinimapClick(new Point(this.mouse.position.x - this.minimap.left, this.mouse.position.y - this.minimap.top));
 			
 		} else if (!this.selectionRectangle.miniMapClickStart) {
+			
 			this.updatePointerPosition();		// Added for GW-191
+			
 			// Reset selected items
 			if (this.selectionRectangle.selectActive
 					&& Math.abs(this.selectionRectangle.rect.width
@@ -986,8 +994,8 @@ Engine.prototype.processMouseFormUpdates = function() {
 	// Get ctrl state
 	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	
-	// Display normal cursor if the mouse if over a HUD button
-	if (this.hud.mouseOverHudButton) { updatePointerForm(CONSTANTS.CURSOR_NORMAL); return; }		// ROB
+	// Display normal cursor if the mouse if over the HUD
+	if (this.hud.mapControl.isMouseOver) { updatePointerForm(CONSTANTS.CURSOR_NORMAL); return; }		// ROB
 	
 	// Process selection for nothing
 	if (nothingSelected) {
@@ -1140,7 +1148,7 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 	this.foWVisibilityMap = [];
 	for (var rowIndex = 0; rowIndex < this.mapRender.height; rowIndex ++) {
 		for (var colIndex = 0; colIndex < this.mapRender.width; colIndex ++) {
-			if (!this.hud.map_control.sprite.visible) {
+			if (!this.hud.mapControl.sprite.visible) {
 				this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 1 });
 			} else {
 				this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 0 });
@@ -1365,11 +1373,13 @@ Engine.prototype.createGameScreen = function() {
 	// Define base HUD object
 	this.hud = {
 			mouseOverHudButton : false,
-			map_control : {
-				sprite : null
+			mapControl : {
+				sprite : null,
+				isMouseOver : false
 			},
-			object_control : {
-				sprite : null
+			objectControl : {
+				sprite : null,
+				isMouseOver : false
 			}
 	};
 
@@ -1420,6 +1430,7 @@ Engine.prototype.createGameScreen = function() {
 			var buildingPlaying = buildingAnim.isPlaying;
 			var completePlaying = buildingComplete.isPlaying;
 			self.hud.mouseOverHudButton = true;
+			self.hud.mapControl.isMouseOver = true;
 			
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.SELECTED; }
@@ -1451,6 +1462,7 @@ Engine.prototype.createGameScreen = function() {
 			var buildingPlaying = buildingAnim.isPlaying;
 			var completePlaying = buildingComplete.isPlaying;
 			self.hud.mouseOverHudButton = false;
+			self.hud.mapControl.isMouseOver = false;
 			
 			// DO NOT interrupt button animation when building
 			if (!buildingPlaying && !completePlaying ) { newButton.frame = spriteInfo.UNSELECTED; }
@@ -1523,11 +1535,13 @@ Engine.prototype.createGameScreen = function() {
 			newButton.frame = spriteInfo.SELECTED;
 			self.gameObjectHintSell.visible = true;
 			self.hud.mouseOverHudButton = true;
+			self.hud.objectControl.isMouseOver = true;
 		});
 		newButton.events.onInputOut.add(function() {
 			newButton.frame = spriteInfo.UNSELECTED;
 			self.gameObjectHintSell.visible = false;
 			self.hud.mouseOverHudButton = false;
+			self.hud.objectControl.isMouseOver = false;
 		});
 		newButton.events.onInputDown.add(function() {
 			
@@ -1583,19 +1597,27 @@ Engine.prototype.createGameScreen = function() {
 	var createObjectHUDText = function(textData, startingText, zIndex, visible) { return createHUDLabel(textData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop, startingText, zIndex, visible); };
 	
 	// Create map map HUD
-	this.hud.map_control.sprite = this.phaserGame.add.sprite(mapLeft, 0, CONSTANTS.MINI_MAP);
-	this.hud.map_control.sprite.width = CONSTANTS.HUD.MAP_CONTROL.WIDTH;
-	this.hud.map_control.sprite.height = CONSTANTS.HUD.MAP_CONTROL.HEIGHT;
-	this.hud.map_control.sprite.fixedToCamera = true;
-	this.hud.map_control.sprite.z = 90;
+	this.hud.mapControl.sprite = this.phaserGame.add.sprite(mapLeft, 0, CONSTANTS.MINI_MAP);
+	this.hud.mapControl.sprite.width = CONSTANTS.HUD.MAP_CONTROL.WIDTH;
+	this.hud.mapControl.sprite.height = CONSTANTS.HUD.MAP_CONTROL.HEIGHT;
+	this.hud.mapControl.sprite.fixedToCamera = true;
+	this.hud.mapControl.sprite.inputEnabled = true;
+	this.hud.mapControl.sprite.input.pixelPerfectOver = true;
+	this.hud.mapControl.sprite.z = 90;
+	this.hud.mapControl.sprite.events.onInputOver.add(function() { self.hud.mapControl.isMouseOver = true; });
+	this.hud.mapControl.sprite.events.onInputOut.add(function() { self.hud.mapControl.isMouseOver = false; });
 
 	// Create object details HUD
-	this.hud.object_control.sprite = this.phaserGame.add.sprite(unitLeft, unitTop, CONSTANTS.UNIT_DETAILS);
-	this.hud.object_control.sprite.width = CONSTANTS.HUD.OBJECT_CONTROL.WIDTH;
-	this.hud.object_control.sprite.height = CONSTANTS.HUD.OBJECT_CONTROL.HEIGHT;
-	this.hud.object_control.sprite.fixedToCamera = true;
-	this.hud.object_control.sprite.z = 90;
-	this.hud.object_control.sprite.visible = false;
+	this.hud.objectControl.sprite = this.phaserGame.add.sprite(unitLeft, unitTop, CONSTANTS.UNIT_DETAILS);
+	this.hud.objectControl.sprite.width = CONSTANTS.HUD.OBJECT_CONTROL.WIDTH;
+	this.hud.objectControl.sprite.height = CONSTANTS.HUD.OBJECT_CONTROL.HEIGHT;
+	this.hud.objectControl.sprite.fixedToCamera = true;
+	this.hud.objectControl.sprite.inputEnabled = true;
+	this.hud.objectControl.sprite.input.pixelPerfectOver = true;
+	this.hud.objectControl.sprite.z = 90;
+	this.hud.objectControl.sprite.visible = false;
+	this.hud.objectControl.sprite.events.onInputOver.add(function() { self.hud.objectControl.isMouseOver = true; });
+	this.hud.objectControl.sprite.events.onInputOut.add(function() { self.hud.objectControl.isMouseOver = false; });
 	
 	// Construct minimap sprite
 	var miniMapId = null;
@@ -1612,7 +1634,7 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectHintSell.fixedToCamera = true;
 	this.gameObjectHintSell.z = 92;
 	this.gameObjectHintSell.visible = false;
-	this.purchaseDetailsBackground = this.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 260, this.hud.map_control.sprite.top + this.hud.map_control.sprite.height, CONSTANTS.DETAILS_DIALOG);
+	this.purchaseDetailsBackground = this.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 260, this.hud.mapControl.sprite.top + this.hud.mapControl.sprite.height, CONSTANTS.DETAILS_DIALOG);
 	this.purchaseDetailsBackground.width = 262;
 	this.purchaseDetailsBackground.height = 116;
 	this.purchaseDetailsBackground.fixedToCamera = true;
@@ -1623,7 +1645,7 @@ Engine.prototype.createGameScreen = function() {
 	for (var index = 0; index < 4; index ++) {
 		var newLabel = this.phaserGame.add.text(
 				CONSTANTS.GAME_SCREEN_WIDTH - 240,
-				this.hud.map_control.sprite.top + this.hud.map_control.sprite.height + 16 + index * 20,
+				this.hud.mapControl.sprite.top + this.hud.mapControl.sprite.height + 16 + index * 20,
 				"",
 				{	font: "bold 12px Consolas",
 					fill: "#fff", 
@@ -1660,9 +1682,9 @@ Engine.prototype.createGameScreen = function() {
 			singleCellHeight * this.mapRender.screenCellHeight - 1);
 	
 	// Add all buttons to groups - keep zindex order correct
-	this.hudGroup.add(this.hud.map_control.sprite);
+	this.hudGroup.add(this.hud.mapControl.sprite);
 	this.hudGroup.add(this.minimap);
-	this.hudGroup.add(this.hud.object_control.sprite);
+	this.hudGroup.add(this.hud.objectControl.sprite);
 	this.hudGroup.add(this.homeButton);
 	this.hudGroup.add(this.defenceButton);
 	this.hudGroup.add(this.tankButton);
@@ -1685,7 +1707,7 @@ Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) 
 	
 	// Set core HUD sprites to show
 	this.gameObjectDetailsText.visible = (selectedGameObject != null);
-	this.hud.object_control.sprite.visible = (selectedGameObject != null);
+	this.hud.objectControl.sprite.visible = (selectedGameObject != null);
 	this.gameObjectDetailsIcon.visible = (selectedGameObject != null);
 	this.gameObjectHealthText.visible = (selectedGameObject != null);
 	
@@ -1702,7 +1724,7 @@ Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) 
 }
 
 Engine.prototype.setMinimapVisibility = function(show) {
-	this.hud.map_control.sprite.visible = show;
+	this.hud.mapControl.sprite.visible = show;
 	this.minimap.visible = show;
 	this.tankButton.visible = show;
 	this.homeButton.visible = show;
