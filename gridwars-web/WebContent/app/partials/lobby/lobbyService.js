@@ -142,6 +142,7 @@
 			self.$rootScope.$apply();
 		},
 		leaderChanged: function (targetUsername) {
+			self.$rootScope.gameLeaderUser = targetUsername;
 			if (targetUsername == self.$rootScope.currentUser) {
 				self.$rootScope.gameLeader = true;
 				self.$window.sessionStorage.gameLeader = true;
