@@ -479,23 +479,33 @@ Engine.prototype.onMouseDown = function(pointer) {
 }
 
 Engine.prototype.onMouseUp = function(pointer) {
-	
+
+	console.log("1 : " + this.gameObjectSell.x);
+
 	// Cancel right scroll
 	this.mouse.rightScroll.direction = -1;
 	this.processMouseFormUpdates();
 
+	console.log("2 : " + this.gameObjectSell.x);
+
 	// Jump out if the mouse is over a hud button
 	if (this.hud.mouseOverHudButton) { return; }
-	
+
+	console.log("3 : " + this.gameObjectSell.x);
+
 	// Break if new unit has just been selected
 	if (this.selectedJustSet) {
 		this.selectedJustSet = false;
 		return;
 	}
 
+	console.log("4 : " + this.gameObjectSell.x);
+
 	// Check for key press
 	var ctrlDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	var shiftDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.SHIFT);
+
+	console.log("5 : " + this.gameObjectSell.x);
 
 	// Positional values for cell and xy
 	var point = this.mouse.position;
@@ -503,6 +513,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 	
 	// Flag for general pointer actions handled
 	var clickHandled = false;
+	
+	console.log("6 : " + this.gameObjectSell.x);
 
 	// Perform checks for left click
 	if (pointer.leftButton.isDown) {
@@ -604,12 +616,12 @@ Engine.prototype.onMouseUp = function(pointer) {
 			}
 		}
 	}
-	
+
 	// Set scroll state for right button
 	if (pointer.rightButton.isDown) {
 		if (!this.mouse.rightScroll.isActive) {
 			this.selected = [];
-			this.setGameObjectDetailsVisibility(false);
+			this.setGameObjectDetailsVisibility(false, true);
 		} else {
 			this.mouse.rightScroll.isActive = false;
 		}
@@ -624,7 +636,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 			this.mouse.middleScroll.isActive = false;
 		}
 	}
-	
+
 	// Release mark as mouse down overminimap
 	this.selectionRectangle.miniMapClickStart = false;
 
@@ -1504,7 +1516,7 @@ Engine.prototype.createGameScreen = function() {
 		var newButton = createGameButton(spriteInfo, CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop);
 		
 		// Hide button by default
-		newButton.visible = false;
+		newButton.visible = true;
 
 		// Add listner events
 		newButton.events.onInputOver.add(function() {

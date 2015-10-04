@@ -942,7 +942,7 @@ public class Engine extends Thread {
 				this.pursueAttackPairs.removeEither(targetBuilding.getInstanceId());
 				int awardedMoney = (int)Math.floor(targetBuilding.getCost() * 1.2);
 				killer.addPlayerCash(awardedMoney);
-				System.out.println("A TURRET WAS KILLED BY " + killer.getPlayerName() + " THEY WERE AWARDED $" + awardedMoney);
+				System.out.println(targetBuilding.getIdentifier() + " KILLED BY " + killer.getPlayerName() + " THEY WERE AWARDED $" + awardedMoney);
 				this.destroyGameObject(targetBuilding);
 			}
 		}

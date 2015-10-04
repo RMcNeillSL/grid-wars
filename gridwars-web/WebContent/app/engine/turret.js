@@ -24,7 +24,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		// Set default misc values
 		this.rotateSpeed = 3;
 		this.damageExplosions = [];
-		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
+		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false, isCoolingDown: false };
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		
@@ -68,6 +68,9 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		this.bulletParticle02.start(false, 50, 10); this.bulletParticle02.on = false;
 
 		// Charge onComplete function
+		this.fireAndCool.onComplete = function(sprite) {
+			self.shootTarget.isFiring = false;
+		}
 		this.charge.onComplete = function(sprite) {
 			
 			// Define shoot targetXY
@@ -231,13 +234,14 @@ Turret.prototype.update = function() {
 	}
 	
 	// Process turret rotation
-	if (this.shootTarget &&
+	if (!this.shootTarget.isFiring &&
 			(this.shootTarget.point || this.shootTarget.instanceId) ) {
 		this.processTurretRotation();
 	}
 	
 	// Process turret firing event
-	if (this.shootTarget.readyToFire &&
+	if (!this.shootTarget.isCoolingDown &&
+			this.shootTarget.readyToFire &&
 			!this.shootTarget.isFiring) {
 		this.processTurretFire();
 	}
@@ -257,12 +261,14 @@ Turret.prototype.shootAtXY = function(point) {
 	this.shootTarget.angle = rotationData.target360Angle;
 	this.shootTarget.isFiring = false;
 	this.shootTarget.readyToFire = false;
+	this.shootTarget.isCoolingDown = false;
 }
 
 Turret.prototype.clearLockonTarget = function() {
 	this.shootTarget.instanceId = null;
 	this.shootTarget.isFiring = false;
 	this.shootTarget.readyToFire = false;
+	this.shootTarget.isCoolingDown = false;
 }
 
 Turret.prototype.lockonAndShoot = function(targetObject) {
@@ -277,6 +283,7 @@ Turret.prototype.lockonAndShoot = function(targetObject) {
 		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
 		this.shootTarget.isFiring = false;
 		this.shootTarget.readyToFire = false;
+		this.shootTarget.isCoolingDown = false;
 	}
 }
 
@@ -299,8 +306,7 @@ Turret.prototype.processTurretRotation = function() {
 		var rotationData = this.gameCore.calculateRotateToPointData(this.topSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
 		
 		// Identify further rotation or begin charging animation (if target is in range)
-		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.topSegment.angle), rotationData.target360Angle, this.rotateSpeed / 2 + 1) &&
-				!this.shootTarget.isFiring) {
+		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.topSegment.angle), rotationData.target360Angle, this.rotateSpeed / 2 + 1)) {
 			this.rotate(this.shootTarget.increment);
 			this.shootTarget.increment = rotationData.angleIncrement;
 			this.shootTarget.readyToFire = false;
@@ -316,6 +322,7 @@ Turret.prototype.processTurretRotation = function() {
 
 Turret.prototype.processTurretFire = function() {
 	this.shootTarget.isFiring = true;
+	this.shootTarget.isCoolingDown = true;
 	this.charge.play();
 }
 
@@ -356,7 +363,7 @@ Turret.prototype.manageFiringBullets = function() {
 			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.instanceId, this.gameCore.instanceId + "_A", this.bulletParticle01.x, this.bulletParticle01.y);
 			this.engineCore.func_RequestExplosion(this.mapGroup, CONSTANTS.SPRITE_EXPLOSION_B, this.gameCore.instanceId, this.gameCore.instanceId + "_B", this.bulletParticle02.x, this.bulletParticle02.y);
 			var self = this;
-			setTimeout(function() { self.shootTarget.isFiring = false; }, 3000);
+			setTimeout(function() { self.shootTarget.isCoolingDown = false; }, 3000);
 		}
 	}
 }

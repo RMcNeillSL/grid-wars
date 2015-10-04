@@ -30,7 +30,7 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		this.moveSpeed = 2; // MUST BE A MULTIPLE OF 100(size of a square)!
 		this.rotateSpeed = 2;
 		this.turretRotateSpeed = 2;
-		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false };
+		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false, isCoolingDown: false };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
 		this.waypointControl = { trackPlacementFrequency: 15, moveStepCount: 0, onComplete: null };
 		
@@ -56,7 +56,8 @@ function Tank(engineCore, gameCore, mapGroup, tankGroup, xy, col, row, width, he
 		
 		// Create fire callback function
 		this.fire.onComplete = function(sprite) {
-			setTimeout(function() { self.shootTarget.isFiring = false; }, 2000);
+			self.shootTarget.isFiring = false;
+			setTimeout(function() { self.shootTarget.isCoolingDown = false; }, 2000);
 			if (self.shootTarget.instanceId) {
 				var target = self.engineCore.func_GetObjectFromInstanceId(self.shootTarget.instanceId);
 				if (target) {
@@ -93,13 +94,14 @@ Tank.prototype.update = function() {
 	}
 	
 	// Process tank turret rotation
-	if (this.shootTarget &&
+	if (!this.shootTarget.isFiring &&
 			(this.shootTarget.point || this.shootTarget.instanceId) ) {
 		this.processTurretRotation();
 	}
 	
 	// Process tank turret firing event
-	if (this.shootTarget.readyToFire &&
+	if (!this.shootTarget.isCoolingDown &&
+			this.shootTarget.readyToFire &&
 			!this.shootTarget.isFiring) {
 		this.processTurretFire();
 	}
@@ -168,12 +170,14 @@ Tank.prototype.shootAtXY = function(point) {
 	this.shootTarget.angle = rotationData.target360Angle;
 	this.shootTarget.isFiring = false;
 	this.shootTarget.readyToFire = false;
+	this.shootTarget.isCoolingDown = false;
 }
 
 Tank.prototype.clearLockonTarget = function() {
 	this.shootTarget.instanceId = null;
 	this.shootTarget.isFiring = false;
 	this.shootTarget.readyToFire = false;
+	this.shootTarget.isCoolingDown = false;
 }
 
 Tank.prototype.lockonAndShoot = function(targetObject) {
@@ -185,6 +189,7 @@ Tank.prototype.lockonAndShoot = function(targetObject) {
 		this.shootTarget.instanceId = targetObject.gameCore.instanceId;
 		this.shootTarget.isFiring = false;
 		this.shootTarget.readyToFire = false;
+		this.shootTarget.isCoolingDown = false;
 	}
 }
 
@@ -207,8 +212,7 @@ Tank.prototype.processTurretRotation = function() {
 		var rotationData = this.gameCore.calculateRotateToPointData(this.turretSegment.angle, sourcePoint, targetPoint, this.turretRotateSpeed);
 		
 		// Identify further rotation or begin charging animation (if target is in range)
-		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), rotationData.target360Angle, this.turretRotateSpeed / 2 + 1) &&
-				!this.shootTarget.isFiring) {
+		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), rotationData.target360Angle, this.turretRotateSpeed / 2 + 1)) {
 			this.rotate(rotationData.angleIncrement, false, true);
 			this.shootTarget.increment = rotationData.angleIncrement;
 			this.shootTarget.readyToFire = false;
@@ -222,6 +226,7 @@ Tank.prototype.processTurretRotation = function() {
 
 Tank.prototype.processTurretFire = function() {
 	this.shootTarget.isFiring = true;
+	this.shootTarget.isCoolingDown = true;
 	this.fire.play();
 }
 
