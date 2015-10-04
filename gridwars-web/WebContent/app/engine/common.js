@@ -107,19 +107,7 @@ GameCore.prototype.phaserAngleTo360 = function(phaserAngle) {
 	return outputAngle;
 }
 
-GameCore.prototype.calculateRotateToPointData = function(currentAngle, currentPoint, targetPoint, rotateSpeed) {
-
-	// Check X&Y deltas
-	var deltaX = targetPoint.x - currentPoint.x;
-	var deltaY = targetPoint.y - currentPoint.y;
-	
-	// Calculate target angle
-	var targetAngle = 0;
-	var calcAngle = Math.atan((deltaX*1.0)/deltaY) * 180/Math.PI;
-	if (deltaX >= 0 && deltaY >= 0) { targetAngle = 180 - calcAngle; }
-	if (deltaX >= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
-	if (deltaX <= 0 && deltaY >= 0) { targetAngle = -180 - calcAngle; }
-	if (deltaX <= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
+GameCore.prototype.calculateRotateToAngleData = function(currentAngle, targetAngle, rotateSpeed) {
 
 	// Adjust angles to 0-360 values
 	var target360Angle = this.phaserAngleTo360(targetAngle);
@@ -137,10 +125,31 @@ GameCore.prototype.calculateRotateToPointData = function(currentAngle, currentPo
 	return {
 		current360Angle: Math.round(current360Angle),
 		target360Angle: Math.round(target360Angle),
-		currentPoint: currentPoint,
-		targetPoint: targetPoint,
 		angleIncrement: angleIncrement
 	};
+}
+
+GameCore.prototype.calculateRotateToPointData = function(currentAngle, currentPoint, targetPoint, rotateSpeed) {
+
+	// Check X&Y deltas
+	var deltaX = targetPoint.x - currentPoint.x;
+	var deltaY = targetPoint.y - currentPoint.y;
+	
+	// Calculate target angle
+	var targetAngle = 0;
+	var calcAngle = Math.atan((deltaX*1.0)/deltaY) * 180/Math.PI;
+	if (deltaX >= 0 && deltaY >= 0) { targetAngle = 180 - calcAngle; }
+	if (deltaX >= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
+	if (deltaX <= 0 && deltaY >= 0) { targetAngle = -180 - calcAngle; }
+	if (deltaX <= 0 && deltaY < 0) { targetAngle = 0 - calcAngle; }
+	
+	// Process remaining calculations in rotateToAngle function
+	var result = this.calculateRotateToAngleData(currentAngle, targetAngle, rotateSpeed);
+	result.currentPoint = currentPoint;
+	result.targetPoint = targetPoint;
+
+	// Return calculated object
+	return result;
 }
 
 GameCore.prototype.angleInErrorMargin = function(currentAngle, targetAngle, errorMargin) {

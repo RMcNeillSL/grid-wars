@@ -94,8 +94,7 @@ Tank.prototype.update = function() {
 	}
 	
 	// Process tank turret rotation
-	if (!this.shootTarget.isFiring &&
-			(this.shootTarget.point || this.shootTarget.instanceId) ) {
+	if (!this.shootTarget.isFiring) {
 		this.processTurretRotation();
 	}
 	
@@ -220,7 +219,20 @@ Tank.prototype.processTurretRotation = function() {
 			this.shootTarget.readyToFire = (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range * 1.1);
 		}
 	} else {
+		
+		// Mark as not ready to fire
 		this.shootTarget.readyToFire = false;
+		
+		// Check if rotation to front needs to occur
+		if (!this.gameCore.angleInErrorMargin(this.gameCore.phaserAngleTo360(this.turretSegment.angle), 
+				this.gameCore.phaserAngleTo360(this.bodySegment.angle), 
+				this.turretRotateSpeed / 2 + 1)) {
+			var rotationData = this.gameCore.calculateRotateToAngleData(this.turretSegment.angle, this.bodySegment.angle, this.turretRotateSpeed);
+			this.rotate(rotationData.angleIncrement, false, true);
+		} else {
+			this.turretSegment.angle = this.bodySegment.angle;
+		}
+		
 	}
 }
 
