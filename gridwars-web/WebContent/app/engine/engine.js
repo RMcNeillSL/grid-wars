@@ -476,9 +476,9 @@ Engine.prototype.onMouseDown = function(pointer) {
 		this.updateSelectedGameObjectDetails(itemAtPoint);
 	}
 	
-	// Set mouse states for scrolling
-	if (pointer.rightButton.isDown && !this.isPointOverMinimap(this.mouse.position)) { this.mouse.rightScroll.isActive = false; }
-	if (pointer.middleButton.isDown && !this.isPointOverMinimap(this.mouse.position)) { this.mouse.middleScroll.isActive = false; }
+	// Reset mouse states for scrolling
+	this.mouse.rightScroll.isActive = false;
+	this.mouse.middleScroll.isActive = false;
 
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
@@ -619,16 +619,17 @@ Engine.prototype.onMouseUp = function(pointer) {
 
 	// Perform checks for left click
 	if (leftClick) {
-		if (this.isPointOverMinimap(point)) 				{ jumpToRadarClick(this.mouse.position); }
-		else if (this.newBuilding.active) 					{ placeBuilding(this.mouse.position.toCell()); }
-		else if (this.selected.length > 0) 					{ processSelectedAction(this.mouse.position.toCell(), this.mouse.position); }
-		else 												{ processSelectionChange(this.mouse.position); }
+		if (this.isPointOverMinimap(this.mouse.position)) 			{ jumpToRadarClick(this.mouse.position); }
+		else if (this.newBuilding.active) 							{ placeBuilding(this.mouse.position.toCell()); }
+		else if (this.selected.length > 0) 							{ processSelectedAction(this.mouse.position.toCell(), this.mouse.position); }
+		else 														{ processSelectionChange(this.mouse.position); }
 	}
 	
 	// Perform checks for right click
 	if (!clickHandled && rightClick) {
-		if (!this.mouse.rightScroll.isActive) 				{ deselectSelection(); } 
-		else 												{ this.mouse.rightScroll.isActive = false; }
+		if (this.mouse.rightScroll.isActive)						{ this.mouse.rightScroll.isActive = false; }
+		else if (this.isPointOverMinimap(this.mouse.position))		{ jumpToRadarClick(this.mouse.position); }
+		else														{ deselectSelection(); }
 	}
 	
 	// Perform checks for middle click
