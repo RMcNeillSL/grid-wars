@@ -824,7 +824,7 @@ public class Engine extends Thread {
 						objectAttackResponse = this.processObjectAttackObjectRequest(null, sourceIds.toArray(new String[sourceIds.size()]), unitsToAttack);
 						for (GameplayResponse response : objectAttackResponse) { responseList.add(response); }
 					} else {
-						buildingsToAttack = this.getBuildingsInUnitRange(unitRef, false, true);
+						buildingsToAttack = this.getBuildingsInUnitRange(unitRef, false, false);
 						if (buildingsToAttack.length > 0) {
 							sourceIds.clear(); sourceIds.add(unitRef.getInstanceId());
 							objectAttackResponse = this.processObjectAttackObjectRequest(null, sourceIds.toArray(new String[sourceIds.size()]), buildingsToAttack);
@@ -852,8 +852,12 @@ public class Engine extends Thread {
 		
 		// Declare working variables
 		DynGameDefence attackingDefence = null;
-		String[] attackingDefences = null;
+		DynGameUnit attackingUnit = null;
+		String[] pursuingObjects = null;
+		String[] holdStanceObjects = null;
+		ArrayList<String> attackingObjects = new ArrayList<String>();
 		String[] unitsInAttackRange = null;
+		String[] defencesInAttackRange = null;
 		ArrayList<String> sourceIdsPendingAttack = new ArrayList<String>();
 		ArrayList<String> targetIdsPendingAttack = new ArrayList<String>();
 		
@@ -913,18 +917,40 @@ public class Engine extends Thread {
 		for (DynGameUnit targetUnit : sourceUnits) {
 			if (targetUnit.getHealth() <= 0) {
 
-				// Record all turrets attacking destroyed object and clear out any attacking pairs 
-				attackingDefences = this.pursueAttackPairs.getAttackSources(targetUnit.getInstanceId());
+				// Record all objects attacking destroyed object and clear out any attacking pairs
+				pursuingObjects = this.pursueAttackPairs.getAttackSources(targetUnit.getInstanceId());
+				holdStanceObjects = this.holdGroundAttackPairs.getAttackSources(targetUnit.getInstanceId());
 				this.pursueAttackPairs.removeEither(targetUnit.getInstanceId());
-				
-				// Generate new targets
-				for (String defenceInstanceId : attackingDefences) {
-					attackingDefence = this.getGameDefenceFromInstanceId(defenceInstanceId);
+				this.holdGroundAttackPairs.removeEither(targetUnit.getInstanceId());
+
+				// Generate array of Ids to process
+				attackingObjects.clear();
+				for (int index = 0; index < pursuingObjects.length; index ++) { attackingObjects.add(pursuingObjects[index]); }
+				for (int index = 0; index < holdStanceObjects.length; index ++) { attackingObjects.add(holdStanceObjects[index]); }
+
+				// Generate new targets for hold stance
+				for (String instanceId : attackingObjects) {
+					attackingDefence = this.getGameDefenceFromInstanceId(instanceId);
 					if (attackingDefence != null) {
 						unitsInAttackRange = this.getUnitsInDefenceRange(attackingDefence);
 						if (unitsInAttackRange.length > 0) {
 							sourceIdsPendingAttack.add(attackingDefence.getInstanceId());
 							targetIdsPendingAttack.add(unitsInAttackRange[0]);
+						}
+					} else {
+						attackingUnit = this.getGameUnitFromInstanceId(instanceId);
+						if (attackingUnit != null) {
+							defencesInAttackRange = this.getBuildingsInUnitRange(attackingUnit, false, false);
+							if (defencesInAttackRange != null && defencesInAttackRange.length > 0) {
+								sourceIdsPendingAttack.add(attackingUnit.getInstanceId());
+								targetIdsPendingAttack.add(defencesInAttackRange[0]);
+							} else {
+								unitsInAttackRange = this.getUnitsInUnitRange(attackingUnit, true);
+								if (defencesInAttackRange != null && defencesInAttackRange.length > 0) {
+									sourceIdsPendingAttack.add(attackingUnit.getInstanceId());
+									targetIdsPendingAttack.add(unitsInAttackRange[0]);
+								}
+							}
 						}
 					}
 				}
@@ -939,10 +965,49 @@ public class Engine extends Thread {
 		// Clean up all buildings which have now been destroyed
 		for (DynGameBuilding targetBuilding : sourceBuildings) {
 			if (targetBuilding.getHealth() <= 0) {
+
+				// Record all objects attacking destroyed object and clear out any attacking pairs
+				pursuingObjects = this.pursueAttackPairs.getAttackSources(targetBuilding.getInstanceId());
+				holdStanceObjects = this.holdGroundAttackPairs.getAttackSources(targetBuilding.getInstanceId());
 				this.pursueAttackPairs.removeEither(targetBuilding.getInstanceId());
+				this.holdGroundAttackPairs.removeEither(targetBuilding.getInstanceId());
+				
+				// Generate array of Ids to process
+				attackingObjects.clear();
+				for (int index = 0; index < pursuingObjects.length; index ++) { attackingObjects.add(pursuingObjects[index]); }
+				for (int index = 0; index < holdStanceObjects.length; index ++) { attackingObjects.add(holdStanceObjects[index]); }
+
+				// Generate new targets for hold stance
+				for (String instanceId : attackingObjects) {
+					attackingDefence = this.getGameDefenceFromInstanceId(instanceId);
+					if (attackingDefence != null) {
+						unitsInAttackRange = this.getUnitsInDefenceRange(attackingDefence);
+						if (unitsInAttackRange.length > 0) {
+							sourceIdsPendingAttack.add(attackingDefence.getInstanceId());
+							targetIdsPendingAttack.add(unitsInAttackRange[0]);
+						}
+					} else {
+						attackingUnit = this.getGameUnitFromInstanceId(instanceId);
+						if (attackingUnit != null) {
+							defencesInAttackRange = this.getBuildingsInUnitRange(attackingUnit, false, false);
+							if (defencesInAttackRange != null && defencesInAttackRange.length > 0) {
+								sourceIdsPendingAttack.add(attackingUnit.getInstanceId());
+								targetIdsPendingAttack.add(defencesInAttackRange[0]);
+							} else {
+								unitsInAttackRange = this.getUnitsInUnitRange(attackingUnit, true);
+								if (defencesInAttackRange != null && defencesInAttackRange.length > 0) {
+									sourceIdsPendingAttack.add(attackingUnit.getInstanceId());
+									targetIdsPendingAttack.add(unitsInAttackRange[0]);
+								}
+							}
+						}
+					}
+				}
+				
+				// Destroy building and give cash to the destroyer
 				int awardedMoney = (int)Math.floor(targetBuilding.getCost() * 1.2);
 				killer.addPlayerCash(awardedMoney);
-				System.out.println(targetBuilding.getIdentifier() + " KILLED BY " + killer.getPlayerName() + " THEY WERE AWARDED $" + awardedMoney);
+//				System.out.println(targetBuilding.getIdentifier() + " KILLED BY " + killer.getPlayerName() + " THEY WERE AWARDED $" + awardedMoney);
 				this.destroyGameObject(targetBuilding);
 			}
 		}
@@ -950,7 +1015,7 @@ public class Engine extends Thread {
 		// Run request for all new attack source/target pairs
 		if (sourceIdsPendingAttack.size() > 0 &&
 				targetIdsPendingAttack.size() > 0) {
-			defenceAttackResponse = this.processObjectAttackObjectRequest(player, 
+			defenceAttackResponse = this.processObjectAttackObjectRequest(null, 
 					sourceIdsPendingAttack.toArray(new String[sourceIdsPendingAttack.size()]), 
 					targetIdsPendingAttack.toArray(new String[targetIdsPendingAttack.size()]));
 			for (int index = 0; index < defenceAttackResponse.length; index ++) {
