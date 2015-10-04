@@ -397,7 +397,7 @@ Engine.prototype.render = function() {
 	var miniMapCellWidth = (this.minimap.width * 1.0 / this.mapRender.width);
 	var miniMapCellHeight = (this.minimap.height * 1.0 / this.mapRender.height);
 	
-	if(this.mapHUD.visible) {
+	if(this.hud.map_control.sprite.visible) {
 	
 		// Run through all objects outputting square for each
 		var potentialObstructions = this.buildings.concat(this.units);
@@ -471,8 +471,8 @@ Engine.prototype.onMouseDown = function(pointer) {
 	}
 	
 	// Set mouse states for scrolling
-	if (pointer.rightButton.isDown) { this.mouse.rightScroll.isActive = false; }
-	if (pointer.middleButton.isDown) { this.mouse.middleScroll.isActive = false; }
+	if (pointer.rightButton.isDown && !this.isPointOverMinimap(this.mouse.position)) { this.mouse.rightScroll.isActive = false; }
+	if (pointer.middleButton.isDown && !this.isPointOverMinimap(this.mouse.position)) { this.mouse.middleScroll.isActive = false; }
 
 	// Check if mouse down occured over minimap
 	this.selectionRectangle.miniMapClickStart = this.isPointOverMinimap(this.mouse.position);
@@ -484,18 +484,18 @@ Engine.prototype.onMouseUp = function(pointer) {
 	this.mouse.rightScroll.direction = -1;
 	this.processMouseFormUpdates();
 
-	// Jump out if the mouse is over a hud button
+	// Instance function escape conditions
 	if (this.hud.mouseOverHudButton) { return; }
-	
-	// Break if new unit has just been selected
-	if (this.selectedJustSet) {
-		this.selectedJustSet = false;
-		return;
-	}
+	if (this.selectedJustSet) { this.selectedJustSet = false; return; }
 
 	// Check for key press
 	var ctrlDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	var shiftDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.SHIFT);
+	
+	// Check for mouse clicks
+	var leftClick = pointer.leftButton.isDown;
+	var middleClick = pointer.middleButton.isDown;
+	var rightClick = pointer.rightButton.isDown;
 
 	// Positional values for cell and xy
 	var point = this.mouse.position;
@@ -503,126 +503,132 @@ Engine.prototype.onMouseUp = function(pointer) {
 	
 	// Flag for general pointer actions handled
 	var clickHandled = false;
+	
+	// Save reference to this
+	var self = this;
+	
+	// Place building at selected location if in placement mode
+	var placeBuilding = function(cell) {
+		if (self.isSquareEmpty(cell.col, cell.row) && 
+				self.isSquareWithinBaseRange(cell.col, cell.row)) {
+			self.newBuilding.target.setPosition(cell);
+			self.serverAPI.requestBuildingPlacement(self.newBuilding);
+			self.newBuilding.active = false;
+			self.mapRender.clearPlacementHover();
+		}
+	}
+	
+	// Jump to specified point over minimap
+	var jumpToRadarClick = function(point) {
+		self.moveToMinimapClick(new Point(point.x - self.minimap.left, point.y - self.minimap.top));
+	}
+	
+	// Process action for selected units
+	var processSelectedAction = function(cell, point) {
+
+		// Calculate item at point
+		var enemyAtPoint = self.getItemAtPoint(point, false, true);
+		var friendlyAtPoint = self.getItemAtPoint(point, true, true);
+		
+		// Object reference variables
+		var objectRef = null;
+		var objectType = null;
+		var objectInstanceId = null;
+		
+		// Group API request objects
+		var unitsForMoveRequest = [];
+		
+		// Flags for object click event
+		var cellEmpty = self.isSquareEmpty(cell.col, cell.row);
+
+		// Process selected items
+		for (var selectedIndex = 0; selectedIndex < self.selected.length; selectedIndex++) {
+			
+			// Identify type of unit and create reference
+			objectRef = self.selected[selectedIndex];
+			objectType = CONSTANTS.getObjectType(objectRef.gameCore.identifier);
+			objectInstanceId = objectRef.gameCore.instanceId;
+			
+			// Make sure self is defined
+			if (objectRef) {
+				
+				// Process for units
+				if (objectType == "UNIT") {
+					if (cellEmpty && ctrlDown) 		{ clickHandled = true;	 } //targetUnit.shootAtXY(point); }
+					if (cellEmpty && !ctrlDown) 	{ clickHandled = true; 	unitsForMoveRequest.push(objectRef); } 
+					if (!cellEmpty && enemyAtPoint) { clickHandled = true; 	self.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
+				}
+				
+				// Process for buildings
+				if (objectType == "BUILDING") { }
+				
+				// Process for defences
+				if (objectType == "DEFENCE") {
+					if (enemyAtPoint) 				{ clickHandled = true;	self.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
+//					if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
+//						clickHandled = true;
+//						this.selected[selectedIndex].shootAtXY(point);
+////						this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
+//					}
+				}
+			}
+		}
+		
+		// Process any units waiting for move request - generate set of end cells
+		if (unitsForMoveRequest.length > 0) { self.moveUnitGroup(unitsForMoveRequest, cell); }
+			
+		// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
+		if (!clickHandled && !enemyAtPoint && !friendlyAtPoint && self.displayedGameObject.gameCore.identifier !== "TANK") {
+			self.selected = [];
+			self.updateSelectedGameObjectDetails(null);
+		}
+	}
+	
+	// Process deselection and alterations to selected items
+	var processSelectionChange = function(point) {
+
+		// Determine item at point
+		var itemAtPoint = self.getItemAtPoint(point, true, false);
+
+		// Add to reset select list
+		if (itemAtPoint) {
+			if (shiftDown) {
+				self.selected.push(itemAtPoint);
+			} else {
+				self.selected = [itemAtPoint];
+			}
+		}
+
+		// Clear selected objects
+		if(self.selected.length <= 0) {
+			self.updateSelectedGameObjectDetails(null);
+		}
+	}
+	
+	// Deselect selected items
+	var deselectSelection = function() {
+		self.selected = [];
+		self.updateSelectedGameObjectDetails(null);		
+	}
 
 	// Perform checks for left click
-	if (pointer.leftButton.isDown) {
-		
-		// Check if clicking on a new location on the map first
-		if (this.isPointOverMinimap(point)) {
-			// Jump to cell at point
-			this.moveToMinimapClick(new Point(point.x - this.minimap.left, point.y - this.minimap.top));
-			
-		// Create new building
-		} else if (this.newBuilding.active) {
-
-			// Render placement overlay
-			if (this.isSquareEmpty(mouseCell.col, mouseCell.row) && this.isSquareWithinBaseRange(mouseCell.col, mouseCell.row)) {
-				this.newBuilding.target.setPosition(mouseCell);
-				this.serverAPI.requestBuildingPlacement(this.newBuilding);
-				this.newBuilding.active = false;
-				this.mapRender.clearPlacementHover();
-			}
-
-		// Manage selected units
-		} else if (this.selected.length > 0) {
-
-			// Calculate item at point
-			var enemyAtPoint = this.getItemAtPoint(point, false, true);
-			var friendlyAtPoint = this.getItemAtPoint(point, true, true);
-			
-			// Object reference variables
-			var objectRef = null;
-			var objectType = null;
-			var objectInstanceId = null;
-			
-			// Group API request objects
-			var unitsForMoveRequest = [];
-			
-			// Flags for object click event
-			var cellEmpty = this.isSquareEmpty(mouseCell.col, mouseCell.row);
-
-			// Process selected items
-			for (var selectedIndex = 0; selectedIndex < this.selected.length; selectedIndex++) {
-				
-				// Identify type of unit and create reference
-				objectRef = this.selected[selectedIndex];
-				objectType = CONSTANTS.getObjectType(objectRef.gameCore.identifier);
-				objectInstanceId = objectRef.gameCore.instanceId;
-				
-				// Make sure self is defined
-				if (objectRef) {
-					
-					// Process for units
-					if (objectType == "UNIT") {
-						if (cellEmpty && ctrlDown) 		{ clickHandled = true;	 } //targetUnit.shootAtXY(point); }
-						if (cellEmpty && !ctrlDown) 	{ clickHandled = true; 	unitsForMoveRequest.push(objectRef); } 
-						if (!cellEmpty && enemyAtPoint) { clickHandled = true; 	this.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
-					}
-					
-					// Process for buildings
-					if (objectType == "BUILDING") { }
-					
-					// Process for defences
-					if (objectType == "DEFENCE") {
-						if (enemyAtPoint) 				{ clickHandled = true;	this.serverAPI.requestObjectAttackObject(objectInstanceId, enemyAtPoint.gameCore.instanceId); }
-//						if (ctrlDown && !enemyAtPoint && !friendlyAtPoint) {
-//							clickHandled = true;
-//							this.selected[selectedIndex].shootAtXY(point);
-////							this.serverAPI.requestDefenceAttackXY([this.selected[selectedIndex]], this.mouse.position.x, this.mouse.position.y);
-//						}
-					}
-				}
-			}
-			
-			// Process any units waiting for move request - generate set of end cells
-			if (unitsForMoveRequest.length > 0) { this.moveUnitGroup(unitsForMoveRequest, mouseCell); }
-				
-			// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
-			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint && this.displayedGameObject.gameCore.identifier !== "TANK") {
-				this.selected = [];
-				this.updateSelectedGameObjectDetails(null);
-			}
-
-		// Select units/buildings under mouseXY
-		} else {
-
-			// Determine item at point
-			var itemAtPoint = this.getItemAtPoint(point, true, false);
-
-			// Add to reset select list
-			if (itemAtPoint) {
-				if (shiftDown) {
-					this.selected.push(itemAtPoint);
-				} else {
-					this.selected = [itemAtPoint];
-				}
-			}
-
-			// Clear selected objects
-			if(this.selected.length <= 0) {
-				 this.updateSelectedGameObjectDetails(null);
-			}
-		}
+	if (leftClick) {
+		if (this.isPointOverMinimap(point)) 				{ jumpToRadarClick(this.mouse.position); }
+		else if (this.newBuilding.active) 					{ placeBuilding(this.mouse.position.toCell()); }
+		else if (this.selected.length > 0) 					{ processSelectedAction(this.mouse.position.toCell(), this.mouse.position); }
+		else 												{ processSelectionChange(this.mouse.position); }
 	}
-
-	// Set scroll state for right button
-	if (pointer.rightButton.isDown) {
-		if (!this.mouse.rightScroll.isActive) {
-			this.selected = [];
-			this.updateSelectedGameObjectDetails(null);
-		} else {
-			this.mouse.rightScroll.isActive = false;
-		}
+	
+	// Perform checks for right click
+	if (!clickHandled && rightClick) {
+		if (!this.mouse.rightScroll.isActive) 				{ deselectSelection(); } 
+		else 												{ this.mouse.rightScroll.isActive = false; }
 	}
-
+	
 	// Perform checks for middle click
-	if (!clickHandled && pointer.middleButton.isDown) {
-		if (!this.mouse.middleScroll.isActive) {
-			this.selected = [];
-			this.updateSelectedGameObjectDetails(null);
-		} else {
-			this.mouse.middleScroll.isActive = false;
-		}
+	if (!clickHandled && middleClick) {
+		if (!this.mouse.middleScroll.isActive) 				{ deselectSelection(); }
+		else 												{ this.mouse.middleScroll.isActive = false; }
 	}
 
 	// Release mark as mouse down overminimap
@@ -1134,7 +1140,7 @@ Engine.prototype.updateFogOfWar = function(xPosition, yPosition) {
 	this.foWVisibilityMap = [];
 	for (var rowIndex = 0; rowIndex < this.mapRender.height; rowIndex ++) {
 		for (var colIndex = 0; colIndex < this.mapRender.width; colIndex ++) {
-			if (!this.mapHUD.visible) {
+			if (!this.hud.map_control.sprite.visible) {
 				this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 1 });
 			} else {
 				this.foWVisibilityMap.push({ frame: CONSTANTS.MAP_FOW_FULL, angle: 0, isVisible: 0 });
@@ -1358,7 +1364,13 @@ Engine.prototype.createGameScreen = function() {
 	
 	// Define base HUD object
 	this.hud = {
-			mouseOverHudButton : false
+			mouseOverHudButton : false,
+			map_control : {
+				sprite : null
+			},
+			object_control : {
+				sprite : null
+			}
 	};
 
 	// Create reference to this
@@ -1571,19 +1583,19 @@ Engine.prototype.createGameScreen = function() {
 	var createObjectHUDText = function(textData, startingText, zIndex, visible) { return createHUDLabel(textData, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop, startingText, zIndex, visible); };
 	
 	// Create map map HUD
-	this.mapHUD = this.phaserGame.add.sprite(mapLeft, 0, CONSTANTS.MINI_MAP);
-	this.mapHUD.width = CONSTANTS.HUD.MAP_CONTROL.WIDTH;
-	this.mapHUD.height = CONSTANTS.HUD.MAP_CONTROL.HEIGHT;
-	this.mapHUD.fixedToCamera = true;
-	this.mapHUD.z = 90;
+	this.hud.map_control.sprite = this.phaserGame.add.sprite(mapLeft, 0, CONSTANTS.MINI_MAP);
+	this.hud.map_control.sprite.width = CONSTANTS.HUD.MAP_CONTROL.WIDTH;
+	this.hud.map_control.sprite.height = CONSTANTS.HUD.MAP_CONTROL.HEIGHT;
+	this.hud.map_control.sprite.fixedToCamera = true;
+	this.hud.map_control.sprite.z = 90;
 
 	// Create object details HUD
-	this.gameObjectDetailsMenu = this.phaserGame.add.sprite(unitLeft, unitTop, CONSTANTS.UNIT_DETAILS);
-	this.gameObjectDetailsMenu.width = CONSTANTS.HUD.OBJECT_CONTROL.WIDTH;
-	this.gameObjectDetailsMenu.height = CONSTANTS.HUD.OBJECT_CONTROL.HEIGHT;
-	this.gameObjectDetailsMenu.fixedToCamera = true;
-	this.gameObjectDetailsMenu.z = 90;
-	this.gameObjectDetailsMenu.visible = false;
+	this.hud.object_control.sprite = this.phaserGame.add.sprite(unitLeft, unitTop, CONSTANTS.UNIT_DETAILS);
+	this.hud.object_control.sprite.width = CONSTANTS.HUD.OBJECT_CONTROL.WIDTH;
+	this.hud.object_control.sprite.height = CONSTANTS.HUD.OBJECT_CONTROL.HEIGHT;
+	this.hud.object_control.sprite.fixedToCamera = true;
+	this.hud.object_control.sprite.z = 90;
+	this.hud.object_control.sprite.visible = false;
 	
 	// Construct minimap sprite
 	var miniMapId = null;
@@ -1600,7 +1612,7 @@ Engine.prototype.createGameScreen = function() {
 	this.gameObjectHintSell.fixedToCamera = true;
 	this.gameObjectHintSell.z = 92;
 	this.gameObjectHintSell.visible = false;
-	this.purchaseDetailsBackground = this.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 260, this.mapHUD.top + this.mapHUD.height, CONSTANTS.DETAILS_DIALOG);
+	this.purchaseDetailsBackground = this.phaserGame.add.sprite(CONSTANTS.GAME_SCREEN_WIDTH - 260, this.hud.map_control.sprite.top + this.hud.map_control.sprite.height, CONSTANTS.DETAILS_DIALOG);
 	this.purchaseDetailsBackground.width = 262;
 	this.purchaseDetailsBackground.height = 116;
 	this.purchaseDetailsBackground.fixedToCamera = true;
@@ -1611,7 +1623,7 @@ Engine.prototype.createGameScreen = function() {
 	for (var index = 0; index < 4; index ++) {
 		var newLabel = this.phaserGame.add.text(
 				CONSTANTS.GAME_SCREEN_WIDTH - 240,
-				this.mapHUD.top + this.mapHUD.height + 16 + index * 20,
+				this.hud.map_control.sprite.top + this.hud.map_control.sprite.height + 16 + index * 20,
 				"",
 				{	font: "bold 12px Consolas",
 					fill: "#fff", 
@@ -1648,9 +1660,9 @@ Engine.prototype.createGameScreen = function() {
 			singleCellHeight * this.mapRender.screenCellHeight - 1);
 	
 	// Add all buttons to groups - keep zindex order correct
-	this.hudGroup.add(this.mapHUD);
+	this.hudGroup.add(this.hud.map_control.sprite);
 	this.hudGroup.add(this.minimap);
-	this.hudGroup.add(this.gameObjectDetailsMenu);
+	this.hudGroup.add(this.hud.object_control.sprite);
 	this.hudGroup.add(this.homeButton);
 	this.hudGroup.add(this.defenceButton);
 	this.hudGroup.add(this.tankButton);
@@ -1673,7 +1685,7 @@ Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) 
 	
 	// Set core HUD sprites to show
 	this.gameObjectDetailsText.visible = (selectedGameObject != null);
-	this.gameObjectDetailsMenu.visible = (selectedGameObject != null);
+	this.hud.object_control.sprite.visible = (selectedGameObject != null);
 	this.gameObjectDetailsIcon.visible = (selectedGameObject != null);
 	this.gameObjectHealthText.visible = (selectedGameObject != null);
 	
@@ -1690,13 +1702,15 @@ Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) 
 }
 
 Engine.prototype.setMinimapVisibility = function(show) {
-	this.mapHUD.visible = show;
+	this.hud.map_control.sprite.visible = show;
 	this.minimap.visible = show;
 	this.tankButton.visible = show;
 	this.homeButton.visible = show;
 	this.defenceButton.visible = show;
 	this.moneyLabel.visible = show;
 	this.miniMapViewRectangle.visible = show;
+	this.gameObjectSell.visible = false;
+	this.gameObjectStop.visible = false;
 }
 
 Engine.prototype.updatePlayerStatus = function() {
