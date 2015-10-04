@@ -480,32 +480,22 @@ Engine.prototype.onMouseDown = function(pointer) {
 
 Engine.prototype.onMouseUp = function(pointer) {
 
-	console.log("1 : " + this.gameObjectSell.x);
-
 	// Cancel right scroll
 	this.mouse.rightScroll.direction = -1;
 	this.processMouseFormUpdates();
 
-	console.log("2 : " + this.gameObjectSell.x);
-
 	// Jump out if the mouse is over a hud button
 	if (this.hud.mouseOverHudButton) { return; }
-
-	console.log("3 : " + this.gameObjectSell.x);
-
+	
 	// Break if new unit has just been selected
 	if (this.selectedJustSet) {
 		this.selectedJustSet = false;
 		return;
 	}
 
-	console.log("4 : " + this.gameObjectSell.x);
-
 	// Check for key press
 	var ctrlDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	var shiftDown = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.SHIFT);
-
-	console.log("5 : " + this.gameObjectSell.x);
 
 	// Positional values for cell and xy
 	var point = this.mouse.position;
@@ -513,8 +503,6 @@ Engine.prototype.onMouseUp = function(pointer) {
 	
 	// Flag for general pointer actions handled
 	var clickHandled = false;
-	
-	console.log("6 : " + this.gameObjectSell.x);
 
 	// Perform checks for left click
 	if (pointer.leftButton.isDown) {
@@ -592,12 +580,12 @@ Engine.prototype.onMouseUp = function(pointer) {
 			// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
 			if (!clickHandled && !enemyAtPoint && !friendlyAtPoint && this.displayedGameObject.gameCore.identifier !== "TANK") {
 				this.selected = [];
-				this.setGameObjectDetailsVisibility(false);
+				this.updateSelectedGameObjectDetails(null);
 			}
 
 		// Select units/buildings under mouseXY
 		} else {
-			
+
 			// Determine item at point
 			var itemAtPoint = this.getItemAtPoint(point, true, false);
 
@@ -609,9 +597,9 @@ Engine.prototype.onMouseUp = function(pointer) {
 					this.selected = [itemAtPoint];
 				}
 			}
-			
+
 			// Clear selected objects
-			if(this.selected.length < 1) {
+			if(this.selected.length <= 0) {
 				 this.updateSelectedGameObjectDetails(null);
 			}
 		}
@@ -621,7 +609,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 	if (pointer.rightButton.isDown) {
 		if (!this.mouse.rightScroll.isActive) {
 			this.selected = [];
-			this.setGameObjectDetailsVisibility(false, true);
+			this.updateSelectedGameObjectDetails(null);
 		} else {
 			this.mouse.rightScroll.isActive = false;
 		}
@@ -631,7 +619,7 @@ Engine.prototype.onMouseUp = function(pointer) {
 	if (!clickHandled && pointer.middleButton.isDown) {
 		if (!this.mouse.middleScroll.isActive) {
 			this.selected = [];
-			this.setGameObjectDetailsVisibility(false);
+			this.updateSelectedGameObjectDetails(null);
 		} else {
 			this.mouse.middleScroll.isActive = false;
 		}
@@ -1516,7 +1504,7 @@ Engine.prototype.createGameScreen = function() {
 		var newButton = createGameButton(spriteInfo, CONSTANTS.UNIT_DETAILS_BUTTONS, CONSTANTS.HUD.OBJECT_CONTROL, unitLeft, unitTop);
 		
 		// Hide button by default
-		newButton.visible = true;
+		newButton.visible = false;
 
 		// Add listner events
 		newButton.events.onInputOver.add(function() {
@@ -1673,41 +1661,32 @@ Engine.prototype.createGameScreen = function() {
 
 Engine.prototype.updateSelectedGameObjectDetails = function(selectedGameObject) {
 	
-	// 
+	// Set values to be displayed in the HUD
 	if(selectedGameObject != null) {
-		
-		// 
 		this.gameObjectDetailsText.setText(selectedGameObject.gameCore.identifier);
 		this.gameObjectDetailsIcon.loadTexture(selectedGameObject.gameCore.colour.ICON);
-		var healthPercentage = Math.floor((selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100);
-		
-		// 
-		if(healthPercentage > 0) {
-			this.gameObjectHealthText.setText(healthPercentage + "%");
-		}
-
-		// Set functionality for buttons
-		if (selectedGameObject.gameCore.identifier == "TURRET") { this.gameObjectSell.visible = true; this.gameObjectStop.visible = false; }
-		if (selectedGameObject.gameCore.identifier == "HUB") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
-		if (selectedGameObject.gameCore.identifier == "TANK") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
+		this.gameObjectHealthText.setText(Math.max(Math.floor((selectedGameObject.gameCore.health / selectedGameObject.gameCore.maxHealth)*100), 0) + "%");
 	}
 	
-	// 
+	// Save reference to displaying object
 	this.displayedGameObject = selectedGameObject;
-	this.setGameObjectDetailsVisibility(selectedGameObject != null);
-}
-
-Engine.prototype.setGameObjectDetailsVisibility = function(show) {
 	
 	// Set core HUD sprites to show
-	this.gameObjectDetailsText.visible = show;
-	this.gameObjectDetailsMenu.visible = show;
-	this.gameObjectDetailsIcon.visible = show;
-	this.gameObjectHealthText.visible = show;
+	this.gameObjectDetailsText.visible = (selectedGameObject != null);
+	this.gameObjectDetailsMenu.visible = (selectedGameObject != null);
+	this.gameObjectDetailsIcon.visible = (selectedGameObject != null);
+	this.gameObjectHealthText.visible = (selectedGameObject != null);
 	
 	// Set unit buttons to show
 	this.gameObjectSell.visible = false;
 	this.gameObjectStop.visible = false;
+	
+	// Set functionality for buttons
+	if(selectedGameObject != null) {
+		if (selectedGameObject.gameCore.identifier == "TURRET") { this.gameObjectSell.visible = true; this.gameObjectStop.visible = false; }
+		if (selectedGameObject.gameCore.identifier == "HUB") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
+		if (selectedGameObject.gameCore.identifier == "TANK") { this.gameObjectSell.visible = false; this.gameObjectStop.visible = false; }
+	}
 }
 
 Engine.prototype.setMinimapVisibility = function(show) {
@@ -1755,7 +1734,7 @@ Engine.prototype.updatePlayerStatus = function() {
 				
 				if(deadPlayers[i1].playerId == self.currentPlayer.playerId) {
 					self.setMinimapVisibility(false);
-					self.setGameObjectDetailsVisibility(false);
+					self.updateSelectedGameObjectDetails(null);
 					self.updateFogOfWar();
 				}
 			}
@@ -2455,7 +2434,6 @@ Engine.prototype.processUnitDamage = function(responseData) {
 				if(gameObject.gameCore.health > 0 && this.displayedGameObject.gameCore.instanceId == gameObject.gameCore.instanceId) {
 					this.gameObjectHealthText.setText(Math.floor((refObject.newHealth / gameObject.gameCore.maxHealth)*100) + "%");
 				} else if (gameObject.gameCore.health <= 0 && this.displayedGameObject.gameCore.instanceId == gameObject.gameCore.instanceId) {
-					this.setGameObjectDetailsVisibility(false);
 					this.updateSelectedGameObjectDetails(null);
 				}
 			}
@@ -2528,7 +2506,6 @@ Engine.prototype.processDestroyObject = function(responseData) {
 		destroyId = responseData.source[index];
 		gameObject = this.getObjectFromInstanceId(destroyId);
 		this.updateSelectedGameObjectDetails(null);
-		this.setGameObjectDetailsVisibility(false);
 
 		// Add object to remove list
 		removeList.push(destroyId);
