@@ -996,7 +996,8 @@ Engine.prototype.processMouseFormUpdates = function() {
 	var ctrlState = this.phaserGame.input.keyboard.isDown(Phaser.Keyboard.CONTROL);
 	
 	// Display normal cursor if the mouse if over the HUD
-	if (this.hud.mapControl.isMouseOver) { updatePointerForm(CONSTANTS.CURSOR_NORMAL); return; }		// ROB
+	if (this.hud.mapControl.isMouseOver ||
+			this.hud.objectControl.isMouseOver) { updatePointerForm(CONSTANTS.CURSOR_NORMAL); return; }		// ROB
 	
 	// Process selection for nothing
 	if (nothingSelected) {
