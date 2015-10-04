@@ -27,6 +27,7 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 		this.shootTarget = { instanceId: null, point: null, angle: 0, increment: 0, isFiring: false, readyToFire: false, isCoolingDown: false };
 		this.target = { active: false, angle: 0, increment: this.rotateSpeed, x: -1, y: -1 };
 		this.bullets = { firing: false, speed: 15, elapsed: 0, incUnitX: 0, incUnitY: 0, targetX: 0, targetY: 0, interval: null };
+		this.idle = { minAngle: -1, maxAngle: -1, speed: 0.5, increment: 0, pauseTimer: null, startFirePause: 2000, reverseRotationPause: 2000 };
 		
 		// Create turret base object
 		this.baseSegment = this.engineCore.phaserEngine.add.sprite(this.left, this.top, CONSTANTS.SPRITE_TURRET, this.gameCore.colour.BASE);
@@ -234,8 +235,7 @@ Turret.prototype.update = function() {
 	}
 	
 	// Process turret rotation
-	if (!this.shootTarget.isFiring &&
-			(this.shootTarget.point || this.shootTarget.instanceId) ) {
+	if (!this.shootTarget.isFiring ) {
 		this.processTurretRotation();
 	}
 	
@@ -302,6 +302,14 @@ Turret.prototype.processTurretRotation = function() {
 	// Run calculations if a target object is assigned
 	if (targetPoint && sourcePoint) {
 
+		// Clear idle data
+		this.idle.minAngle = -1;
+		this.idle.maxAngle = -1;
+		if (this.idle.pauseTimer != null) {
+			clearTimeout(this.idle.pauseTimer);
+			this.idle.pauseTimer = null;
+		}
+		
 		// Calculate rotation and point data
 		var rotationData = this.gameCore.calculateRotateToPointData(this.topSegment.angle, sourcePoint, targetPoint, this.rotateSpeed);
 		
@@ -316,7 +324,37 @@ Turret.prototype.processTurretRotation = function() {
 			this.shootTarget.readyToFire = (this.gameCore.pythag(sourcePoint, targetPoint) <= this.gameCore.range * 1.1);
 		}
 	} else {
+
+		// Mark as not ready to fire
 		this.shootTarget.readyToFire = false;
+		
+		// Save reference to this
+		var self = this;
+		
+		// Calculate idle data if not already set
+		if (this.idle.minAngle == -1 || this.idle.maxAngle == -1) {
+			this.idle.minAngle = (this.topSegment.angle - 50) % 360;
+			if (this.idle.minAngle < 0) { this.idle.minAngle = 360 + this.idle.minAngle; }
+			this.idle.maxAngle = (this.topSegment.angle + 50) % 360;
+			this.idle.increment = 0;
+			this.idle.pauseTimer = setTimeout(function() {self.idle.increment = self.idle.speed; }, this.idle.startFirePause);
+		}
+		
+		// Run idle movement
+		if (this.idle.increment != 0) {
+			
+			// Increment idle angle
+			this.rotate(this.idle.increment);
+			
+			// Check if direction needs to be reversed
+			var current360Angle = this.gameCore.phaserAngleTo360(this.topSegment.angle);
+			if (this.gameCore.angleInErrorMargin(current360Angle, this.idle.minAngle, this.idle.speed / 2 + 1) ||
+					this.gameCore.angleInErrorMargin(current360Angle, this.idle.maxAngle, this.idle.speed / 2 + 1)) {
+				var saveIncrement = this.idle.increment * -1;
+				this.idle.pauseTimer = setTimeout(function() { self.idle.increment = saveIncrement; }, this.idle.reverseRotationPause);
+				this.idle.increment = 0;
+			}
+		}
 	}
 }
 
