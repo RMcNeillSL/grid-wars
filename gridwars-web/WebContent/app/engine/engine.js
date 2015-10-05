@@ -1439,7 +1439,7 @@ Engine.prototype.createGameScreen = function() {
 			
 			// Show purchase details
 			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.DEFENCE) {
-				self.purchaseDetailsText[0].setText("Plasma Cannon - $1200");
+				self.purchaseDetailsText[0].setText("Plasma Cannon - $2000");
 				self.purchaseDetailsText[1].setText("");
 				self.purchaseDetailsText[2].setText("Health: 500hp");
 				self.purchaseDetailsText[3].setText("Damage: 50 per plasma ball");

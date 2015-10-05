@@ -204,7 +204,7 @@ public final class Const {
 	public static final GameBuilding[] BUILDINGS = {
 			//					Name			Health		Cost		Tech Level				Build Time		Sight Range		Power		Width		Height		Range		Damage
 			new GameBuilding	("HUB", 		2000, 		5000, 		E_TechLevel.TECH_01, 	3000, 			1100,			2, 			3, 			3),
-			new GameDefence		("TURRET", 		500, 		1200, 		E_TechLevel.TECH_01, 	10000, 			700,			2, 			1, 			1, 			400, 		50)
+			new GameDefence		("TURRET", 		500, 		2000, 		E_TechLevel.TECH_01, 	10000, 			700,			2, 			1, 			1, 			400, 		50)
 		};
 
 	// Units in game
