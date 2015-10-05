@@ -1440,13 +1440,13 @@ Engine.prototype.createGameScreen = function() {
 			
 			// Show purchase details
 			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.DEFENCE) {
-				self.purchaseDetailsText[0].setText("Plasma Cannon - $2000");
+				self.purchaseDetailsText[0].setText("Plasma Cannon - $3000 [15s]");
 				self.purchaseDetailsText[1].setText("");
 				self.purchaseDetailsText[2].setText("Health: 500hp");
 				self.purchaseDetailsText[3].setText("Damage: 50 per plasma ball");
 			}
 			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.UNIT) {
-				self.purchaseDetailsText[0].setText("Rhino Tank - $700");
+				self.purchaseDetailsText[0].setText("Rhino Tank - $700 [5s]");
 				self.purchaseDetailsText[1].setText("");
 				self.purchaseDetailsText[2].setText("Health: 300hp");
 				self.purchaseDetailsText[3].setText("Damage: 40 per shell");

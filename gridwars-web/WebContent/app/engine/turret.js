@@ -73,9 +73,12 @@ function Turret(engineCore, gameCore, mapGroup, turretGroup, xy, col, row, width
 			self.shootTarget.isFiring = false;
 		}
 		this.charge.onComplete = function(sprite) {
-			
+
 			// Define shoot targetXY
 			var targetXY = new Point(0, 0);
+
+			// Mark unit as firing
+			self.shootTarget.isFiring = true;
 			
 			// Check if using old firing system
 			if (self.shootTarget.isFiring) {
@@ -359,7 +362,6 @@ Turret.prototype.processTurretRotation = function() {
 }
 
 Turret.prototype.processTurretFire = function() {
-	this.shootTarget.isFiring = true;
 	this.shootTarget.isCoolingDown = true;
 	this.charge.play();
 }
