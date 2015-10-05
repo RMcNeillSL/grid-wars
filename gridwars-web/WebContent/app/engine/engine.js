@@ -584,7 +584,8 @@ Engine.prototype.onMouseUp = function(pointer) {
 		if (unitsForMoveRequest.length > 0) { self.moveUnitGroup(unitsForMoveRequest, cell); }
 			
 		// Deselect selection if selected building and player clicks away - clickHandled to prevent alternat building specific options
-		if (!clickHandled && !enemyAtPoint && !friendlyAtPoint && self.displayedGameObject.gameCore.identifier !== "TANK") {
+		if (!clickHandled && !enemyAtPoint && !friendlyAtPoint &&
+				(self.displayedGameObject == null || self.displayedGameObject.gameCore.identifier !== "TANK")) {
 			self.selected = [];
 			self.updateSelectedGameObjectDetails(null);
 		}
@@ -997,7 +998,7 @@ Engine.prototype.processMouseFormUpdates = function() {
 	
 	// Display normal cursor if the mouse if over the HUD
 	if (this.hud.mapControl.isMouseOver ||
-			this.hud.objectControl.isMouseOver) { updatePointerForm(CONSTANTS.CURSOR_NORMAL); return; }		// ROB
+			this.hud.objectControl.isMouseOver) { updatePointerForm(CONSTANTS.CURSOR_NORMAL); return; }
 	
 	// Process selection for nothing
 	if (nothingSelected) {
