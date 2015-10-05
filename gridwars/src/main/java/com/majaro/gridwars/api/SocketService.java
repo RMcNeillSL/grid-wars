@@ -165,10 +165,9 @@ public class SocketService {
 
 	@OnEvent("getNewUserList")
 	public void onGetNewUserList (SocketIOClient client) {
-		System.out.println("RECEIVED REQUEST FOR LOBBY USERS LIST");
 		String sessionId = client.getSessionId().toString();
+		System.out.println("User lobby list request received from session #" + sessionId);
 		GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfo(sessionId);
-
 		if (gameAndUserInfo != null) {
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
 			broadcastRoomState.sendEvent("lobbyUserList", requestProcessor.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
