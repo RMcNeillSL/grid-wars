@@ -15,7 +15,7 @@ import com.majaro.gridwars.game.Const.GameDefence;
 import com.majaro.gridwars.game.Const.GameObject;
 import com.majaro.gridwars.game.Const.GameUnit;
 
-public class Engine extends Thread {
+public class Engine {
 	
 	// A* pathfinder class
 	private class AStarPathFinder {
@@ -240,7 +240,6 @@ public class Engine extends Thread {
 		
 		// Mark engine as running
 		this.isRunning = true;
-		
 	}
 	
 	public GameplayResponse setupGameSpawns() {
@@ -1027,7 +1026,7 @@ public class Engine extends Thread {
 		return responseList.toArray(new GameplayResponse[responseList.size()]);
 	}
 
-	private GameplayResponse processUserLeaveGame (Player sender) {		//ROB
+	private GameplayResponse processUserLeaveGame (Player sender) {
 		GameplayResponse destroyBuildingResponse = new GameplayResponse(E_GameplayResponseCode.DESTROY_OBJECT);
 
 		for (DynGameBuilding building : buildings) {
@@ -1086,7 +1085,12 @@ public class Engine extends Thread {
 	}
 
 	
-	// Game request method
+	// Game request methods
+	
+	public GameplayResponse dropUser(int userId) {
+		Player sender = this.getPlayerFromUserId(userId);
+		return this.processUserLeaveGame(sender);
+	}
 
 	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
 
@@ -1445,6 +1449,13 @@ public class Engine extends Thread {
 			}
 		}
 		return null;
+	}
+	
+	
+	// Getters
+	
+	public boolean getIsRunning() {
+		return this.isRunning;
 	}
 	
 }

@@ -36,8 +36,8 @@ public class SocketService {
 
 	// Socket objects
 	private Configuration socketServerConfig;
-	private SocketIOServer socketServer;
-	private static final String SERVER_LOBBY_CHANNEL = "ServerLobby";
+	public SocketIOServer socketServer;
+	public static final String SERVER_LOBBY_CHANNEL = "ServerLobby";
 
 	public SocketService (RequestProcessor reqProcessor) {
 		
@@ -57,6 +57,11 @@ public class SocketService {
 		// Start socket server
 		socketServer.start();
 		socketServer.addNamespace(SERVER_LOBBY_CHANNEL);
+	}
+	
+	// Broadcast to game lobby user message
+	public void removeUserFromGame(String userName, GameplayRequest gameplayRequest) {
+		
 	}
 
 	// ENGINE - Get information for game through GamplayConfigRequest object
