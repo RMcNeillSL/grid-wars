@@ -5,6 +5,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import com.corundumstudio.socketio.BroadcastOperations;
 import com.majaro.gridwars.api.SocketService;
 import com.majaro.gridwars.apiobjects.AuthRequest;
 import com.majaro.gridwars.apiobjects.GameInitRequest;
@@ -209,6 +210,44 @@ public class RequestProcessor {
 		return new GameplayResponse();
 	}
 	
+	public void dropUserFromGameLobby(GameAndUserInfo gameAndUserInfo, String sessionId) {
+
+		// Declare working variables
+		boolean leaderDisconnect = false;
+		boolean lobbyDeleted = false;
+		
+		// Get room for broadcast message
+		BroadcastOperations broadcastServerRoomState = this.socketService.socketServer.getRoomOperations(SocketService.SERVER_LOBBY_CHANNEL);
+		
+		// Debug user leaving
+		System.out.println("User [" + gameAndUserInfo.getUserId() + "] is leaving the game lobby [" + gameAndUserInfo.getLobbyId() + "]");
+
+		// Check if leader is disconnecting
+		leaderDisconnect = this.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getId() == gameAndUserInfo.getUserId();
+
+		// Delete lobby if needed and update server list
+		lobbyDeleted = this.removeLobbyUserAndDeleteLobbyIfEmpty(sessionId);
+		broadcastServerRoomState.sendEvent("updateServerLobby", this.listGames());
+
+		if (!lobbyDeleted) {
+			GameLobby gameLobby = this.getGameLobbyFromLobbyId(gameAndUserInfo.getLobbyId());
+			if (gameLobby.started()) {
+				User user = this.getUserFromRESTSessionId(sessionId);
+				gameLobby.lobbyDropUser(user.getId());
+			} else {
+				
+				// Update information for all other users in lobby
+				BroadcastOperations broadcastRoomState = this.socketService.socketServer.getRoomOperations(gameAndUserInfo.getLobbyId());
+				this.setAllNotReady(gameAndUserInfo.getLobbyId());
+				broadcastRoomState.sendEvent("userLeftLobby", gameAndUserInfo.getUsername());
+				broadcastRoomState.sendEvent("lobbyUserList", this.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()));
+
+				// Process leader change message
+				if (leaderDisconnect) {	broadcastRoomState.sendEvent("leaderChanged", this.getConnectedLobbyUsersForLobbyId(gameAndUserInfo.getLobbyId()).get(0).getLinkedUser().getUsername()); }
+			}
+		}
+	}
+	
 	
 	// Managing game lobbies including joining, creating and game info retrieval
 
@@ -363,22 +402,34 @@ public class RequestProcessor {
 	}
 
 	public synchronized String authenticate(String sessionId, AuthRequest authRequest) {
+		
+		// Set default response
 		String response = "401";
 		
+		// Run request to DB to varify user credentials
 		User user = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
 
+		// Make sure a user was found
 		if (user != null) {
+			
+			// Declare working variables
 			boolean userLoggedIn = false;
-
+			boolean userSessionMatch = false;
+			
+			// Check if user is already logged in
 			for(int index = 0; index < activeSessions.size(); index++) {
 				if(activeSessions.get(index).getUser().getUsername().equals(user.getUsername())) {
 					userLoggedIn = true;
-					break;
+					if (activeSessions.get(index).getSessionId().equals(sessionId)) {
+						userSessionMatch = true;
+					} else {
+						break;
+					}
 				}
 			}
 
-			if (!userLoggedIn) {
-				addNewSession(sessionId, user);
+			if (!userLoggedIn || userSessionMatch) {
+				if (!userSessionMatch) { addNewSession(sessionId, user); }
 				response = user.getUsername();
 			} else {
 				response = "409";
@@ -626,11 +677,18 @@ public class RequestProcessor {
 	public GameAndUserInfo validateAndReturnGameLobbyAndUserInfo (String sessionId) {
 		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
 		User user = this.getUserFromSocketSessionId(sessionId);
-
 		if (gameLobby == null || user == null) {
 			return null;
 		}
-
+		return new GameAndUserInfo(gameLobby.getLobbyId(), user.getId(), gameLobby.getConnectedLobbyUsers(), user.getUsername());
+	}
+	
+	public GameAndUserInfo validateAndReturnGameLobbyAndUserInfoFromRESTSession (String sessionId) {
+		GameLobby gameLobby = this.getGameLobbyFromRESTSessionId(sessionId);
+		User user = this.getUserFromSocketSessionId(sessionId);
+		if (gameLobby == null || user == null) {
+			return null;
+		}
 		return new GameAndUserInfo(gameLobby.getLobbyId(), user.getId(), gameLobby.getConnectedLobbyUsers(), user.getUsername());
 	}
 }

@@ -16,6 +16,7 @@ import org.codehaus.jackson.map.annotate.JsonView;
 import com.majaro.gridwars.apiobjects.AuthRequest;
 import com.majaro.gridwars.apiobjects.GameJoinResponse;
 import com.majaro.gridwars.apiobjects.RegRequest;
+import com.majaro.gridwars.core.GameAndUserInfo;
 import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.RequestProcessor;
 import com.majaro.gridwars.game.GameStaticMap;
@@ -40,15 +41,20 @@ public class REST {
 	public Response Authenticate(AuthRequest authRequest) {
 		String sessionId = request.getSession(true).getId();
 		String authResponse = "";
-		if (!requestProcessor.isSessionAuthenticated(sessionId)) {
-			authResponse = requestProcessor.authenticate(sessionId, authRequest);
-			if(authRequest.getUsernameAttempt().toUpperCase().equals(authResponse.toUpperCase())) {
-				return Response.ok(authResponse).build();
-			} else {
-				return Response.status(Integer.parseInt(authResponse)).build();
+		authResponse = requestProcessor.authenticate(sessionId, authRequest);
+		if(authRequest.getUsernameAttempt().toUpperCase().equals(authResponse.toUpperCase())) {
+			
+			// Check if user is in a game
+			GameAndUserInfo gameAndUserInfo = requestProcessor.validateAndReturnGameLobbyAndUserInfoFromRESTSession(sessionId);
+			if (gameAndUserInfo != null) {
+				this.requestProcessor.dropUserFromGameLobby(gameAndUserInfo, sessionId);
 			}
+			
+			// Return login success
+			return Response.ok(authResponse).build();
+			
 		} else {
-			return Response.ok().build();
+			return Response.status(Integer.parseInt(authResponse)).build();
 		}
 	}
 
@@ -58,11 +64,9 @@ public class REST {
 	public Response IsAuthenticated() {
 		String sessionId = request.getSession(true).getId();
 		String user = null;
-
 		if (requestProcessor.isSessionAuthenticated(sessionId)) {
 			user = requestProcessor.getUserFromRESTSessionId(sessionId).getUsername();
 		}
-
 		return Response.ok(user).build();
 	}
 

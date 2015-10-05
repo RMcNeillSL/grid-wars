@@ -52,6 +52,9 @@ public class GameLobby {
 	public boolean started() {
 		return this.engine != null;
 	}
+	public void lobbyDropUser(int userId) {
+		this.engine.dropUser(userId);
+	}
 	public GameplayResponse[] processGameplayRequest(GameplayRequest gameplayRequest, int userId) {
 		return this.engine.processGameplayRequest(gameplayRequest, userId);
 	}
