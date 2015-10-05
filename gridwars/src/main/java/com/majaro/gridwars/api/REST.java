@@ -40,16 +40,22 @@ public class REST {
 	public Response Authenticate(AuthRequest authRequest) {
 		String sessionId = request.getSession(true).getId();
 		String authResponse = "";
-		if (!requestProcessor.isSessionAuthenticated(sessionId)) {
-			authResponse = requestProcessor.authenticate(sessionId, authRequest);
-			if(authRequest.getUsernameAttempt().toUpperCase().equals(authResponse.toUpperCase())) {
-				return Response.ok(authResponse).build();
-			} else {
-				return Response.status(Integer.parseInt(authResponse)).build();
-			}
+		authResponse = requestProcessor.authenticate(sessionId, authRequest);
+		if(authRequest.getUsernameAttempt().toUpperCase().equals(authResponse.toUpperCase())) {
+			return Response.ok(authResponse).build();
 		} else {
-			return Response.ok().build();
+			return Response.status(Integer.parseInt(authResponse)).build();
 		}
+//		if (!requestProcessor.isSessionAuthenticated(sessionId)) {
+//			authResponse = requestProcessor.authenticate(sessionId, authRequest);
+//			if(authRequest.getUsernameAttempt().toUpperCase().equals(authResponse.toUpperCase())) {
+//				return Response.ok(authResponse).build();
+//			} else {
+//				return Response.status(Integer.parseInt(authResponse)).build();
+//			}
+//		} else {
+//			return Response.ok().build();
+//		}
 	}
 
 	@POST
@@ -58,11 +64,9 @@ public class REST {
 	public Response IsAuthenticated() {
 		String sessionId = request.getSession(true).getId();
 		String user = null;
-
 		if (requestProcessor.isSessionAuthenticated(sessionId)) {
 			user = requestProcessor.getUserFromRESTSessionId(sessionId).getUsername();
 		}
-
 		return Response.ok(user).build();
 	}
 

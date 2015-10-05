@@ -363,22 +363,34 @@ public class RequestProcessor {
 	}
 
 	public synchronized String authenticate(String sessionId, AuthRequest authRequest) {
+		
+		// Set default response
 		String response = "401";
 		
+		// Run request to DB to varify user credentials
 		User user = dao.authenticate(authRequest.getUsernameAttempt(), authRequest.getPasswordAttempt());
 
+		// Make sure a user was found
 		if (user != null) {
+			
+			// Declare working variables
 			boolean userLoggedIn = false;
-
+			boolean userSessionMatch = false;
+			
+			// Check if user is already logged in
 			for(int index = 0; index < activeSessions.size(); index++) {
 				if(activeSessions.get(index).getUser().getUsername().equals(user.getUsername())) {
 					userLoggedIn = true;
-					break;
+					if (activeSessions.get(index).getSessionId().equals(sessionId)) {
+						userSessionMatch = true;
+					} else {
+						break;
+					}
 				}
 			}
 
-			if (!userLoggedIn) {
-				addNewSession(sessionId, user);
+			if (!userLoggedIn || userSessionMatch) {
+				if (!userSessionMatch) { addNewSession(sessionId, user); }
 				response = user.getUsername();
 			} else {
 				response = "409";
