@@ -81,10 +81,10 @@ public class SocketService {
 		String lobbyId = requestProcessor.validateGameInitRequest(data, sessionId);
 		if (lobbyId != null) {
 			System.out.println("Initialising game for lobby #" + lobbyId);
+			requestProcessor.initGameEngine(lobbyId);
 			GameplayConfig gameplayConfig = requestProcessor.generateGameplayConfig(sessionId);
 			BroadcastOperations broadcastRoomState = socketServer.getRoomOperations(lobbyId);
 			broadcastRoomState.sendEvent("gameInit", gameplayConfig);
-			requestProcessor.initGameEngine(lobbyId);
 		}
 	}
 

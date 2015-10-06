@@ -15,6 +15,7 @@ public class Player {
 	private int cash = 0;
 	private Coordinate spawnCoordinate = null;
 	private ArrayList<PurchaseRequest> purchaseQueue = null;
+	private LobbyUser lobbyUser;
 	
 	// Constructor
 	public Player(LobbyUser lobbyUser, int startingCash, Coordinate spawnCoordinate) {
@@ -24,6 +25,7 @@ public class Player {
 		this.cash = startingCash;
 		
 		// Populate core variables from lobby user
+		this.lobbyUser = lobbyUser;
 		this.playerId = lobbyUser.getLinkedUser().getId();
 		this.playerName = lobbyUser.getLinkedUser().getUsername();
 		
@@ -78,12 +80,14 @@ public class Player {
 	public String getPlayerName() { return this.playerName; }
 	public int getPlayerCash() { return this.cash; }
 	public Coordinate getSpawnCoordinate() { return this.spawnCoordinate; }
+	public LobbyUser getLobbyUser() { return this.lobbyUser; }
 	
 	// Setters
 	public int addPlayerCash(int cash) {
 		this.cash = this.cash + cash;
 		return this.cash;
 	}
+	
 	public int removePlayerCash(int cash) {
 		this.cash = this.cash - cash;
 		return this.cash;

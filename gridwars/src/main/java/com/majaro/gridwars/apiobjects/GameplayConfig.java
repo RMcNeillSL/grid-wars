@@ -8,9 +8,11 @@ import com.majaro.gridwars.core.GameLobby;
 import com.majaro.gridwars.core.LobbyUser;
 import com.majaro.gridwars.game.Const;
 import com.majaro.gridwars.game.Coordinate;
+import com.majaro.gridwars.game.Engine;
 import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameUnit;
 import com.majaro.gridwars.game.GameStaticMap;
+import com.majaro.gridwars.game.Player;
 
 public class GameplayConfig {
 	
@@ -34,7 +36,7 @@ public class GameplayConfig {
 	private GameUnit[] gameUnits;
 	
 	// Constructor
-	public GameplayConfig(GameLobby gameLobby, GameStaticMap gameStaticMap) {
+	public GameplayConfig(GameLobby gameLobby, GameStaticMap gameStaticMap, Engine engine) {
 		
 		// Save map related variables
 		this.mapId = gameStaticMap.getMapId();
@@ -50,14 +52,29 @@ public class GameplayConfig {
 		this.spawnCoordinates = new Coordinate[gameLobby.getConnectedLobbyUsers().size()];
 		
 		// Populate user settings
-		LobbyUser lobbyUserRef = null;
+		try {
+			Player player = null;
+			for (int index = 0; index < engine.getPlayersLength(); index++) {
+				player = engine.getPlayer(index);
+				this.userName.add(player.getPlayerName());
+				this.userColour.add(player.getLobbyUser().getPlayerColour());
+				this.userTeam.add(player.getLobbyUser().getPlayerTeam());
+				this.spawnCoordinates[index] = player.getSpawnCoordinate();
+			}
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+/*		LobbyUser lobbyUserRef = null;
 		for (int index = 0; index < gameLobby.getConnectedLobbyUsers().size(); index ++) {
 			lobbyUserRef = gameLobby.getConnectedLobbyUsers().get(index);
 			this.userName.add(lobbyUserRef.getLinkedUser().getUsername());
 			this.userColour.add(lobbyUserRef.getPlayerColour());
 			this.userTeam.add(lobbyUserRef.getPlayerTeam());
-			this.spawnCoordinates[index] = gameStaticMap.getSpawnCoordinates()[index];
-		}
+			this.spawnCoordinates[index] = engine.getPlayer(index).getSpawnCoordinates()[index];
+		}*/
+		
+		
 		
 		// Save game setup preferences
 		this.startingCash = gameLobby.getGameConfig().getStartingCash();

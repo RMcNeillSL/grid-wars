@@ -162,7 +162,7 @@ public class RequestProcessor {
 	public GameplayConfig generateGameplayConfig(String sessionId) {
 		GameLobby gameLobby = this.getGameLobbyFromSocketSessionId(sessionId);
 		if (gameLobby != null) {
-			return new GameplayConfig(gameLobby, this.getGameMapFromId(gameLobby.getMapId()));
+			return new GameplayConfig(gameLobby, this.getGameMapFromId(gameLobby.getMapId()), gameLobby.getEngine());
 		}
 		return null;
 	}
