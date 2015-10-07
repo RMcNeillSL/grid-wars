@@ -400,7 +400,7 @@ public class Engine {
 				
 				// Construct response object
 				if (newDefence != null) {
-					this.buildings.add(newDefence);
+					this.buildings.add(newDefence);	// Should be in processBuildingPlacementRequest really...
 					finishedBuildResponse = new GameplayResponse(E_GameplayResponseCode.BUILDING_PURCHASE_FINISHED);
 					finishedBuildResponse.addSource(purchaseRequest.getSourceObject().getIdentifier());
 					finishedBuildResponse.addTarget(purchaseObjectId);
@@ -419,7 +419,7 @@ public class Engine {
 				
 				// Construct response object
 				if (newBuilding != null) {
-					this.buildings.add(newBuilding);
+					this.buildings.add(newBuilding);	// Should be in processBuildingPlacementRequest really...
 					finishedBuildResponse = new GameplayResponse(E_GameplayResponseCode.BUILDING_PURCHASE_FINISHED);
 					finishedBuildResponse.addSource(purchaseRequest.getSourceObject().getIdentifier());
 					finishedBuildResponse.addTarget(purchaseObjectId);
@@ -451,7 +451,8 @@ public class Engine {
 		// Declare waypoint amending variables
 		ArrayList<DynGameUnit> waypointInterruptedUnits = new ArrayList<DynGameUnit>();
 		ArrayList<DynGameUnit> newWaypointInterruptedUnits = null;
-		Coordinate unitWaypointEnd = null;
+		Coordinate[] oldWaypointPath = null;
+		Coordinate waypointEnd = null;
 		
 		// Check each object in turn
 		for (int index = 0; index < sourceBuildings.length; index ++) {
@@ -515,9 +516,21 @@ public class Engine {
 			
 			// Update effected unit waypoint paths
 			for (DynGameUnit effectedUnit : waypointInterruptedUnits) {
-				unitWaypointEnd = effectedUnit.getWaypointEndCoordinate();
-				if (unitWaypointEnd != null) {
-					waypointUpdateResponse = this.processWaypointPathCoordsRequest(player, effectedUnit, unitWaypointEnd);
+				
+				// Get the last valid waypoint end cell
+				oldWaypointPath = effectedUnit.getWaypoints();
+				waypointEnd = null;
+				for (int waypointIndex = oldWaypointPath.length-1; waypointIndex >= 0; waypointIndex --) {
+					waypointEnd = oldWaypointPath[waypointIndex];
+					if (!this.staticMap.isCellObstructed(waypointEnd) &&
+							!this.dynamicMap.isCellObstructed(waypointEnd)) {
+						break;
+					}
+				}
+				
+				// Generate new waypoint path
+				if (waypointEnd != null) {
+					waypointUpdateResponse = this.processWaypointPathCoordsRequest(player, effectedUnit, waypointEnd);
 					for (GameplayResponse response : waypointUpdateResponse) {
 						responseList.add(response);
 					}
