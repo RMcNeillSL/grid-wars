@@ -491,6 +491,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 	this.mouse.rightScroll.direction = -1;
 	this.processMouseFormUpdates();
 
+	// Remove any scrolling locks currently active
+	this.mouse.rightScroll.isActive = false;
+	this.mouse.middleScroll.isActive = false;
+
 	// Instance function escape conditions
 	if (this.hud.mouseOverHudButton) { return; }
 	if (this.selectedJustSet) { this.selectedJustSet = false; return; }
@@ -628,23 +632,26 @@ Engine.prototype.onMouseUp = function(pointer) {
 	}
 	
 	// Perform checks for right click
-	if (!clickHandled && rightClick) {
-		if (this.mouse.rightScroll.isActive)						{ this.mouse.rightScroll.isActive = false; }
-		else if (this.isPointOverMinimap(this.mouse.position))		{ jumpToRadarClick(this.mouse.position); }
+	if (!clickHandled && rightClick && !this.mouse.rightScroll.isActive) {
+		if (this.isPointOverMinimap(this.mouse.position))			{ jumpToRadarClick(this.mouse.position); }
 		else														{ deselectSelection(); }
 	}
 	
 	// Perform checks for middle click
 	if (!clickHandled && middleClick) {
-		if (!this.mouse.middleScroll.isActive) 				{ deselectSelection(); }
-		else 												{ this.mouse.middleScroll.isActive = false; }
+		deselectSelection();
 	}
-
+	
 	// Release mark as mouse down overminimap
 	this.selectionRectangle.miniMapClickStart = false;
 
 	// Process updates for mouse
 	this.processMouseFormUpdates();
+
+	// Hide hint for sell item
+	if (!this.gameObjectSell.input.pointerOver()) {
+		this.gameObjectHintSell.visible = false;
+	}
 }
 
 Engine.prototype.onMouseMove = function(pointer, x, y) {
