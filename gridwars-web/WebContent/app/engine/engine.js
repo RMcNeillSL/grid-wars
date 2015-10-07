@@ -121,7 +121,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_TANK_TRACKS, 		CONSTANTS.ROOT_SPRITES_LOC + 'tank_tracks.png', 48, 34, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_IMPACT_DECALS, 	CONSTANTS.ROOT_SPRITES_LOC + 'impactDecals.png', 50, 50, 4);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_A, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionA.png', 50, 50, 10);
-	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 128, 128, 10);
+	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_B, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionB.png', 100, 100, 10);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_C, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionC.png', 120, 120, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.SPRITE_EXPLOSION_D, 		CONSTANTS.ROOT_SPRITES_LOC + 'p_explosionD.png', 96, 96, 20);
 	this.phaserGame.load.spritesheet(CONSTANTS.MAP_TILE_PLACEMENT, 		CONSTANTS.ROOT_SPRITES_LOC + 'tile_selections.png', 100, 100, 4);
@@ -1441,7 +1441,7 @@ Engine.prototype.createGameScreen = function() {
 			
 			// Show purchase details
 			if (spriteInfo == CONSTANTS.HUD.MAP_CONTROL.DEFENCE) {
-				self.purchaseDetailsText[0].setText("Plasma Cannon - $3000 [15s]");
+				self.purchaseDetailsText[0].setText("Plasma Cannon - $2000 [15s]");
 				self.purchaseDetailsText[1].setText("");
 				self.purchaseDetailsText[2].setText("Health: 500hp");
 				self.purchaseDetailsText[3].setText("Damage: 50 per plasma ball");
@@ -1956,6 +1956,9 @@ Engine.prototype.explosionCollisionCheck = function() {
 				// Define information for use calauclating explosion owners
 				var explosionDealerPlayer = explosionDealerObject.gameCore.playerId;
 				var damageToDeal = explosionDealerObject.gameCore.damage;
+				
+				// Calculate explosion bounds
+				var explosionBounds = {};
 				
 				// Test each building with current explosion
 				for (var index = 0; index < this.buildings.length; index++) {
