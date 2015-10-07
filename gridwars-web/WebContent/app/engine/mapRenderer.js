@@ -121,6 +121,11 @@ function MapRenderer(phaserRef, mapGroup, mapOverlayGroup, fogOfWarGroup, width,
 	this.tileMapping[69] = mapTile(CONSTANTS.MAP_BASE_ROCK, CONSTANTS.MAP_DETAIL_ROCKS_A, 0);
 	this.tileMapping[70] = mapTile(CONSTANTS.MAP_BASE_ROCK, CONSTANTS.MAP_DETAIL_ROCKS_B, 0);
 
+	this.tileMapping[71] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_IBL, 0);
+	this.tileMapping[72] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_ITL, 0);
+	this.tileMapping[73] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_ITR, 0);
+	this.tileMapping[74] = mapTile(CONSTANTS.MAP_BASE_DIRT, CONSTANTS.MAP_DETAIL_WATER_IBR, 0);
+
 	// Create map images
 	this.mapTiles = [];
 	// sprite - tile image sprite

@@ -185,6 +185,8 @@ public class GameLobby {
 	
 	// Getter methods	
 	
+	public Engine getEngine() { return this.engine; }
+	
 	// Select an unused colour for the player
 	private String getUnusedColour() {
 		String result = Const.COLOURS[0];

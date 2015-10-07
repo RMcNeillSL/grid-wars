@@ -191,7 +191,7 @@
 		<form name="sendLobbyMessage"
 			ng-submit="controller.callSendMessage($root.newMessage)">
 			<input type="text" placeholder="What would you like to say?"
-				ng-model="$root.newMessage" id="new-message" class="form-control">
+				ng-model="$root.newMessage" id="new-message" class="form-control" maxlength="100">
 		</form>
 	</section>
 

@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.majaro.gridwars.apiobjects.GameplayRequest;
 import com.majaro.gridwars.apiobjects.GameplayResponse;
@@ -14,6 +15,8 @@ import com.majaro.gridwars.game.Const.GameBuilding;
 import com.majaro.gridwars.game.Const.GameDefence;
 import com.majaro.gridwars.game.Const.GameObject;
 import com.majaro.gridwars.game.Const.GameUnit;
+
+import io.netty.util.internal.ThreadLocalRandom;
 
 public class Engine {
 	
@@ -213,10 +216,23 @@ public class Engine {
 	
 	public Engine(GameConfig gameConfig, ArrayList<LobbyUser> connectedUsers, GameStaticMap gameMap) {
 		
+		// Shuffle spawn coordinates
+		Coordinate[] coordsArr = gameMap.getSpawnCoordinates().clone();
+		Random rnd = ThreadLocalRandom.current();
+		
+		Coordinate a = null;
+		int index = -1;
+	    for (int i = coordsArr.length - 1; i > 0; i--) {
+		    index = rnd.nextInt(i + 1);
+		    a = coordsArr[index];
+		    coordsArr[index] = coordsArr[i];
+		    coordsArr[i] = a;
+	    }
+		
 		// Construct user objects
 		this.players = new Player[connectedUsers.size()];
-		for (int index = 0; index < connectedUsers.size(); index ++) {
-			this.players[index] = new Player(connectedUsers.get(index), gameConfig.getStartingCash(), gameMap.getSpawnCoordinates()[index]);
+		for (index = 0; index < connectedUsers.size(); index ++) {
+			this.players[index] = new Player(connectedUsers.get(index), gameConfig.getStartingCash(), coordsArr[index]);
 		}
 		
 		// Initialise in-game object lists
@@ -1458,4 +1474,11 @@ public class Engine {
 		return this.isRunning;
 	}
 	
+	public int getPlayersLength() {
+		return this.players.length;
+	}
+	
+	public Player getPlayer(int index) {
+		return this.players[index];
+	}
 }

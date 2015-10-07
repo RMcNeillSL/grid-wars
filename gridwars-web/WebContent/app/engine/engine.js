@@ -138,6 +138,7 @@ Engine.prototype.preload = function() {
 	this.phaserGame.load.image(CONSTANTS.UNIT_DETAILS, 					CONSTANTS.ROOT_SPRITES_LOC + 'unit_details.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_MAJARO, 				CONSTANTS.ROOT_SPRITES_LOC + 'map_items/majaro/minimap.png');
 	this.phaserGame.load.image(CONSTANTS.MINIMAP_HUNTING_GROUND, 		CONSTANTS.ROOT_SPRITES_LOC + 'map_items/hunting_ground/minimap.png');
+	this.phaserGame.load.image(CONSTANTS.MINIMAP_UNFAIR_ADVANTAGE, 		CONSTANTS.ROOT_SPRITES_LOC + 'map_items/unfair_advantage/minimap.png');
 	this.phaserGame.load.image(CONSTANTS.HINT_SELL, 					CONSTANTS.ROOT_SPRITES_LOC + 'hint_sell.png');
 	this.phaserGame.load.image(CONSTANTS.DETAILS_DIALOG, 				CONSTANTS.ROOT_SPRITES_LOC + 'details_dialog.png');
 	this.phaserGame.load.spritesheet(CONSTANTS.MINI_MAP_BUTTONS, 		CONSTANTS.ROOT_SPRITES_LOC + 'mini_map_buttons.png', 51, 28, 78);
@@ -1626,6 +1627,7 @@ Engine.prototype.createGameScreen = function() {
 	var miniMapId = null;
 	if (this.gameplayConfig.mapId == "1") { miniMapId = CONSTANTS.MINIMAP_HUNTING_GROUND; }
 	if (this.gameplayConfig.mapId == "2") { miniMapId = CONSTANTS.MINIMAP_MAJARO; }
+	if (this.gameplayConfig.mapId == "3") { miniMapId = CONSTANTS.MINIMAP_UNFAIR_ADVANTAGE; }
 	this.minimap = createHUDSprite(CONSTANTS.HUD.MAP_CONTROL.MINIMAP, CONSTANTS.HUD.MAP_CONTROL, mapLeft, 0, miniMapId, 91, true);
 	this.minimap.events.onInputOver.add(function() { if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = true; } });
 	this.minimap.events.onInputOut.add(function() { if(self.hud.mouseOverHudButton) { self.hud.mouseOverHudButton = false; } });

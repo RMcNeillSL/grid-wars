@@ -144,6 +144,7 @@ CONSTANTS = {
 	// Minimaps
 	MINIMAP_MAJARO 						: "minimap_majaro",
 	MINIMAP_HUNTING_GROUND 				: "minimap_hunting_ground",
+	MINIMAP_UNFAIR_ADVANTAGE			: "minimap_unfair_advantage",
 	
 	// Loaded image(.png) names
 	SPRITE_HUB 							: "sprite_hub_anim",
@@ -267,6 +268,11 @@ CONSTANTS = {
 	MAP_DETAIL_GRASS_ITR		: 53,
 	MAP_DETAIL_GRASS_ITL		: 54,
 	MAP_DETAIL_GRASS_IBL		: 55,
+	
+	MAP_DETAIL_WATER_IBL		: 56,
+	MAP_DETAIL_WATER_ITL		: 57,
+	MAP_DETAIL_WATER_ITR		: 58,
+	MAP_DETAIL_WATER_IBR		: 59,
 	
 	// Hud last minute sprites
 	HINT_SELL					: "hint_sell",
