@@ -52,6 +52,9 @@ public class GameLobby {
 	public boolean started() {
 		return this.engine != null;
 	}
+	public boolean running() {
+		return (this.engine != null && !this.engine.getIsRunning());
+	}
 	public void lobbyDropUser(int userId) {
 		this.engine.dropUser(userId);
 	}
@@ -77,7 +80,7 @@ public class GameLobby {
 		return lobbyUser;
 	}
 	public boolean canJoin() {
-		return true;
+		return (this.engine == null || !this.engine.getIsRunning());
 	}
 	public boolean includesUser(User checkUser) {
 		for (int index = 0; index < this.connectedUsers.size(); index ++) {

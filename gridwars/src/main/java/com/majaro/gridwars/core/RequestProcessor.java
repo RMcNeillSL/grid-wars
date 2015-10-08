@@ -357,7 +357,13 @@ public class RequestProcessor {
 	}
 
 	public ArrayList<GameLobby> listGames() {
-		return this.activeGameLobbys;
+		ArrayList<GameLobby> lobbies = new ArrayList<GameLobby>();
+		for (GameLobby lobby : this.activeGameLobbys) {
+			if (!lobby.started()) {
+				lobbies.add(lobby);
+			}
+		}
+		return lobbies;
 	}
 
 	public ArrayList<GameStaticMap> listGameMaps() {

@@ -246,7 +246,10 @@ public class Engine {
 		this.dynamicMap = new GameDynamicMap(staticMap, this.buildings, this.units);
 		
 		// Initialise pathfinder object
-		this.aStarPathFinder = new AStarPathFinder(this.staticMap, this.dynamicMap);		
+		this.aStarPathFinder = new AStarPathFinder(this.staticMap, this.dynamicMap);	
+		
+		// Mark engine as running
+		this.isRunning = true;	
 	}
 	
 	
