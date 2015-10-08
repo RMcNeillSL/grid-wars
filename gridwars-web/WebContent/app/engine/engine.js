@@ -487,13 +487,16 @@ Engine.prototype.onMouseDown = function(pointer) {
 
 Engine.prototype.onMouseUp = function(pointer) {
 
+	// Flag for general pointer actions handled
+	var clickHandled = false;
+	
 	// Cancel right scroll
 	this.mouse.rightScroll.direction = -1;
 	this.processMouseFormUpdates();
 
 	// Remove any scrolling locks currently active
-	this.mouse.rightScroll.isActive = false;
-	this.mouse.middleScroll.isActive = false;
+	if (this.mouse.rightScroll.isActive) { this.mouse.rightScroll.isActive = false; clickHandled = true; }
+	if (this.mouse.middleScroll.isActive) { this.mouse.middleScroll.isActive = false; clickHandled = true; }
 
 	// Instance function escape conditions
 	if (this.hud.mouseOverHudButton) { return; }
@@ -511,9 +514,6 @@ Engine.prototype.onMouseUp = function(pointer) {
 	// Positional values for cell and xy
 	var point = this.mouse.position;
 	var mouseCell = point.toCell();
-	
-	// Flag for general pointer actions handled
-	var clickHandled = false;
 	
 	// Save reference to this
 	var self = this;
@@ -648,10 +648,10 @@ Engine.prototype.onMouseUp = function(pointer) {
 	// Process updates for mouse
 	this.processMouseFormUpdates();
 
-	// Hide hint for sell item
-	if (!this.gameObjectSell.input.pointerOver()) {
-		this.gameObjectHintSell.visible = false;
-	}
+//	// Hide hint for sell item
+//	if (!this.gameObjectSell.input.pointerOver()) {
+//		this.gameObjectHintSell.visible = false;
+//	}
 }
 
 Engine.prototype.onMouseMove = function(pointer, x, y) {
@@ -1558,12 +1558,16 @@ Engine.prototype.createGameScreen = function() {
 			
 			// Run procedure for sell button pressed
 			if (spriteInfo == CONSTANTS.HUD.OBJECT_CONTROL.SELL) {
-				console.log(self);
 				if (self.selected.length > 0) {
 					var objectType = CONSTANTS.getObjectType(self.selected[0].gameCore.identifier);
 					if (objectType == "BUILDING" || objectType == "DEFENCE") {
 						self.serverAPI.sellBuilding(self.selected[0]);
 					}
+					self.updateSelectedGameObjectDetails(null);
+					self.hud.objectControl.isMouseOver = false;
+					newButton.frame = spriteInfo.UNSELECTED;
+					self.gameObjectHintSell.visible = false;
+					self.hud.mouseOverHudButton = false;
 				}
 			}
 			
