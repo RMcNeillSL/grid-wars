@@ -80,7 +80,9 @@ public class GameLobby {
 		return lobbyUser;
 	}
 	public boolean canJoin() {
-		return (this.engine == null || !this.engine.getIsRunning());
+		return (this.engine == null ||
+				!this.engine.getIsRunning()) &&
+				this.gameConfig.getMapMaxPlayers() > this.connectedUsers.size();
 	}
 	public boolean includesUser(User checkUser) {
 		for (int index = 0; index < this.connectedUsers.size(); index ++) {
