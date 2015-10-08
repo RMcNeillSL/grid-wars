@@ -49,7 +49,7 @@ CustomAnimation.prototype.play = function() {
 				self.currentFrameIndex = self.frames[0];
 			}
 		} else {
-			self.sender.frame = 0;
+			self.sender.frame = self.frames[0];
 			self.currentFrameIndex = self.frames[0];
 			clearTimeout(self.animationTimer);
 		}
