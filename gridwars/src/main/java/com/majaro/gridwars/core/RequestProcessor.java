@@ -339,21 +339,28 @@ public class RequestProcessor {
 
 		// Attempt - join a lobby identified by a given Id
 		try {
-
 			GameLobby gameLobby = this.getGameLobbyFromLobbyId(lobbyId);
 			User user = this.getUserFromRESTSessionId(sessionId);
-			if (gameLobby != null && user != null && !gameLobby.includesUser(user) && gameLobby.canJoin()) {
-				LobbyUser lobbyUser = gameLobby.addUser(user);
+			if (gameLobby != null && user != null && 
+					(gameLobby.includesUser(user) || gameLobby.canJoin()) ) {
+				
+				// Add user of lobby users information if not present
+				LobbyUser lobbyUser = null;
+				if (!gameLobby.includesUser(user)) {
+					lobbyUser = gameLobby.addUser(user);
+				} else {
+					lobbyUser = gameLobby.getLobbyUser(user.getId());
+				}
+				
+				// Generate response data
 				responseConfig = new GameJoinResponse(gameLobby, lobbyUser);
 			}
-
 		} catch (Exception e) {
 			responseConfig = null;
 		}
 
 		// Return determined response
 		return responseConfig;
-
 	}
 
 	public ArrayList<GameLobby> listGames() {

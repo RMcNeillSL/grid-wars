@@ -11,7 +11,12 @@
 		this.$rootScope.servers = []
 		this.$rootScope.pageName = "Servers";
 		this.loadServers();
+		
+		// Create reference to this
 		var self = this
+		
+		// Clear currently loaded game
+		this.$window.connectedLobbyId = null;
 
 		// Set up new sockets or reset if they exist
 		if (!this.$rootScope.sockets) {
@@ -51,6 +56,7 @@
 			var self = this;
 
 			var updateNewGameResponse = function(response) {
+				self.$window.sessionStorage.connectedLobbyId = response.lobbyId;
 				self.$rootScope.gameConfig = response;
 				self.$rootScope.gameLeader = true;
 				self.$window.sessionStorage.gameLeader = true;
@@ -64,6 +70,7 @@
 			var self = this;
 
 			var updateJoinGameResponse = function(response) {
+				self.$window.sessionStorage.connectedLobbyId = response.lobbyId;
 				self.$rootScope.gameConfig = response;
 				self.$window.sessionStorage.gameLeader = false;
 				clearInterval(self.$rootScope.refresh);

@@ -16,7 +16,6 @@
 			self.$rootScope.sockets.emitEvent(CONSTANTS.SOCKET_SEND_JOIN_GAME_LOBBY, {
 				"user" : self.$rootScope.currentUser
 			});
-			self.$rootScope.currentlyInLobby = true;
 		},
 		onDisconnect: function () {
 			console.log("The socket has disconnected in game lobby");
@@ -30,6 +29,7 @@
 					"user" : data,
 					"message" : "has joined the lobby"
 				};
+			self.$rootScope.currentlyInLobby = true;
 			self.$rootScope.lobbyMessages.push(userJoinedMessage);
 			self.$rootScope.$apply();
 		},
@@ -180,6 +180,13 @@
 				if (response.status !== 200) {
 					console.log("ERROR.");		//TODO: Add more error checking
 				}
+			});
+		},
+		joinGameLobby_JAMES : function(lobbyId, callback) {
+			self.$http.post("/gridwars/rest/game/join", lobbyId).then(function(configDataResponse) {
+				callback(configDataResponse.data);
+			}, function(response) {
+				console.log("ERROR.");		//TODO: Add more error checking
 			});
 		},
 		sendMessage: function (newMessage) {

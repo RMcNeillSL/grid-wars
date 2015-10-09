@@ -29,6 +29,7 @@ public class GameplayConfig {
 	private ArrayList<Integer> userTeam;
 	
 	// Game setup preferences
+	private String lobbyId;
 	private int startingCash;
 	
 	// Game object variables
@@ -77,6 +78,7 @@ public class GameplayConfig {
 		
 		
 		// Save game setup preferences
+		this.lobbyId = gameLobby.getLobbyId();
 		this.startingCash = gameLobby.getGameConfig().getStartingCash();
 		
 		// Save constants for buildings and units
@@ -131,7 +133,10 @@ public class GameplayConfig {
 	public int getStartingCash() {
 		return this.startingCash;
 	}
-	
+	@JsonView(GameplayConfig.Views.Summary.class)
+	public String getLobbyId() {
+		return this.lobbyId;
+	}
 
 	// Class views
 	public static class Views {

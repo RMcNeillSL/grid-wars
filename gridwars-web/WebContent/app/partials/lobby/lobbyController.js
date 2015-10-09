@@ -3,13 +3,13 @@
 (function () {
 
 	function LobbyController ($scope, $location, $rootScope, $window, lobbyService) {
+		
 		// Save injected items
 		this.$scope = $scope;
 		this.$location = $location;
 		this.$rootScope = $rootScope;
 		this.$window = $window;
 		this.lobbyService = lobbyService;
-		var _this = this;
 
 		// Initialise variables
 		$rootScope.gameplayConfig = null;
@@ -24,6 +24,9 @@
 		$rootScope.gameLobbyLoaded = false;
 		$rootScope.loggedOut = false;
 
+		// Create reference for this
+		var self = this;
+		
 		if ($window.sessionStorage.gameLeader == "true") {
 			$rootScope.gameLeader = true;
 		} else {
@@ -53,52 +56,91 @@
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_USER_LEFT_GAME_LOBBY, this.lobbyService.userLeftLobby);
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_LEFT_LOBBY, this.lobbyService.leftLobby);
 		this.$rootScope.sockets.bindEvent (CONSTANTS.SOCKET_REC_ROOM_DELETED, this.lobbyService.roomDeleted);
-
-
-		if (!this.$rootScope.currentlyInLobby) {
-			this.lobbyService.joinGameLobby();
-		}
-
-		// Get information from server
-		function getAllData () {
-			_this.$rootScope.getData = setTimeout(function () {	
-				if (_this.$rootScope.mapList.length === 0) {
-					console.log("Haven't received maps yet.");
-					_this.lobbyService.getMaps();
-				}
-				if (!_this.$rootScope.gameConfig) {
-					console.log("Haven't received config yet.");
-					_this.lobbyService.getConfig();
-				}
-				if (_this.$rootScope.lobbyUserList.length === 0) {
-					console.log("Haven't received users yet.");
-					_this.lobbyService.getUsers();
-				}
-
-				if (_this.$rootScope.mapList.length === 0 || !_this.$rootScope.gameConfig || _this.$rootScope.lobbyUserList.length === 0) {
-					getAllData();
-				}
-
-				if (_this.$rootScope.mapList.length > 0 && _this.$rootScope.gameConfig && _this.$rootScope.lobbyUserList.length > 0) {
-					_this.$rootScope.gameLobbyLoaded = true;
-					_this.$rootScope.$apply();
-				}
-			}, 500);
-		}
-
-		getAllData();
-
-		this.$rootScope.mapName = this.$rootScope.gameConfig.mapName.toLowerCase();
-		this.$rootScope.mapName = this.$rootScope.mapName.split(' ').join('_');
-
-		$scope.$on('$locationChangeStart', function (event, next, current) {
-			if(self.$rootScope.currentlyInLobby) {
-				if(next !== "http://" + window.location.host + "/#/game") {
-					_this.lobbyService.leaveGame();
-					clearTimeout(_this.$rootScope.getData);
+		
+		// Get gameplay configuration details before proceeding
+		var configPoller = null;
+		var getGameplayConfiguration = function() {
+			if (!self.$rootScope.gameConfig) {
+				
+				// Mark as not leader
+				$window.sessionStorage.gameLeader = false;
+				$rootScope.gameLeader = false;
+				
+				// Get lobby information if possible
+				if (self.$window.sessionStorage.connectedLobbyId) {
+					configPoller = setInterval(function() {
+						self.lobbyService.joinGameLobby_JAMES(self.$window.sessionStorage.connectedLobbyId, function(configDataResponse) {
+							self.$rootScope.gameConfig = configDataResponse;
+						});
+					}, 100);
+				} else {
+					console.log("No LobbyId stored.");
 				}
 			}
-		});
+		}
+		
+		// Run procedure to request gameplay configuration
+		getGameplayConfiguration();
+		
+		// Wait for gameplay configuration to be received before continuing
+		(new Waiter(function() { return self.$rootScope.gameConfig; }, function() {
+			
+			// Clear config poller
+			if (configPoller) { clearInterval(configPoller); }
+
+			// Join game lobby socket channel
+			if (!self.$rootScope.currentlyInLobby) {
+				self.lobbyService.joinGameLobby();
+			}
+
+			// Function to poll information until all is received
+			function getAllData () {
+				self.$rootScope.getData = setTimeout(function () {	
+					if (self.$rootScope.mapList.length === 0) {
+						console.log("Haven't received maps yet.");
+						self.lobbyService.getMaps();
+					}
+					if (!self.$rootScope.gameConfig) {
+						console.log("Haven't received config yet.");
+						self.lobbyService.getConfig();
+					}
+					if (self.$rootScope.lobbyUserList.length === 0) {
+						console.log("Haven't received users yet.");
+						self.lobbyService.getUsers();
+						
+					}
+
+					if (self.$rootScope.mapList.length === 0 || 
+							!self.$rootScope.gameConfig || 
+							self.$rootScope.lobbyUserList.length === 0) {
+						getAllData();
+					}
+
+					if (self.$rootScope.mapList.length > 0 && 
+							self.$rootScope.gameConfig && 
+							self.$rootScope.lobbyUserList.length > 0) {
+						self.$rootScope.gameLobbyLoaded = true;
+						self.$rootScope.$apply();
+					}
+				}, 100);
+			}
+
+			// Poll information from the server
+			getAllData();
+
+			self.$rootScope.mapName = self.$rootScope.gameConfig.mapName.toLowerCase();
+			self.$rootScope.mapName = self.$rootScope.mapName.split(' ').join('_');
+
+			self.$scope.$on('$locationChangeStart', function (event, next, current) {
+				if(self.$rootScope.currentlyInLobby) {
+					if(next !== "http://" + window.location.host + "/#/game") {
+						self.lobbyService.leaveGame();
+						clearTimeout(self.$rootScope.getData);
+					}
+				}
+			});
+
+		}, 100)).start();
 	}
 
 	LobbyController.prototype = {
